@@ -23,7 +23,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 当前工具栏实例
 		/// </summary>
-		private static ScriptableObject m_CurrentToolbar;
+		private static ScriptableObject m_currentToolbar;
 
 		/// <summary>
 		/// 工具栏 OnGUILeft 方法的回调。
@@ -44,17 +44,17 @@ namespace FuFramework.Core.Editor
 		private static void OnUpdate()
 		{
 			// 依赖于工具栏是 ScriptableObject 并在布局更改时被删除的事实
-			if (m_CurrentToolbar != null) return;
+			if (m_currentToolbar != null) return;
 
 			// 查找工具栏实例
 			var toolbars = Resources.FindObjectsOfTypeAll(ToolbarType);
-			m_CurrentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
-			if (m_CurrentToolbar == null) return;
+			m_currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+			if (m_currentToolbar == null) return;
 
 			// 获取工具栏根节点
-			var root = m_CurrentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+			var root = m_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
 			if (root == null) return;
-			var rawRoot = root.GetValue(m_CurrentToolbar);
+			var rawRoot = root.GetValue(m_currentToolbar);
 			var mRoot   = rawRoot as VisualElement;
 
 			// 注册绘制回调

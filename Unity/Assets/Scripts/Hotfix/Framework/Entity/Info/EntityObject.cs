@@ -16,12 +16,12 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 实体资源句柄
 		/// </summary>
-		private object m_EntityAssetHandle;
+		private object m_entityAssetHandle;
 
 		/// <summary>
 		/// 实体帮助器
 		/// </summary>
-		private EntityHelper m_EntityHelper;
+		private EntityHelper m_entityHelper;
 
 		/// <summary>
 		/// 创建实体实例对象
@@ -41,8 +41,8 @@ namespace Hotfix.Framework.Entity
 			try
 			{
 				entityObject.Initialize(name, entityGo);
-				entityObject.m_EntityAssetHandle = entityAssetHandle;
-				entityObject.m_EntityHelper      = entityHelper;
+				entityObject.m_entityAssetHandle = entityAssetHandle;
+				entityObject.m_entityHelper      = entityHelper;
 			}
 			catch
 			{
@@ -61,8 +61,8 @@ namespace Hotfix.Framework.Entity
 		public override void Clear()
 		{
 			base.Clear();
-			m_EntityAssetHandle = null;
-			m_EntityHelper      = null;
+			m_entityAssetHandle = null;
+			m_entityHelper      = null;
 		}
 
 		/// <summary>
@@ -72,7 +72,7 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_EntityHelper.ReleaseEntity(m_EntityAssetHandle, Target);
+			m_entityHelper.ReleaseEntity(m_entityAssetHandle, Target);
 		}
 	}
 }

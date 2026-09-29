@@ -13,12 +13,12 @@ namespace Hotfix.Framework.Guide
 		///     1. 记录等待时间。
 		///     2. 等待时间到后，完成步骤。
 		/// </summary>
-		private float m_WaitTimer;
+		private float m_waitTimer;
 
 		protected override void OnExecute()
 		{
 			base.OnExecute();
-			m_WaitTimer = 0f;
+			m_waitTimer = 0f;
 			GuideAction?.ShowGlobalMask(); // 打开全局遮罩窗口
 		}
 
@@ -26,8 +26,8 @@ namespace Hotfix.Framework.Guide
 		{
 			if (IsExecuting)
 			{
-				m_WaitTimer += deltaTime;
-				if (m_WaitTimer >= StepInfo.WaitTime)
+				m_waitTimer += deltaTime;
+				if (m_waitTimer >= StepInfo.WaitTime)
 				{
 					Complete();
 				}
@@ -60,7 +60,7 @@ namespace Hotfix.Framework.Guide
 			// 回池兜底：若该步未经 OnComplete/OnCancel 就被回收（如引导数据被杀），遮罩同样不能残留；
 			// 与 OnCancel 一致地隐藏遮罩，保证「展示周期结束必关遮罩」这一不变量在三条路径上都成立。
 			GuideAction?.HideGlobalMask(); // 隐藏全局遮罩窗口
-			m_WaitTimer = 0f;
+			m_waitTimer = 0f;
 			base.Clear();
 		}
 

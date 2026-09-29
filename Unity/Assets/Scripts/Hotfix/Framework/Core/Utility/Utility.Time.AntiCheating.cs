@@ -20,33 +20,33 @@ namespace Hotfix.Framework.Core
 	/// 时间防作弊工具类。
 	/// 功能：
 	///     1. 防止用户修改系统时间导致的时间作弊。
-	/// 
+	///
 	/// 【防作弊核心原理】
 	/// 1. 双时间源验证：对比"系统运行时间(TickCount)"和"实际系统时间(DateTime.UtcNow)"
 	///    - 系统运行时间：从开机到现在经过的时间，用户难以修改
 	///    - 实际系统时间：系统显示的UTC时间，用户可以随意修改
-	///    
+	///
 	/// 2. 作弊检测逻辑：
 	///    - 正常情况：系统运行时间增量 ≈ 实际系统时间增量
 	///    - 作弊情况：用户修改系统时间后，两个时间增量出现巨大差异
-	///    
+	///
 	/// 3. 时间纠正机制：
 	///    - 检测到作弊时，基于系统运行时间自动纠正返回的时间
 	///    - 保证游戏逻辑使用的时间不受用户修改系统时间的影响
-	/// 
+	///
 	/// 【工作模式】
 	/// 1. 在线模式：优先使用NTP网络时间，完全可靠
 	/// 2. 离线模式：使用双时间源验证，检测并纠正时间作弊
-	/// 
+	///
 	/// 【已知漏洞和限制】
 	/// 1. 断网用户重启电脑后修改时间，无法判断是否作弊（核心漏洞）
 	///    - 原因：系统重启后TickCount重置，失去时间验证基准
 	///    - 攻击方法：退出游戏 → 重启电脑 → 修改时间 → 启动游戏
-	///    
+	///
 	/// 2. 断网用户如果超过49.8天没关机，会每49.8天有一次作弊机会
 	///    - 原因：Environment.TickCount 32位溢出周期为49.8天
 	///    - 攻击方法：等待TickCount溢出重置时修改时间
-	///    
+	///
 	/// 3. 极端情况下可能出现误判
 	///    - 系统时钟精度误差、线程调度延迟等可能触发误报
 	///    - 通过60秒容差机制缓解此问题
@@ -55,21 +55,21 @@ namespace Hotfix.Framework.Core
 	{
 		#region 常量
 
-		private const string LastTickTimeKey    = "LastTickTime"; // 最后一次存储的系统启动时间记录key
-		private const string LastUtcTimeKey     = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
-		private const int    MaxRecheckAttempts = 3;              // 重查网络时间的最大尝试次数
+		private const string LAST_TICK_TIME_KEY    = "LastTickTime"; // 最后一次存储的系统启动时间记录key
+		private const string LAST_UTC_TIME_KEY     = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
+		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 重查网络时间的最大尝试次数
 
 		#endregion
 
 		#region 静态字段
 
-		private static bool     m_ForbidCheck;         // 禁止检测（方便测试）
-		private static DateTime m_CachedTime;          // 缓存的时间结果
-		private static long     m_LastTickCount;       // 上次计算时的系统启动时间（秒）
-		private static bool     m_GotNetTime;          // 是否得到了在线时间
-		private static DateTime m_NowOnlineDateTime;   // 当前在线时间
-		private static float    m_LastRecheckTime;     // 上次重查网络时间时的时间
-		private static int      m_RecheckAttemptCount; // 重查网络时间的尝试次数
+		private static bool     m_forbidCheck;         // 禁止检测（方便测试）
+		private static DateTime m_cachedTime;          // 缓存的时间结果
+		private static long     m_lastTickCount;       // 上次计算时的系统启动时间（秒）
+		private static bool     m_gotNetTime;          // 是否得到了在线时间
+		private static DateTime m_nowOnlineDateTime;   // 当前在线时间
+		private static float    m_lastRecheckTime;     // 上次重查网络时间时的时间
+		private static int      m_recheckAttemptCount; // 重查网络时间的尝试次数
 
 		#endregion
 
@@ -116,7 +116,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 是否处于禁止检测状态
 		/// </summary>
-		public static bool IsForbidCheck => m_ForbidCheck;
+		public static bool IsForbidCheck => m_forbidCheck;
 
 		#endregion
 
@@ -139,14 +139,14 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		public static DateTime GetUtcNow()
 		{
-			if (m_ForbidCheck) return DateTime.UtcNow;
+			if (m_forbidCheck) return DateTime.UtcNow;
 
 			// 使用缓存优化，1秒内避免重复计算
 			var currentTick = TickCount;
-			if (Math.Abs(currentTick - m_LastTickCount) < 1) // 1秒内使用缓存
+			if (Math.Abs(currentTick - m_lastTickCount) < 1) // 1秒内使用缓存
 			{
-				Log($"使用缓存时间，当前Utc时间：{m_CachedTime}");
-				return m_CachedTime;
+				Log($"使用缓存时间，当前Utc时间：{m_cachedTime}");
+				return m_cachedTime;
 			}
 
 			DateTime result;
@@ -155,21 +155,21 @@ namespace Hotfix.Framework.Core
 			var tickTime = TickCount;
 
 			// 获取上次记录的系统启动后经过的秒数
-			var lastTickTime = GetSavedTime(LastTickTimeKey);
+			var lastTickTime = GetSavedTime(LAST_TICK_TIME_KEY);
 			if (lastTickTime <= 0)
 			{
 				Log($"首次运行或记录的数据被删除了，重新保存系统启动后经过的秒数{tickTime}s");
-				SaveTime(LastTickTimeKey, tickTime);
+				SaveTime(LAST_TICK_TIME_KEY, tickTime);
 				lastTickTime = tickTime;
 			}
 
-			if (m_GotNetTime)
+			if (m_gotNetTime)
 			{
 				// 已经获得过网络时间：结果 = 网络时间 + 系统启动时间差
-				m_NowOnlineDateTime = m_NowOnlineDateTime.AddSeconds(tickTime - lastTickTime);
-				SaveTime(LastUtcTimeKey,  Time2Timestamp(m_NowOnlineDateTime));
-				SaveTime(LastTickTimeKey, tickTime);
-				result = m_NowOnlineDateTime;
+				m_nowOnlineDateTime = m_nowOnlineDateTime.AddSeconds(tickTime - lastTickTime);
+				SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(m_nowOnlineDateTime));
+				SaveTime(LAST_TICK_TIME_KEY, tickTime);
+				result = m_nowOnlineDateTime;
 				Log($"使用网络时间刷新时间记录点，时间可靠，当前Utc时间：{result}");
 			}
 			else
@@ -179,7 +179,7 @@ namespace Hotfix.Framework.Core
 				var nowTimestamp = Time2Timestamp(now);
 
 				// 获取记录的上次时间戳
-				var lastTimestamp = GetSavedTime(LastUtcTimeKey);
+				var lastTimestamp = GetSavedTime(LAST_UTC_TIME_KEY);
 				if (lastTimestamp < 0)
 				{
 					lastTimestamp = 0;
@@ -199,8 +199,8 @@ namespace Hotfix.Framework.Core
 					if (delta         < 60) Log($"使用离线本地时间，系统启动时间与时间戳差值为{delta}s，低于1分钟，时间可靠，当前Utc时间：{now}");
 					if (tickTimeDelta <= 0) Log($"本次和上次的系统启动经过的时间差值<=0，首次运行或记录的数据被删除了或系统重启了，时间可靠，当前Utc时间：{now}");
 
-					SaveTime(LastUtcTimeKey,  nowTimestamp);
-					SaveTime(LastTickTimeKey, tickTime);
+					SaveTime(LAST_UTC_TIME_KEY,  nowTimestamp);
+					SaveTime(LAST_TICK_TIME_KEY, tickTime);
 					result = now;
 				}
 				else
@@ -215,8 +215,8 @@ namespace Hotfix.Framework.Core
 			}
 
 			// 更新缓存
-			m_LastTickCount = currentTick;
-			m_CachedTime    = result;
+			m_lastTickCount = currentTick;
+			m_cachedTime    = result;
 
 			return result;
 		}
@@ -227,13 +227,13 @@ namespace Hotfix.Framework.Core
 		public static void OnApplicationQuit()
 		{
 			// 取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
-			m_NtpCancellation.Dispose();
+			m_ntpCancellation.Dispose();
 
 			var now          = GetUtcNow();
 			var nowTimestamp = Time2Timestamp(now);
-			SaveTime(LastUtcTimeKey,  nowTimestamp);
-			SaveTime(LastTickTimeKey, TickCount);
-			Debug.Log($"TimeAntiCheating: 离开游戏最后保存在本地的Utc时间：{now}, 时间戳：{nowTimestamp}, 系统启动时间：{TickCount}");
+			SaveTime(LAST_UTC_TIME_KEY,  nowTimestamp);
+			SaveTime(LAST_TICK_TIME_KEY, TickCount);
+			FuLogger.LogInfo($"TimeAntiCheating: 离开游戏最后保存在本地的Utc时间：{now}, 时间戳：{nowTimestamp}, 系统启动时间：{TickCount}");
 		}
 
 		/// <summary>
@@ -242,7 +242,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="forbid"></param>
 		public static void ForbidCheck(bool forbid)
 		{
-			m_ForbidCheck = forbid;
+			m_forbidCheck = forbid;
 		}
 
 		#endregion
@@ -254,26 +254,26 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private static void TryRecheckNetTime()
 		{
-			if (!NeedRecheckNetTime || m_GotNetTime) return;
+			if (!NeedRecheckNetTime || m_gotNetTime) return;
 
 			// 检查重查频率限制
-			float currentTime = Time.realtimeSinceStartup;
-			if (currentTime - m_LastRecheckTime < NetTimeRecheckInterval) return;
+			var currentTime = Time.realtimeSinceStartup;
+			if (currentTime - m_lastRecheckTime < NetTimeRecheckInterval) return;
 
 			// 检查重试次数限制
-			if (m_RecheckAttemptCount >= MaxRecheckAttempts)
+			if (m_recheckAttemptCount >= MAX_RECHECK_ATTEMPTS)
 			{
 				Log("已达到最大网络时间重试次数，停止重试");
 				return;
 			}
 
-			m_LastRecheckTime = currentTime;
-			m_RecheckAttemptCount++;
+			m_lastRecheckTime = currentTime;
+			m_recheckAttemptCount++;
 
-			Log($"第{m_RecheckAttemptCount}次尝试重新获取网络时间");
+			Log($"第{m_recheckAttemptCount}次尝试重新获取网络时间");
 
-			// 异步链的生命周期由 m_NtpCancellation 持有：Token 透传给所有在途请求，OnApplicationQuit 取消释放
-			MultipleNptGetTimeAsync(m_NtpCancellation.Token).Forget();
+			// 异步链的生命周期由 m_ntpCancellation 持有：Token 透传给所有在途请求，OnApplicationQuit 取消释放
+			MultipleNptGetTimeAsync(m_ntpCancellation.Token).Forget();
 		}
 
 		/// <summary>
@@ -281,8 +281,8 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private static void ResetRecheckState()
 		{
-			m_RecheckAttemptCount = 0;
-			m_LastRecheckTime     = 0f;
+			m_recheckAttemptCount = 0;
+			m_lastRecheckTime     = 0f;
 		}
 
 		#region 多npt服务器地址获取全球时间方法
@@ -291,13 +291,13 @@ namespace Hotfix.Framework.Core
 		/// NTP 异步请求的生命周期取消源（静态类自持）。
 		/// 发起请求时透传其 Token；OnApplicationQuit 取消并释放，避免脱离生命周期的裸异步链。
 		/// </summary>
-		private static readonly LifecycleCancellationSource m_NtpCancellation = new();
+		private static readonly LifecycleCancellationSource m_ntpCancellation = new();
 
 		/// <summary>
 		/// 多地址获取网络时间方法（fire-and-forget）。
-		/// 生命周期由 m_NtpCancellation 持有：其 Token 被取消时，在途 DNS/UDP 请求立即中止。
+		/// 生命周期由 m_ntpCancellation 持有：其 Token 被取消时，在途 DNS/UDP 请求立即中止。
 		/// </summary>
-		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 m_NtpCancellation 提供）。</param>
+		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 m_ntpCancellation 提供）。</param>
 		private static async UniTaskVoid MultipleNptGetTimeAsync(CancellationToken cancellationToken)
 		{
 			string[] ntpServers =
@@ -436,13 +436,13 @@ namespace Hotfix.Framework.Core
 		/// <param name="offTime"></param>
 		private static void SetOnlineTime(DateTimeOffset offTime)
 		{
-			if (m_GotNetTime) return;
+			if (m_gotNetTime) return;
 
-			m_NowOnlineDateTime = offTime.UtcDateTime;
-			m_GotNetTime        = true;
+			m_nowOnlineDateTime = offTime.UtcDateTime;
+			m_gotNetTime        = true;
 
-			SaveTime(LastUtcTimeKey,  Time2Timestamp(m_NowOnlineDateTime));
-			SaveTime(LastTickTimeKey, TickCount);
+			SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(m_nowOnlineDateTime));
+			SaveTime(LAST_TICK_TIME_KEY, TickCount);
 
 			// 重置重查状态
 			ResetRecheckState();
@@ -457,7 +457,7 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		private static long GetTickCount()
 		{
-			long tickCount = -1;
+			var tickCount = -1;
 #if UNITY_IOS && !UNITY_EDITOR
 			//此方法获取的时间有时候不准确，需要确定。不可用时就需要通过原生端来获取。
 			tickCount = _GetUpTime() * 1000;

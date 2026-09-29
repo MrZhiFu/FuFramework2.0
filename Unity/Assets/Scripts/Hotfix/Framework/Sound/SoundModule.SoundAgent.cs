@@ -27,63 +27,63 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 资源管理模块。
 			/// </summary>
-			private AssetModule m_AssetModule;
+			private AssetModule m_assetModule;
 
 			/// <summary>
 			/// 所在的声音组。
 			/// </summary>
-			private SoundGroup m_SoundGroup;
+			private SoundGroup m_soundGroup;
 
 			/// <summary>
 			/// 声音资源。
 			/// </summary>
-			private object m_SoundAsset;
+			private object m_soundAsset;
 
 			/// <summary>
 			/// 声音资源句柄。随播放持有，Reset 时释放（先于 UnloadAsset，使引用计数归零后可真正卸载）。
 			/// 同一路径并发播放时各自持有句柄，互不影响。
 			/// </summary>
-			private AssetHandle m_SoundAssetHandle;
+			private AssetHandle m_soundAssetHandle;
 
 			/// <summary>
 			/// 在声音组内是否静音。
 			/// </summary>
-			private bool m_MuteInSoundGroup;
+			private bool m_muteInSoundGroup;
 
 			/// <summary>
 			/// 在声音组内音量大小。
 			/// </summary>
-			private float m_VolumeInSoundGroup;
+			private float m_volumeInSoundGroup;
 
 			/// <summary>
 			/// 播放声音的AudioSource组件
 			/// </summary>
-			private AudioSource m_AudioSource;
+			private AudioSource m_audioSource;
 
 			/// <summary>
 			/// 声音绑定的实体
 			/// </summary>
-			private EntityLogic m_BindingEntityLogic;
+			private EntityLogic m_bindingEntityLogic;
 
 			/// <summary>
 			/// 暂停时音量
 			/// </summary>
-			private float m_VolumeWhenPause;
+			private float m_volumeWhenPause;
 
 			/// <summary>
 			/// 应用是否处于暂停状态
 			/// </summary>
-			private bool m_IsAppPause;
+			private bool m_isAppPause;
 
 			/// <summary>
 			/// 正常播放完成的回调
 			/// </summary>
-			private Action m_OnPlayEnd;
+			private Action m_onPlayEnd;
 
 			/// <summary>
 			/// 在途音量渐变的取消源。每次发起渐变时重建；被新的渐变/停止/暂停/重置/销毁打断时取消并释放。
 			/// </summary>
-			private CancellationTokenSource m_FadeCts;
+			private CancellationTokenSource m_fadeCts;
 
 
 			/// <summary>
@@ -107,8 +107,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float Time
 			{
-				get => m_AudioSource.time;
-				set => m_AudioSource.time = value;
+				get => m_audioSource.time;
+				set => m_audioSource.time = value;
 			}
 
 			/// <summary>
@@ -116,8 +116,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public bool Mute
 			{
-				get => m_AudioSource.mute;
-				set => m_AudioSource.mute = value;
+				get => m_audioSource.mute;
+				set => m_audioSource.mute = value;
 			}
 
 			/// <summary>
@@ -125,8 +125,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public bool Loop
 			{
-				get => m_AudioSource.loop;
-				set => m_AudioSource.loop = value;
+				get => m_audioSource.loop;
+				set => m_audioSource.loop = value;
 			}
 
 			/// <summary>
@@ -134,8 +134,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public int Priority
 			{
-				get => 128 - m_AudioSource.priority;
-				set => m_AudioSource.priority = 128 - value;
+				get => 128 - m_audioSource.priority;
+				set => m_audioSource.priority = 128 - value;
 			}
 
 			/// <summary>
@@ -143,8 +143,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float Volume
 			{
-				get => m_AudioSource.volume;
-				set => m_AudioSource.volume = value;
+				get => m_audioSource.volume;
+				set => m_audioSource.volume = value;
 			}
 
 			/// <summary>
@@ -152,8 +152,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float Pitch
 			{
-				get => m_AudioSource.pitch;
-				set => m_AudioSource.pitch = value;
+				get => m_audioSource.pitch;
+				set => m_audioSource.pitch = value;
 			}
 
 			/// <summary>
@@ -161,8 +161,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float PanStereo
 			{
-				get => m_AudioSource.panStereo;
-				set => m_AudioSource.panStereo = value;
+				get => m_audioSource.panStereo;
+				set => m_audioSource.panStereo = value;
 			}
 
 			/// <summary>
@@ -170,8 +170,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float SpatialBlend
 			{
-				get => m_AudioSource.spatialBlend;
-				set => m_AudioSource.spatialBlend = value;
+				get => m_audioSource.spatialBlend;
+				set => m_audioSource.spatialBlend = value;
 			}
 
 			/// <summary>
@@ -179,8 +179,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float MaxDistance
 			{
-				get => m_AudioSource.maxDistance;
-				set => m_AudioSource.maxDistance = value;
+				get => m_audioSource.maxDistance;
+				set => m_audioSource.maxDistance = value;
 			}
 
 			/// <summary>
@@ -188,8 +188,8 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float DopplerLevel
 			{
-				get => m_AudioSource.dopplerLevel;
-				set => m_AudioSource.dopplerLevel = value;
+				get => m_audioSource.dopplerLevel;
+				set => m_audioSource.dopplerLevel = value;
 			}
 
 			/// <summary>
@@ -197,10 +197,10 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public bool MuteInSoundGroup
 			{
-				get => m_MuteInSoundGroup;
+				get => m_muteInSoundGroup;
 				set
 				{
-					m_MuteInSoundGroup = value;
+					m_muteInSoundGroup = value;
 					RefreshMute();
 				}
 			}
@@ -210,10 +210,10 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float VolumeInSoundGroup
 			{
-				get => m_VolumeInSoundGroup;
+				get => m_volumeInSoundGroup;
 				set
 				{
-					m_VolumeInSoundGroup = value;
+					m_volumeInSoundGroup = value;
 					RefreshVolume();
 				}
 			}
@@ -222,12 +222,12 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 获取当前是否正在播放。
 			/// </summary>
-			public bool IsPlaying => m_AudioSource && m_AudioSource.isPlaying;
+			public bool IsPlaying => m_audioSource && m_audioSource.isPlaying;
 
 			/// <summary>
 			/// 获取声音长度。
 			/// </summary>
-			public float Length => m_AudioSource && m_AudioSource.clip ? m_AudioSource.clip.length : 0f;
+			public float Length => m_audioSource && m_audioSource.clip ? m_audioSource.clip.length : 0f;
 
 
 			/// <summary>
@@ -237,32 +237,32 @@ namespace Hotfix.Framework.Sound
 			public void Init(SoundGroup soundGroup)
 			{
 				soundGroup.NotNull(nameof(soundGroup));
-				m_AssetModule = ModuleManager.GetModule<AssetModule>();
+				m_assetModule = ModuleManager.GetModule<AssetModule>();
 
-				m_SoundGroup       = soundGroup;
+				m_soundGroup       = soundGroup;
 				SerialId           = 0;
 				SoundAssetPath     = null;
-				m_SoundAsset       = null;
-				m_SoundAssetHandle = null;
+				m_soundAsset       = null;
+				m_soundAssetHandle = null;
 				Reset();
 			}
 
 			private void Awake()
 			{
-				m_AudioSource             = gameObject.GetOrAddComponent<AudioSource>();
-				m_AudioSource.playOnAwake = false;
-				m_AudioSource.rolloffMode = AudioRolloffMode.Custom;
+				m_audioSource             = gameObject.GetOrAddComponent<AudioSource>();
+				m_audioSource.playOnAwake = false;
+				m_audioSource.rolloffMode = AudioRolloffMode.Custom;
 			}
 
 			private void Update()
 			{
 				// 应用没有暂停，且声音没有播放，且声音资源存在，且播放位置大于等于声音长度，说明播放完成，则重置声音相关设置
-				if (!m_IsAppPause && !IsPlaying && m_AudioSource.clip && Time >= Length)
+				if (!m_isAppPause && !IsPlaying && m_audioSource.clip && Time >= Length)
 				{
-					FuLogger.LogInfo($"[SoundModule.SoundAgent] 声音 '{m_AudioSource.clip.name}' 播放完成!");
+					FuLogger.LogInfo($"[SoundModule.SoundAgent] 声音 '{m_audioSource.clip.name}' 播放完成!");
 					try
 					{
-						m_OnPlayEnd?.Invoke();
+						m_onPlayEnd?.Invoke();
 					}
 					finally
 					{
@@ -273,7 +273,7 @@ namespace Hotfix.Framework.Sound
 				}
 
 				// 声音绑定的实体存在，则更新声音位置
-				if (m_BindingEntityLogic)
+				if (m_bindingEntityLogic)
 					UpdateAgentPosition();
 			}
 
@@ -282,13 +282,13 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			private void UpdateAgentPosition()
 			{
-				if (!m_BindingEntityLogic.Available)
+				if (!m_bindingEntityLogic.Available)
 				{
 					Reset();
 					return;
 				}
 
-				transform.position = m_BindingEntityLogic.CachedTransform.position;
+				transform.position = m_bindingEntityLogic.CachedTransform.position;
 			}
 
 			/// <summary>
@@ -300,15 +300,15 @@ namespace Hotfix.Framework.Sound
 			internal bool SetSoundAsset(object soundAsset, AssetHandle soundAssetHandle)
 			{
 				Reset();
-				// 先校验资源类型：非 AudioClip 时不设置状态（m_SoundAsset/m_SoundAssetHandle 保持 null），
-				// 避免后续 Reset 因 m_SoundAsset 非空而调 UnloadAsset(null) 抛异常；句柄由调用方（SoundGroup）释放。
+				// 先校验资源类型：非 AudioClip 时不设置状态（m_soundAsset/m_soundAssetHandle 保持 null），
+				// 避免后续 Reset 因 m_soundAsset 非空而调 UnloadAsset(null) 抛异常；句柄由调用方（SoundGroup）释放。
 				var audioClip = soundAsset as AudioClip;
 				if (!audioClip) return false;
 
-				m_SoundAsset       = soundAsset;
-				m_SoundAssetHandle = soundAssetHandle;
+				m_soundAsset       = soundAsset;
+				m_soundAssetHandle = soundAssetHandle;
 				SetSoundAssetTime  = DateTime.UtcNow;
-				m_AudioSource.clip = audioClip;
+				m_audioSource.clip = audioClip;
 				return true;
 			}
 
@@ -318,8 +318,8 @@ namespace Hotfix.Framework.Sound
 			/// <param name="bindingEntity">声音绑定的实体。</param>
 			public void SetBindingEntity(Entity.Entity bindingEntity)
 			{
-				m_BindingEntityLogic = bindingEntity.Logic;
-				if (!m_BindingEntityLogic)
+				m_bindingEntityLogic = bindingEntity.Logic;
+				if (!m_bindingEntityLogic)
 				{
 					Reset();
 					return;
@@ -343,14 +343,14 @@ namespace Hotfix.Framework.Sound
 			public void Play(string assetPath, float fadeInSeconds, Action onPlayEnd = null)
 			{
 				var fadeToken = BeginFade();
-				m_AudioSource.Play();
+				m_audioSource.Play();
 				SoundAssetPath = assetPath;
-				m_OnPlayEnd    = onPlayEnd;
+				m_onPlayEnd    = onPlayEnd;
 
 				// 声音淡入
 				if (fadeInSeconds <= 0f) return;
-				var volume = m_AudioSource.volume;
-				m_AudioSource.volume = 0f;
+				var volume = m_audioSource.volume;
+				m_audioSource.volume = 0f;
 				FadeInAsync(volume, fadeInSeconds, fadeToken).Forget();
 			}
 
@@ -365,7 +365,7 @@ namespace Hotfix.Framework.Sound
 					FadeOutThenStopAsync(fadeOutSeconds, fadeToken).Forget();
 				else
 				{
-					m_AudioSource.Stop();
+					m_audioSource.Stop();
 					Reset(); // 停止后释放资源句柄，避免 bundle 残留（否则句柄持有到 agent 复用）
 				}
 			}
@@ -377,11 +377,11 @@ namespace Hotfix.Framework.Sound
 			public void Pause(float fadeOutSeconds)
 			{
 				var fadeToken = BeginFade();
-				m_VolumeWhenPause = m_AudioSource.volume;
+				m_volumeWhenPause = m_audioSource.volume;
 				if (fadeOutSeconds > 0f && gameObject.activeInHierarchy)
 					FadeOutThenPauseAsync(fadeOutSeconds, fadeToken).Forget();
 				else
-					m_AudioSource.Pause();
+					m_audioSource.Pause();
 			}
 
 			/// <summary>
@@ -391,11 +391,11 @@ namespace Hotfix.Framework.Sound
 			public void Resume(float fadeInSeconds)
 			{
 				var fadeToken = BeginFade();
-				m_AudioSource.UnPause();
+				m_audioSource.UnPause();
 				if (fadeInSeconds > 0f)
-					FadeInAsync(m_VolumeWhenPause, fadeInSeconds, fadeToken).Forget();
+					FadeInAsync(m_volumeWhenPause, fadeInSeconds, fadeToken).Forget();
 				else
-					m_AudioSource.volume = m_VolumeWhenPause;
+					m_audioSource.volume = m_volumeWhenPause;
 			}
 
 			/// <summary>
@@ -409,16 +409,16 @@ namespace Hotfix.Framework.Sound
 
 				// 先释放句柄再卸载资源（托管操作，即使组件已被 Unity teardown 销毁也执行）：
 				// 句柄不释放则 provider.RefCount 不为 0，UnloadAsset 的 TryUnloadUnusedAsset 永不生效
-				if (m_SoundAssetHandle != null)
+				if (m_soundAssetHandle != null)
 				{
-					m_SoundAssetHandle.Release();
-					m_SoundAssetHandle = null;
+					m_soundAssetHandle.Release();
+					m_soundAssetHandle = null;
 				}
 
-				if (m_SoundAsset != null)
+				if (m_soundAsset != null)
 				{
-					m_AssetModule.UnloadAsset(SoundAssetPath);
-					m_SoundAsset = null;
+					m_assetModule.UnloadAsset(SoundAssetPath);
+					m_soundAsset = null;
 				}
 				SoundAssetPath = null; // 清理陈旧路径，避免后续误用
 				SerialId       = 0;    // 清除序列编号：否则 StopSound(serialId) 会误匹配到已重置（未在播放）的代理
@@ -427,10 +427,10 @@ namespace Hotfix.Framework.Sound
 				if (this == null) return;
 
 				transform.localPosition = Vector3.zero;
-				m_AudioSource.clip      = null;
-				m_BindingEntityLogic    = null;
-				m_VolumeWhenPause       = 0f;
-				m_OnPlayEnd             = null;
+				m_audioSource.clip      = null;
+				m_bindingEntityLogic    = null;
+				m_volumeWhenPause       = 0f;
+				m_onPlayEnd             = null;
 
 				SetSoundAssetTime  = DateTime.MinValue;
 				Time               = 0;
@@ -449,12 +449,12 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 刷新静音设置。
 			/// </summary>
-			internal void RefreshMute() => Mute = m_SoundGroup.Mute || m_MuteInSoundGroup;
+			internal void RefreshMute() => Mute = m_soundGroup.Mute || m_muteInSoundGroup;
 
 			/// <summary>
 			/// 刷新音量设置。
 			/// </summary>
-			internal void RefreshVolume() => Volume = m_SoundGroup.Volume * m_VolumeInSoundGroup;
+			internal void RefreshVolume() => Volume = m_soundGroup.Volume * m_volumeInSoundGroup;
 
 
 			/// <summary>
@@ -462,11 +462,11 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			private void CancelFade()
 			{
-				if (m_FadeCts == null) return;
+				if (m_fadeCts == null) return;
 
-				m_FadeCts.Cancel();
-				m_FadeCts.Dispose();
-				m_FadeCts = null;
+				m_fadeCts.Cancel();
+				m_fadeCts.Dispose();
+				m_fadeCts = null;
 			}
 
 			/// <summary>
@@ -476,8 +476,8 @@ namespace Hotfix.Framework.Sound
 			private CancellationToken BeginFade()
 			{
 				CancelFade();
-				m_FadeCts = new CancellationTokenSource();
-				return m_FadeCts.Token;
+				m_fadeCts = new CancellationTokenSource();
+				return m_fadeCts.Token;
 			}
 
 			/// <summary>
@@ -512,7 +512,7 @@ namespace Hotfix.Framework.Sound
 			{
 				try
 				{
-					await FadeToVolumeAsync(m_AudioSource, volume, duration, token);
+					await FadeToVolumeAsync(m_audioSource, volume, duration, token);
 				}
 				catch (OperationCanceledException)
 				{
@@ -529,14 +529,14 @@ namespace Hotfix.Framework.Sound
 			{
 				try
 				{
-					await FadeToVolumeAsync(m_AudioSource, 0f, fadeOutSeconds, token);
+					await FadeToVolumeAsync(m_audioSource, 0f, fadeOutSeconds, token);
 				}
 				catch (OperationCanceledException)
 				{
 					return;
 				}
 
-				m_AudioSource.Stop();
+				m_audioSource.Stop();
 				Reset(); // 淡出完成后释放资源句柄
 			}
 
@@ -549,14 +549,14 @@ namespace Hotfix.Framework.Sound
 			{
 				try
 				{
-					await FadeToVolumeAsync(m_AudioSource, 0f, fadeOutSeconds, token);
+					await FadeToVolumeAsync(m_audioSource, 0f, fadeOutSeconds, token);
 				}
 				catch (OperationCanceledException)
 				{
 					return;
 				}
 
-				m_AudioSource.Pause();
+				m_audioSource.Pause();
 			}
 
 			/// <summary>
@@ -571,7 +571,7 @@ namespace Hotfix.Framework.Sound
 			/// <param name="isPause"></param>
 			private void OnApplicationPause(bool isPause)
 			{
-				m_IsAppPause = isPause;
+				m_isAppPause = isPause;
 				if (isPause)
 					Pause(0);
 				else

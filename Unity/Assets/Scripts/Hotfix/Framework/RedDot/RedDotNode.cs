@@ -94,13 +94,13 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 节点的子节点列表
 		/// </summary>
-		private readonly List<RedDotNode> m_Children = new();
+		private readonly List<RedDotNode> m_children = new();
 
 		/// <summary>
-		/// m_Children 的只读包装缓存（m_Children 变化时置空失效，下次 GetChildren 时重建），
+		/// m_children 的只读包装缓存（m_children 变化时置空失效，下次 GetChildren 时重建），
 		/// 避免子树递归遍历时每次调用都新分配一个 ReadOnlyCollection 包装器。
 		/// </summary>
-		private ReadOnlyCollection<RedDotNode> m_ChildrenReadOnlyCache;
+		private ReadOnlyCollection<RedDotNode> m_childrenReadOnlyCache;
 
 		#endregion
 
@@ -152,14 +152,14 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="child">子节点</param>
 		public void AddChild(RedDotNode child)
 		{
-			if (m_Children.Contains(child))
+			if (m_children.Contains(child))
 			{
 				FuLogger.LogWarning($"[RedDotNode] 无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
 				return;
 			}
 
-			m_Children.Add(child);
-			m_ChildrenReadOnlyCache = null;
+			m_children.Add(child);
+			m_childrenReadOnlyCache = null;
 		}
 
 		/// <summary>
@@ -168,8 +168,8 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="child">子节点</param>
 		public void RemoveChild(RedDotNode child)
 		{
-			if (m_Children.Remove(child))
-				m_ChildrenReadOnlyCache = null;
+			if (m_children.Remove(child))
+				m_childrenReadOnlyCache = null;
 		}
 
 		/// <summary>
@@ -236,7 +236,7 @@ namespace Hotfix.Framework.RedDot
 		private int ComputeChildrenSum()
 		{
 			var total = 0;
-			foreach (var child in m_Children)
+			foreach (var child in m_children)
 			{
 				total += child.TotalCount;
 			}
@@ -250,7 +250,7 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>存在 TotalCount > 0 的子节点返回 1，否则返回 0</returns>
 		private int ComputeChildrenAny()
 		{
-			foreach (var child in m_Children)
+			foreach (var child in m_children)
 			{
 				if (child.TotalCount > 0)
 					return 1;
@@ -271,8 +271,8 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>子节点的只读列表</returns>
 		public IReadOnlyList<RedDotNode> GetChildren()
 		{
-			// AsReadOnly 每次调用都会新建包装器（子树递归下分配可观），故缓存并随 m_Children 变化失效重建
-			return m_ChildrenReadOnlyCache ??= m_Children.AsReadOnly();
+			// AsReadOnly 每次调用都会新建包装器（子树递归下分配可观），故缓存并随 m_children 变化失效重建
+			return m_childrenReadOnlyCache ??= m_children.AsReadOnly();
 		}
 
 		/// <summary>
@@ -294,8 +294,8 @@ namespace Hotfix.Framework.RedDot
 			Calculator          = null;
 			TriggerEvents       = null;
 			OnTotalCountChanged = null;
-			m_Children.Clear();
-			m_ChildrenReadOnlyCache = null;
+			m_children.Clear();
+			m_childrenReadOnlyCache = null;
 		}
 	}
 }

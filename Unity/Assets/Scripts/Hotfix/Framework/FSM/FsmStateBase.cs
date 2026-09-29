@@ -7,7 +7,7 @@ namespace Hotfix.Framework.FSM
 	/// <summary>
 	/// 状态基类。
 	/// 功能：
-	///     1. 定义一个有限状态机状态的基本接口。包括初始化、进入、轮询、离开、销毁生命周期，以及状态切换。
+	///     1. 定义有限状态机状态的基本接口，包括初始化、进入、轮询、离开、销毁生命周期及状态切换。
 	/// </summary>
 	public abstract class FsmStateBase
 	{
@@ -15,7 +15,7 @@ namespace Hotfix.Framework.FSM
 		/// 所属有限状态机。
 		/// </summary>
 		protected Fsm Fsm { get; private set; }
-		
+
 		#region 生命周期
 
 		/// <summary>
@@ -75,9 +75,9 @@ namespace Hotfix.Framework.FSM
 			if (!typeof(FsmStateBase).IsAssignableFrom(state))
 				throw new InvalidOperationException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
 
-			if (Fsm is null) 
+			if (Fsm is null)
 				throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
-			
+
 			Fsm.ChangeState(state);
 		}
 

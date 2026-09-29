@@ -109,36 +109,36 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 链表范围。
 			/// </summary>
-			private readonly FuLinkedListRange<T> m_Range;
+			private readonly FuLinkedListRange<T> m_range;
 
 			/// <summary>
 			/// 当前结点。
 			/// </summary>
-			private LinkedListNode<T> m_Current;
+			private LinkedListNode<T> m_current;
 
 			/// <summary>
 			/// 当前结点的值。
 			/// </summary>
-			private T m_CurrentValue;
+			private T m_currentValue;
 
 			internal Enumerator(FuLinkedListRange<T> range)
 			{
 				if (!range.IsValid) throw new InvalidOperationException("[Enumerator]链表范围无效!");
 
-				m_Range        = range;
-				m_CurrentValue = default;
-				m_Current      = m_Range.First;
+				m_range        = range;
+				m_currentValue = default;
+				m_current      = m_range.First;
 			}
 
 			/// <summary>
 			/// 获取当前结点。
 			/// </summary>
-			public T Current => m_CurrentValue;
+			public T Current => m_currentValue;
 
 			/// <summary>
 			/// 获取当前的枚举数。
 			/// </summary>
-			object IEnumerator.Current => m_CurrentValue;
+			object IEnumerator.Current => m_currentValue;
 
 			/// <summary>
 			/// 清理枚举数。
@@ -151,11 +151,11 @@ namespace Hotfix.Framework.Core
 			/// <returns>返回下一个结点。</returns>
 			public bool MoveNext()
 			{
-				if (m_Current == null || m_Current == m_Range.End)
+				if (m_current == null || m_current == m_range.End)
 					return false;
 
-				m_CurrentValue = m_Current.Value;
-				m_Current      = m_Current.Next;
+				m_currentValue = m_current.Value;
+				m_current      = m_current.Next;
 
 				return true;
 			}
@@ -165,8 +165,8 @@ namespace Hotfix.Framework.Core
 			/// </summary>
 			void IEnumerator.Reset()
 			{
-				m_Current      = m_Range.First;
-				m_CurrentValue = default;
+				m_current      = m_range.First;
+				m_currentValue = default;
 			}
 		}
 	}

@@ -11,7 +11,7 @@ namespace Hotfix.Game.UI
 	{
 		/// <summary>
 		/// 初始化
-		/// </summary>  
+		/// </summary>
 		protected override void OnInit()
 		{
 			InitUIComp();
@@ -32,7 +32,7 @@ namespace Hotfix.Game.UI
 			// Example:Subscribe(XxxEventArgs.EventId, OnXxxEventHandler);
 		}
 
-		
+
 		/// <summary>
 		/// 界面打开
 		/// </summary>
@@ -40,7 +40,7 @@ namespace Hotfix.Game.UI
 		{
 			Refresh();
 		}
-		
+
 		/// <summary>
 		/// 界面关闭
 		/// </summary>
@@ -60,7 +60,7 @@ namespace Hotfix.Game.UI
 		}
 
 		#region 交互事件与ListItem渲染回调处理
-		
+
 		private void OnBtnCloseClick(EventContext ctx)
 		{
 			// todo

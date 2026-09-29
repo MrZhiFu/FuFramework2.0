@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Network
 			if (source is not byte[] reader) return false;
 
 			// packetLength
-			int offset       = 0;
+			var offset       = 0;
 			var packetLength = reader.ReadUInt(ref offset); //4
 			PacketLength = packetLength;
 			// operationType
@@ -61,31 +61,31 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 网络包长度
 		/// </summary>
-		private const int NetPacketLength = sizeof(uint);
+		private const int NET_PACKET_LENGTH = sizeof(uint);
 
 		/// <summary>
 		/// 操作消息类型
 		/// </summary>
-		private const int OperationTypeLength = sizeof(byte);
+		private const int OPERATION_TYPE_LENGTH = sizeof(byte);
 
 		/// <summary>
 		/// 消息压缩标记长度
 		/// </summary>
-		private const int NetZipFlagLength = sizeof(byte);
+		private const int NET_ZIP_FLAG_LENGTH = sizeof(byte);
 
 		/// <summary>
 		/// 消息码
 		/// </summary>
-		private const int NetCmdIdLength = sizeof(int);
+		private const int NET_CMD_ID_LENGTH = sizeof(int);
 
 		/// <summary>
 		/// 消息编号
 		/// </summary>
-		private const int NetUniqueIdLength = sizeof(int);
+		private const int NET_UNIQUE_ID_LENGTH = sizeof(int);
 
 		/// <summary>
 		/// 包头长度 2 + 1 + 1 + 4 + 4
 		/// </summary>
-		public ushort PacketHeaderLength => NetPacketLength + OperationTypeLength + NetZipFlagLength + NetUniqueIdLength + NetCmdIdLength;
+		public ushort PacketHeaderLength => NET_PACKET_LENGTH + OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
 	}
 }

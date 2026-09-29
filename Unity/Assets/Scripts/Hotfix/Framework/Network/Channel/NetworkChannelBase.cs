@@ -20,12 +20,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 默认心跳间隔
 		/// </summary>
-		private const float DefaultHeartBeatInterval = 30f;
+		private const float DEFAULT_HEART_BEAT_INTERVAL = 30f;
 
 		/// <summary>
 		/// 默认心跳丢失断开次数
 		/// </summary>
-		private const int DefaultMissHeartBeatCountByClose = 10;
+		private const int DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE = 10;
 
 		protected readonly FuLinkedList<MessageObject> PSendPacketPool;
 		protected readonly INetworkChannelHelper       PNetworkChannelHelper;
@@ -96,27 +96,27 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected bool PIsConnecting = false;
 
-		private bool m_Disposed;
-		private bool m_PActive;
+		private bool m_disposed;
+		private bool m_pActive;
 
 		/// <summary>
 		/// 网络是否激活
 		/// </summary>
 		protected bool PActive
 		{
-			get => m_PActive;
+			get => m_pActive;
 			set
 			{
-				if (m_PActive == value) return;
-				m_PActive = value;
+				if (m_pActive == value) return;
+				m_pActive = value;
 			}
 		}
 
-		private IPacketSendHeaderHandler    m_PacketSendHeaderHandler;
-		private IPacketSendBodyHandler      m_PacketSendBodyHandler;
-		private IPacketReceiveHeaderHandler m_PacketReceiveHeaderHandler;
-		private IPacketReceiveBodyHandler   m_PacketReceiveBodyHandler;
-		private IPacketHeartBeatHandler     m_PacketHeartBeatHandler;
+		private IPacketSendHeaderHandler    m_packetSendHeaderHandler;
+		private IPacketSendBodyHandler      m_packetSendBodyHandler;
+		private IPacketReceiveHeaderHandler m_packetReceiveHeaderHandler;
+		private IPacketReceiveBodyHandler   m_packetReceiveBodyHandler;
+		private IPacketHeartBeatHandler     m_packetHeartBeatHandler;
 
 		/// <summary>
 		/// 心跳状态的专用锁对象。
@@ -136,19 +136,19 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 关闭流程的专用锁对象（替代原先的 lock(this)，避免与外部对频道实例的加锁产生交叉锁序）。
 		/// </summary>
-		private readonly object m_CloseLock = new();
+		private readonly object m_closeLock = new();
 
-		protected readonly FuLinkedList<MessageObject> m_ExecutionMessageLinkedList = new();
+		protected readonly FuLinkedList<MessageObject> m_executionMessageLinkedList = new();
 
 		/// <summary>
 		/// 消息派发时复用的处理器列表，避免每收一包都新建 List 造成 GC。
 		/// </summary>
-		private readonly List<MessageHandlerAttribute> m_HandlerBuffer = new(8);
+		private readonly List<MessageHandlerAttribute> m_handlerBuffer = new(8);
 
 		/// <summary>
 		/// 复用列表是否正在使用中（用于处理派发重入，重入时回退为新建列表）。
 		/// </summary>
-		private bool m_HandlerBufferBusy;
+		private bool m_handlerBufferBusy;
 
 		/// <summary>
 		/// 频道生命周期事件类型。
@@ -182,7 +182,7 @@ namespace Hotfix.Framework.Network
 		/// 排水位置在 Update 活跃检查之前——保证 Close() 后入队的 Closed 事件必达。
 		/// 频道销毁后 Update 不再被调，未派发事件随本对象一并回收（丢弃，无泄漏）。
 		/// </summary>
-		private readonly Queue<LifecycleEvent> m_LifecycleEventQueue = new();
+		private readonly Queue<LifecycleEvent> m_lifecycleEventQueue = new();
 
 		/// <summary>
 		/// 将生命周期事件入队，由主线程 Update 排水时触发（封送，替代跨线程直接 Invoke）。
@@ -204,7 +204,7 @@ namespace Hotfix.Framework.Network
 
 			lock (PExecutionMessageLock)
 			{
-				m_LifecycleEventQueue.Enqueue(lifecycleEvent);
+				m_lifecycleEventQueue.Enqueue(lifecycleEvent);
 			}
 		}
 
@@ -220,8 +220,8 @@ namespace Hotfix.Framework.Network
 				LifecycleEvent lifecycleEvent;
 				lock (PExecutionMessageLock)
 				{
-					if (m_LifecycleEventQueue.Count == 0) break;
-					lifecycleEvent = m_LifecycleEventQueue.Dequeue();
+					if (m_lifecycleEventQueue.Count == 0) break;
+					lifecycleEvent = m_lifecycleEventQueue.Dequeue();
 				}
 
 				switch (lifecycleEvent.Type)
@@ -257,8 +257,8 @@ namespace Hotfix.Framework.Network
 			PNetworkChannelHelper                         = networkChannelHelper;
 			PEAddressFamily                               = EAddressFamily.Unknown;
 			PResetHeartBeatElapseSecondsWhenReceivePacket = false;
-			PHeartBeatInterval                            = DefaultHeartBeatInterval;
-			MissHeartBeatCountByClose                     = DefaultMissHeartBeatCountByClose;
+			PHeartBeatInterval                            = DEFAULT_HEART_BEAT_INTERVAL;
+			MissHeartBeatCountByClose                     = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			PSocket                                       = null;
 			PSendState                                    = new SendState();
 			PReceiveState                                 = new ReceiveState();
@@ -268,7 +268,7 @@ namespace Hotfix.Framework.Network
 			PReceivedPacketCount                          = 0;
 			PActive                                       = false;
 			PIsConnecting                                 = false;
-			m_Disposed                                    = false;
+			m_disposed                                    = false;
 			NetworkChannelConnected                       = null;
 			NetworkChannelClosed                          = null;
 			NetworkChannelMissHeartBeat                   = null;
@@ -368,27 +368,27 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息发送包头处理器
 		/// </summary>
-		public IPacketSendHeaderHandler PacketSendHeaderHandler => m_PacketSendHeaderHandler;
+		public IPacketSendHeaderHandler PacketSendHeaderHandler => m_packetSendHeaderHandler;
 
 		/// <summary>
 		/// 消息发送内容处理器
 		/// </summary>
-		public IPacketSendBodyHandler PacketSendBodyHandler => m_PacketSendBodyHandler;
+		public IPacketSendBodyHandler PacketSendBodyHandler => m_packetSendBodyHandler;
 
 		/// <summary>
 		/// 消息接收包头处理器
 		/// </summary>
-		public IPacketReceiveHeaderHandler PacketReceiveHeaderHandler => m_PacketReceiveHeaderHandler;
+		public IPacketReceiveHeaderHandler PacketReceiveHeaderHandler => m_packetReceiveHeaderHandler;
 
 		/// <summary>
 		/// 心跳消息处理器
 		/// </summary>
-		public IPacketHeartBeatHandler PacketHeartBeatHandler => m_PacketHeartBeatHandler;
+		public IPacketHeartBeatHandler PacketHeartBeatHandler => m_packetHeartBeatHandler;
 
 		/// <summary>
 		/// 消息接收内容处理器
 		/// </summary>
-		public IPacketReceiveBodyHandler PacketReceiveBodyHandler => m_PacketReceiveBodyHandler;
+		public IPacketReceiveBodyHandler PacketReceiveBodyHandler => m_packetReceiveBodyHandler;
 
 		/// <summary>
 		/// 消息压缩处理器
@@ -437,11 +437,11 @@ namespace Hotfix.Framework.Network
 				// 同时在锁内校验 First 是否为空，避免链表被清空后 RemoveFirst 抛异常冲出 ModuleManager.Update。
 				lock (PExecutionMessageLock)
 				{
-					var first = m_ExecutionMessageLinkedList.First;
+					var first = m_executionMessageLinkedList.First;
 					if (first == null) break;
 
 					messageObject = first.Value;
-					m_ExecutionMessageLinkedList.RemoveFirst();
+					m_executionMessageLinkedList.RemoveFirst();
 				}
 
 				try
@@ -467,12 +467,12 @@ namespace Hotfix.Framework.Network
 		{
 			// 处理器列表会被复制到复用缓冲区后再派发：派发期间用户代码可能注册/注销处理器，
 			// 直接遍历内部列表会抛 InvalidOperationException；复用缓冲区避免每包分配 List。
-			var reuseBuffer = !m_HandlerBufferBusy;
+			var reuseBuffer = !m_handlerBufferBusy;
 			List<MessageHandlerAttribute> handlers;
 			if (reuseBuffer)
 			{
-				m_HandlerBufferBusy = true;
-				handlers            = m_HandlerBuffer;
+				m_handlerBufferBusy = true;
+				handlers            = m_handlerBuffer;
 				ProtoMessageHandler.GetHandlers(messageObject.GetType(), handlers);
 			}
 			else
@@ -503,7 +503,7 @@ namespace Hotfix.Framework.Network
 				if (reuseBuffer)
 				{
 					handlers.Clear();
-					m_HandlerBufferBusy = false;
+					m_handlerBufferBusy = false;
 				}
 			}
 		}
@@ -593,7 +593,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHandler(IPacketSendHeaderHandler handler)
 		{
 			handler.NotNull(nameof(handler));
-			m_PacketSendHeaderHandler = handler;
+			m_packetSendHeaderHandler = handler;
 		}
 
 
@@ -604,7 +604,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHandler(IPacketSendBodyHandler handler)
 		{
 			handler.NotNull(nameof(handler));
-			m_PacketSendBodyHandler = handler;
+			m_packetSendBodyHandler = handler;
 		}
 
 		/// <summary>
@@ -614,7 +614,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHandler(IPacketReceiveHeaderHandler handler)
 		{
 			handler.NotNull(nameof(handler));
-			m_PacketReceiveHeaderHandler = handler;
+			m_packetReceiveHeaderHandler = handler;
 		}
 
 		/// <summary>
@@ -624,7 +624,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHandler(IPacketReceiveBodyHandler handler)
 		{
 			handler.NotNull(nameof(handler));
-			m_PacketReceiveBodyHandler = handler;
+			m_packetReceiveBodyHandler = handler;
 		}
 
 		/// <summary>
@@ -644,7 +644,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler)
 		{
 			handler.NotNull(nameof(handler));
-			m_PacketHeartBeatHandler = handler;
+			m_packetHeartBeatHandler = handler;
 			if (handler.HeartBeatInterval > 0)
 			{
 				PHeartBeatInterval = handler.HeartBeatInterval;
@@ -814,7 +814,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public virtual void Close()
 		{
-			lock (m_CloseLock)
+			lock (m_closeLock)
 			{
 				if (PSocket == null) return;
 				PActive = false;
@@ -840,15 +840,15 @@ namespace Hotfix.Framework.Network
 				PReceivedPacketCount = 0;
 			}
 
-			// 以下清理放在 m_CloseLock 之外：ProcessSend 会先持有 PSendPacketPool，
-			// 其中的错误回调可能再次进入 Close，若这里持 m_CloseLock 再抢 PSendPacketPool，
+			// 以下清理放在 m_closeLock 之外：ProcessSend 会先持有 PSendPacketPool，
+			// 其中的错误回调可能再次进入 Close，若这里持 m_closeLock 再抢 PSendPacketPool，
 			// 两条路径锁序相反会形成 ABBA 死锁。
 			lock (PSendPacketPool) PSendPacketPool.Clear();
 			lock (PHeartBeatLock) PHeartBeatState.Reset(true);
 
 			// 断线/销毁时终结所有挂起的 RPC 请求，否则 await 会永久悬挂。
 			PRpcState.Dispose();
-			lock (PExecutionMessageLock) m_ExecutionMessageLinkedList.Clear();
+			lock (PExecutionMessageLock) m_executionMessageLinkedList.Clear();
 		}
 
 		/// <summary>
@@ -926,7 +926,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="disposing">释放资源标记。</param>
 		private void Dispose(bool disposing)
 		{
-			if (m_Disposed) return;
+			if (m_disposed) return;
 
 			if (disposing)
 			{
@@ -935,7 +935,7 @@ namespace Hotfix.Framework.Network
 				PReceiveState.Dispose();
 			}
 
-			m_Disposed = true;
+			m_disposed = true;
 		}
 
 		/// <summary>

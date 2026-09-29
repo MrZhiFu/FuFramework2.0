@@ -6,12 +6,12 @@ namespace Hotfix.Framework.Download
 	/// 下载任务。
 	/// 功能：
 	///     1. 继承于任务池的任务基类，这样可使用任务池优化下载任务。
-	///     1. 单个下载任务，存储了一次下载的任务信息，包括序列编号、状态、下载后存放全路径、原始下载地址、将缓冲区写入磁盘的临界大小、下载超时时长。
+	///     2. 单个下载任务，存储了一次下载的任务信息，包括序列编号、状态、下载后存放全路径、原始下载地址、将缓冲区写入磁盘的临界大小、下载超时时长。
 	/// </summary>
 	internal sealed class DownloadTask : TaskBase
 	{
 		/// 下载任务的序列编号
-		private static int m_Serial;
+		private static int m_serial;
 
 		/// <summary>
 		/// 获取或设置下载任务的状态。
@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Download
 		public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
 		{
 			var downloadTask = ReferencePool.Acquire<DownloadTask>();
-			downloadTask.Initialize(++m_Serial, tag, priority, userData);
+			downloadTask.Initialize(++m_serial, tag, priority, userData);
 			downloadTask.DownloadedFullPath = downloadedFullPath;
 			downloadTask.DownloadUri        = downloadUri;
 			downloadTask.FlushSize          = flushSize;

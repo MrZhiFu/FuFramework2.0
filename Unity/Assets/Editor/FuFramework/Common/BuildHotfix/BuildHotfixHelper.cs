@@ -16,32 +16,32 @@ namespace FuFramework.Core.Editor
 	public static class BuildHotfixHelper
 	{
 		// Unity代码生成dll位置
-		private const string HotFixAssembliesDir = "Library/ScriptAssemblies";
+		private const string HOT_FIX_ASSEMBLIES_DIR = "Library/ScriptAssemblies";
 
 		// 热更DLL名称数组
 		private static readonly string[] HotfixDlls = { "Hotfix.dll" };
 
 		// 热更代码存放位置
-		private const string CodeDir    = "Assets/Bundles/Code/";
+		private const string CODE_DIR    = "Assets/Bundles/Code/";
 		private const string AOTCodeDir = "Assets/Bundles/AOTCode/";
-		
+
 		/// <summary>
 		/// 复制热更新代码Dll到Assets/Bundles/Code目录
 		/// </summary>
 		[MenuItem("FuFramework/Build/Copy Hotfix Code(复制热更新代码DLL到Assets>Bundles>Code)", false, FuMenuPriority.BUILD_HOTFIX_COPY_HOTFIX_CODE)]
 		public static void CopyHotfixCode()
 		{
-			if (!Directory.Exists(CodeDir))
+			if (!Directory.Exists(CODE_DIR))
 			{
-				Directory.CreateDirectory(CodeDir);
+				Directory.CreateDirectory(CODE_DIR);
 			}
 
 			foreach (var hotfix in HotfixDlls)
 			{
 				// 源DLL相对路径，相对于Unity工程根目录。Unity编辑器运行时，当前工作目录自动设置为项目根目录。
-				var srcRelativePath = Path.Combine(HotFixAssembliesDir, hotfix);
-				File.Copy(srcRelativePath, Path.Combine(CodeDir,        $"{hotfix}.bytes"), true);
-				Debug.Log($"复制热更代码DLL--{srcRelativePath}到{CodeDir}完成");
+				var srcRelativePath = Path.Combine(HOT_FIX_ASSEMBLIES_DIR, hotfix);
+				File.Copy(srcRelativePath, Path.Combine(CODE_DIR,        $"{hotfix}.bytes"), true);
+				Debug.Log($"复制热更代码DLL--{srcRelativePath}到{CODE_DIR}完成");
 			}
 
 			AssetDatabase.Refresh();
@@ -76,7 +76,7 @@ namespace FuFramework.Core.Editor
 				Debug.Log(stringBuilder);
 			}
 
-			Debug.Log($"复制AOT DLL到{CodeDir}完成");
+			Debug.Log($"复制AOT DLL到{CODE_DIR}完成");
 			AssetDatabase.Refresh();
 		}
 	}

@@ -11,11 +11,11 @@ namespace Hotfix.Framework.Core
 	/// 实现原理：
 	///     主要是基于任务管理的模式，通过在Update中轮询来维护任务的代理状态，从而高效地调度和管理任务。以下是实现原理说明：
 	///
-	/// m_FreeAgentStack：使用栈结构存放空闲的可用任务代理，以便快速获取和释放任务代理。栈的性质使得常见的“后进先出”操作易于实现，能够有效管理内存。
-	/// m_WaitingTaskList：这是一个链表，用于存放正在等待执行的任务。这种设计允许灵活的添加和移除任务，同时保持任务的顺序。
-	/// m_WorkingAgentList：同样是一个链表，用于存放当前正在工作的任务代理。可以用来监控哪些任务正在执行。
+	/// m_freeAgentStack：使用栈结构存放空闲的可用任务代理，以便快速获取和释放任务代理。栈的性质使得常见的“后进先出”操作易于实现，能够有效管理内存。
+	/// m_waitingTaskList：这是一个链表，用于存放正在等待执行的任务。这种设计允许灵活的添加和移除任务，同时保持任务的顺序。
+	/// m_workingAgentList：同样是一个链表，用于存放当前正在工作的任务代理。可以用来监控哪些任务正在执行。
 	///
-	/// 任务调度：TaskPool 通过管理这几个集合来调度任务。例如，当有新的任务需要执行时，从 m_FreeAgentStack 中取出一个任务代理，将其添加到 m_WorkingAgentList 中，同时将其添加到 m_WaitingTaskList 中直到其完成。
+	/// 任务调度：TaskPool 通过管理这几个集合来调度任务。例如，当有新的任务需要执行时，从 m_freeAgentStack 中取出一个任务代理，将其添加到 m_workingAgentList 中，同时将其添加到 m_waitingTaskList 中直到其完成。
 	/// 资源复用：通过使用栈来管理空闲的任务代理，TaskPool 可以有效地复用任务代理，减少了频繁分配和释放内存的开销，这在需要频繁创建和销毁任务的游戏环境中尤为重要。
 	///
 	/// 运用举例：如下一些耗时的异步操作，都可以使用TaskPool来管理：
@@ -27,25 +27,25 @@ namespace Hotfix.Framework.Core
 	public sealed class TaskPool<T> where T : TaskBase
 	{
 		/// 空闲的可用任务代理栈集合
-		private readonly Stack<ITaskAgent<T>> m_FreeAgentStack;
+		private readonly Stack<ITaskAgent<T>> m_freeAgentStack;
 
 		/// 等待中的任务链表集合
-		private readonly FuLinkedList<T> m_WaitingTaskList;
+		private readonly FuLinkedList<T> m_waitingTaskList;
 
 		/// 工作中任务代理链表集合
-		private readonly FuLinkedList<ITaskAgent<T>> m_WorkingAgentList;
+		private readonly FuLinkedList<ITaskAgent<T>> m_workingAgentList;
 
 		/// <summary>
 		/// 批量移除时的复用任务快照缓冲。
 		/// 移除会 ReferencePool.Recycle → task.Clear()（实现方/用户代码），其可能重入 AddTask/RemoveTask
 		/// 修改本池容器；先快照并清空容器再逐个回收，避免「遍历中修改容器」。复用字段避免每次分配。
 		/// </summary>
-		private readonly List<T> m_TempTaskList = new();
+		private readonly List<T> m_tempTaskList = new();
 
 		/// <summary>
-		/// 批量移除时的复用代理快照缓冲（用途同 <see cref="m_TempTaskList"/>）。
+		/// 批量移除时的复用代理快照缓冲（用途同 <see cref="m_tempTaskList"/>）。
 		/// </summary>
-		private readonly List<ITaskAgent<T>> m_TempAgentList = new();
+		private readonly List<ITaskAgent<T>> m_tempAgentList = new();
 
 		/// <summary>
 		/// 初始化任务池的新实例。
@@ -54,9 +54,9 @@ namespace Hotfix.Framework.Core
 		{
 			Paused = false;
 
-			m_FreeAgentStack   = new Stack<ITaskAgent<T>>();
-			m_WaitingTaskList  = new FuLinkedList<T>();
-			m_WorkingAgentList = new FuLinkedList<ITaskAgent<T>>();
+			m_freeAgentStack   = new Stack<ITaskAgent<T>>();
+			m_waitingTaskList  = new FuLinkedList<T>();
+			m_workingAgentList = new FuLinkedList<ITaskAgent<T>>();
 		}
 
 		/// <summary>
@@ -91,17 +91,17 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 获取可用任务代理数量。
 		/// </summary>
-		public int FreeAgentCount => m_FreeAgentStack.Count;
+		public int FreeAgentCount => m_freeAgentStack.Count;
 
 		/// <summary>
 		/// 获取工作中任务代理数量。
 		/// </summary>
-		public int WorkingAgentCount => m_WorkingAgentList.Count;
+		public int WorkingAgentCount => m_workingAgentList.Count;
 
 		/// <summary>
 		/// 获取等待任务数量。
 		/// </summary>
-		public int WaitingTaskCount => m_WaitingTaskList.Count;
+		public int WaitingTaskCount => m_waitingTaskList.Count;
 
 		/// <summary>
 		/// 任务池轮询。
@@ -125,7 +125,7 @@ namespace Hotfix.Framework.Core
 
 			while (FreeAgentCount > 0)
 			{
-				m_FreeAgentStack.Pop().Shutdown();
+				m_freeAgentStack.Pop().Shutdown();
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace Hotfix.Framework.Core
 			if (agent == null) throw new InvalidOperationException("[TaskPool] 任务代理为空.");
 
 			agent.Initialize();
-			m_FreeAgentStack.Push(agent);
+			m_freeAgentStack.Push(agent);
 		}
 
 		/// <summary>
@@ -148,7 +148,7 @@ namespace Hotfix.Framework.Core
 		/// <returns>任务的信息。</returns>
 		public TaskInfo GetTaskInfo(int serialId)
 		{
-			foreach (var workingAgent in m_WorkingAgentList)
+			foreach (var workingAgent in m_workingAgentList)
 			{
 				var workingTask = workingAgent.Task;
 				if (workingTask.SerialId != serialId) continue;
@@ -156,7 +156,7 @@ namespace Hotfix.Framework.Core
 									workingTask.Description);
 			}
 
-			foreach (var waitingTask in m_WaitingTaskList)
+			foreach (var waitingTask in m_waitingTaskList)
 			{
 				if (waitingTask.SerialId != serialId) continue;
 				return new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority, waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
@@ -188,7 +188,7 @@ namespace Hotfix.Framework.Core
 
 			results.Clear();
 
-			foreach (var workingAgent in m_WorkingAgentList)
+			foreach (var workingAgent in m_workingAgentList)
 			{
 				var workingTask = workingAgent.Task;
 				if (workingTask.Tag != tag) continue;
@@ -196,7 +196,7 @@ namespace Hotfix.Framework.Core
 										 workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
 			}
 
-			foreach (var waitingTask in m_WaitingTaskList)
+			foreach (var waitingTask in m_waitingTaskList)
 			{
 				if (waitingTask.Tag != tag) continue;
 				results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
@@ -211,15 +211,15 @@ namespace Hotfix.Framework.Core
 		public TaskInfo[] GetAllTaskInfos()
 		{
 			var index   = 0;
-			var results = new TaskInfo[m_WorkingAgentList.Count + m_WaitingTaskList.Count];
-			foreach (var workingAgent in m_WorkingAgentList)
+			var results = new TaskInfo[m_workingAgentList.Count + m_waitingTaskList.Count];
+			foreach (var workingAgent in m_workingAgentList)
 			{
 				var workingTask = workingAgent.Task;
 				results[index++] = new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
 												workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
 			}
 
-			foreach (var waitingTask in m_WaitingTaskList)
+			foreach (var waitingTask in m_waitingTaskList)
 			{
 				results[index++] = new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
 												waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
@@ -238,14 +238,14 @@ namespace Hotfix.Framework.Core
 
 			results.Clear();
 
-			foreach (var workingAgent in m_WorkingAgentList)
+			foreach (var workingAgent in m_workingAgentList)
 			{
 				var workingTask = workingAgent.Task;
 				results.Add(new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
 										 workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
 			}
 
-			foreach (var waitingTask in m_WaitingTaskList)
+			foreach (var waitingTask in m_waitingTaskList)
 			{
 				results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
 										 waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
@@ -258,7 +258,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="task">要增加的任务。</param>
 		public void AddTask(T task)
 		{
-			var current = m_WaitingTaskList.Last;
+			var current = m_waitingTaskList.Last;
 			while (current != null)
 			{
 				if (task.Priority <= current.Value.Priority) break;
@@ -266,9 +266,9 @@ namespace Hotfix.Framework.Core
 			}
 
 			if (current != null)
-				m_WaitingTaskList.AddAfter(current, task);
+				m_waitingTaskList.AddAfter(current, task);
 			else
-				m_WaitingTaskList.AddFirst(task);
+				m_waitingTaskList.AddFirst(task);
 		}
 
 		/// <summary>
@@ -280,16 +280,16 @@ namespace Hotfix.Framework.Core
 		{
 			// 手工结点遍历（不用 foreach 枚举器）：回收用户代码可能重入修改容器，枚举器会失效。
 			// 先「摘链」再「回收」：摘链后本方法不再触碰容器，重入的增删不会与本方法交叉。
-			for (var node = m_WaitingTaskList.First; node != null; node = node.Next)
+			for (var node = m_waitingTaskList.First; node != null; node = node.Next)
 			{
 				var task = node.Value;
 				if (task.SerialId != serialId) continue;
-				m_WaitingTaskList.Remove(node);
+				m_waitingTaskList.Remove(node);
 				SafeRecycle(task);
 				return true;
 			}
 
-			var currentWorkingAgent = m_WorkingAgentList.First;
+			var currentWorkingAgent = m_workingAgentList.First;
 			while (currentWorkingAgent != null)
 			{
 				var next         = currentWorkingAgent.Next;
@@ -299,8 +299,8 @@ namespace Hotfix.Framework.Core
 				if (task.SerialId == serialId)
 				{
 					workingAgent.Reset();
-					m_FreeAgentStack.Push(workingAgent);
-					m_WorkingAgentList.Remove(currentWorkingAgent);
+					m_freeAgentStack.Push(workingAgent);
+					m_workingAgentList.Remove(currentWorkingAgent);
 					SafeRecycle(task);
 					return true;
 				}
@@ -320,14 +320,14 @@ namespace Hotfix.Framework.Core
 		{
 			var count = 0;
 
-			var currentWaitingTask = m_WaitingTaskList.First;
+			var currentWaitingTask = m_waitingTaskList.First;
 			while (currentWaitingTask != null)
 			{
 				var next = currentWaitingTask.Next;
 				var task = currentWaitingTask.Value;
 				if (task.Tag == tag)
 				{
-					m_WaitingTaskList.Remove(currentWaitingTask);
+					m_waitingTaskList.Remove(currentWaitingTask);
 					SafeRecycle(task);
 					count++;
 				}
@@ -335,7 +335,7 @@ namespace Hotfix.Framework.Core
 				currentWaitingTask = next;
 			}
 
-			var currentWorkingAgent = m_WorkingAgentList.First;
+			var currentWorkingAgent = m_workingAgentList.First;
 			while (currentWorkingAgent != null)
 			{
 				var next         = currentWorkingAgent.Next;
@@ -344,8 +344,8 @@ namespace Hotfix.Framework.Core
 				if (task.Tag == tag)
 				{
 					workingAgent.Reset();
-					m_FreeAgentStack.Push(workingAgent);
-					m_WorkingAgentList.Remove(currentWorkingAgent);
+					m_freeAgentStack.Push(workingAgent);
+					m_workingAgentList.Remove(currentWorkingAgent);
 					SafeRecycle(task);
 					count++;
 				}
@@ -362,46 +362,46 @@ namespace Hotfix.Framework.Core
 		/// <returns>移除任务的数量。</returns>
 		public int RemoveAllTasks()
 		{
-			var count = m_WaitingTaskList.Count + m_WorkingAgentList.Count;
+			var count = m_waitingTaskList.Count + m_workingAgentList.Count;
 			if (count == 0) return 0;
 
 			// 先快照并清空容器，再逐个回收：ReferencePool.Recycle → task.Clear() 是实现方(用户)代码，
 			// 可能经同步延续重入 AddTask/RemoveTask 修改容器；边遍历边回收会「遍历中修改容器」，
 			// 且首个任务抛异常会中断其余任务与代理的回收（回收语义不单调）。
-			m_TempTaskList.Clear();
-			for (var node = m_WaitingTaskList.First; node != null; node = node.Next)
+			m_tempTaskList.Clear();
+			for (var node = m_waitingTaskList.First; node != null; node = node.Next)
 			{
-				m_TempTaskList.Add(node.Value);
+				m_tempTaskList.Add(node.Value);
 			}
 
-			m_WaitingTaskList.Clear();
+			m_waitingTaskList.Clear();
 
-			m_TempAgentList.Clear();
-			for (var node = m_WorkingAgentList.First; node != null; node = node.Next)
+			m_tempAgentList.Clear();
+			for (var node = m_workingAgentList.First; node != null; node = node.Next)
 			{
-				m_TempAgentList.Add(node.Value);
+				m_tempAgentList.Add(node.Value);
 			}
 
-			m_WorkingAgentList.Clear();
+			m_workingAgentList.Clear();
 
-			for (var i = 0; i < m_TempTaskList.Count; i++)
+			for (var i = 0; i < m_tempTaskList.Count; i++)
 			{
-				SafeRecycle(m_TempTaskList[i]);
+				SafeRecycle(m_tempTaskList[i]);
 			}
 
-			m_TempTaskList.Clear();
+			m_tempTaskList.Clear();
 
-			for (var i = 0; i < m_TempAgentList.Count; i++)
+			for (var i = 0; i < m_tempAgentList.Count; i++)
 			{
-				var workingAgent = m_TempAgentList[i];
+				var workingAgent = m_tempAgentList[i];
 				// 先取任务再 Reset(Reset 会清空 agent.Task)，随后归还空闲栈
 				var task = workingAgent.Task;
 				workingAgent.Reset();
-				m_FreeAgentStack.Push(workingAgent);
+				m_freeAgentStack.Push(workingAgent);
 				SafeRecycle(task);
 			}
 
-			m_TempAgentList.Clear();
+			m_tempAgentList.Clear();
 
 			return count;
 		}
@@ -413,7 +413,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
 		private void _ProcessRunningTasks(float deltaTime, float unscaledDeltaTime)
 		{
-			var current = m_WorkingAgentList.First;
+			var current = m_workingAgentList.First;
 
 			// current.List != null 表示该结点仍挂在工作链表中：Update/Reset 等实现方(用户)代码可能同步经
 			// RemoveTask/RemoveTasks/RemoveAllTasks 摘除结点（_ReleaseNode 会把 Value 置空并回缓存复用），
@@ -444,8 +444,8 @@ namespace Hotfix.Framework.Core
 				}
 
 				agent.Reset();
-				m_FreeAgentStack.Push(agent);
-				m_WorkingAgentList.Remove(current);
+				m_freeAgentStack.Push(agent);
+				m_workingAgentList.Remove(current);
 				SafeRecycle(task);
 				current = next;
 			}
@@ -456,13 +456,13 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void _ProcessWaitingTasks()
 		{
-			var current = m_WaitingTaskList.First;
+			var current = m_waitingTaskList.First;
 
 			// current.List != null 表示该结点仍挂在等待链表中；若迭代途中结点被同步归还(见下方说明)而摘链，则直接结束本轮推进。
 			while (current != null && current.List != null && FreeAgentCount > 0)
 			{
-				var agent     = m_FreeAgentStack.Pop();
-				var agentNode = m_WorkingAgentList.AddLast(agent);
+				var agent     = m_freeAgentStack.Pop();
+				var agentNode = m_workingAgentList.AddLast(agent);
 				var task      = current.Value;
 				var next      = current.Next;
 				var status    = agent.Start(task);
@@ -480,8 +480,8 @@ namespace Hotfix.Framework.Core
 					if (agentNode.List != null)
 					{
 						agent.Reset();
-						m_FreeAgentStack.Push(agent);
-						m_WorkingAgentList.Remove(agentNode);
+						m_freeAgentStack.Push(agent);
+						m_workingAgentList.Remove(agentNode);
 					}
 
 					current = next;
@@ -495,8 +495,8 @@ namespace Hotfix.Framework.Core
 					// 避免重复压入空闲栈或对已摘链结点 Remove(抛异常)。
 					if (agentNode.List != null)
 					{
-						m_FreeAgentStack.Push(agent);
-						m_WorkingAgentList.Remove(agentNode);
+						m_freeAgentStack.Push(agent);
+						m_workingAgentList.Remove(agentNode);
 					}
 				}
 
@@ -505,7 +505,7 @@ namespace Hotfix.Framework.Core
 				// 结点仍挂在等待链表中才摘链：上面的 Reset 路径是用户代码，可能已把它摘除，
 				// 对已摘链结点 Remove 会抛 InvalidOperationException 并逃逸到无保护的 ModuleManager.Update。
 				if (shouldRemoveWaiting && current.List != null)
-					m_WaitingTaskList.Remove(current);
+					m_waitingTaskList.Remove(current);
 
 				if (status is EStartTaskStatus.Done or EStartTaskStatus.UnknownError)
 					SafeRecycle(task);

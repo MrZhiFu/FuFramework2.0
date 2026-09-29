@@ -45,22 +45,22 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 每秒更新累计时间
 		/// </summary>
-		private float m_PerSecondUpdateTimer;
+		private float m_perSecondUpdateTimer;
 
 		/// <summary>
 		/// 重启流程的生命周期取消源：GameDriven 销毁（OnDispose）时取消，重启链据此中止（生命周期所有者）。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_RestartCancellation = new();
+		private readonly LifecycleCancellationSource m_restartCancellation = new();
 
 		/// <summary>
 		/// 是否正在重启中（重入守卫：重启流程可跨帧，期间重复请求直接忽略，避免并发跑多轮 Dispose/启动流程）。
 		/// </summary>
-		private bool m_IsRestarting;
+		private bool m_isRestarting;
 
 		/// <summary>
 		/// 是否已释放（幂等哨兵）：QuitGame 与 OnDispose 都可能触发模块释放，保证只释放一次。
 		/// </summary>
-		private bool m_IsDisposed;
+		private bool m_isDisposed;
 
 		/// <summary>
 		/// 驱动框架模块帧更新
@@ -71,10 +71,10 @@ namespace Hotfix.Framework.Core
 
 			// 每秒驱动用无缩放时间：暂停（timeScale = 0）时仍需触发（心跳/超时类逻辑），
 			// 且用 while 补齐卡顿跨过的整数秒，避免漏触发。
-			m_PerSecondUpdateTimer += Time.unscaledDeltaTime;
-			while (m_PerSecondUpdateTimer >= 1f)
+			m_perSecondUpdateTimer += Time.unscaledDeltaTime;
+			while (m_perSecondUpdateTimer >= 1f)
 			{
-				m_PerSecondUpdateTimer -= 1f;
+				m_perSecondUpdateTimer -= 1f;
 				OnPerSecondUpdate?.Invoke();
 			}
 		}
@@ -101,9 +101,9 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void DisposeModulesOnce()
 		{
-			if (m_IsDisposed) return;
+			if (m_isDisposed) return;
 
-			m_IsDisposed = true;
+			m_isDisposed = true;
 
 			var disposeModules = DisposeModules;
 			DisposeModules = null;
@@ -116,8 +116,8 @@ namespace Hotfix.Framework.Core
 		protected override void OnDispose()
 		{
 			// 先取消重启链：生命周期已结束，在途重启流程（可能停在排水等待中）不得继续重跑启动流程
-			m_RestartCancellation.Cancel();
-			m_RestartCancellation.Dispose();
+			m_restartCancellation.Cancel();
+			m_restartCancellation.Dispose();
 
 			DisposeModulesOnce();
 
@@ -147,7 +147,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void RestartGame()
 		{
-			if (m_IsDisposed || m_IsRestarting) return;
+			if (m_isDisposed || m_isRestarting) return;
 			RestartGameAsync().Forget();
 		}
 
@@ -173,13 +173,13 @@ namespace Hotfix.Framework.Core
 		/// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期；
 		/// 随后 ReferencePool.ClearAll 释放各引用池的闲置对象（保留类型条目与计数，迟到 Recycle 仍自洽），
 		/// 为新一轮生命周期回收内存。
-		/// 生命周期所有者：m_RestartCancellation 持有本轮 Token，OnDispose 取消它使本链中止。
+		/// 生命周期所有者：m_restartCancellation 持有本轮 Token，OnDispose 取消它使本链中止。
 		/// </summary>
 		private async UniTask RestartGameAsync()
 		{
-			var cancellationToken = m_RestartCancellation.Token;
+			var cancellationToken = m_restartCancellation.Token;
 
-			m_IsRestarting = true;
+			m_isRestarting = true;
 			try
 			{
 				DisposeModulesOnce();
@@ -200,7 +200,7 @@ namespace Hotfix.Framework.Core
 			}
 			finally
 			{
-				m_IsRestarting = false;
+				m_isRestarting = false;
 			}
 		}
 	}

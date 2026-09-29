@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Core
 			public static class Xor
 			{
 				/// 快速加密的长度
-				private const int QuickEncryptLength = 220;
+				private const int QUICK_ENCRYPT_LENGTH = 220;
 
 				/// <summary>
 				/// 将 bytes 使用 code 做异或运算的快速版本。
@@ -24,14 +24,14 @@ namespace Hotfix.Framework.Core
 				/// <param name="bytes">原始二进制流。</param>
 				/// <param name="code">异或二进制流。</param>
 				/// <returns>异或后的二进制流。</returns>
-				public static byte[] GetQuickXorBytes(byte[] bytes, byte[] code) => GetXorBytes(bytes, 0, QuickEncryptLength, code);
+				public static byte[] GetQuickXorBytes(byte[] bytes, byte[] code) => GetXorBytes(bytes, 0, QUICK_ENCRYPT_LENGTH, code);
 
 				/// <summary>
 				/// 将 bytes 使用 code 做异或运算的快速版本。此方法将复用并改写传入的 bytes 作为返回值，而不额外分配内存空间。
 				/// </summary>
 				/// <param name="bytes">原始及异或后的二进制流。</param>
 				/// <param name="code">异或二进制流。</param>
-				public static void GetQuickSelfXorBytes(byte[] bytes, byte[] code) => GetSelfXorBytes(bytes, 0, QuickEncryptLength, code);
+				public static void GetQuickSelfXorBytes(byte[] bytes, byte[] code) => GetSelfXorBytes(bytes, 0, QUICK_ENCRYPT_LENGTH, code);
 
 				/// <summary>
 				/// 将 bytes 使用 code 做异或运算。

@@ -24,42 +24,42 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 数据根目录
 		/// </summary>
-		public const string DirRoot = "GameData";
+		public const string DIR_ROOT = "GameData";
 
 		/// <summary>
 		/// 默认数据存储文件名
 		/// </summary>
-		private const string DefaultFileName = "DefaultData";
+		private const string DEFAULT_FILE_NAME = "DefaultData";
 
 		/// <summary>
 		/// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例
 		/// </summary>
-		private readonly Dictionary<string, StorageHelper> m_Helpers = new();
+		private readonly Dictionary<string, StorageHelper> m_helpers = new();
 
 		/// <summary>
 		/// 是否启用自动保存
 		/// </summary>
-		private bool m_EnableAutoSave;
+		private bool m_enableAutoSave;
 
 		/// <summary>
 		/// 自动保存间隔(秒, 默认5分钟)
 		/// </summary>
-		private float m_AutoSaveInterval;
+		private float m_autoSaveInterval;
 
 		/// <summary>
 		/// 是否启用加密
 		/// </summary>
-		private bool m_EnableEncryption;
+		private bool m_enableEncryption;
 
 		/// <summary>
 		/// 加密密钥
 		/// </summary>
-		private string m_EncryptKey;
+		private string m_encryptKey;
 
 		/// <summary>
 		/// 获取所有本地存储数据项的数量。
 		/// </summary>
-		public int Count => m_Helpers.Count;
+		public int Count => m_helpers.Count;
 
 
 		/// <summary>
@@ -70,19 +70,19 @@ namespace Hotfix.Framework.Storage
 			Instance = this;
 
 			// 读取系统配置
-			m_EnableAutoSave   = GameSetting.Instance.EnableAutoSave;
-			m_AutoSaveInterval = GameSetting.Instance.AutoSaveInterval;
-			m_EnableEncryption = GameSetting.Instance.EnableEncrypt;
-			m_EncryptKey       = GameSetting.Instance.EncryptKey;
+			m_enableAutoSave   = GameSetting.Instance.EnableAutoSave;
+			m_autoSaveInterval = GameSetting.Instance.AutoSaveInterval;
+			m_enableEncryption = GameSetting.Instance.EnableEncrypt;
+			m_encryptKey       = GameSetting.Instance.EncryptKey;
 
 			// 加载所有本地存储数据
 			LoadAll();
 
 			// 初始化所有Helper的自动保存配置
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
-				helper.EnableAutoSave   = m_EnableAutoSave;
-				helper.AutoSaveInterval = m_AutoSaveInterval;
+				helper.EnableAutoSave   = m_enableAutoSave;
+				helper.AutoSaveInterval = m_autoSaveInterval;
 			}
 		}
 
@@ -93,10 +93,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			if (!m_EnableAutoSave) return;
+			if (!m_enableAutoSave) return;
 
 			// 驱动所有Helper的自动保存逻辑
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
 				if (!helper.EnableAutoSave || !helper.IsDirty) continue;
 				helper.UpdateAutoSave();
@@ -121,13 +121,13 @@ namespace Hotfix.Framework.Storage
 		public StorageHelper GetOrCreateHelper(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName)) throw new InvalidOperationException("[DataSaveModule] 文件名不能为空");
-			if (m_Helpers.TryGetValue(fileName, out var helper)) return helper;
+			if (m_helpers.TryGetValue(fileName, out var helper)) return helper;
 
 			// 创建新的辅助器实例
 			helper = new StorageHelper();
-			helper.Init(fileName, m_EnableAutoSave, m_AutoSaveInterval, m_EnableEncryption, m_EncryptKey);
+			helper.Init(fileName, m_enableAutoSave, m_autoSaveInterval, m_enableEncryption, m_encryptKey);
 
-			m_Helpers[fileName] = helper;
+			m_helpers[fileName] = helper;
 			return helper;
 		}
 
@@ -139,21 +139,21 @@ namespace Hotfix.Framework.Storage
 		public StorageHelper GetHelper(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName)) throw new InvalidOperationException("[DataSaveModule] 文件名不能为空");
-			return m_Helpers.GetValueOrDefault(fileName);
+			return m_helpers.GetValueOrDefault(fileName);
 		}
 
 		/// <summary>
 		/// 获取所有本地存储数据辅助器
 		/// </summary>
 		/// <returns>辅助器字典</returns>
-		public Dictionary<string, StorageHelper> GetAllHelpers() => m_Helpers;
+		public Dictionary<string, StorageHelper> GetAllHelpers() => m_helpers;
 
 
 		/// <summary>
 		/// 加载本地存储数据。
 		/// </summary>
 		/// <returns>是否加载数据本地存储成功。</returns>
-		public bool Load(string fileName = DefaultFileName)
+		public bool Load(string fileName = DEFAULT_FILE_NAME)
 		{
 			var helper = GetHelper(fileName);
 			return helper != null && helper.Load();
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.Storage
 		/// 保存本地存储数据。
 		/// </summary>
 		/// <returns>是否保存数据本地存储成功。</returns>
-		public bool Save(string fileName = DefaultFileName)
+		public bool Save(string fileName = DEFAULT_FILE_NAME)
 		{
 			var helper = GetHelper(fileName);
 			return helper != null && helper.Save();
@@ -176,18 +176,18 @@ namespace Hotfix.Framework.Storage
 		public void LoadAll()
 		{
 			// 从PersistentDataPath/GameData 目录下找到所有数据的文件名，并创建对应的辅助器实例
-			var path = Path.Combine(Application.persistentDataPath, DirRoot);
+			var path = Path.Combine(Application.persistentDataPath, DIR_ROOT);
 
 			// 检查目录是否存在
 			if (!Directory.Exists(path)) return;
 
-			// 加载所有数据文件。数据文件恒由 StorageHelper 写在 DirRoot 根层（FilePath = DirRoot/文件名），
+			// 加载所有数据文件。数据文件恒由 StorageHelper 写在 DIR_ROOT 根层（FilePath = DIR_ROOT/文件名），
 			// 故仅扫描根层：无需递归遍历（避免无谓 IO；也避免不同子目录下同名文件被 Path.GetFileName 合并）
 			var files = Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
 			foreach (var filePath in files)
 			{
 				var fileName = Path.GetFileName(filePath);
-				if (m_Helpers.ContainsKey(fileName)) continue;
+				if (m_helpers.ContainsKey(fileName)) continue;
 
 				var helper = GetOrCreateHelper(fileName);
 				helper.Load();
@@ -199,7 +199,7 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		public void SaveAll()
 		{
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
 				helper.Save();
 			}
@@ -224,7 +224,7 @@ namespace Hotfix.Framework.Storage
 		public void GetAllHelperNames(List<string> results)
 		{
 			if (results is null) throw new InvalidOperationException("[DataSaveModule] 结果列表不能为空.");
-			foreach (var helper in m_Helpers)
+			foreach (var helper in m_helpers)
 			{
 				results.Add(helper.Key);
 			}
@@ -236,14 +236,14 @@ namespace Hotfix.Framework.Storage
 		/// <param name="fileName">文件名</param>
 		public void RemoveHelper(string fileName)
 		{
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) return;
+			if (!m_helpers.TryGetValue(fileName, out var helper)) return;
 			helper.RemoveAllData();
 
 			// 删除数据文件：helper.FilePath 指向具体文件（非目录）且与保存路径完全一致（已规范化为 /），
 			// 必须按文件删除，否则磁盘文件残留，下次启动 LoadAll 会把已删存档重新读回（存档复活）
 			UtilityAOT.File.Delete(helper.FilePath);
 
-			m_Helpers.Remove(fileName);
+			m_helpers.Remove(fileName);
 		}
 
 		/// <summary>
@@ -251,17 +251,17 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		public void RemoveAllHelper()
 		{
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
 				helper.RemoveAllData();
 			}
 
 			// 删除整个数据文件夹GameData
-			var dataPath = Path.Combine(Application.persistentDataPath, DirRoot);
+			var dataPath = Path.Combine(Application.persistentDataPath, DIR_ROOT);
 			if (Directory.Exists(dataPath))
 				UtilityAOT.File.DeleteDir(dataPath);
 
-			m_Helpers.Clear();
+			m_helpers.Clear();
 		}
 
 		/// <summary>
@@ -270,7 +270,7 @@ namespace Hotfix.Framework.Storage
 		public int GetDirtyHelperCount()
 		{
 			var count = 0;
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
 				if (helper.IsDirty)
 					count++;
@@ -286,10 +286,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要检查数据本地存储项的名称。</param>
 		/// <param name="fileName">要检查数据本地存储项的文件名。</param>
 		/// <returns>指定的数据本地存储项是否存在。</returns>
-		public bool HasData(string dataName, string fileName = DefaultFileName)
+		public bool HasData(string dataName, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) && helper.HasData(dataName);
+			return m_helpers.TryGetValue(fileName, out var helper) && helper.HasData(dataName);
 		}
 
 		/// <summary>
@@ -298,10 +298,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要移除数据本地存储项的名称。</param>
 		/// <param name="fileName">要移除数据本地存储项的文件名。</param>
 		/// <returns>是否移除指定数据本地存储项成功。</returns>
-		public bool RemoveData(string dataName, string fileName = DefaultFileName)
+		public bool RemoveData(string dataName, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) && helper.RemoveData(dataName);
+			return m_helpers.TryGetValue(fileName, out var helper) && helper.RemoveData(dataName);
 		}
 
 		/// <summary>
@@ -309,7 +309,7 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		public void RemoveAllData()
 		{
-			foreach (var helper in m_Helpers.Values)
+			foreach (var helper in m_helpers.Values)
 			{
 				helper.RemoveAllData();
 			}
@@ -324,10 +324,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="defaultValue">当指定的数据本地存储项不存在时，返回此默认值。</param>
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <returns>读取的布尔值。</returns>
-		public bool GetBool(string dataName, string fileName = DefaultFileName, bool defaultValue = false)
+		public bool GetBool(string dataName, string fileName = DEFAULT_FILE_NAME, bool defaultValue = false)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) && helper.GetBool(dataName, defaultValue);
+			return m_helpers.TryGetValue(fileName, out var helper) && helper.GetBool(dataName, defaultValue);
 		}
 
 		/// <summary>
@@ -337,10 +337,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <param name="defaultValue">当指定的数据本地存储项不存在时，返回此默认值。</param>
 		/// <returns>读取的整数值。</returns>
-		public int GetInt(string dataName, string fileName = DefaultFileName, int defaultValue = 0)
+		public int GetInt(string dataName, string fileName = DEFAULT_FILE_NAME, int defaultValue = 0)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetInt(dataName, defaultValue) : defaultValue;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetInt(dataName, defaultValue) : defaultValue;
 		}
 
 		/// <summary>
@@ -351,10 +351,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="defaultValue"></param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		public long GetLong(string dataName, string fileName = DefaultFileName, long defaultValue = 0)
+		public long GetLong(string dataName, string fileName = DEFAULT_FILE_NAME, long defaultValue = 0)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetLong(dataName, defaultValue) : defaultValue;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetLong(dataName, defaultValue) : defaultValue;
 		}
 
 		/// <summary>
@@ -364,10 +364,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <param name="defaultValue">当指定的数据本地存储项不存在时，返回此默认值。</param>
 		/// <returns>读取的浮点数值。</returns>
-		public float GetFloat(string dataName, string fileName = DefaultFileName, float defaultValue = 0)
+		public float GetFloat(string dataName, string fileName = DEFAULT_FILE_NAME, float defaultValue = 0)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetFloat(dataName, defaultValue) : defaultValue;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetFloat(dataName, defaultValue) : defaultValue;
 		}
 
 		/// <summary>
@@ -378,10 +378,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="defaultValue"></param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		public double GetDouble(string dataName, string fileName = DefaultFileName, double defaultValue = 0)
+		public double GetDouble(string dataName, string fileName = DEFAULT_FILE_NAME, double defaultValue = 0)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetDouble(dataName, defaultValue) : defaultValue;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetDouble(dataName, defaultValue) : defaultValue;
 		}
 
 		/// <summary>
@@ -391,10 +391,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <param name="defaultValue">当指定的数据本地存储项不存在时，返回此默认值。</param>
 		/// <returns>读取的字符串值。</returns>
-		public string GetString(string dataName, string fileName = DefaultFileName, string defaultValue = null)
+		public string GetString(string dataName, string fileName = DEFAULT_FILE_NAME, string defaultValue = null)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetString(dataName, defaultValue) : defaultValue;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetString(dataName, defaultValue) : defaultValue;
 		}
 
 		/// <summary>
@@ -404,10 +404,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <typeparam name="T">要读取对象的类型。</typeparam>
 		/// <returns>读取的对象。</returns>
-		public T GetObject<T>(string dataName, string fileName = DefaultFileName) where T : class, new()
+		public T GetObject<T>(string dataName, string fileName = DEFAULT_FILE_NAME) where T : class, new()
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetObject<T>(dataName) : null;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetObject<T>(dataName) : null;
 		}
 
 		/// <summary>
@@ -417,11 +417,11 @@ namespace Hotfix.Framework.Storage
 		/// <param name="objectType">要读取对象的类型。</param>
 		/// <param name="fileName">要获取数据本地存储项的文件名。</param>
 		/// <returns>读取的对象。</returns>
-		public object GetObject(string dataName, Type objectType, string fileName = DefaultFileName)
+		public object GetObject(string dataName, Type objectType, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
 			if (objectType is null) throw new InvalidOperationException("[DataSaveModule] 要存储的数据对象不能为空.");
-			return m_Helpers.TryGetValue(fileName, out var helper) ? helper.GetObject(objectType, dataName) : null;
+			return m_helpers.TryGetValue(fileName, out var helper) ? helper.GetObject(objectType, dataName) : null;
 		}
 
 		#endregion
@@ -434,10 +434,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要写入数据本地存储项的名称。</param>
 		/// <param name="value">要写入的布尔值。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
-		public void SetBool(string dataName, bool value, string fileName = DefaultFileName)
+		public void SetBool(string dataName, bool value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetBool(dataName, value);
 		}
 
@@ -447,10 +447,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要写入数据本地存储项的名称。</param>
 		/// <param name="value">要写入的整数值。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
-		public void SetInt(string dataName, int value, string fileName = DefaultFileName)
+		public void SetInt(string dataName, int value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetInt(dataName, value);
 		}
 
@@ -461,10 +461,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="value"></param>
 		/// <param name="fileName"></param>
 		/// <exception cref="InvalidOperationException"></exception>
-		public void SetLong(string dataName, long value, string fileName = DefaultFileName)
+		public void SetLong(string dataName, long value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetLong(dataName, value);
 		}
 
@@ -474,10 +474,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要写入数据本地存储项的名称。</param>
 		/// <param name="value">要写入的浮点数值。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
-		public void SetFloat(string dataName, float value, string fileName = DefaultFileName)
+		public void SetFloat(string dataName, float value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetFloat(dataName, value);
 		}
 
@@ -488,10 +488,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="value"></param>
 		/// <param name="fileName"></param>
 		/// <exception cref="InvalidOperationException"></exception>
-		public void SetDouble(string dataName, double value, string fileName = DefaultFileName)
+		public void SetDouble(string dataName, double value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetDouble(dataName, value);
 		}
 
@@ -501,10 +501,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要写入数据本地存储项的名称。</param>
 		/// <param name="value">要写入的字符串值。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
-		public void SetString(string dataName, string value, string fileName = DefaultFileName)
+		public void SetString(string dataName, string value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetString(dataName, value);
 		}
 
@@ -515,10 +515,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="obj">要写入的对象。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
 		/// <typeparam name="T">要写入对象的类型。</typeparam>
-		public void SetObject<T>(string dataName, T obj, string fileName = DefaultFileName) where T : class, new()
+		public void SetObject<T>(string dataName, T obj, string fileName = DEFAULT_FILE_NAME) where T : class, new()
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetObject(dataName, obj);
 		}
 
@@ -528,10 +528,10 @@ namespace Hotfix.Framework.Storage
 		/// <param name="dataName">要写入数据本地存储项的名称。</param>
 		/// <param name="obj">要写入的对象。</param>
 		/// <param name="fileName">要写入数据本地存储项的文件名。</param>
-		public void SetObject(string dataName, object obj, string fileName = DefaultFileName)
+		public void SetObject(string dataName, object obj, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName)) throw new InvalidOperationException("[DataSaveModule] 数据名称不能为空.");
-			if (!m_Helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
+			if (!m_helpers.TryGetValue(fileName, out var helper)) helper = GetOrCreateHelper(fileName);
 			helper.SetObject(dataName, obj);
 		}
 

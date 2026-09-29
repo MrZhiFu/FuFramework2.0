@@ -46,7 +46,7 @@ namespace Hotfix
 		/// <summary>
 		/// 表管理器实例（语言切换刷新用，每次启动/热重启由 LoadConfigAsync 覆盖）
 		/// </summary>
-		private static TableManager m_TableManager;
+		private static TableManager m_tableManager;
 
 		/// <summary>
 		/// 启动入口
@@ -191,7 +191,7 @@ namespace Hotfix
 		private static async UniTask<TableManager> LoadConfigAsync()
 		{
 			// 热重启：退订旧实例的语言切换事件，避免重复刷新与委托引用导致旧实例无法回收
-			m_TableManager?.UnsubscribeLanguageChange();
+			m_tableManager?.UnsubscribeLanguageChange();
 
 			var tableManager = new TableManager();
 			tableManager.Init(ConfigModule.Instance);
@@ -206,7 +206,7 @@ namespace Hotfix
 
 			// 订阅语言切换事件并登记实例（退订/覆盖次序固定，勿在别处重复登记）
 			tableManager.SubscribeLanguageChange();
-			m_TableManager = tableManager;
+			m_tableManager = tableManager;
 			return tableManager;
 		}
 
@@ -239,7 +239,7 @@ namespace Hotfix
 			{
 				// 启动一次性加载，解析后释放句柄，避免 provider 引用残留
 				// AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
-				assetHandle.Release(); 
+				assetHandle.Release();
 				GlobalModule.AssetModule.UnloadAsset(configPath);
 			}
 		}

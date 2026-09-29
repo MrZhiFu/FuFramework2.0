@@ -13,25 +13,25 @@ namespace Hotfix.Framework.Core
 	public readonly struct TaskInfo
 	{
 		/// 任务的标签
-		private readonly string m_Tag;
+		private readonly string m_tag;
 
 		/// 任务的序列编号
-		private readonly int m_SerialId;
+		private readonly int m_serialId;
 
 		/// 任务的优先级
-		private readonly int m_Priority;
+		private readonly int m_priority;
 
 		/// 任务信息是否有效
-		private readonly bool m_IsValid;
+		private readonly bool m_isValid;
 
 		/// 任务的用户自定义数据
-		private readonly object m_UserData;
+		private readonly object m_userData;
 
 		/// 任务描述
-		private readonly string m_Description;
+		private readonly string m_description;
 
 		/// 任务状态
-		private readonly ETaskStatus m_Status;
+		private readonly ETaskStatus m_status;
 
 		/// <summary>
 		/// 初始化任务信息的新实例。
@@ -44,48 +44,48 @@ namespace Hotfix.Framework.Core
 		/// <param name="description">任务描述。</param>
 		public TaskInfo(int serialId, string tag, int priority, object userData, ETaskStatus status, string description)
 		{
-			m_Tag         = tag;
-			m_IsValid     = true;
-			m_Status      = status;
-			m_SerialId    = serialId;
-			m_Priority    = priority;
-			m_UserData    = userData;
-			m_Description = description;
+			m_tag         = tag;
+			m_isValid     = true;
+			m_status      = status;
+			m_serialId    = serialId;
+			m_priority    = priority;
+			m_userData    = userData;
+			m_description = description;
 		}
 
 		/// <summary>
 		/// 获取任务信息是否有效。
 		/// </summary>
-		public bool IsValid => m_IsValid;
+		public bool IsValid => m_isValid;
 
 		/// <summary>
 		/// 获取任务的序列编号。
 		/// </summary>
-		public int SerialId => m_IsValid ? m_SerialId : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public int SerialId => m_isValid ? m_serialId : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 
 		/// <summary>
 		/// 获取任务的标签。
 		/// </summary>
-		public string Tag => m_IsValid ? m_Tag : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public string Tag => m_isValid ? m_tag : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 
 		/// <summary>
 		/// 获取任务的优先级。
 		/// </summary>
-		public int Priority => m_IsValid ? m_Priority : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public int Priority => m_isValid ? m_priority : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 
 		/// <summary>
 		/// 获取任务的用户自定义数据。
 		/// </summary>
-		public object UserData => m_IsValid ? m_UserData : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public object UserData => m_isValid ? m_userData : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 
 		/// <summary>
 		/// 获取任务状态。
 		/// </summary>
-		public ETaskStatus Status => m_IsValid ? m_Status : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public ETaskStatus Status => m_isValid ? m_status : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 
 		/// <summary>
 		/// 获取任务描述。
 		/// </summary>
-		public string Description => m_IsValid ? m_Description : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
+		public string Description => m_isValid ? m_description : throw new InvalidOperationException("[TaskPool] 任务信息无效.");
 	}
 }

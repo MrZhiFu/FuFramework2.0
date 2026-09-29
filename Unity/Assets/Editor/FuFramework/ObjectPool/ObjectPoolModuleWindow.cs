@@ -53,7 +53,7 @@ namespace FuFramework.ObjectPool.Editor
 		/// <summary>
 		/// 对象池折叠状态缓存
 		/// </summary>
-		private readonly Dictionary<object, bool> m_FoldoutStates = new();
+		private readonly Dictionary<object, bool> m_foldoutStates = new();
 
 		#endregion
 
@@ -62,142 +62,142 @@ namespace FuFramework.ObjectPool.Editor
 		/// <summary>
 		/// ObjectPoolModule 类型
 		/// </summary>
-		private Type m_ObjectPoolModuleType;
+		private Type m_objectPoolModuleType;
 
 		/// <summary>
 		/// ObjectPoolBase 类型
 		/// </summary>
-		private Type m_ObjectPoolBaseType;
+		private Type m_objectPoolBaseType;
 
 		/// <summary>
 		/// ObjectInfo 类型
 		/// </summary>
-		private Type m_ObjectInfoType;
+		private Type m_objectInfoType;
 
 		/// <summary>
 		/// ObjectPoolModule 实例
 		/// </summary>
-		private object m_ModuleInstance;
+		private object m_moduleInstance;
 
 		/// <summary>
 		/// ObjectPoolModule.Count 属性
 		/// </summary>
-		private PropertyInfo m_ModuleCountProperty;
+		private PropertyInfo m_moduleCountProperty;
 
 		/// <summary>
 		/// ObjectPoolModule.GetAllObjectPools(bool) 方法
 		/// </summary>
-		private MethodInfo m_GetAllObjectPoolsMethod;
+		private MethodInfo m_getAllObjectPoolsMethod;
 
 		/// <summary>
 		/// ObjectPoolModule.DisposeAllUnused 方法
 		/// </summary>
-		private MethodInfo m_ModuleDisposeAllUnusedMethod;
+		private MethodInfo m_moduleDisposeAllUnusedMethod;
 
 		/// <summary>
 		/// ObjectPoolModule.DisposeOverCapacity 方法
 		/// </summary>
-		private MethodInfo m_ModuleDisposeOverCapacityMethod;
+		private MethodInfo m_moduleDisposeOverCapacityMethod;
 
 		/// <summary>
 		/// 对象池名称属性
 		/// </summary>
-		private PropertyInfo m_PoolNameProperty;
+		private PropertyInfo m_poolNameProperty;
 
 		/// <summary>
 		/// 对象池对象类型属性
 		/// </summary>
-		private PropertyInfo m_PoolObjectTypeProperty;
+		private PropertyInfo m_poolObjectTypeProperty;
 
 		/// <summary>
 		/// 对象池数量属性
 		/// </summary>
-		private PropertyInfo m_PoolCountProperty;
+		private PropertyInfo m_poolCountProperty;
 
 		/// <summary>
 		/// 对象池可释放数量属性
 		/// </summary>
-		private PropertyInfo m_PoolCanDisposeCountProperty;
+		private PropertyInfo m_poolCanDisposeCountProperty;
 
 		/// <summary>
 		/// 对象池是否允许获取使用中对象属性
 		/// </summary>
-		private PropertyInfo m_PoolAllowSpawnInUseProperty;
+		private PropertyInfo m_poolAllowSpawnInUseProperty;
 
 		/// <summary>
 		/// 对象池自动销毁检查间隔属性
 		/// </summary>
-		private PropertyInfo m_PoolAutoDisposeCheckIntervalProperty;
+		private PropertyInfo m_poolAutoDisposeCheckIntervalProperty;
 
 		/// <summary>
 		/// 对象池容量属性
 		/// </summary>
-		private PropertyInfo m_PoolCapacityProperty;
+		private PropertyInfo m_poolCapacityProperty;
 
 		/// <summary>
 		/// 对象池过期时间属性
 		/// </summary>
-		private PropertyInfo m_PoolExpireTimeAfterIdleProperty;
+		private PropertyInfo m_poolExpireTimeAfterIdleProperty;
 
 		/// <summary>
 		/// 对象池优先级属性
 		/// </summary>
-		private PropertyInfo m_PoolPriorityProperty;
+		private PropertyInfo m_poolPriorityProperty;
 
 		/// <summary>
 		/// 对象池释放全部未使用对象方法
 		/// </summary>
-		private MethodInfo m_PoolDisposeAllUnusedMethod;
+		private MethodInfo m_poolDisposeAllUnusedMethod;
 
 		/// <summary>
 		/// 对象池释放超容量对象方法
 		/// </summary>
-		private MethodInfo m_PoolDisposeOverCapacityMethod;
+		private MethodInfo m_poolDisposeOverCapacityMethod;
 
 		/// <summary>
 		/// 对象池获取所有对象信息方法
 		/// </summary>
-		private MethodInfo m_PoolGetAllObjectInfosMethod;
+		private MethodInfo m_poolGetAllObjectInfosMethod;
 
 		/// <summary>
 		/// 对象名称属性
 		/// </summary>
-		private PropertyInfo m_InfoNameProperty;
+		private PropertyInfo m_infoNameProperty;
 
 		/// <summary>
 		/// 对象目标真实对象属性
 		/// </summary>
-		private PropertyInfo m_InfoTargetProperty;
+		private PropertyInfo m_infoTargetProperty;
 
 		/// <summary>
 		/// 对象是否锁定属性
 		/// </summary>
-		private PropertyInfo m_InfoLockedProperty;
+		private PropertyInfo m_infoLockedProperty;
 
 		/// <summary>
 		/// 对象自定义可销毁标记属性
 		/// </summary>
-		private PropertyInfo m_InfoCustomCanDisposeFlagProperty;
+		private PropertyInfo m_infoCustomCanDisposeFlagProperty;
 
 		/// <summary>
 		/// 对象优先级属性
 		/// </summary>
-		private PropertyInfo m_InfoPriorityProperty;
+		private PropertyInfo m_infoPriorityProperty;
 
 		/// <summary>
 		/// 对象上次使用时间（单调时钟秒数）属性
 		/// </summary>
-		private PropertyInfo m_InfoLastUseTimeProperty;
+		private PropertyInfo m_infoLastUseTimeProperty;
 
 		/// <summary>
 		/// 对象获取计数属性
 		/// </summary>
-		private PropertyInfo m_InfoSpawnCountProperty;
+		private PropertyInfo m_infoSpawnCountProperty;
 
 		/// <summary>
 		/// 对象是否使用中属性
 		/// </summary>
-		private PropertyInfo m_InfoIsInUseProperty;
+		private PropertyInfo m_infoIsInUseProperty;
 
 		#endregion
 
@@ -208,7 +208,7 @@ namespace FuFramework.ObjectPool.Editor
 		/// </summary>
 		protected override void DrawOverview()
 		{
-			var count = m_ModuleCountProperty?.GetValue(m_ModuleInstance) ?? 0;
+			var count = m_moduleCountProperty?.GetValue(m_moduleInstance) ?? 0;
 			EditorGUILayout.LabelField($"对象池总个数：{count}");
 
 			EditorGUILayout.BeginHorizontal();
@@ -216,7 +216,7 @@ namespace FuFramework.ObjectPool.Editor
 			{
 				try
 				{
-					m_ModuleDisposeAllUnusedMethod?.Invoke(m_ModuleInstance, null);
+					m_moduleDisposeAllUnusedMethod?.Invoke(m_moduleInstance, null);
 				}
 				catch (Exception e)
 				{
@@ -228,7 +228,7 @@ namespace FuFramework.ObjectPool.Editor
 			{
 				try
 				{
-					m_ModuleDisposeOverCapacityMethod?.Invoke(m_ModuleInstance, null);
+					m_moduleDisposeOverCapacityMethod?.Invoke(m_moduleInstance, null);
 				}
 				catch (Exception e)
 				{
@@ -269,14 +269,14 @@ namespace FuFramework.ObjectPool.Editor
 		{
 			if (pool == null) return;
 
-			var poolName        = m_PoolNameProperty?.GetValue(pool) as string ?? "<Unknown>";
-			var poolCount       = (int)(m_PoolCountProperty?.GetValue(pool) ?? 0);
+			var poolName        = m_poolNameProperty?.GetValue(pool) as string ?? "<Unknown>";
+			var poolCount       = (int)(m_poolCountProperty?.GetValue(pool) ?? 0);
 			var poolUsingCount  = CountInUseObjects(pool);
 
 			// 搜索过滤：池名或池内对象名匹配才展示
-			if (!string.IsNullOrEmpty(m_SearchFilter))
+			if (!string.IsNullOrEmpty(m_searchFilter))
 			{
-				if (!poolName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+				if (!poolName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 				{
 					var objectInfos = GetPoolInfos(pool);
 					var objectMatch = false;
@@ -286,8 +286,8 @@ namespace FuFramework.ObjectPool.Editor
 						{
 							if (info == null) continue;
 
-							var infoName = m_InfoNameProperty?.GetValue(info) as string;
-							if (!string.IsNullOrEmpty(infoName) && infoName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+							var infoName = m_infoNameProperty?.GetValue(info) as string;
+							if (!string.IsNullOrEmpty(infoName) && infoName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 							{
 								objectMatch = true;
 								break;
@@ -299,18 +299,18 @@ namespace FuFramework.ObjectPool.Editor
 				}
 			}
 
-			if (!m_FoldoutStates.TryGetValue(pool, out var isOpen))
+			if (!m_foldoutStates.TryGetValue(pool, out var isOpen))
 			{
 				isOpen                = true;
-				m_FoldoutStates[pool] = true;
+				m_foldoutStates[pool] = true;
 			}
 
 			// 对象池名称（Foldout 标题）用青色高亮
 			var foldoutOldColor = GUI.color;
 			GUI.color             = Color.cyan;
-			m_FoldoutStates[pool] = EditorGUILayout.Foldout(isOpen, $"{poolName} ({poolUsingCount}/{poolCount})", true);
+			m_foldoutStates[pool] = EditorGUILayout.Foldout(isOpen, $"{poolName} ({poolUsingCount}/{poolCount})", true);
 			GUI.color             = foldoutOldColor;
-			if (!m_FoldoutStates[pool]) return;
+			if (!m_foldoutStates[pool]) return;
 
 			EditorGUILayout.BeginVertical("box");
 			{
@@ -360,13 +360,13 @@ namespace FuFramework.ObjectPool.Editor
 		/// <param name="pool">对象池实例</param>
 		private void DrawPoolProperties(object pool)
 		{
-			var typeName      = (m_PoolObjectTypeProperty?.GetValue(pool) as Type)?.Name ?? "Unknown";
-			var allowInUse    = (bool)(m_PoolAllowSpawnInUseProperty?.GetValue(pool)           ?? false);
-			var autoDispose   = (float)(m_PoolAutoDisposeCheckIntervalProperty?.GetValue(pool) ?? 0f);
-			var capacity      = (int)(m_PoolCapacityProperty?.GetValue(pool)                   ?? 0);
-			var expireTime    = (float)(m_PoolExpireTimeAfterIdleProperty?.GetValue(pool)      ?? 0f);
-			var priority      = (int)(m_PoolPriorityProperty?.GetValue(pool)                   ?? 0);
-			var canDisposeCnt = (int)(m_PoolCanDisposeCountProperty?.GetValue(pool)            ?? 0);
+			var typeName      = (m_poolObjectTypeProperty?.GetValue(pool) as Type)?.Name ?? "Unknown";
+			var allowInUse    = (bool)(m_poolAllowSpawnInUseProperty?.GetValue(pool)           ?? false);
+			var autoDispose   = (float)(m_poolAutoDisposeCheckIntervalProperty?.GetValue(pool) ?? 0f);
+			var capacity      = (int)(m_poolCapacityProperty?.GetValue(pool)                   ?? 0);
+			var expireTime    = (float)(m_poolExpireTimeAfterIdleProperty?.GetValue(pool)      ?? 0f);
+			var priority      = (int)(m_poolPriorityProperty?.GetValue(pool)                   ?? 0);
+			var canDisposeCnt = (int)(m_poolCanDisposeCountProperty?.GetValue(pool)            ?? 0);
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label($"对象类型: {typeName}", GUILayout.MinWidth(100));
@@ -391,7 +391,7 @@ namespace FuFramework.ObjectPool.Editor
 		/// <param name="pool">对象池实例</param>
 		private void DrawObjectInfoHeader(object pool)
 		{
-			var allowInUse = (bool)(m_PoolAllowSpawnInUseProperty?.GetValue(pool) ?? false);
+			var allowInUse = (bool)(m_poolAllowSpawnInUseProperty?.GetValue(pool) ?? false);
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("名称",                      GUILayout.Width(160));
@@ -413,15 +413,15 @@ namespace FuFramework.ObjectPool.Editor
 		{
 			if (info == null) return;
 
-			var allowInUse  = (bool)(m_PoolAllowSpawnInUseProperty?.GetValue(pool) ?? false);
-			var objName     = m_InfoNameProperty?.GetValue(info) as string;
-			var target      = m_InfoTargetProperty?.GetValue(info);
-			var locked      = (bool)(m_InfoLockedProperty?.GetValue(info)               ?? false);
-			var canDispose  = (bool)(m_InfoCustomCanDisposeFlagProperty?.GetValue(info) ?? false);
-			var priority    = (int)(m_InfoPriorityProperty?.GetValue(info)              ?? 0);
-			var lastUseTime = (double)(m_InfoLastUseTimeProperty?.GetValue(info)        ?? 0d);
-			var spawnCount  = (int)(m_InfoSpawnCountProperty?.GetValue(info)            ?? 0);
-			var isInUse     = (bool)(m_InfoIsInUseProperty?.GetValue(info)              ?? false);
+			var allowInUse  = (bool)(m_poolAllowSpawnInUseProperty?.GetValue(pool) ?? false);
+			var objName     = m_infoNameProperty?.GetValue(info) as string;
+			var target      = m_infoTargetProperty?.GetValue(info);
+			var locked      = (bool)(m_infoLockedProperty?.GetValue(info)               ?? false);
+			var canDispose  = (bool)(m_infoCustomCanDisposeFlagProperty?.GetValue(info) ?? false);
+			var priority    = (int)(m_infoPriorityProperty?.GetValue(info)              ?? 0);
+			var lastUseTime = (double)(m_infoLastUseTimeProperty?.GetValue(info)        ?? 0d);
+			var spawnCount  = (int)(m_infoSpawnCountProperty?.GetValue(info)            ?? 0);
+			var isInUse     = (bool)(m_infoIsInUseProperty?.GetValue(info)              ?? false);
 
 			// 可释放对象（未使用 + 未加锁 + 允许销毁，与 GetCanDisposeObjects 一致）整行偏灰；锁定红、使用中绿优先级更高
 			var oldColor     = GUI.color;
@@ -461,14 +461,14 @@ namespace FuFramework.ObjectPool.Editor
 		/// <param name="pool">对象池实例</param>
 		private void DrawPoolActions(object pool)
 		{
-			var poolName = m_PoolNameProperty?.GetValue(pool) as string ?? "<Unknown>";
+			var poolName = m_poolNameProperty?.GetValue(pool) as string ?? "<Unknown>";
 
 			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("释放未使用对象", GUILayout.Width(160)))
 			{
 				try
 				{
-					m_PoolDisposeAllUnusedMethod?.Invoke(pool, null);
+					m_poolDisposeAllUnusedMethod?.Invoke(pool, null);
 				}
 				catch (Exception e)
 				{
@@ -480,7 +480,7 @@ namespace FuFramework.ObjectPool.Editor
 			{
 				try
 				{
-					m_PoolDisposeOverCapacityMethod?.Invoke(pool, null);
+					m_poolDisposeOverCapacityMethod?.Invoke(pool, null);
 				}
 				catch (Exception e)
 				{
@@ -502,7 +502,7 @@ namespace FuFramework.ObjectPool.Editor
 		{
 			var pools = GetAllPools();
 			if (pools == null) return;
-			SetAllFoldouts(pools, m_FoldoutStates, true);
+			SetAllFoldouts(pools, m_foldoutStates, true);
 		}
 
 		/// <summary>
@@ -512,7 +512,7 @@ namespace FuFramework.ObjectPool.Editor
 		{
 			var pools = GetAllPools();
 			if (pools == null) return;
-			SetAllFoldouts(pools, m_FoldoutStates, false);
+			SetAllFoldouts(pools, m_foldoutStates, false);
 		}
 
 		#endregion
@@ -525,50 +525,50 @@ namespace FuFramework.ObjectPool.Editor
 		/// <returns>初始化成功返回 true</returns>
 		protected override bool EnsureReflection()
 		{
-			if (m_ModuleInstance != null) return true;
+			if (m_moduleInstance != null) return true;
 
-			m_ObjectPoolModuleType = HotfixReflection.ObjectPoolModule;
-			if (m_ObjectPoolModuleType == null) return false;
+			m_objectPoolModuleType = HotfixReflection.ObjectPoolModule;
+			if (m_objectPoolModuleType == null) return false;
 
-			m_ObjectPoolBaseType = HotfixReflection.ObjectPoolBase;
-			if (m_ObjectPoolBaseType == null) return false;
+			m_objectPoolBaseType = HotfixReflection.ObjectPoolBase;
+			if (m_objectPoolBaseType == null) return false;
 
-			m_ObjectInfoType = HotfixReflection.ObjectInfo;
-			if (m_ObjectInfoType == null) return false;
+			m_objectInfoType = HotfixReflection.ObjectInfo;
+			if (m_objectInfoType == null) return false;
 
 			// ObjectPoolModule 没有静态 Instance，通过 ModuleManager.GetModule<T>() 泛型方法获取热更实例
-			m_ModuleInstance = HotfixReflection.GetModuleInstance(m_ObjectPoolModuleType);
-			if (m_ModuleInstance == null) return false;
+			m_moduleInstance = HotfixReflection.GetModuleInstance(m_objectPoolModuleType);
+			if (m_moduleInstance == null) return false;
 
 			// ObjectPoolModule 成员
-			m_ModuleCountProperty             = m_ObjectPoolModuleType.GetProperty("Count", BindingFlags.Public             | BindingFlags.Instance);
-			m_GetAllObjectPoolsMethod         = m_ObjectPoolModuleType.GetMethod("GetAllObjectPools",   BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(bool) }, null);
-			m_ModuleDisposeAllUnusedMethod    = m_ObjectPoolModuleType.GetMethod("DisposeAllUnused",    BindingFlags.Public | BindingFlags.Instance);
-			m_ModuleDisposeOverCapacityMethod = m_ObjectPoolModuleType.GetMethod("DisposeOverCapacity", BindingFlags.Public | BindingFlags.Instance);
+			m_moduleCountProperty             = m_objectPoolModuleType.GetProperty("Count", BindingFlags.Public             | BindingFlags.Instance);
+			m_getAllObjectPoolsMethod         = m_objectPoolModuleType.GetMethod("GetAllObjectPools",   BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(bool) }, null);
+			m_moduleDisposeAllUnusedMethod    = m_objectPoolModuleType.GetMethod("DisposeAllUnused",    BindingFlags.Public | BindingFlags.Instance);
+			m_moduleDisposeOverCapacityMethod = m_objectPoolModuleType.GetMethod("DisposeOverCapacity", BindingFlags.Public | BindingFlags.Instance);
 
 			// ObjectPoolBase 成员
-			m_PoolNameProperty                     = m_ObjectPoolBaseType.GetProperty("Name",                     BindingFlags.Public | BindingFlags.Instance);
-			m_PoolObjectTypeProperty               = m_ObjectPoolBaseType.GetProperty("ObjectType",               BindingFlags.Public | BindingFlags.Instance);
-			m_PoolCountProperty                    = m_ObjectPoolBaseType.GetProperty("Count",                    BindingFlags.Public | BindingFlags.Instance);
-			m_PoolCanDisposeCountProperty          = m_ObjectPoolBaseType.GetProperty("CanDisposeCount",          BindingFlags.Public | BindingFlags.Instance);
-			m_PoolAllowSpawnInUseProperty          = m_ObjectPoolBaseType.GetProperty("AllowSpawnInUse",          BindingFlags.Public | BindingFlags.Instance);
-			m_PoolAutoDisposeCheckIntervalProperty = m_ObjectPoolBaseType.GetProperty("AutoDisposeCheckInterval", BindingFlags.Public | BindingFlags.Instance);
-			m_PoolCapacityProperty                 = m_ObjectPoolBaseType.GetProperty("Capacity",                 BindingFlags.Public | BindingFlags.Instance);
-			m_PoolExpireTimeAfterIdleProperty      = m_ObjectPoolBaseType.GetProperty("ExpireTimeAfterIdle",     BindingFlags.Public | BindingFlags.Instance);
-			m_PoolPriorityProperty                 = m_ObjectPoolBaseType.GetProperty("Priority",                 BindingFlags.Public | BindingFlags.Instance);
-			m_PoolDisposeAllUnusedMethod           = m_ObjectPoolBaseType.GetMethod("DisposeAllUnused",    BindingFlags.Public        | BindingFlags.Instance);
-			m_PoolDisposeOverCapacityMethod        = m_ObjectPoolBaseType.GetMethod("DisposeOverCapacity", BindingFlags.Public        | BindingFlags.Instance);
-			m_PoolGetAllObjectInfosMethod          = m_ObjectPoolBaseType.GetMethod("GetAllObjectInfos",   BindingFlags.Public        | BindingFlags.Instance);
+			m_poolNameProperty                     = m_objectPoolBaseType.GetProperty("Name",                     BindingFlags.Public | BindingFlags.Instance);
+			m_poolObjectTypeProperty               = m_objectPoolBaseType.GetProperty("ObjectType",               BindingFlags.Public | BindingFlags.Instance);
+			m_poolCountProperty                    = m_objectPoolBaseType.GetProperty("Count",                    BindingFlags.Public | BindingFlags.Instance);
+			m_poolCanDisposeCountProperty          = m_objectPoolBaseType.GetProperty("CanDisposeCount",          BindingFlags.Public | BindingFlags.Instance);
+			m_poolAllowSpawnInUseProperty          = m_objectPoolBaseType.GetProperty("AllowSpawnInUse",          BindingFlags.Public | BindingFlags.Instance);
+			m_poolAutoDisposeCheckIntervalProperty = m_objectPoolBaseType.GetProperty("AutoDisposeCheckInterval", BindingFlags.Public | BindingFlags.Instance);
+			m_poolCapacityProperty                 = m_objectPoolBaseType.GetProperty("Capacity",                 BindingFlags.Public | BindingFlags.Instance);
+			m_poolExpireTimeAfterIdleProperty      = m_objectPoolBaseType.GetProperty("ExpireTimeAfterIdle",     BindingFlags.Public | BindingFlags.Instance);
+			m_poolPriorityProperty                 = m_objectPoolBaseType.GetProperty("Priority",                 BindingFlags.Public | BindingFlags.Instance);
+			m_poolDisposeAllUnusedMethod           = m_objectPoolBaseType.GetMethod("DisposeAllUnused",    BindingFlags.Public        | BindingFlags.Instance);
+			m_poolDisposeOverCapacityMethod        = m_objectPoolBaseType.GetMethod("DisposeOverCapacity", BindingFlags.Public        | BindingFlags.Instance);
+			m_poolGetAllObjectInfosMethod          = m_objectPoolBaseType.GetMethod("GetAllObjectInfos",   BindingFlags.Public        | BindingFlags.Instance);
 
 			// ObjectInfo 成员
-			m_InfoNameProperty                 = m_ObjectInfoType.GetProperty("Name",                 BindingFlags.Public | BindingFlags.Instance);
-			m_InfoTargetProperty               = m_ObjectInfoType.GetProperty("Target",               BindingFlags.Public | BindingFlags.Instance);
-			m_InfoLockedProperty               = m_ObjectInfoType.GetProperty("Locked",               BindingFlags.Public | BindingFlags.Instance);
-			m_InfoCustomCanDisposeFlagProperty = m_ObjectInfoType.GetProperty("CustomCanDisposeFlag", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoPriorityProperty             = m_ObjectInfoType.GetProperty("Priority",             BindingFlags.Public | BindingFlags.Instance);
-			m_InfoLastUseTimeProperty          = m_ObjectInfoType.GetProperty("LastUseTime",          BindingFlags.Public | BindingFlags.Instance);
-			m_InfoSpawnCountProperty           = m_ObjectInfoType.GetProperty("SpawnCount",           BindingFlags.Public | BindingFlags.Instance);
-			m_InfoIsInUseProperty              = m_ObjectInfoType.GetProperty("IsInUse",              BindingFlags.Public | BindingFlags.Instance);
+			m_infoNameProperty                 = m_objectInfoType.GetProperty("Name",                 BindingFlags.Public | BindingFlags.Instance);
+			m_infoTargetProperty               = m_objectInfoType.GetProperty("Target",               BindingFlags.Public | BindingFlags.Instance);
+			m_infoLockedProperty               = m_objectInfoType.GetProperty("Locked",               BindingFlags.Public | BindingFlags.Instance);
+			m_infoCustomCanDisposeFlagProperty = m_objectInfoType.GetProperty("CustomCanDisposeFlag", BindingFlags.Public | BindingFlags.Instance);
+			m_infoPriorityProperty             = m_objectInfoType.GetProperty("Priority",             BindingFlags.Public | BindingFlags.Instance);
+			m_infoLastUseTimeProperty          = m_objectInfoType.GetProperty("LastUseTime",          BindingFlags.Public | BindingFlags.Instance);
+			m_infoSpawnCountProperty           = m_objectInfoType.GetProperty("SpawnCount",           BindingFlags.Public | BindingFlags.Instance);
+			m_infoIsInUseProperty              = m_objectInfoType.GetProperty("IsInUse",              BindingFlags.Public | BindingFlags.Instance);
 
 			return true;
 		}
@@ -578,34 +578,34 @@ namespace FuFramework.ObjectPool.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_ObjectPoolModuleType                 = null;
-			m_ObjectPoolBaseType                   = null;
-			m_ObjectInfoType                       = null;
-			m_ModuleInstance                       = null;
-			m_ModuleCountProperty                  = null;
-			m_GetAllObjectPoolsMethod              = null;
-			m_ModuleDisposeAllUnusedMethod         = null;
-			m_ModuleDisposeOverCapacityMethod      = null;
-			m_PoolNameProperty                     = null;
-			m_PoolObjectTypeProperty               = null;
-			m_PoolCountProperty                    = null;
-			m_PoolCanDisposeCountProperty          = null;
-			m_PoolAllowSpawnInUseProperty          = null;
-			m_PoolAutoDisposeCheckIntervalProperty = null;
-			m_PoolCapacityProperty                 = null;
-			m_PoolExpireTimeAfterIdleProperty      = null;
-			m_PoolPriorityProperty                 = null;
-			m_PoolDisposeAllUnusedMethod           = null;
-			m_PoolDisposeOverCapacityMethod        = null;
-			m_PoolGetAllObjectInfosMethod          = null;
-			m_InfoNameProperty                     = null;
-			m_InfoTargetProperty                   = null;
-			m_InfoLockedProperty                   = null;
-			m_InfoCustomCanDisposeFlagProperty     = null;
-			m_InfoPriorityProperty                 = null;
-			m_InfoLastUseTimeProperty              = null;
-			m_InfoSpawnCountProperty               = null;
-			m_InfoIsInUseProperty                  = null;
+			m_objectPoolModuleType                 = null;
+			m_objectPoolBaseType                   = null;
+			m_objectInfoType                       = null;
+			m_moduleInstance                       = null;
+			m_moduleCountProperty                  = null;
+			m_getAllObjectPoolsMethod              = null;
+			m_moduleDisposeAllUnusedMethod         = null;
+			m_moduleDisposeOverCapacityMethod      = null;
+			m_poolNameProperty                     = null;
+			m_poolObjectTypeProperty               = null;
+			m_poolCountProperty                    = null;
+			m_poolCanDisposeCountProperty          = null;
+			m_poolAllowSpawnInUseProperty          = null;
+			m_poolAutoDisposeCheckIntervalProperty = null;
+			m_poolCapacityProperty                 = null;
+			m_poolExpireTimeAfterIdleProperty      = null;
+			m_poolPriorityProperty                 = null;
+			m_poolDisposeAllUnusedMethod           = null;
+			m_poolDisposeOverCapacityMethod        = null;
+			m_poolGetAllObjectInfosMethod          = null;
+			m_infoNameProperty                     = null;
+			m_infoTargetProperty                   = null;
+			m_infoLockedProperty                   = null;
+			m_infoCustomCanDisposeFlagProperty     = null;
+			m_infoPriorityProperty                 = null;
+			m_infoLastUseTimeProperty              = null;
+			m_infoSpawnCountProperty               = null;
+			m_infoIsInUseProperty                  = null;
 		}
 
 		/// <summary>
@@ -614,7 +614,7 @@ namespace FuFramework.ObjectPool.Editor
 		/// <returns>对象池数组，获取失败时返回 null</returns>
 		private object[] GetAllPools()
 		{
-			var result = m_GetAllObjectPoolsMethod?.Invoke(m_ModuleInstance, new object[] { true });
+			var result = m_getAllObjectPoolsMethod?.Invoke(m_moduleInstance, new object[] { true });
 			return result as object[];
 		}
 
@@ -626,7 +626,7 @@ namespace FuFramework.ObjectPool.Editor
 		/// <returns>对象信息枚举，无对象或获取失败时返回 null</returns>
 		private IEnumerable GetPoolInfos(object pool)
 		{
-			var result = m_PoolGetAllObjectInfosMethod?.Invoke(pool, null);
+			var result = m_poolGetAllObjectInfosMethod?.Invoke(pool, null);
 			return result as IEnumerable;
 		}
 
@@ -645,7 +645,7 @@ namespace FuFramework.ObjectPool.Editor
 			{
 				if (info == null) continue;
 
-				if (m_InfoIsInUseProperty?.GetValue(info) is bool isInUse && isInUse)
+				if (m_infoIsInUseProperty?.GetValue(info) is bool isInUse && isInUse)
 					count++;
 			}
 

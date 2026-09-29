@@ -16,33 +16,33 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 当前生命周期的取消令牌源（Recreate 重建、Dispose 释放后置空）。
 		/// </summary>
-		private CancellationTokenSource m_Cts = new();
+		private CancellationTokenSource m_cts = new();
 
 		/// <summary>
 		/// 已释放状态下对外暴露的「已取消」令牌快照。
 		/// CancellationTokenSource 被 Dispose 后再访问其 Token 会抛 ObjectDisposedException，
 		/// 因此释放前先取出已取消的 Token 缓存于此，保证「Token 永不返回 default（永不取消语义）」。
 		/// </summary>
-		private CancellationToken m_ReleasedToken;
+		private CancellationToken m_releasedToken;
 
 		/// <summary>
 		/// 是否已 Dispose（幂等标记）。
 		/// </summary>
-		private bool m_Released;
+		private bool m_released;
 
 		/// <summary>
 		/// 当前生命周期取消令牌。在途异步操作观察它并中止。
 		/// 对象已释放时返回「已取消」的令牌，而非 default(CancellationToken)（后者永不取消，会让在途操作静默跑完）。
 		/// </summary>
-		public CancellationToken Token => m_Released ? m_ReleasedToken : m_Cts.Token;
+		public CancellationToken Token => m_released ? m_releasedToken : m_cts.Token;
 
 		/// <summary>
 		/// 触发当前生命周期取消（不释放源，已注册的观察者仍可读到取消状态）。
 		/// </summary>
 		public void Cancel()
 		{
-			if (m_Released) return;
-			m_Cts?.Cancel();
+			if (m_released) return;
+			m_cts?.Cancel();
 		}
 
 		/// <summary>
@@ -52,9 +52,9 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void Recreate()
 		{
-			var old     = m_Cts;
-			m_Cts       = new CancellationTokenSource();
-			m_Released  = false;
+			var old     = m_cts;
+			m_cts       = new CancellationTokenSource();
+			m_released  = false;
 
 			// 先取消再释放
 			old?.Cancel();
@@ -67,17 +67,17 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void Dispose()
 		{
-			if (m_Released) return;
-			m_Released = true;
+			if (m_released) return;
+			m_released = true;
 
-			if (m_Cts == null) return;
+			if (m_cts == null) return;
 
-			m_Cts.Cancel();
+			m_cts.Cancel();
 
 			// 先取 Token 再释放源：源被 Dispose 后访问 Token 会抛 ObjectDisposedException
-			m_ReleasedToken = m_Cts.Token;
-			m_Cts.Dispose();
-			m_Cts = null;
+			m_releasedToken = m_cts.Token;
+			m_cts.Dispose();
+			m_cts = null;
 		}
 	}
 }

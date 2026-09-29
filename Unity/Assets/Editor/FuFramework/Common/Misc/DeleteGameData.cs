@@ -19,7 +19,7 @@ namespace FuFramework.Core.Editor
 		public static void OpenFolderTemporaryCachePath()
 		{
 			var dataPath = Path.Combine(Application.persistentDataPath, "GameData");
-	
+
 			if (Directory.Exists(dataPath))
 			{
 				if (FileUtil.DeleteFileOrDirectory(dataPath))
@@ -36,7 +36,7 @@ namespace FuFramework.Core.Editor
 			{
 				Debug.Log($"游戏数据目录不存在: {dataPath}");
 			}
-	
+
 			AssetDatabase.Refresh();
 		}
 	}

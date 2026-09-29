@@ -48,7 +48,7 @@ namespace FuFramework.RedDot.Editor
 		/// <summary>
 		/// 节点折叠状态缓存
 		/// </summary>
-		private readonly Dictionary<object, bool> m_FoldoutStates = new();
+		private readonly Dictionary<object, bool> m_foldoutStates = new();
 
 		#endregion
 
@@ -57,97 +57,97 @@ namespace FuFramework.RedDot.Editor
 		/// <summary>
 		/// RedDotModule 类型
 		/// </summary>
-		private Type m_ModuleType;
+		private Type m_moduleType;
 
 		/// <summary>
 		/// RedDotModule 实例
 		/// </summary>
-		private object m_ModuleInstance;
+		private object m_moduleInstance;
 
 		/// <summary>
 		/// 获取所有节点的方法
 		/// </summary>
-		private MethodInfo m_GetAllNodesMethod;
+		private MethodInfo m_getAllNodesMethod;
 
 		/// <summary>
 		/// 获取节点状态的方法
 		/// </summary>
-		private MethodInfo m_GetStateMethod;
+		private MethodInfo m_getStateMethod;
 
 		/// <summary>
 		/// 标记节点为已读的方法
 		/// </summary>
-		private MethodInfo m_MarkReadMethod;
+		private MethodInfo m_markReadMethod;
 
 		/// <summary>
 		/// 获取子节点的方法
 		/// </summary>
-		private MethodInfo m_GetChildrenMethod;
+		private MethodInfo m_getChildrenMethod;
 
 		/// <summary>
 		/// 节点Key属性
 		/// </summary>
-		private PropertyInfo m_KeyProperty;
+		private PropertyInfo m_keyProperty;
 
 		/// <summary>
 		/// 父节点属性
 		/// </summary>
-		private PropertyInfo m_ParentProperty;
+		private PropertyInfo m_parentProperty;
 
 		/// <summary>
 		/// 节点的原始计数（自身，不含子节点）
 		/// </summary>
-		private PropertyInfo m_RawCountProperty;
+		private PropertyInfo m_rawCountProperty;
 
 		/// <summary>
 		/// 节点的总计数（自身 + 所有子节点）
 		/// </summary>
-		private PropertyInfo m_TotalCountProperty;
+		private PropertyInfo m_totalCountProperty;
 
 		/// <summary>
 		/// 是否是静态节点属性
 		/// </summary>
-		private PropertyInfo m_IsStaticProperty;
+		private PropertyInfo m_isStaticProperty;
 
 		/// <summary>
 		/// 节点是否激活属性
 		/// </summary>
-		private PropertyInfo m_IsActiveProperty;
+		private PropertyInfo m_isActiveProperty;
 
 		/// <summary>
 		/// 节点是否已读属性
 		/// </summary>
-		private PropertyInfo m_IsReadProperty;
+		private PropertyInfo m_isReadProperty;
 
 		/// <summary>
 		/// 节点脏标记属性
 		/// </summary>
-		private PropertyInfo m_IsDirtyProperty;
+		private PropertyInfo m_isDirtyProperty;
 
 		/// <summary>
 		/// 子节点聚合逻辑属性
 		/// </summary>
-		private PropertyInfo m_LogicTypeProperty;
+		private PropertyInfo m_logicTypeProperty;
 
 		/// <summary>
 		/// 节点清理策略属性
 		/// </summary>
-		private PropertyInfo m_CleanStrategyProperty;
+		private PropertyInfo m_cleanStrategyProperty;
 
 		/// <summary>
 		/// 显示模式属性
 		/// </summary>
-		private PropertyInfo m_DisplayModeProperty;
+		private PropertyInfo m_displayModeProperty;
 
 		/// <summary>
 		/// 计算逻辑属性
 		/// </summary>
-		private PropertyInfo m_CalculatorProperty;
+		private PropertyInfo m_calculatorProperty;
 
 		/// <summary>
 		/// 触发重算的事件ID列表属性
 		/// </summary>
-		private PropertyInfo m_TriggerEventsProperty;
+		private PropertyInfo m_triggerEventsProperty;
 
 		#endregion
 
@@ -190,15 +190,15 @@ namespace FuFramework.RedDot.Editor
 
 			// 检查是否需要过滤
 			var keyString = GetKeyString(node);
-			if (!string.IsNullOrEmpty(m_SearchFilter))
+			if (!string.IsNullOrEmpty(m_searchFilter))
 			{
-				if (!keyString.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+				if (!keyString.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 				{
 					// 如果当前节点不匹配，检查子节点是否匹配
-					bool childMatches = false;
+					var childMatches = false;
 					foreach (var child in GetChildren(node))
 					{
-						if (!GetKeyString(child).Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase)) continue;
+						if (!GetKeyString(child).Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) continue;
 						childMatches = true;
 						break;
 					}
@@ -212,20 +212,20 @@ namespace FuFramework.RedDot.Editor
 
 			var hasChildren = children.Count > 0;
 
-			var totalCount = (int)(m_TotalCountProperty?.GetValue(node) ?? 0);
-			var rawCount   = (int)(m_RawCountProperty?.GetValue(node)   ?? 0);
-			var isActive   = (bool)(m_IsActiveProperty?.GetValue(node)  ?? true);
-			var isRead     = (bool)(m_IsReadProperty?.GetValue(node)    ?? false);
-			var isDirty    = (bool)(m_IsDirtyProperty?.GetValue(node)   ?? false);
-			var isStatic   = (bool)(m_IsStaticProperty?.GetValue(node)  ?? false);
+			var totalCount = (int)(m_totalCountProperty?.GetValue(node) ?? 0);
+			var rawCount   = (int)(m_rawCountProperty?.GetValue(node)   ?? 0);
+			var isActive   = (bool)(m_isActiveProperty?.GetValue(node)  ?? true);
+			var isRead     = (bool)(m_isReadProperty?.GetValue(node)    ?? false);
+			var isDirty    = (bool)(m_isDirtyProperty?.GetValue(node)   ?? false);
+			var isStatic   = (bool)(m_isStaticProperty?.GetValue(node)  ?? false);
 
-			var logicType     = m_LogicTypeProperty?.GetValue(node)?.ToString()     ?? "-";
-			var cleanStrategy = m_CleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
-			var displayMode   = m_DisplayModeProperty?.GetValue(node)?.ToString()   ?? "-";
+			var logicType     = m_logicTypeProperty?.GetValue(node)?.ToString()     ?? "-";
+			var cleanStrategy = m_cleanStrategyProperty?.GetValue(node)?.ToString() ?? "-";
+			var displayMode   = m_displayModeProperty?.GetValue(node)?.ToString()   ?? "-";
 
-			var hasCalculator = m_CalculatorProperty?.GetValue(node) != null;
+			var hasCalculator = m_calculatorProperty?.GetValue(node) != null;
 
-			var triggerEvents    = (string[])m_TriggerEventsProperty?.GetValue(node);
+			var triggerEvents    = (string[])m_triggerEventsProperty?.GetValue(node);
 			var triggerEventsStr = triggerEvents is { Length: > 0 } ? string.Join(",", triggerEvents) : "";
 
 			EditorGUILayout.BeginHorizontal();
@@ -236,13 +236,13 @@ namespace FuFramework.RedDot.Editor
 			GUILayout.Space(indentLevel * 20);
 			if (hasChildren)
 			{
-				if (!m_FoldoutStates.TryGetValue(node, out var foldout))
+				if (!m_foldoutStates.TryGetValue(node, out var foldout))
 				{
 					foldout               = true;
-					m_FoldoutStates[node] = true;
+					m_foldoutStates[node] = true;
 				}
 
-				m_FoldoutStates[node] = EditorGUILayout.Foldout(foldout, keyString, true);
+				m_foldoutStates[node] = EditorGUILayout.Foldout(foldout, keyString, true);
 			}
 			else
 			{
@@ -277,23 +277,23 @@ namespace FuFramework.RedDot.Editor
 			// 操作按钮：设置为已读
 			if (isStatic && GUILayout.Button("已读", GUILayout.Width(50)))
 			{
-				var key = m_KeyProperty?.GetValue(node);
+				var key = m_keyProperty?.GetValue(node);
 				if (key != null)
-					m_MarkReadMethod?.Invoke(m_ModuleInstance, new[] { key });
+					m_markReadMethod?.Invoke(m_moduleInstance, new[] { key });
 			}
 
 			// 操作按钮：刷新状态
 			if (GUILayout.Button("刷新", GUILayout.Width(50)))
 			{
-				var key = m_KeyProperty?.GetValue(node);
+				var key = m_keyProperty?.GetValue(node);
 				if (key != null)
-					m_GetStateMethod?.Invoke(m_ModuleInstance, new[] { key });
+					m_getStateMethod?.Invoke(m_moduleInstance, new[] { key });
 			}
 
 			EditorGUILayout.EndHorizontal();
 
 			// 折叠/展开子节点
-			if (hasChildren && m_FoldoutStates.TryGetValue(node, out var open) && open)
+			if (hasChildren && m_foldoutStates.TryGetValue(node, out var open) && open)
 			{
 				foreach (var child in children)
 				{
@@ -309,7 +309,7 @@ namespace FuFramework.RedDot.Editor
 		{
 			var nodes = GetAllNodes();
 			if (nodes == null) return;
-			SetAllFoldouts(nodes, m_FoldoutStates, true);
+			SetAllFoldouts(nodes, m_foldoutStates, true);
 		}
 
 		/// <summary>
@@ -319,7 +319,7 @@ namespace FuFramework.RedDot.Editor
 		{
 			var nodes = GetAllNodes();
 			if (nodes == null) return;
-			SetAllFoldouts(nodes, m_FoldoutStates, false);
+			SetAllFoldouts(nodes, m_foldoutStates, false);
 		}
 
 		#endregion
@@ -332,13 +332,13 @@ namespace FuFramework.RedDot.Editor
 		/// <returns>初始化成功返回 true</returns>
 		protected override bool EnsureReflection()
 		{
-			if (m_ModuleType != null && m_ModuleInstance != null) return true;
+			if (m_moduleType != null && m_moduleInstance != null) return true;
 
-			m_ModuleType = HotfixReflection.RedDotModule;
-			if (m_ModuleType == null) return false;
+			m_moduleType = HotfixReflection.RedDotModule;
+			if (m_moduleType == null) return false;
 
-			m_ModuleInstance = HotfixReflection.GetStaticInstance(m_ModuleType);
-			if (m_ModuleInstance == null) return false;
+			m_moduleInstance = HotfixReflection.GetStaticInstance(m_moduleType);
+			if (m_moduleInstance == null) return false;
 
 			var nodeType = HotfixReflection.RedDotNode;
 			if (nodeType == null) return false;
@@ -346,25 +346,25 @@ namespace FuFramework.RedDot.Editor
 			var keyType = HotfixReflection.RedDotKey;
 			if (keyType == null) return false;
 
-			m_GetAllNodesMethod = m_ModuleType.GetMethod("GetAllNodes", BindingFlags.Public | BindingFlags.Instance);
-			m_GetStateMethod    = m_ModuleType.GetMethod("GetState",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
-			m_MarkReadMethod    = m_ModuleType.GetMethod("MarkRead",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+			m_getAllNodesMethod = m_moduleType.GetMethod("GetAllNodes", BindingFlags.Public | BindingFlags.Instance);
+			m_getStateMethod    = m_moduleType.GetMethod("GetState",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
+			m_markReadMethod    = m_moduleType.GetMethod("MarkRead",    BindingFlags.Public | BindingFlags.Instance, null, new[] { keyType }, null);
 
-			m_GetChildrenMethod = nodeType.GetMethod("GetChildren", BindingFlags.Public | BindingFlags.Instance);
+			m_getChildrenMethod = nodeType.GetMethod("GetChildren", BindingFlags.Public | BindingFlags.Instance);
 
-			m_KeyProperty           = nodeType.GetProperty("Key",           BindingFlags.Public | BindingFlags.Instance);
-			m_ParentProperty        = nodeType.GetProperty("Parent",        BindingFlags.Public | BindingFlags.Instance);
-			m_RawCountProperty      = nodeType.GetProperty("RawCount",      BindingFlags.Public | BindingFlags.Instance);
-			m_TotalCountProperty    = nodeType.GetProperty("TotalCount",    BindingFlags.Public | BindingFlags.Instance);
-			m_IsActiveProperty      = nodeType.GetProperty("IsActive",      BindingFlags.Public | BindingFlags.Instance);
-			m_IsReadProperty        = nodeType.GetProperty("IsRead",        BindingFlags.Public | BindingFlags.Instance);
-			m_IsDirtyProperty       = nodeType.GetProperty("IsDirty",       BindingFlags.Public | BindingFlags.Instance);
-			m_LogicTypeProperty     = nodeType.GetProperty("LogicType",     BindingFlags.Public | BindingFlags.Instance);
-			m_CleanStrategyProperty = nodeType.GetProperty("CleanStrategy", BindingFlags.Public | BindingFlags.Instance);
-			m_DisplayModeProperty   = nodeType.GetProperty("DisplayMode",   BindingFlags.Public | BindingFlags.Instance);
-			m_CalculatorProperty    = nodeType.GetProperty("Calculator",    BindingFlags.Public | BindingFlags.Instance);
-			m_TriggerEventsProperty = nodeType.GetProperty("TriggerEvents", BindingFlags.Public | BindingFlags.Instance);
-			m_IsStaticProperty      = nodeType.GetProperty("IsStatic",      BindingFlags.Public | BindingFlags.Instance);
+			m_keyProperty           = nodeType.GetProperty("Key",           BindingFlags.Public | BindingFlags.Instance);
+			m_parentProperty        = nodeType.GetProperty("Parent",        BindingFlags.Public | BindingFlags.Instance);
+			m_rawCountProperty      = nodeType.GetProperty("RawCount",      BindingFlags.Public | BindingFlags.Instance);
+			m_totalCountProperty    = nodeType.GetProperty("TotalCount",    BindingFlags.Public | BindingFlags.Instance);
+			m_isActiveProperty      = nodeType.GetProperty("IsActive",      BindingFlags.Public | BindingFlags.Instance);
+			m_isReadProperty        = nodeType.GetProperty("IsRead",        BindingFlags.Public | BindingFlags.Instance);
+			m_isDirtyProperty       = nodeType.GetProperty("IsDirty",       BindingFlags.Public | BindingFlags.Instance);
+			m_logicTypeProperty     = nodeType.GetProperty("LogicType",     BindingFlags.Public | BindingFlags.Instance);
+			m_cleanStrategyProperty = nodeType.GetProperty("CleanStrategy", BindingFlags.Public | BindingFlags.Instance);
+			m_displayModeProperty   = nodeType.GetProperty("DisplayMode",   BindingFlags.Public | BindingFlags.Instance);
+			m_calculatorProperty    = nodeType.GetProperty("Calculator",    BindingFlags.Public | BindingFlags.Instance);
+			m_triggerEventsProperty = nodeType.GetProperty("TriggerEvents", BindingFlags.Public | BindingFlags.Instance);
+			m_isStaticProperty      = nodeType.GetProperty("IsStatic",      BindingFlags.Public | BindingFlags.Instance);
 
 			return true;
 		}
@@ -374,27 +374,27 @@ namespace FuFramework.RedDot.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_ModuleType            = null;
-			m_ModuleInstance        = null;
-			m_GetAllNodesMethod     = null;
-			m_GetStateMethod        = null;
-			m_MarkReadMethod        = null;
-			m_GetChildrenMethod     = null;
-			m_KeyProperty           = null;
-			m_ParentProperty        = null;
-			m_RawCountProperty      = null;
-			m_TotalCountProperty    = null;
-			m_IsActiveProperty      = null;
-			m_IsReadProperty        = null;
-			m_IsDirtyProperty       = null;
-			m_LogicTypeProperty     = null;
-			m_CleanStrategyProperty = null;
-			m_DisplayModeProperty   = null;
-			m_CalculatorProperty    = null;
-			m_TriggerEventsProperty = null;
-			m_IsStaticProperty      = null;
+			m_moduleType            = null;
+			m_moduleInstance        = null;
+			m_getAllNodesMethod     = null;
+			m_getStateMethod        = null;
+			m_markReadMethod        = null;
+			m_getChildrenMethod     = null;
+			m_keyProperty           = null;
+			m_parentProperty        = null;
+			m_rawCountProperty      = null;
+			m_totalCountProperty    = null;
+			m_isActiveProperty      = null;
+			m_isReadProperty        = null;
+			m_isDirtyProperty       = null;
+			m_logicTypeProperty     = null;
+			m_cleanStrategyProperty = null;
+			m_displayModeProperty   = null;
+			m_calculatorProperty    = null;
+			m_triggerEventsProperty = null;
+			m_isStaticProperty      = null;
 
-			m_FoldoutStates.Clear();
+			m_foldoutStates.Clear();
 		}
 
 		/// <summary>
@@ -404,7 +404,7 @@ namespace FuFramework.RedDot.Editor
 		private List<object> GetAllNodes()
 		{
 			var nodes = new List<object>();
-			var result = m_GetAllNodesMethod?.Invoke(m_ModuleInstance, null);
+			var result = m_getAllNodesMethod?.Invoke(m_moduleInstance, null);
 			if (result is IEnumerable<object> enumerable)
 			{
 				foreach (var node in enumerable)
@@ -428,7 +428,7 @@ namespace FuFramework.RedDot.Editor
 		/// </summary>
 		/// <param name="node">目标节点</param>
 		/// <returns>父节点，无父节点时返回 null</returns>
-		private object GetParent(object node) => m_ParentProperty?.GetValue(node);
+		private object GetParent(object node) => m_parentProperty?.GetValue(node);
 
 		/// <summary>
 		/// 获取节点的所有子节点
@@ -438,7 +438,7 @@ namespace FuFramework.RedDot.Editor
 		private List<object> GetChildren(object node)
 		{
 			var children = new List<object>();
-			var value    = m_GetChildrenMethod?.Invoke(node, null);
+			var value    = m_getChildrenMethod?.Invoke(node, null);
 			if (value is IEnumerable<object> enumerable)
 			{
 				foreach (var child in enumerable)
@@ -464,7 +464,7 @@ namespace FuFramework.RedDot.Editor
 		/// <returns>Key 字符串，无法获取时返回 &lt;null&gt;</returns>
 		private string GetKeyString(object node)
 		{
-			var key = m_KeyProperty?.GetValue(node);
+			var key = m_keyProperty?.GetValue(node);
 			return key?.ToString() ?? "<null>";
 		}
 

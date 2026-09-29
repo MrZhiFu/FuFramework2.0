@@ -22,7 +22,7 @@ namespace Hotfix.Framework.UI
 		/// <returns>是否存在界面。</returns>
 		public bool Has(int serialId)
 		{
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				if (!group.Has(serialId)) continue;
 				return true;
@@ -40,7 +40,7 @@ namespace Hotfix.Framework.UI
 		{
 			winName.NotNullOrEmpty(nameof(winName));
 
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				if (!group.Has(winName)) continue;
 				return true;
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.UI
 		/// <returns>要获取的界面。</returns>
 		public WinBase Get(int serialId)
 		{
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				var ui = group.Get(serialId);
 				if (ui == null) continue;
@@ -81,7 +81,7 @@ namespace Hotfix.Framework.UI
 		{
 			winName.NotNullOrEmpty(nameof(winName));
 
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				var ui = group.Get(winName);
 				if (ui == null) continue;
@@ -101,14 +101,14 @@ namespace Hotfix.Framework.UI
 			// 获取指定层级的顶部界面
 			if (uiLayer.HasValue)
 			{
-				return m_UIGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentWinBase : null;
+				return m_uiGroupDict.TryGetValue(uiLayer.Value, out var group) ? group.CurrentWinBase : null;
 			}
 
 			// 获取所有层级中最顶部的界面（层级值最大的）
 			WinBase topWin   = null;
 			var     maxLayer = int.MinValue;
 
-			foreach (var (layer, group) in m_UIGroupDict)
+			foreach (var (layer, group) in m_uiGroupDict)
 			{
 				var layerValue = (int)layer;
 				if (layerValue > maxLayer && group.CurrentWinBase != null)
@@ -128,7 +128,7 @@ namespace Hotfix.Framework.UI
 		public WinBase[] GetAllLoaded()
 		{
 			var results = new List<WinBase>();
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				results.AddRange(group.GetAll());
 			}
@@ -145,7 +145,7 @@ namespace Hotfix.Framework.UI
 			results.NotNull(nameof(results));
 
 			results.Clear();
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				results.AddRange(group.GetAll());
 			}
@@ -158,8 +158,8 @@ namespace Hotfix.Framework.UI
 		public int[] GetAllLoadingSerialIds()
 		{
 			var index   = 0;
-			var results = new int[m_LoadingDict.Count];
-			foreach (var (id, _) in m_LoadingDict)
+			var results = new int[m_loadingDict.Count];
+			foreach (var (id, _) in m_loadingDict)
 			{
 				results[index++] = id;
 			}
@@ -176,7 +176,7 @@ namespace Hotfix.Framework.UI
 			results.NotNull(nameof(results));
 
 			results.Clear();
-			foreach (var (id, _) in m_LoadingDict)
+			foreach (var (id, _) in m_loadingDict)
 			{
 				results.Add(id);
 			}
@@ -187,13 +187,13 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="serialId">界面序列编号。</param>
 		/// <returns>是否正在加载界面。</returns>
-		public bool IsLoading(int serialId) => m_LoadingDict.ContainsKey(serialId);
+		public bool IsLoading(int serialId) => m_loadingDict.ContainsKey(serialId);
 
 		/// <summary>
 		/// 是否正在加载界面。
 		/// </summary>
 		/// <param name="winName">界面资源名称。</param>
 		/// <returns>是否正在加载界面。</returns>
-		public bool IsLoading(string winName) => m_LoadingDict.ContainsValue(winName);
+		public bool IsLoading(string winName) => m_loadingDict.ContainsValue(winName);
 	}
 }

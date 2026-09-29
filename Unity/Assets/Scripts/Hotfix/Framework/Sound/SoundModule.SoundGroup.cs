@@ -18,17 +18,17 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 声音播放代理列表
 			/// </summary>
-			private readonly List<SoundAgent> m_SoundAgents = new();
+			private readonly List<SoundAgent> m_soundAgents = new();
 
 			/// <summary>
 			/// 是否静音
 			/// </summary>
-			private bool m_Mute;
+			private bool m_mute;
 
 			/// <summary>
 			/// 声音组音量。
 			/// </summary>
-			private float m_Volume;
+			private float m_volume;
 
 			/// <summary>
 			/// 获取声音组名称。
@@ -43,20 +43,20 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 获取声音代理数。
 			/// </summary>
-			public int SoundAgentCount => m_SoundAgents.Count;
+			public int SoundAgentCount => m_soundAgents.Count;
 
 			/// <summary>
 			/// 获取或设置声音组静音。
 			/// </summary>
 			public bool Mute
 			{
-				get => m_Mute;
+				get => m_mute;
 				set
 				{
-					if (value == m_Mute) return;
-					m_Mute = value;
+					if (value == m_mute) return;
+					m_mute = value;
 					// TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
-					foreach (var soundAgent in m_SoundAgents)
+					foreach (var soundAgent in m_soundAgents)
 					{
 						soundAgent.RefreshMute();
 					}
@@ -68,13 +68,13 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public float Volume
 			{
-				get => m_Volume;
+				get => m_volume;
 				set
 				{
-					if (Mathf.Approximately(value, m_Volume)) return;
-					m_Volume = value;
+					if (Mathf.Approximately(value, m_volume)) return;
+					m_volume = value;
 					// TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
-					foreach (var soundAgent in m_SoundAgents)
+					foreach (var soundAgent in m_soundAgents)
 					{
 						soundAgent.RefreshVolume();
 					}
@@ -113,7 +113,7 @@ namespace Hotfix.Framework.Sound
 				soundAgentGo.transform.localScale = Vector3.one;
 				var soundAgent = soundAgentGo.GetOrAddComponent<SoundAgent>();
 				soundAgent.Init(this);
-				m_SoundAgents.Add(soundAgent);
+				m_soundAgents.Add(soundAgent);
 			}
 
 			/// <summary>
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.Sound
 				SoundAgent samePriorityCandidate  = null;
 
 				// 遍历所有声音播放代理，找到合适的代理播放声音
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					// 1.如果存在没有在播放声音的代理，则将其作为候选代理，并跳出查找。
 					if (!soundAgent.IsPlaying)
@@ -207,7 +207,7 @@ namespace Hotfix.Framework.Sound
 			/// <returns>是否停止播放声音成功。</returns>
 			public bool StopSound(int serialId, float fadeOutSeconds)
 			{
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					if (soundAgent.SerialId == serialId)
 					{
@@ -227,7 +227,7 @@ namespace Hotfix.Framework.Sound
 			/// <returns>是否暂停播放声音成功。</returns>
 			public bool PauseSound(int serialId, float fadeOutSeconds)
 			{
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					if (soundAgent.SerialId == serialId)
 					{
@@ -247,7 +247,7 @@ namespace Hotfix.Framework.Sound
 			/// <returns>是否恢复播放声音成功。</returns>
 			public bool ResumeSound(int serialId, float fadeInSeconds)
 			{
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					if (soundAgent.SerialId == serialId)
 					{
@@ -265,7 +265,7 @@ namespace Hotfix.Framework.Sound
 			/// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
 			public void StopAllLoadedSounds(float fadeOutSeconds)
 			{
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					if (soundAgent.IsPlaying)
 						soundAgent.Stop(fadeOutSeconds);
@@ -278,7 +278,7 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			public void ResetAllAgents()
 			{
-				foreach (var soundAgent in m_SoundAgents)
+				foreach (var soundAgent in m_soundAgents)
 				{
 					if (soundAgent == null) continue; // Unity teardown 时 agent 组件可能已销毁
 					soundAgent.Reset();

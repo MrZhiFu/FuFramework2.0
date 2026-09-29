@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Core
 							uint val2 = seed + 0;
 							uint val3 = seed - prime1;
 
-							int count = length >> 4;
+							var count = length >> 4;
 							for (int i = 0; i < count; i++)
 							{
 								var pos0 = *(uint*)(input + 0);
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.Core
 							ulong val2 = seed + 0;
 							ulong val3 = seed - prime1;
 
-							int count = length >> 5;
+							var count = length >> 5;
 							for (int i = 0; i < count; i++)
 							{
 								var pos0 = *(ulong*)(input + 0);
@@ -280,7 +280,7 @@ namespace Hotfix.Framework.Core
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static uint Hash32(byte[] buffer)
 				{
-					int length = buffer.Length;
+					var length = buffer.Length;
 					unsafe
 					{
 						fixed (byte* pointer = buffer)
@@ -302,7 +302,7 @@ namespace Hotfix.Framework.Core
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				public static ulong Hash64(byte[] buffer)
 				{
-					int length = buffer.Length;
+					var length = buffer.Length;
 					unsafe
 					{
 						fixed (byte* pointer = buffer)

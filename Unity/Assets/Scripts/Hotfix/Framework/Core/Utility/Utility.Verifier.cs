@@ -17,12 +17,12 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 缓存字节数组的长度，0x1000表示缓存16KB数据。
 			/// </summary>
-			private const int CachedBytesLength = 0x1000;
+			private const int CACHED_BYTES_LENGTH = 0x1000;
 
 			/// <summary>
 			/// 缓存字节数组。
 			/// </summary>
-			private static readonly byte[] CachedBytes = new byte[CachedBytesLength];
+			private static readonly byte[] CachedBytes = new byte[CACHED_BYTES_LENGTH];
 
 			/// <summary>
 			/// Crc32算法对象。
@@ -72,7 +72,7 @@ namespace Hotfix.Framework.Core
 
 				while (true)
 				{
-					var bytesRead = stream.Read(CachedBytes, 0, CachedBytesLength);
+					var bytesRead = stream.Read(CachedBytes, 0, CACHED_BYTES_LENGTH);
 					if (bytesRead > 0)
 						CRC32.HashCore(CachedBytes, 0, bytesRead);
 					else
@@ -81,7 +81,7 @@ namespace Hotfix.Framework.Core
 
 				var result = (int)CRC32.HashFinal();
 				CRC32.Initialize();
-				Array.Clear(CachedBytes, 0, CachedBytesLength);
+				Array.Clear(CachedBytes, 0, CACHED_BYTES_LENGTH);
 				return result;
 			}
 
@@ -140,7 +140,7 @@ namespace Hotfix.Framework.Core
 				var codeIndex = 0;
 				while (true)
 				{
-					var bytesRead = stream.Read(CachedBytes, 0, CachedBytesLength);
+					var bytesRead = stream.Read(CachedBytes, 0, CACHED_BYTES_LENGTH);
 					if (bytesRead > 0)
 					{
 						if (length > 0)
@@ -162,7 +162,7 @@ namespace Hotfix.Framework.Core
 
 				var result = (int)CRC32.HashFinal();
 				CRC32.Initialize();
-				Array.Clear(CachedBytes, 0, CachedBytesLength);
+				Array.Clear(CachedBytes, 0, CACHED_BYTES_LENGTH);
 				return result;
 			}
 		}

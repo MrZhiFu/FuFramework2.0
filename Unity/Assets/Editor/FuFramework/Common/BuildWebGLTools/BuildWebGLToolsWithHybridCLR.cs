@@ -27,13 +27,13 @@ namespace FuFramework.Core.Editor
 		private static void Print()
 		{
 #if UNITY_EDITOR_OSX
-			string commandLine1 = $"cd {EditorApplication.applicationPath}/Contents/il2cpp";
-			string commandLine2 = "mv libil2cpp libil2cpp-origin";
-			string commandLine3 = $"ln -s \"{GetProjectPath()}/HybridCLRData/LocalIl2CppData-OSXEditor/il2cpp/libil2cpp\" libil2cpp";
+			var commandLine1 = $"cd {EditorApplication.applicationPath}/Contents/il2cpp";
+			var commandLine2 = "mv libil2cpp libil2cpp-origin";
+			var commandLine3 = $"ln -s \"{GetProjectPath()}/HybridCLRData/LocalIl2CppData-OSXEditor/il2cpp/libil2cpp\" libil2cpp";
 #else
-			string commandLine1 = $"cd /d {EditorApplication.applicationPath.Replace(".exe", string.Empty)}/Editor/Data/il2cpp";
-			string commandLine2 = "ren libil2cpp libil2cpp-origin";
-			string commandLine3 = $"mklink /D libil2cpp \"{GetProjectPath()}/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/libil2cpp\"";
+			var commandLine1 = $"cd /d {EditorApplication.applicationPath.Replace(".exe", string.Empty)}/Editor/Data/il2cpp";
+			var commandLine2 = "ren libil2cpp libil2cpp-origin";
+			var commandLine3 = $"mklink /D libil2cpp \"{GetProjectPath()}/HybridCLRData/LocalIl2CppData-WindowsEditor/il2cpp/libil2cpp\"";
 #endif
 			Debug.Log("打开命令行终端。依次执行以下3条命令");
 			Debug.Log(commandLine1);

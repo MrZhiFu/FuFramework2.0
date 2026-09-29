@@ -20,19 +20,19 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 界面组字典。key为组名称，value为组对象。
 		/// </summary>
-		private Dictionary<EUILayer, UIGroup> m_UIGroupDict;
+		private Dictionary<EUILayer, UIGroup> m_uiGroupDict;
 
 		/// <summary>
 		/// 获取界面组数量。
 		/// </summary>
-		public int GroupCount => m_UIGroupDict.Count;
+		public int GroupCount => m_uiGroupDict.Count;
 
 		/// <summary>
 		/// 是否存在界面组。
 		/// </summary>
 		/// <param name="layer">界面组层级。</param>
 		/// <returns>是否存在界面组。</returns>
-		public bool HasGroup(EUILayer layer) => m_UIGroupDict.ContainsKey(layer);
+		public bool HasGroup(EUILayer layer) => m_uiGroupDict.ContainsKey(layer);
 
 		/// <summary>
 		/// 获取界面组。
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.UI
 		/// <returns>要获取的界面组。</returns>
 		public UIGroup GetGroup(EUILayer layer)
 		{
-			return m_UIGroupDict.GetValueOrDefault(layer);
+			return m_uiGroupDict.GetValueOrDefault(layer);
 		}
 
 		/// <summary>
@@ -51,8 +51,8 @@ namespace Hotfix.Framework.UI
 		public UIGroup[] GetAllGroups()
 		{
 			var index   = 0;
-			var results = new UIGroup[m_UIGroupDict.Count];
-			foreach (var (_, group) in m_UIGroupDict)
+			var results = new UIGroup[m_uiGroupDict.Count];
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				results[index++] = group;
 			}
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.UI
 			results.NotNull(nameof(results));
 
 			results.Clear();
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				results.Add(group);
 			}
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.UI
 			component.MakeFullScreen();
 			component.Init(layer);
 
-			m_UIGroupDict.Add(layer, component);
+			m_uiGroupDict.Add(layer, component);
 			return true;
 		}
 	}

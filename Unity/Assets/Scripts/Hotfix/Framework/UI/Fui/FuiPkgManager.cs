@@ -20,10 +20,10 @@ namespace Hotfix.Framework.UI
 	///   引用 0→1 → ReloadAssets（重新加载纹理/音频）
 	///
 	/// 【关键保障】
-	/// 1. 加载去重：m_LoadingTasks 保证同一包仅一个加载任务，并发请求共享结果。
-	/// 2. 循环依赖防护：AddPkgRef/SubPkgRef 用递归栈防栈溢出；加载用 m_LoadingTasks 防死锁。
+	/// 1. 加载去重：m_loadingTasks 保证同一包仅一个加载任务，并发请求共享结果。
+	/// 2. 循环依赖防护：AddPkgRef/SubPkgRef 用递归栈防栈溢出；加载用 m_loadingTasks 防死锁。
 	/// 3. 取消语义：RemovePkg 取消加载中任务（cts.Cancel 不移除字典），任务在任意 await 边界观察取消并清理。
-	/// 4. 资源恢复：m_UnloadedAssetPkgSet 标记已卸载资源包，缓存命中仅对其 ReloadAssets，避免无谓遍历。
+	/// 4. 资源恢复：m_unloadedAssetPkgSet 标记已卸载资源包，缓存命中仅对其 ReloadAssets，避免无谓遍历。
 	/// 5. 完全移除：RemovePkg/RemoveAllPkg 彻底删除（元数据+资源+FGUI 全局缓存），用于退出或显式清理。
 	///
 	/// 【与 YooAsset 集成】经 AssetLoadRegister 加载资源，UnloadAll 释放句柄让 AssetBundle 可卸载，防句柄悬挂泄漏。
@@ -33,26 +33,26 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 缓存已加载的包的字典，key:包名，value：包
 		/// </summary>
-		private readonly Dictionary<string, UIPackage> m_LoadedPkgDict = new();
+		private readonly Dictionary<string, UIPackage> m_loadedPkgDict = new();
 
 		/// <summary>
 		/// 加载任务去重字典，key:包名，value：共享完成源。
 		/// 同一包仅一个加载任务，并发请求共享同一完成源（UniTaskCompletionSource.Task 可多次 await），
 		/// 避免 async UniTask 重复 await 报错；任务完成后由 finally 移除。
 		/// </summary>
-		private readonly Dictionary<string, UniTaskCompletionSource<UIPackage>> m_LoadingTasks = new();
+		private readonly Dictionary<string, UniTaskCompletionSource<UIPackage>> m_loadingTasks = new();
 
 		/// <summary>
 		/// 加载任务取消令牌源字典，key:包名，value：CTS。
 		/// 注意：RemovePkg 取消时仅 Cancel 不移除——任务续体需检查到已取消 token 才能正确中断，
 		/// 条目由 LoadPkgTaskAsync 的 finally 统一移除并 Dispose。
 		/// </summary>
-		private readonly Dictionary<string, CancellationTokenSource> m_LoadingCts = new();
+		private readonly Dictionary<string, CancellationTokenSource> m_loadingCts = new();
 
 		/// <summary>
 		/// 包对应的资源加载器字典，key:包名，value：资源加载器，一个包对应一个资源加载器，用于加载包的描述文件和资源文件
 		/// </summary>
-		private readonly Dictionary<string, AssetLoadRegister> m_PkgAssetLoaderDict = new();
+		private readonly Dictionary<string, AssetLoadRegister> m_pkgAssetLoaderDict = new();
 
 		/// <summary>
 		/// 包引用计数，key:包名，value：存活实例数（引用该包的 Win 实例总数）。
@@ -60,37 +60,37 @@ namespace Hotfix.Framework.UI
 		/// 界面开关不影响计数。归零时 UnloadAssets + UnloadAll，0→1 时 ReloadAssets。
 		/// AddPkgRef/SubPkgRef 每次递归处理依赖包（对称），循环依赖由递归栈防护。
 		/// </summary>
-		private readonly Dictionary<string, int> m_PkgRefCountDict = new();
+		private readonly Dictionary<string, int> m_pkgRefCountDict = new();
 
 		/// <summary>
 		/// 资源已卸载（UnloadAssets）的包名集合。
 		/// 缓存命中时仅对标记包 ReloadAssets 恢复资源（恢复后即移除标记），
 		/// 正常包缓存命中零遍历开销。
 		/// </summary>
-		private readonly HashSet<string> m_UnloadedAssetPkgSet = new();
+		private readonly HashSet<string> m_unloadedAssetPkgSet = new();
 
 		/// <summary>
 		/// AddPkgRef 递归栈，防止循环依赖（A↔B）下递增无截断导致无限递归栈溢出。
 		/// 已在栈中则跳过，保证循环依赖整环仅增/减一次。
 		/// </summary>
-		private readonly HashSet<string> m_AddPkgRefStack = new();
+		private readonly HashSet<string> m_addPkgRefStack = new();
 
 		/// <summary>
 		/// SubPkgRef 递归栈，防止循环依赖下冗余递归。
 		/// </summary>
-		private readonly HashSet<string> m_SubPkgRefStack = new();
+		private readonly HashSet<string> m_subPkgRefStack = new();
 
 		/// <summary>
 		/// 包是否已加载。
 		/// </summary>
 		/// <param name="pkgName">包名。</param>
 		/// <returns>包已加载返回 true，否则返回 false。</returns>
-		public bool IsLoadedPkg(string pkgName) => m_LoadedPkgDict.ContainsKey(pkgName);
+		public bool IsLoadedPkg(string pkgName) => m_loadedPkgDict.ContainsKey(pkgName);
 
 		/// <summary>
 		/// 异步加载指定包（含依赖包）。
 		/// 去重：已加载 → 直接返回缓存；正在加载 → 返回同一任务（共享结果，不重复加载）。
-		/// 缓存命中时仅对曾 UnloadAssets 的包（m_UnloadedAssetPkgSet 标记）ReloadAssets 恢复资源，
+		/// 缓存命中时仅对曾 UnloadAssets 的包（m_unloadedAssetPkgSet 标记）ReloadAssets 恢复资源，
 		/// 正常包 O(1) 判断零遍历开销。
 		/// </summary>
 		/// <param name="pkgName">包名。</param>
@@ -98,10 +98,10 @@ namespace Hotfix.Framework.UI
 		public UniTask<UIPackage> LoadPkgAsync(string pkgName)
 		{
 			// 已经加载过的包直接返回；仅当资源曾卸载（UnloadAssets 状态）时恢复，避免 UI 空白
-			if (m_LoadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
+			if (m_loadedPkgDict.TryGetValue(pkgName, out var loadedPkg))
 			{
 				// 恢复后清除标记，避免反复遍历
-				if (m_UnloadedAssetPkgSet.Remove(pkgName))
+				if (m_unloadedAssetPkgSet.Remove(pkgName))
 				{
 					loadedPkg.ReloadAssets();
 				}
@@ -110,7 +110,7 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 并发去重：同路径加载中，共享完成源（UniTaskCompletionSource.Task 可被多个调用者 await）
-			if (m_LoadingTasks.TryGetValue(pkgName, out var sharedSource))
+			if (m_loadingTasks.TryGetValue(pkgName, out var sharedSource))
 			{
 				return sharedSource.Task;
 			}
@@ -119,11 +119,11 @@ namespace Hotfix.Framework.UI
 
 			// 创建取消令牌源
 			var cts = new CancellationTokenSource();
-			m_LoadingCts[pkgName] = cts;
+			m_loadingCts[pkgName] = cts;
 
 			// 创建共享完成源并启动加载（不再直接返回 async UniTask，避免多调用者重复 await 报错）
 			var taskSource = new UniTaskCompletionSource<UIPackage>();
-			m_LoadingTasks[pkgName] = taskSource;
+			m_loadingTasks[pkgName] = taskSource;
 			LoadPkgTaskAsync(pkgName, cts, taskSource).Forget();
 
 			return taskSource.Task;
@@ -132,8 +132,8 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 执行包加载任务（含依赖），完成后写入缓存并通过 taskSource 通知所有 await 者。
 		/// 立即执行（async 同步到第一个 await，续体在 PlayerLoop 调度）：即使调用方丢弃任务也会跑完，
-		/// finally 统一清理 m_LoadingTasks/m_LoadingCts 并 Dispose CTS——不会因丢弃任务而残留。
-		/// 取消语义：任意 await 边界检查 cts 取消则抛异常，不写入 m_LoadedPkgDict。
+		/// finally 统一清理 m_loadingTasks/m_loadingCts 并 Dispose CTS——不会因丢弃任务而残留。
+		/// 取消语义：任意 await 边界检查 cts 取消则抛异常，不写入 m_loadedPkgDict。
 		/// </summary>
 		/// <param name="pkgName">包名。</param>
 		/// <param name="cts">取消令牌源。</param>
@@ -149,7 +149,7 @@ namespace Hotfix.Framework.UI
 				var pkg = await LoadPkgAndDepPkgAsync(pkgName);
 
 				// 缓存结果
-				m_LoadedPkgDict[pkgName] = pkg;
+				m_loadedPkgDict[pkgName] = pkg;
 
 				taskSource.TrySetResult(pkg);
 			}
@@ -157,12 +157,12 @@ namespace Hotfix.Framework.UI
 			{
 				// 失败/取消清理（防僵尸包与孤立 loader）：
 				// 1. AddPackage 可能已在依赖加载前执行（LoadPkgInternalAsync），取消后 FGUI 静态表残留包，需移除；
-				// 2. LoadDescAsync 已创建的资源加载器需回收——仅当 m_LoadingCts 中仍是本任务的 cts 才清理，
+				// 2. LoadDescAsync 已创建的资源加载器需回收——仅当 m_loadingCts 中仍是本任务的 cts 才清理，
 				//    避免误删取消后立即重新加载的新任务刚创建的 loader。
 				if (UIPackage.GetByName(pkgName) != null)
 					UIPackage.RemovePackage(pkgName);
-				if (m_LoadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)
-																		  && m_PkgAssetLoaderDict.Remove(pkgName, out var loader))
+				if (m_loadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)
+																		  && m_pkgAssetLoaderDict.Remove(pkgName, out var loader))
 				{
 					loader.Dispose();
 				}
@@ -172,8 +172,8 @@ namespace Hotfix.Framework.UI
 			finally
 			{
 				// 加载完成后移除任务和取消令牌源，并释放 CTS（防止丢弃任务时残留）
-				m_LoadingTasks.Remove(pkgName);
-				m_LoadingCts.Remove(pkgName);
+				m_loadingTasks.Remove(pkgName);
+				m_loadingCts.Remove(pkgName);
 				cts.Dispose();
 			}
 		}
@@ -200,14 +200,14 @@ namespace Hotfix.Framework.UI
 			try
 			{
 				// 检查是否被取消
-				if (m_LoadingCts.TryGetValue(pkgName, out var cts))
+				if (m_loadingCts.TryGetValue(pkgName, out var cts))
 					cts.Token.ThrowIfCancellationRequested();
 
 				// 加载包的描述文件
 				var pkgDesc = await LoadDescAsync(pkgName);
 
 				// 检查是否被取消
-				if (m_LoadingCts.TryGetValue(pkgName, out cts))
+				if (m_loadingCts.TryGetValue(pkgName, out cts))
 					cts.Token.ThrowIfCancellationRequested();
 
 				// 加载完成后，添加到UIPackage中，并加载pkg中的资源
@@ -243,7 +243,7 @@ namespace Hotfix.Framework.UI
 				if (dep.TryGetValue("name", out var depPkgName))
 				{
 					// 已加载的跳过；正在加载的说明是循环依赖，也跳过加载
-					if (!m_LoadedPkgDict.ContainsKey(depPkgName) && !m_LoadingTasks.ContainsKey(depPkgName))
+					if (!m_loadedPkgDict.ContainsKey(depPkgName) && !m_loadingTasks.ContainsKey(depPkgName))
 					{
 						tasks.Add(LoadPkgAsync(depPkgName));
 					}
@@ -254,7 +254,7 @@ namespace Hotfix.Framework.UI
 			await UniTask.WhenAll(tasks);
 
 			// 依赖加载完成后，若包已被取消则中断（防止 AddPackage 后取消不被观察的残留窗口）
-			if (m_LoadingCts.TryGetValue(pkg.name, out var cts))
+			if (m_loadingCts.TryGetValue(pkg.name, out var cts))
 			{
 				cts.Token.ThrowIfCancellationRequested();
 			}
@@ -274,14 +274,14 @@ namespace Hotfix.Framework.UI
 			var rootPath = UtilityAOT.AssetPath.GetUIRootPath();
 			var descPath = $"{rootPath}{pkgName}/{pkgName}_fui.bytes";
 
-			m_PkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
+			m_pkgAssetLoaderDict.TryGetValue(pkgName, out var descLoader);
 			if (descLoader != null)
 				return await descLoader.LoadAsync<TextAsset>(descPath);
 
 			// 创建包描述文件加载器对应的资源加载器注册
 			descLoader = new AssetLoadRegister();
 
-			m_PkgAssetLoaderDict[pkgName] = descLoader;
+			m_pkgAssetLoaderDict[pkgName] = descLoader;
 
 			// 等待描述文件加载完成
 			return await descLoader.LoadAsync<TextAsset>(descPath);
@@ -304,11 +304,11 @@ namespace Hotfix.Framework.UI
 				var extPath  = $"{itemPath}{extension}";
 
 				// 等待资源文件加载完成
-				m_PkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
+				m_pkgAssetLoaderDict.TryGetValue(pkgName, out var resLoader);
 				if (resLoader == null)
 				{
 					resLoader                     = new AssetLoadRegister();
-					m_PkgAssetLoaderDict[pkgName] = resLoader;
+					m_pkgAssetLoaderDict[pkgName] = resLoader;
 				}
 
 				var assetObj = await resLoader.LoadAsync(extPath, type);
@@ -327,29 +327,29 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 添加包引用（Win 实例存活时调用，OnInit 处）。
 		/// 计数 0→1 时 ReloadAssets 恢复纹理/音频并清除卸载标记；递归递增依赖包引用（对称于 SubPkgRef）。
-		/// 递归栈（m_AddPkgRefStack）防护循环依赖：已在栈中则跳过，循环依赖整环仅增一次。
+		/// 递归栈（m_addPkgRefStack）防护循环依赖：已在栈中则跳过，循环依赖整环仅增一次。
 		/// </summary>
 		/// <param name="pkgName">包名。</param>
 		public void AddPkgRef(string pkgName)
 		{
-			if (!m_AddPkgRefStack.Add(pkgName)) return; // 已在递归栈中（循环依赖），跳过
+			if (!m_addPkgRefStack.Add(pkgName)) return; // 已在递归栈中（循环依赖），跳过
 
 			try
 			{
-				var wasZero = !m_PkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
+				var wasZero = !m_pkgRefCountDict.TryGetValue(pkgName, out var count) || count == 0;
 
 				// 已存在且未归零 → 自增；不存在或已归零 → 初始化为 1
-				m_PkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
+				m_pkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
 
-				FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_PkgRefCountDict[pkgName]}");
+				FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_pkgRefCountDict[pkgName]}");
 
 				// 0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
-				if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+				if (m_loadedPkgDict.TryGetValue(pkgName, out var pkg))
 				{
 					if (wasZero)
 					{
 						pkg.ReloadAssets();
-						m_UnloadedAssetPkgSet.Remove(pkgName); // 资源已恢复，清除标记
+						m_unloadedAssetPkgSet.Remove(pkgName); // 资源已恢复，清除标记
 					}
 
 					foreach (var dep in pkg.dependencies)
@@ -363,34 +363,34 @@ namespace Hotfix.Framework.UI
 			}
 			finally
 			{
-				m_AddPkgRefStack.Remove(pkgName);
+				m_addPkgRefStack.Remove(pkgName);
 			}
 		}
 
 		/// <summary>
 		/// 减少包引用（Win 实例销毁时调用，Dispose 处）。
 		/// 每次递归递减依赖包引用（对称于 AddPkgRef）；计数归零时：
-		///   UnloadAssets 释放纹理/音频（元数据保留）+ 标记 m_UnloadedAssetPkgSet + UnloadAll 释放 YooAsset 句柄。
+		///   UnloadAssets 释放纹理/音频（元数据保留）+ 标记 m_unloadedAssetPkgSet + UnloadAll 释放 YooAsset 句柄。
 		/// 递归栈防护循环依赖：整环一起递减，最后一个引用释放整环卸载。
 		/// </summary>
 		/// <param name="pkgName">包名。</param>
 		public void SubPkgRef(string pkgName)
 		{
 			// 已在递归栈中（循环依赖），跳过
-			if (!m_SubPkgRefStack.Add(pkgName)) return;
+			if (!m_subPkgRefStack.Add(pkgName)) return;
 
 			try
 			{
-				if (!m_PkgRefCountDict.TryGetValue(pkgName, out var count)) return;
+				if (!m_pkgRefCountDict.TryGetValue(pkgName, out var count)) return;
 
 				// 已归零：防止循环依赖导致重复卸载
 				if (count <= 0) return;
 
-				count = --m_PkgRefCountDict[pkgName];
+				count = --m_pkgRefCountDict[pkgName];
 				FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
 				// 递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
-				if (m_LoadedPkgDict.TryGetValue(pkgName, out var pkg))
+				if (m_loadedPkgDict.TryGetValue(pkgName, out var pkg))
 				{
 					foreach (var dep in pkg.dependencies)
 					{
@@ -403,11 +403,11 @@ namespace Hotfix.Framework.UI
 					if (count == 0)
 					{
 						pkg.UnloadAssets();
-						m_UnloadedAssetPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
+						m_unloadedAssetPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
 						FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
 
 						// 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
-						if (m_PkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
+						if (m_pkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
 						{
 							loader.UnloadAll();
 						}
@@ -416,7 +416,7 @@ namespace Hotfix.Framework.UI
 			}
 			finally
 			{
-				m_SubPkgRefStack.Remove(pkgName);
+				m_subPkgRefStack.Remove(pkgName);
 			}
 		}
 
@@ -427,14 +427,14 @@ namespace Hotfix.Framework.UI
 		public void RemoveAllPkg()
 		{
 			// 先取消所有正在加载的包
-			List<string> loadingPkgNames = new(m_LoadingCts.Keys);
+			List<string> loadingPkgNames = new(m_loadingCts.Keys);
 			foreach (var pkgName in loadingPkgNames)
 			{
 				RemovePkg(pkgName);
 			}
 
 			// 再移除所有已加载的包（先复制Keys避免遍历时修改集合）
-			List<string> loadedPkgNames = new(m_LoadedPkgDict.Keys);
+			List<string> loadedPkgNames = new(m_loadedPkgDict.Keys);
 			foreach (var pkgName in loadedPkgNames)
 			{
 				RemovePkg(pkgName);
@@ -453,9 +453,9 @@ namespace Hotfix.Framework.UI
 		{
 			// 1.如果是正在加载的包，取消正在加载的任务
 			//   （加载中的包 GetByName 为 null，必须先于第 2 步处理）
-			//   注意：只 Cancel 不移除 m_LoadingCts——任务续体需检查到已取消的 token 才能正确中断；
-			//   m_LoadingCts/m_LoadingTasks 由 LoadPkgTaskAsync 的 finally 清理，此处移除会使取消检查失效。
-			if (m_LoadingCts.TryGetValue(pkgName, out var cts))
+			//   注意：只 Cancel 不移除 m_loadingCts——任务续体需检查到已取消的 token 才能正确中断；
+			//   m_loadingCts/m_loadingTasks 由 LoadPkgTaskAsync 的 finally 清理，此处移除会使取消检查失效。
+			if (m_loadingCts.TryGetValue(pkgName, out var cts))
 			{
 				cts.Cancel();
 				FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
@@ -463,7 +463,7 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 2.记录引用数，用于递减依赖包（A 的每个引用都对依赖贡献 1）
-			var refCount = m_PkgRefCountDict.GetValueOrDefault(pkgName, 0);
+			var refCount = m_pkgRefCountDict.GetValueOrDefault(pkgName, 0);
 
 			// 3.FUI移除UIPackage包（先取依赖表，RemovePackage 后依赖信息可能失效）
 			var pkgToRemove = UIPackage.GetByName(pkgName);
@@ -481,10 +481,10 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 5.从已加载字典移除
-			if (!m_LoadedPkgDict.Remove(pkgName, out _)) return;
+			if (!m_loadedPkgDict.Remove(pkgName, out _)) return;
 
 			// 6.释放包的描述文件资源和资源，包括atlas图集资源，音频资源，spine动画资源等
-			if (m_PkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
+			if (m_pkgAssetLoaderDict.Remove(pkgName, out var assetLoader))
 			{
 				// 永久废弃：释放 YooAsset 句柄让 AssetBundle 可卸载 + 标记废弃（在途加载据此中止）
 				assetLoader.Dispose();
@@ -492,8 +492,8 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 7.移除引用计数和卸载标记
-			m_PkgRefCountDict.Remove(pkgName);
-			m_UnloadedAssetPkgSet.Remove(pkgName);
+			m_pkgRefCountDict.Remove(pkgName);
+			m_unloadedAssetPkgSet.Remove(pkgName);
 		}
 	}
 }

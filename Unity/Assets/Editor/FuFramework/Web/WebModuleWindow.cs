@@ -46,67 +46,67 @@ namespace FuFramework.Web.Editor
 		/// <summary>
 		/// 滚动位置
 		/// </summary>
-		private Vector2 m_ScrollPos;
+		private Vector2 m_scrollPos;
 
 		/// <summary>
 		/// 搜索过滤字符串
 		/// </summary>
-		private string m_SearchFilter = "";
+		private string m_searchFilter = "";
 
 		/// <summary>
 		/// 是否自动刷新
 		/// </summary>
-		private bool m_AutoRefresh = true;
+		private bool m_autoRefresh = true;
 
 		/// <summary>
 		/// 上次刷新时间
 		/// </summary>
-		private double m_LastRefreshTime;
+		private double m_lastRefreshTime;
 
 		/// <summary>
 		/// 最近记录结果类型过滤（依次为 成功/超时/失败/取消）
 		/// </summary>
-		private readonly bool[] m_ResultFilters = { true, true, true, true };
+		private readonly bool[] m_resultFilters = { true, true, true, true };
 
 		/// <summary>
 		/// 超时输入框内容（秒）
 		/// </summary>
-		private string m_TimeoutText = "5";
+		private string m_timeoutText = "5";
 
 		/// <summary>
 		/// 并发上限输入框内容
 		/// </summary>
-		private string m_MaxConnText = "8";
+		private string m_maxConnText = "8";
 
 		/// <summary>
 		/// 手动测试请求方法（0 GET / 1 POST）
 		/// </summary>
-		private int m_ManualMethod;
+		private int m_manualMethod;
 
 		/// <summary>
 		/// 手动测试请求 URL
 		/// </summary>
-		private string m_ManualUrl = "";
+		private string m_manualUrl = "";
 
 		/// <summary>
 		/// 手动测试请求的 POST JSON 请求体
 		/// </summary>
-		private string m_ManualBody = "";
+		private string m_manualBody = "";
 
 		/// <summary>
 		/// 实时请求折叠状态缓存（以请求数据对象为键）
 		/// </summary>
-		private readonly Dictionary<object, bool> m_LiveFoldoutStates = new();
+		private readonly Dictionary<object, bool> m_liveFoldoutStates = new();
 
 		/// <summary>
 		/// 最近记录 POST 行的折叠状态缓存（以记录唯一键为键）
 		/// </summary>
-		private readonly Dictionary<string, bool> m_LogFoldoutStates = new();
+		private readonly Dictionary<string, bool> m_logFoldoutStates = new();
 
 		/// <summary>
 		/// 上一帧统计数据（用于计算速率）
 		/// </summary>
-		private WebModuleDebugStat m_LastStat;
+		private WebModuleDebugStat m_lastStat;
 
 		#endregion
 
@@ -115,132 +115,132 @@ namespace FuFramework.Web.Editor
 		/// <summary>
 		/// WebModule 类型
 		/// </summary>
-		private Type m_ModuleType;
+		private Type m_moduleType;
 
 		/// <summary>
 		/// WebModuleDebugInfo 类型
 		/// </summary>
-		private Type m_DebugInfoType;
+		private Type m_debugInfoType;
 
 		/// <summary>
 		/// WebLiveRequestInfo 类型
 		/// </summary>
-		private Type m_LiveInfoType;
+		private Type m_liveInfoType;
 
 		/// <summary>
 		/// WebLogEntry 类型
 		/// </summary>
-		private Type m_LogEntryType;
+		private Type m_logEntryType;
 
 		/// <summary>
 		/// WebJsonDataBase 类型（实时报文 Header/Form）
 		/// </summary>
-		private Type m_JsonDataBaseType;
+		private Type m_jsonDataBaseType;
 
 		/// <summary>
 		/// WebPbData 类型（实时报文字节数）
 		/// </summary>
-		private Type m_PbDataType;
+		private Type m_pbDataType;
 
 		/// <summary>
 		/// WebModule 实例
 		/// </summary>
-		private object m_ModuleInstance;
+		private object m_moduleInstance;
 
 		/// <summary>
 		/// WebModule.Timeout 属性
 		/// </summary>
-		private PropertyInfo m_TimeoutProperty;
+		private PropertyInfo m_timeoutProperty;
 
 		/// <summary>
 		/// WebModule.MaxConnectionPerServer 属性
 		/// </summary>
-		private PropertyInfo m_MaxConnProperty;
+		private PropertyInfo m_maxConnProperty;
 
 		/// <summary>
 		/// WebModule.GetDebugSnapshot 方法
 		/// </summary>
-		private MethodInfo m_GetSnapshotMethod;
+		private MethodInfo m_getSnapshotMethod;
 
 		/// <summary>
 		/// WebModule.GetCurrentRequests 方法
 		/// </summary>
-		private MethodInfo m_GetCurrentRequestsMethod;
+		private MethodInfo m_getCurrentRequestsMethod;
 
 		/// <summary>
 		/// WebModule.GetRecentLogs 方法
 		/// </summary>
-		private MethodInfo m_GetRecentLogsMethod;
+		private MethodInfo m_getRecentLogsMethod;
 
 		/// <summary>
 		/// WebModule.ClearDebugHistory 方法
 		/// </summary>
-		private MethodInfo m_ClearDebugHistoryMethod;
+		private MethodInfo m_clearDebugHistoryMethod;
 
 		/// <summary>
 		/// WebModule.CancelAllPendingForDebug 方法
 		/// </summary>
-		private MethodInfo m_CancelAllPendingMethod;
+		private MethodInfo m_cancelAllPendingMethod;
 
 		/// <summary>
 		/// WebModule.SendDebugRequest 方法
 		/// </summary>
-		private MethodInfo m_SendDebugRequestMethod;
+		private MethodInfo m_sendDebugRequestMethod;
 
 		/// <summary>
 		/// WebModule.ClearDebugManualResult 方法
 		/// </summary>
-		private MethodInfo m_ClearManualResultMethod;
+		private MethodInfo m_clearManualResultMethod;
 
 		/// <summary>
 		/// WebModule.SetDebugRecording 方法
 		/// </summary>
-		private MethodInfo m_SetDebugRecordingMethod;
+		private MethodInfo m_setDebugRecordingMethod;
 
 		/// <summary>
 		/// WebModule.DebugManualRunning 属性
 		/// </summary>
-		private PropertyInfo m_ManualRunningProperty;
+		private PropertyInfo m_manualRunningProperty;
 
 		/// <summary>
 		/// WebModule.DebugManualStatus 属性
 		/// </summary>
-		private PropertyInfo m_ManualStatusProperty;
+		private PropertyInfo m_manualStatusProperty;
 
 		/// <summary>
 		/// WebModule.DebugManualMessage 属性
 		/// </summary>
-		private PropertyInfo m_ManualMessageProperty;
+		private PropertyInfo m_manualMessageProperty;
 
 		/// <summary>
 		/// WebJsonDataBase.Header 属性
 		/// </summary>
-		private PropertyInfo m_JsonHeaderProperty;
+		private PropertyInfo m_jsonHeaderProperty;
 
 		/// <summary>
 		/// WebJsonDataBase.Form 属性
 		/// </summary>
-		private PropertyInfo m_JsonFormProperty;
+		private PropertyInfo m_jsonFormProperty;
 
 		/// <summary>
 		/// WebPbData.SendData 属性
 		/// </summary>
-		private PropertyInfo m_PbSendDataProperty;
+		private PropertyInfo m_pbSendDataProperty;
 
 		/// <summary>
 		/// WebModuleDebugInfo 各属性缓存
 		/// </summary>
-		private Dictionary<string, PropertyInfo> m_DebugInfoProps;
+		private Dictionary<string, PropertyInfo> m_debugInfoProps;
 
 		/// <summary>
 		/// WebLiveRequestInfo 各属性缓存
 		/// </summary>
-		private Dictionary<string, PropertyInfo> m_LiveInfoProps;
+		private Dictionary<string, PropertyInfo> m_liveInfoProps;
 
 		/// <summary>
 		/// WebLogEntry 各属性缓存
 		/// </summary>
-		private Dictionary<string, PropertyInfo> m_LogEntryProps;
+		private Dictionary<string, PropertyInfo> m_logEntryProps;
 
 		#endregion
 
@@ -268,10 +268,10 @@ namespace FuFramework.Web.Editor
 		/// </summary>
 		private void OnEditorUpdate()
 		{
-			if (!m_AutoRefresh || !Application.isPlaying) return;
-			if (EditorApplication.timeSinceStartup - m_LastRefreshTime < 0.5f) return;
+			if (!m_autoRefresh || !Application.isPlaying) return;
+			if (EditorApplication.timeSinceStartup - m_lastRefreshTime < 0.5f) return;
 
-			m_LastRefreshTime = EditorApplication.timeSinceStartup;
+			m_lastRefreshTime = EditorApplication.timeSinceStartup;
 			Repaint();
 		}
 
@@ -300,7 +300,7 @@ namespace FuFramework.Web.Editor
 			// 面板打开期间开启调试记录；关闭面板时 OnDisable 置回 false
 			ApplyDebugRecording(true);
 
-			m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
+			m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
 
 			var debugInfo = GetDebugSnapshot();
 			if (debugInfo == null)
@@ -338,17 +338,17 @@ namespace FuFramework.Web.Editor
 			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
 			GUILayout.Label("搜索:", GUILayout.Width(40));
-			m_SearchFilter = GUILayout.TextField(m_SearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(200));
+			m_searchFilter = GUILayout.TextField(m_searchFilter, EditorStyles.toolbarTextField, GUILayout.Width(200));
 
 			GUILayout.Space(10);
-			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
+			m_autoRefresh = GUILayout.Toggle(m_autoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
 			GUILayout.Space(10);
 			GUILayout.Label("记录过滤:", GUILayout.Width(60));
-			m_ResultFilters[0] = GUILayout.Toggle(m_ResultFilters[0], "成功", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_ResultFilters[1] = GUILayout.Toggle(m_ResultFilters[1], "超时", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_ResultFilters[2] = GUILayout.Toggle(m_ResultFilters[2], "失败", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_ResultFilters[3] = GUILayout.Toggle(m_ResultFilters[3], "取消", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[0] = GUILayout.Toggle(m_resultFilters[0], "成功", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[1] = GUILayout.Toggle(m_resultFilters[1], "超时", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[2] = GUILayout.Toggle(m_resultFilters[2], "失败", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[3] = GUILayout.Toggle(m_resultFilters[3], "取消", EditorStyles.toolbarButton, GUILayout.Width(48));
 
 			GUILayout.FlexibleSpace();
 
@@ -388,7 +388,7 @@ namespace FuFramework.Web.Editor
 			var sendingPb   = GetIntProp(debugInfo, "SendingPbCount");
 			var sendingAll  = sendingJson + sendingPb;
 
-			var maxConn = m_MaxConnProperty?.GetValue(m_ModuleInstance) is int maxConnValue ? maxConnValue : 0;
+			var maxConn = m_maxConnProperty?.GetValue(m_moduleInstance) is int maxConnValue ? maxConnValue : 0;
 
 			EditorGUILayout.LabelField(
 									   $"发起: {submit}（Json {jsonSubmit} / Pb {pbSubmit}）| 成功: {success} | 失败: {failed} | 超时: {timeout} | 取消: {canceled}");
@@ -400,9 +400,9 @@ namespace FuFramework.Web.Editor
 			// 配置调整
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("超时(秒):", GUILayout.Width(70));
-			m_TimeoutText = GUILayout.TextField(m_TimeoutText, GUILayout.Width(60));
+			m_timeoutText = GUILayout.TextField(m_timeoutText, GUILayout.Width(60));
 			GUILayout.Label("并发上限:", GUILayout.Width(70));
-			m_MaxConnText = GUILayout.TextField(m_MaxConnText, GUILayout.Width(60));
+			m_maxConnText = GUILayout.TextField(m_maxConnText, GUILayout.Width(60));
 
 			if (GUILayout.Button("应用", GUILayout.Width(60)))
 			{
@@ -415,7 +415,7 @@ namespace FuFramework.Web.Editor
 			EditorGUILayout.BeginHorizontal();
 			if (GUILayout.Button("重置统计并清空记录", GUILayout.Width(160)))
 			{
-				TryInvoke(m_ClearDebugHistoryMethod, "清空记录失败");
+				TryInvoke(m_clearDebugHistoryMethod, "清空记录失败");
 			}
 
 			var oldColor = GUI.color;
@@ -424,7 +424,7 @@ namespace FuFramework.Web.Editor
 			{
 				if (EditorUtility.DisplayDialog("Web模块急救", "将清空所有等待/发送中的请求并取消调用方任务，确定执行？", "确定", "取消"))
 				{
-					TryInvoke(m_CancelAllPendingMethod, "急救操作失败");
+					TryInvoke(m_cancelAllPendingMethod, "急救操作失败");
 				}
 			}
 
@@ -443,12 +443,12 @@ namespace FuFramework.Web.Editor
 		{
 			var now = EditorApplication.timeSinceStartup;
 
-			if (m_LastStat.SubmitCount >= 0 && now - m_LastStat.Time > 0.01)
+			if (m_lastStat.SubmitCount >= 0 && now - m_lastStat.Time > 0.01)
 			{
-				var elapsed    = now - m_LastStat.Time;
-				var reqPerSec  = (submit    - m_LastStat.SubmitCount) / elapsed;
-				var upPerSec   = (sentBytes - m_LastStat.SentBytes)   / elapsed;
-				var downPerSec = (recvBytes - m_LastStat.RecvBytes)   / elapsed;
+				var elapsed    = now - m_lastStat.Time;
+				var reqPerSec  = (submit    - m_lastStat.SubmitCount) / elapsed;
+				var upPerSec   = (sentBytes - m_lastStat.SentBytes)   / elapsed;
+				var downPerSec = (recvBytes - m_lastStat.RecvBytes)   / elapsed;
 				EditorGUILayout.LabelField($"速率: ≈{reqPerSec:0.0} req/s | ↑ {FormatBytes((long)upPerSec)}/s | ↓ {FormatBytes((long)downPerSec)}/s");
 			}
 			else
@@ -456,7 +456,7 @@ namespace FuFramework.Web.Editor
 				EditorGUILayout.LabelField($"收发总量: ↑ {FormatBytes(sentBytes)} | ↓ {FormatBytes(recvBytes)}");
 			}
 
-			m_LastStat = new WebModuleDebugStat(now, submit, sentBytes, recvBytes);
+			m_lastStat = new WebModuleDebugStat(now, submit, sentBytes, recvBytes);
 		}
 
 		/// <summary>
@@ -464,13 +464,13 @@ namespace FuFramework.Web.Editor
 		/// </summary>
 		private void ApplyConfig()
 		{
-			if (m_ModuleInstance == null) return;
+			if (m_moduleInstance == null) return;
 
-			if (float.TryParse(m_TimeoutText, out var timeout))
+			if (float.TryParse(m_timeoutText, out var timeout))
 			{
 				try
 				{
-					m_TimeoutProperty?.SetValue(m_ModuleInstance, timeout);
+					m_timeoutProperty?.SetValue(m_moduleInstance, timeout);
 				}
 				catch (Exception e)
 				{
@@ -478,11 +478,11 @@ namespace FuFramework.Web.Editor
 				}
 			}
 
-			if (int.TryParse(m_MaxConnText, out var maxConn))
+			if (int.TryParse(m_maxConnText, out var maxConn))
 			{
 				try
 				{
-					m_MaxConnProperty?.SetValue(m_ModuleInstance, maxConn);
+					m_maxConnProperty?.SetValue(m_moduleInstance, maxConn);
 				}
 				catch (Exception e)
 				{
@@ -506,18 +506,18 @@ namespace FuFramework.Web.Editor
 
 			EditorGUILayout.BeginHorizontal();
 			var methodNames = new[] { "GET", "POST" };
-			m_ManualMethod = GUILayout.Toolbar(m_ManualMethod, methodNames, GUILayout.Width(120));
-			m_ManualUrl    = GUILayout.TextField(m_ManualUrl, GUILayout.ExpandWidth(true));
+			m_manualMethod = GUILayout.Toolbar(m_manualMethod, methodNames, GUILayout.Width(120));
+			m_manualUrl    = GUILayout.TextField(m_manualUrl, GUILayout.ExpandWidth(true));
 			EditorGUILayout.EndHorizontal();
 
-			if (m_ManualMethod == 1)
+			if (m_manualMethod == 1)
 			{
 				GUILayout.Label("POST 请求体（JSON）:", EditorStyles.miniLabel);
-				m_ManualBody = EditorGUILayout.TextArea(m_ManualBody, GUILayout.Height(60));
+				m_manualBody = EditorGUILayout.TextArea(m_manualBody, GUILayout.Height(60));
 			}
 
 			EditorGUILayout.BeginHorizontal();
-			GUI.enabled = !running && !string.IsNullOrEmpty(m_ManualUrl);
+			GUI.enabled = !running && !string.IsNullOrEmpty(m_manualUrl);
 			if (GUILayout.Button("发送", GUILayout.Width(80)))
 			{
 				SendManualRequest();
@@ -553,14 +553,14 @@ namespace FuFramework.Web.Editor
 		private void ClearManualResult()
 		{
 			// 清空本地输入框
-			m_ManualUrl  = "";
-			m_ManualBody = "";
+			m_manualUrl  = "";
+			m_manualBody = "";
 
-			if (m_ModuleInstance == null) return;
+			if (m_moduleInstance == null) return;
 
 			try
 			{
-				m_ClearManualResultMethod?.Invoke(m_ModuleInstance, null);
+				m_clearManualResultMethod?.Invoke(m_moduleInstance, null);
 			}
 			catch (Exception e)
 			{
@@ -573,13 +573,13 @@ namespace FuFramework.Web.Editor
 		/// </summary>
 		private void SendManualRequest()
 		{
-			if (m_ModuleInstance == null) return;
+			if (m_moduleInstance == null) return;
 
 			try
 			{
-				var url  = m_ManualUrl ?? "";
-				var body = m_ManualMethod == 1 ? (m_ManualBody ?? "") : "";
-				m_SendDebugRequestMethod?.Invoke(m_ModuleInstance, new object[] { url, m_ManualMethod == 1, body });
+				var url  = m_manualUrl ?? "";
+				var body = m_manualMethod == 1 ? (m_manualBody ?? "") : "";
+				m_sendDebugRequestMethod?.Invoke(m_moduleInstance, new object[] { url, m_manualMethod == 1, body });
 			}
 			catch (Exception e)
 			{
@@ -593,7 +593,7 @@ namespace FuFramework.Web.Editor
 		/// <returns>是否正在请求</returns>
 		private bool ReadManualRunning()
 		{
-			return m_ManualRunningProperty?.GetValue(m_ModuleInstance) is bool value && value;
+			return m_manualRunningProperty?.GetValue(m_moduleInstance) is bool value && value;
 		}
 
 		/// <summary>
@@ -602,7 +602,7 @@ namespace FuFramework.Web.Editor
 		/// <returns>状态文本</returns>
 		private string ReadManualStatus()
 		{
-			return m_ManualStatusProperty?.GetValue(m_ModuleInstance) as string ?? "空闲";
+			return m_manualStatusProperty?.GetValue(m_moduleInstance) as string ?? "空闲";
 		}
 
 		/// <summary>
@@ -611,7 +611,7 @@ namespace FuFramework.Web.Editor
 		/// <returns>结果文本</returns>
 		private string ReadManualMessage()
 		{
-			return m_ManualMessageProperty?.GetValue(m_ModuleInstance) as string ?? "";
+			return m_manualMessageProperty?.GetValue(m_moduleInstance) as string ?? "";
 		}
 
 		/// <summary>
@@ -665,7 +665,7 @@ namespace FuFramework.Web.Editor
 		/// <param name="liveInfos">实时请求列表</param>
 		private void PruneFoldoutStates(List<object> liveInfos)
 		{
-			if (m_LiveFoldoutStates.Count == 0) return;
+			if (m_liveFoldoutStates.Count == 0) return;
 
 			var alive = new HashSet<object>();
 			foreach (var info in liveInfos)
@@ -676,19 +676,19 @@ namespace FuFramework.Web.Editor
 
 			if (alive.Count == 0)
 			{
-				m_LiveFoldoutStates.Clear();
+				m_liveFoldoutStates.Clear();
 				return;
 			}
 
 			var stale = new List<object>();
-			foreach (var key in m_LiveFoldoutStates.Keys)
+			foreach (var key in m_liveFoldoutStates.Keys)
 			{
 				if (!alive.Contains(key)) stale.Add(key);
 			}
 
 			foreach (var key in stale)
 			{
-				m_LiveFoldoutStates.Remove(key);
+				m_liveFoldoutStates.Remove(key);
 			}
 		}
 
@@ -708,8 +708,8 @@ namespace FuFramework.Web.Editor
 			if (string.IsNullOrEmpty(url)) return;
 
 			// 搜索过滤：URL 匹配才展示
-			if (!string.IsNullOrEmpty(m_SearchFilter)
-				&& !url.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+			if (!string.IsNullOrEmpty(m_searchFilter)
+				&& !url.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 			{
 				return;
 			}
@@ -726,9 +726,9 @@ namespace FuFramework.Web.Editor
 			var isOpen      = false;
 			if (data != null)
 			{
-				m_LiveFoldoutStates.TryGetValue(data, out isOpen);
+				m_liveFoldoutStates.TryGetValue(data, out isOpen);
 				isOpen                    = EditorGUILayout.Foldout(isOpen, foldoutText, true);
-				m_LiveFoldoutStates[data] = isOpen;
+				m_liveFoldoutStates[data] = isOpen;
 			}
 			else
 			{
@@ -792,13 +792,13 @@ namespace FuFramework.Web.Editor
 
 			if (isPb)
 			{
-				var sendData = m_PbSendDataProperty?.GetValue(data) as byte[];
+				var sendData = m_pbSendDataProperty?.GetValue(data) as byte[];
 				GUILayout.Label($"Pb 请求体: {sendData?.Length ?? 0} 字节（内容为二进制，不展开）");
 				return;
 			}
 
-			var header = m_JsonHeaderProperty?.GetValue(data);
-			var form   = m_JsonFormProperty?.GetValue(data);
+			var header = m_jsonHeaderProperty?.GetValue(data);
+			var form   = m_jsonFormProperty?.GetValue(data);
 
 			if (header is IDictionary headerDict && headerDict.Count > 0)
 			{
@@ -859,7 +859,7 @@ namespace FuFramework.Web.Editor
 		/// <param name="logInfos">记录列表</param>
 		private void PruneLogFoldoutStates(List<object> logInfos)
 		{
-			if (m_LogFoldoutStates.Count == 0) return;
+			if (m_logFoldoutStates.Count == 0) return;
 
 			var alive = new HashSet<string>();
 			foreach (var logInfo in logInfos)
@@ -870,19 +870,19 @@ namespace FuFramework.Web.Editor
 
 			if (alive.Count == 0)
 			{
-				m_LogFoldoutStates.Clear();
+				m_logFoldoutStates.Clear();
 				return;
 			}
 
 			var stale = new List<string>();
-			foreach (var key in m_LogFoldoutStates.Keys)
+			foreach (var key in m_logFoldoutStates.Keys)
 			{
 				if (!alive.Contains(key)) stale.Add(key);
 			}
 
 			foreach (var key in stale)
 			{
-				m_LogFoldoutStates.Remove(key);
+				m_logFoldoutStates.Remove(key);
 			}
 		}
 
@@ -914,7 +914,7 @@ namespace FuFramework.Web.Editor
 
 			// 结果类型过滤
 			var resultIndex = ResultIndex(result);
-			if (resultIndex < 0 || !m_ResultFilters[resultIndex]) return;
+			if (resultIndex < 0 || !m_resultFilters[resultIndex]) return;
 
 			var isPb      = GetBoolProp(logInfo, "IsPb");
 			var isGet     = GetBoolProp(logInfo, "IsGet");
@@ -929,8 +929,8 @@ namespace FuFramework.Web.Editor
 			if (string.IsNullOrEmpty(url)) return;
 
 			// 搜索过滤：URL 匹配才展示
-			if (!string.IsNullOrEmpty(m_SearchFilter)
-				&& !url.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+			if (!string.IsNullOrEmpty(m_searchFilter)
+				&& !url.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 			{
 				return;
 			}
@@ -952,12 +952,12 @@ namespace FuFramework.Web.Editor
 			if (isPost)
 			{
 				var key = BuildLogKey(logInfo);
-				m_LogFoldoutStates.TryGetValue(key, out isOpen);
+				m_logFoldoutStates.TryGetValue(key, out isOpen);
 				var arrow = isOpen ? "▼" : "▶";
 				if (GUILayout.Button(arrow, EditorStyles.miniButton, GUILayout.Width(20)))
 				{
 					isOpen                  = !isOpen;
-					m_LogFoldoutStates[key] = isOpen;
+					m_logFoldoutStates[key] = isOpen;
 				}
 			}
 
@@ -1171,9 +1171,9 @@ namespace FuFramework.Web.Editor
 		private Dictionary<string, PropertyInfo> SelectPropCache(object target)
 		{
 			if (target == null) return null;
-			if (m_DebugInfoType != null && m_DebugInfoType.IsInstanceOfType(target)) return m_DebugInfoProps;
-			if (m_LiveInfoType  != null && m_LiveInfoType.IsInstanceOfType(target)) return m_LiveInfoProps;
-			if (m_LogEntryType  != null && m_LogEntryType.IsInstanceOfType(target)) return m_LogEntryProps;
+			if (m_debugInfoType != null && m_debugInfoType.IsInstanceOfType(target)) return m_debugInfoProps;
+			if (m_liveInfoType  != null && m_liveInfoType.IsInstanceOfType(target)) return m_liveInfoProps;
+			if (m_logEntryType  != null && m_logEntryType.IsInstanceOfType(target)) return m_logEntryProps;
 			return null;
 		}
 
@@ -1212,51 +1212,51 @@ namespace FuFramework.Web.Editor
 		/// <returns>初始化成功返回 true</returns>
 		private bool EnsureReflection()
 		{
-			if (m_ModuleInstance != null) return true;
+			if (m_moduleInstance != null) return true;
 
-			m_ModuleType = HotfixReflection.WebModule;
-			if (m_ModuleType == null) return false;
+			m_moduleType = HotfixReflection.WebModule;
+			if (m_moduleType == null) return false;
 
-			m_DebugInfoType = HotfixReflection.WebModuleDebugInfo;
-			if (m_DebugInfoType == null) return false;
+			m_debugInfoType = HotfixReflection.WebModuleDebugInfo;
+			if (m_debugInfoType == null) return false;
 
-			m_LiveInfoType = HotfixReflection.WebLiveRequestInfo;
-			if (m_LiveInfoType == null) return false;
+			m_liveInfoType = HotfixReflection.WebLiveRequestInfo;
+			if (m_liveInfoType == null) return false;
 
-			m_LogEntryType = HotfixReflection.WebLogEntry;
-			if (m_LogEntryType == null) return false;
+			m_logEntryType = HotfixReflection.WebLogEntry;
+			if (m_logEntryType == null) return false;
 
-			m_JsonDataBaseType = HotfixReflection.WebJsonDataBase;
-			m_PbDataType       = HotfixReflection.WebPbData;
+			m_jsonDataBaseType = HotfixReflection.WebJsonDataBase;
+			m_pbDataType       = HotfixReflection.WebPbData;
 
 			// WebModule 单例通过静态 Instance 属性获取（OnInit 时登记）
-			m_ModuleInstance = HotfixReflection.GetStaticInstance(m_ModuleType);
-			if (m_ModuleInstance == null) return false;
+			m_moduleInstance = HotfixReflection.GetStaticInstance(m_moduleType);
+			if (m_moduleInstance == null) return false;
 
 			// WebModule 成员
-			m_TimeoutProperty          = m_ModuleType.GetProperty("Timeout",                BindingFlags.Public | BindingFlags.Instance);
-			m_MaxConnProperty          = m_ModuleType.GetProperty("MaxConnectionPerServer", BindingFlags.Public | BindingFlags.Instance);
-			m_GetSnapshotMethod        = m_ModuleType.GetMethod("GetDebugSnapshot",         BindingFlags.Public | BindingFlags.Instance);
-			m_GetCurrentRequestsMethod = m_ModuleType.GetMethod("GetCurrentRequests",       BindingFlags.Public | BindingFlags.Instance);
-			m_GetRecentLogsMethod      = m_ModuleType.GetMethod("GetRecentLogs",            BindingFlags.Public | BindingFlags.Instance);
-			m_ClearDebugHistoryMethod  = m_ModuleType.GetMethod("ClearDebugHistory",        BindingFlags.Public | BindingFlags.Instance);
-			m_CancelAllPendingMethod   = m_ModuleType.GetMethod("CancelAllPendingForDebug", BindingFlags.Public | BindingFlags.Instance);
-			m_SendDebugRequestMethod   = m_ModuleType.GetMethod("SendDebugRequest",         BindingFlags.Public | BindingFlags.Instance);
-			m_ClearManualResultMethod  = m_ModuleType.GetMethod("ClearDebugManualResult",   BindingFlags.Public | BindingFlags.Instance);
-			m_SetDebugRecordingMethod  = m_ModuleType.GetMethod("SetDebugRecording",        BindingFlags.Public | BindingFlags.Instance);
-			m_ManualRunningProperty    = m_ModuleType.GetProperty("DebugManualRunning", BindingFlags.Public     | BindingFlags.Instance);
-			m_ManualStatusProperty     = m_ModuleType.GetProperty("DebugManualStatus",  BindingFlags.Public     | BindingFlags.Instance);
-			m_ManualMessageProperty    = m_ModuleType.GetProperty("DebugManualMessage", BindingFlags.Public     | BindingFlags.Instance);
+			m_timeoutProperty          = m_moduleType.GetProperty("Timeout",                BindingFlags.Public | BindingFlags.Instance);
+			m_maxConnProperty          = m_moduleType.GetProperty("MaxConnectionPerServer", BindingFlags.Public | BindingFlags.Instance);
+			m_getSnapshotMethod        = m_moduleType.GetMethod("GetDebugSnapshot",         BindingFlags.Public | BindingFlags.Instance);
+			m_getCurrentRequestsMethod = m_moduleType.GetMethod("GetCurrentRequests",       BindingFlags.Public | BindingFlags.Instance);
+			m_getRecentLogsMethod      = m_moduleType.GetMethod("GetRecentLogs",            BindingFlags.Public | BindingFlags.Instance);
+			m_clearDebugHistoryMethod  = m_moduleType.GetMethod("ClearDebugHistory",        BindingFlags.Public | BindingFlags.Instance);
+			m_cancelAllPendingMethod   = m_moduleType.GetMethod("CancelAllPendingForDebug", BindingFlags.Public | BindingFlags.Instance);
+			m_sendDebugRequestMethod   = m_moduleType.GetMethod("SendDebugRequest",         BindingFlags.Public | BindingFlags.Instance);
+			m_clearManualResultMethod  = m_moduleType.GetMethod("ClearDebugManualResult",   BindingFlags.Public | BindingFlags.Instance);
+			m_setDebugRecordingMethod  = m_moduleType.GetMethod("SetDebugRecording",        BindingFlags.Public | BindingFlags.Instance);
+			m_manualRunningProperty    = m_moduleType.GetProperty("DebugManualRunning", BindingFlags.Public     | BindingFlags.Instance);
+			m_manualStatusProperty     = m_moduleType.GetProperty("DebugManualStatus",  BindingFlags.Public     | BindingFlags.Instance);
+			m_manualMessageProperty    = m_moduleType.GetProperty("DebugManualMessage", BindingFlags.Public     | BindingFlags.Instance);
 
 			// 结构体属性缓存
-			m_DebugInfoProps = BuildPropCache(m_DebugInfoType);
-			m_LiveInfoProps  = BuildPropCache(m_LiveInfoType);
-			m_LogEntryProps  = BuildPropCache(m_LogEntryType);
+			m_debugInfoProps = BuildPropCache(m_debugInfoType);
+			m_liveInfoProps  = BuildPropCache(m_liveInfoType);
+			m_logEntryProps  = BuildPropCache(m_logEntryType);
 
 			// 报文属性（可能为 null，扩展失败则无法展开报文）
-			m_JsonHeaderProperty = m_JsonDataBaseType?.GetProperty("Header", BindingFlags.Public | BindingFlags.Instance);
-			m_JsonFormProperty   = m_JsonDataBaseType?.GetProperty("Form",   BindingFlags.Public | BindingFlags.Instance);
-			m_PbSendDataProperty = m_PbDataType?.GetProperty("SendData", BindingFlags.Public     | BindingFlags.Instance);
+			m_jsonHeaderProperty = m_jsonDataBaseType?.GetProperty("Header", BindingFlags.Public | BindingFlags.Instance);
+			m_jsonFormProperty   = m_jsonDataBaseType?.GetProperty("Form",   BindingFlags.Public | BindingFlags.Instance);
+			m_pbSendDataProperty = m_pbDataType?.GetProperty("SendData", BindingFlags.Public     | BindingFlags.Instance);
 
 			return true;
 		}
@@ -1282,35 +1282,35 @@ namespace FuFramework.Web.Editor
 		/// </summary>
 		private void ResetReflection()
 		{
-			m_ModuleType               = null;
-			m_DebugInfoType            = null;
-			m_LiveInfoType             = null;
-			m_LogEntryType             = null;
-			m_JsonDataBaseType         = null;
-			m_PbDataType               = null;
-			m_ModuleInstance           = null;
-			m_TimeoutProperty          = null;
-			m_MaxConnProperty          = null;
-			m_GetSnapshotMethod        = null;
-			m_GetCurrentRequestsMethod = null;
-			m_GetRecentLogsMethod      = null;
-			m_ClearDebugHistoryMethod  = null;
-			m_CancelAllPendingMethod   = null;
-			m_SendDebugRequestMethod   = null;
-			m_ClearManualResultMethod  = null;
-			m_SetDebugRecordingMethod  = null;
-			m_ManualRunningProperty    = null;
-			m_ManualStatusProperty     = null;
-			m_ManualMessageProperty    = null;
-			m_JsonHeaderProperty       = null;
-			m_JsonFormProperty         = null;
-			m_PbSendDataProperty       = null;
-			m_DebugInfoProps           = null;
-			m_LiveInfoProps            = null;
-			m_LogEntryProps            = null;
-			m_LastStat                 = default;
-			m_LiveFoldoutStates.Clear();
-			m_LogFoldoutStates.Clear();
+			m_moduleType               = null;
+			m_debugInfoType            = null;
+			m_liveInfoType             = null;
+			m_logEntryType             = null;
+			m_jsonDataBaseType         = null;
+			m_pbDataType               = null;
+			m_moduleInstance           = null;
+			m_timeoutProperty          = null;
+			m_maxConnProperty          = null;
+			m_getSnapshotMethod        = null;
+			m_getCurrentRequestsMethod = null;
+			m_getRecentLogsMethod      = null;
+			m_clearDebugHistoryMethod  = null;
+			m_cancelAllPendingMethod   = null;
+			m_sendDebugRequestMethod   = null;
+			m_clearManualResultMethod  = null;
+			m_setDebugRecordingMethod  = null;
+			m_manualRunningProperty    = null;
+			m_manualStatusProperty     = null;
+			m_manualMessageProperty    = null;
+			m_jsonHeaderProperty       = null;
+			m_jsonFormProperty         = null;
+			m_pbSendDataProperty       = null;
+			m_debugInfoProps           = null;
+			m_liveInfoProps            = null;
+			m_logEntryProps            = null;
+			m_lastStat                 = default;
+			m_liveFoldoutStates.Clear();
+			m_logFoldoutStates.Clear();
 		}
 
 		/// <summary>
@@ -1319,7 +1319,7 @@ namespace FuFramework.Web.Editor
 		/// <returns>调试快照对象，失败返回 null</returns>
 		private object GetDebugSnapshot()
 		{
-			return m_GetSnapshotMethod?.Invoke(m_ModuleInstance, null);
+			return m_getSnapshotMethod?.Invoke(m_moduleInstance, null);
 		}
 
 		/// <summary>
@@ -1329,7 +1329,7 @@ namespace FuFramework.Web.Editor
 		private List<object> GetAllLiveInfos()
 		{
 			var list   = new List<object>();
-			var result = m_GetCurrentRequestsMethod?.Invoke(m_ModuleInstance, null) as IEnumerable;
+			var result = m_getCurrentRequestsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
 			if (result == null) return list;
 
 			foreach (var item in result)
@@ -1347,7 +1347,7 @@ namespace FuFramework.Web.Editor
 		private List<object> GetAllLogInfos()
 		{
 			var list   = new List<object>();
-			var result = m_GetRecentLogsMethod?.Invoke(m_ModuleInstance, null) as IEnumerable;
+			var result = m_getRecentLogsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
 			if (result == null) return list;
 
 			foreach (var item in result)
@@ -1365,11 +1365,11 @@ namespace FuFramework.Web.Editor
 		/// <param name="failMessage">失败日志前缀</param>
 		private void TryInvoke(MethodInfo method, string failMessage)
 		{
-			if (method == null || m_ModuleInstance == null) return;
+			if (method == null || m_moduleInstance == null) return;
 
 			try
 			{
-				method.Invoke(m_ModuleInstance, null);
+				method.Invoke(m_moduleInstance, null);
 			}
 			catch (Exception e)
 			{
@@ -1383,11 +1383,11 @@ namespace FuFramework.Web.Editor
 		/// <param name="enabled">是否开启</param>
 		private void ApplyDebugRecording(bool enabled)
 		{
-			if (m_ModuleInstance == null || m_SetDebugRecordingMethod == null) return;
+			if (m_moduleInstance == null || m_setDebugRecordingMethod == null) return;
 
 			try
 			{
-				m_SetDebugRecordingMethod.Invoke(m_ModuleInstance, new object[] { enabled });
+				m_setDebugRecordingMethod.Invoke(m_moduleInstance, new object[] { enabled });
 			}
 			catch
 			{

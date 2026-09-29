@@ -43,14 +43,14 @@ namespace Hotfix.Framework.Core
 				private static readonly object           DerivedKeyLock = new();
 
 				/// <summary>
-				/// 上次派生所用的密钥（单条缓存，与 <see cref="m_CachedDerivedKey"/> 成对使用）。
+				/// 上次派生所用的密钥（单条缓存，与 <see cref="m_cachedDerivedKey"/> 成对使用）。
 				/// </summary>
-				private static          string           m_CachedKey;
+				private static          string           m_cachedKey;
 
 				/// <summary>
 				/// 上次派生的 32 字节 AES 密钥。
 				/// </summary>
-				private static          byte[]           m_CachedDerivedKey;
+				private static          byte[]           m_cachedDerivedKey;
 
 				/// <summary>
 				/// 按密钥派生 32 字节 AES Key（单条缓存）。
@@ -62,15 +62,15 @@ namespace Hotfix.Framework.Core
 				{
 					lock (DerivedKeyLock)
 					{
-						if (m_CachedDerivedKey != null && string.Equals(m_CachedKey, encryptKey, StringComparison.Ordinal))
+						if (m_cachedDerivedKey != null && string.Equals(m_cachedKey, encryptKey, StringComparison.Ordinal))
 						{
-							return m_CachedDerivedKey;
+							return m_cachedDerivedKey;
 						}
 
 						using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
 						var       key          = derivedBytes.GetBytes(32);
-						m_CachedKey        = encryptKey;
-						m_CachedDerivedKey = key;
+						m_cachedKey        = encryptKey;
+						m_cachedDerivedKey = key;
 						return key;
 					}
 				}

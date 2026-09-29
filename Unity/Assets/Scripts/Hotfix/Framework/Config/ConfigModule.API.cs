@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取配置表数量。
 		/// </summary>
-		public int Count => m_CfgDataDict.Count;
+		public int Count => m_cfgDataDict.Count;
 
 		/// <summary>
 		/// 获取所有配置表名称。
@@ -30,8 +30,8 @@ namespace Hotfix.Framework.Config
 		{
 			get
 			{
-				var names = new string[m_CfgDataDict.Count];
-				m_CfgDataDict.Keys.CopyTo(names, 0);
+				var names = new string[m_cfgDataDict.Count];
+				m_cfgDataDict.Keys.CopyTo(names, 0);
 				return names;
 			}
 		}
@@ -46,11 +46,11 @@ namespace Hotfix.Framework.Config
 		{
 			var type = typeof(T);
 
-			if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T fullNameTyped)
+			if (type.FullName != null && m_cfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T fullNameTyped)
 				return fullNameTyped;
 
 			// 类型不匹配时返回 default 而非强制转换：跨命名空间同名表在注册期会被短名键覆盖，强转必抛 InvalidCastException
-			return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T typed ? typed : default;
+			return m_cfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T typed ? typed : default;
 		}
 
 		/// <summary>
@@ -61,7 +61,7 @@ namespace Hotfix.Framework.Config
 		public IDataTable GetConfig(string cfgName)
 		{
 			cfgName.NotNullOrEmpty(nameof(cfgName));
-			return m_CfgDataDict.GetValueOrDefault(cfgName);
+			return m_cfgDataDict.GetValueOrDefault(cfgName);
 		}
 
 		/// <summary>
@@ -74,10 +74,10 @@ namespace Hotfix.Framework.Config
 		{
 			var type = typeof(T);
 
-			if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
+			if (type.FullName != null && m_cfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
 				return true;
 
-			return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T;
+			return m_cfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T;
 		}
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace Hotfix.Framework.Config
 		public bool HasConfig(string cfgName)
 		{
 			cfgName.NotNullOrEmpty(nameof(cfgName));
-			return m_CfgDataDict.ContainsKey(cfgName);
+			return m_cfgDataDict.ContainsKey(cfgName);
 		}
 
 		/// <summary>
@@ -101,13 +101,13 @@ namespace Hotfix.Framework.Config
 		{
 			cfgName.NotNullOrEmpty(nameof(cfgName));
 			cfgValue.NotNull(nameof(cfgValue));
-			if (m_CfgDataDict.ContainsKey(cfgName))
+			if (m_cfgDataDict.ContainsKey(cfgName))
 			{
 				FuLogger.LogWarning($"[ConfigModule] 配置表 '{cfgName}' 已存在，忽略重复添加。");
 				return false;
 			}
 
-			m_CfgDataDict.Add(cfgName, cfgValue);
+			m_cfgDataDict.Add(cfgName, cfgValue);
 			return true;
 		}
 
@@ -121,10 +121,10 @@ namespace Hotfix.Framework.Config
 		{
 			var type = typeof(T);
 
-			if (type.FullName != null && m_CfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
-				return m_CfgDataDict.Remove(type.FullName);
+			if (type.FullName != null && m_cfgDataDict.TryGetValue(type.FullName, out var fullNameCfg) && fullNameCfg is T)
+				return m_cfgDataDict.Remove(type.FullName);
 
-			return m_CfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T && m_CfgDataDict.Remove(type.Name);
+			return m_cfgDataDict.TryGetValue(type.Name, out var cfg) && cfg is T && m_cfgDataDict.Remove(type.Name);
 		}
 
 		/// <summary>
@@ -135,7 +135,7 @@ namespace Hotfix.Framework.Config
 		public bool RemoveConfig(string cfgName)
 		{
 			cfgName.NotNullOrEmpty(nameof(cfgName));
-			return m_CfgDataDict.Remove(cfgName);
+			return m_cfgDataDict.Remove(cfgName);
 		}
 
 		/// <summary>
@@ -143,7 +143,7 @@ namespace Hotfix.Framework.Config
 		/// </summary>
 		public void RemoveAllConfigs()
 		{
-			m_CfgDataDict.Clear();
+			m_cfgDataDict.Clear();
 		}
 	}
 }

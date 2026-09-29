@@ -8,7 +8,7 @@ namespace AOT.Framework.Core.Utility
 		/// <summary>
 		/// 应用相关的实用函数。
 		/// 功能：
-		///     1. 提供平台相关的获取和判断。
+		///     1. 平台相关的获取和判断。
 		///     2. 打开URL。
 		/// </summary>
 		public static class Application

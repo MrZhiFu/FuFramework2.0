@@ -13,7 +13,7 @@ namespace Hotfix.Framework.Core
 	///         - Read7BitEncodedUInt32()：从二进制流读取编码过的 32 位无符号整数(解码)。
 	///         - Read7BitEncodedInt64()：从二进制流读取编码过的 64 位有符号整数(解码)。
 	///         - Read7BitEncodedUInt64()：从二进制流读取编码过的 64 位无符号整数(解码)。
-	///         
+	///
 	///         - Write7BitEncodedInt32()：向二进制流写入编码过的 32 位有符号整数(编码)。
 	///         - Write7BitEncodedUInt32()：向二进制流写入编码过的 32 位无符号整数编码)。
 	///         - Write7BitEncodedInt64()：向二进制流写入编码过的 64 位有符号整数编码)。
@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Core
 	///         - WriteEncryptedString()：向二进制流写入异或加密字符串。
 	///     补充：
 	///         1. 7 位编码整数的编码原理：
-	///             - 7位编码整数是一种特殊的编码方式，它可以将整数编码为7位或更少的字节。在二进制中，每个字节有8位，7位编码整数利用其中的7位来存储数值，最高位（第8位）作为标记，表示是否还有过续字节需要读取。 
+	///             - 7位编码整数是一种特殊的编码方式，它可以将整数编码为7位或更少的字节。在二进制中，每个字节有8位，7位编码整数利用其中的7位来存储数值，最高位（第8位）作为标记，表示是否还有过续字节需要读取。
 	///             - 如果最高位为0，表示这是最过一个字节。
 	///             - 如果最高位为1，表示还有过续字节需要读取。
 	///             - 这种方法的优点是可以节省存储空间，特别是对于那些数值较小的整数
@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Core
 	///         - 解密字符串的过程是：
 	///            - 读取第一个字节，并将其作为字符串的长度。
 	///            - 读取字符串的每个字节，将其与密钥数组的每个字节进行异或运算，并将结果作为字节写入缓存数组。
-	///            - 将缓存数组转换为字符串并返回。    
+	///            - 将缓存数组转换为字符串并返回。
 	/// </summary>
 	public static class BinaryEx
 	{
@@ -163,8 +163,8 @@ namespace Hotfix.Framework.Core
 		/// </example>
 		public static long Read7BitEncodedInt64(this BinaryReader binaryReader)
 		{
-			long rltValue = 0L;
-			int  offset   = 0;
+			var rltValue = 0L;
+			var offset   = 0;
 			byte b;
 			do
 			{
@@ -265,7 +265,7 @@ namespace Hotfix.Framework.Core
 		/// </example>
 		public static string ReadEncryptedString(this BinaryReader binaryReader, byte[] encryptBytes)
 		{
-			byte length = binaryReader.ReadByte();
+			var length = binaryReader.ReadByte();
 			if (length <= 0)
 			{
 				return null;
@@ -307,7 +307,7 @@ namespace Hotfix.Framework.Core
 
 			// 必须「先算再写」：CachedBytes 只有 256 字节，String2Bytes 写入超长字符串会先抛 ArgumentException，
 			// 原实现在写入之后才判断 length > byte.MaxValue，该守卫永远不会执行（死代码）
-			int length = Encoding.UTF8.GetByteCount(value);
+			var length = Encoding.UTF8.GetByteCount(value);
 			if (length > byte.MaxValue)
 			{
 				throw new ArgumentException($"字符串 '{value}' 太长，无法加密（UTF-8 字节数 {length}，上限 {byte.MaxValue}）。", nameof(value));

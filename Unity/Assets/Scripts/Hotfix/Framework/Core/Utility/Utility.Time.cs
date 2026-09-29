@@ -39,13 +39,13 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 是否是秒级
 			/// </summary>
-			private static bool m_IsSecLevel = true;
+			private static bool m_isSecLevel = true;
 
 			/// <summary>
 			/// 服务器与客户端的时间差。
 			/// 单位：_isSecLevel为true时为秒，为false时为毫秒。
 			/// </summary>
-			private static long m_DiffTime;
+			private static long m_diffTime;
 
 
 			#region 服务器/客户端时间相关
@@ -72,17 +72,17 @@ namespace Hotfix.Framework.Core
 				var diffMilliseconds = System.Math.Abs(serverTimestamp - currentMilliseconds);
 
 				// 选择差值更小的精度
-				m_IsSecLevel = diffSeconds < diffMilliseconds;
+				m_isSecLevel = diffSeconds < diffMilliseconds;
 
-				if (m_IsSecLevel)
+				if (m_isSecLevel)
 				{
-					m_DiffTime = serverTimestamp - currentSeconds;
-					FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {m_DiffTime}秒");
+					m_diffTime = serverTimestamp - currentSeconds;
+					FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {m_diffTime}秒");
 				}
 				else
 				{
-					m_DiffTime = serverTimestamp - currentMilliseconds;
-					FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {m_DiffTime}毫秒");
+					m_diffTime = serverTimestamp - currentMilliseconds;
+					FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {m_diffTime}毫秒");
 				}
 			}
 
@@ -93,8 +93,8 @@ namespace Hotfix.Framework.Core
 			/// <returns></returns>
 			public static long ServerNow()
 			{
-				if (m_IsSecLevel) return m_DiffTime + ClientNow();
-				return (m_DiffTime + ClientNowMs()) / 1000;
+				if (m_isSecLevel) return m_diffTime + ClientNow();
+				return (m_diffTime + ClientNowMs()) / 1000;
 			}
 
 			/// <summary>
@@ -104,8 +104,8 @@ namespace Hotfix.Framework.Core
 			/// <returns></returns>
 			public static long ServerToday()
 			{
-				if (m_IsSecLevel) return m_DiffTime + ClientToday();
-				return (m_DiffTime + ClientTodayMs()) / 1000;
+				if (m_isSecLevel) return m_diffTime + ClientToday();
+				return (m_diffTime + ClientTodayMs()) / 1000;
 			}
 
 			/// <summary>

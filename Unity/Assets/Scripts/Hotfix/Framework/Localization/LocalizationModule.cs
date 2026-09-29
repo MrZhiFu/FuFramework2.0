@@ -27,17 +27,17 @@ namespace Hotfix.Framework.Localization
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
-		private EventModule m_EventModule;
+		private EventModule m_eventModule;
 
 		/// <summary>
 		/// 数据保存模块
 		/// </summary>
-		private StorageModule m_StorageModule;
+		private StorageModule m_storageModule;
 
 		/// <summary>
 		/// 当前使用的语言
 		/// </summary>
-		private ELanguage m_Language;
+		private ELanguage m_language;
 
 		/// <summary>
 		/// 本地化多语言提供者
@@ -49,29 +49,29 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		public ELanguage Language
 		{
-			get => m_Language;
+			get => m_language;
 			set
 			{
 				if (value == ELanguage.Unspecified) throw new InvalidOperationException("[LocalizationModule]设置本地化语言失败，语言未指定.");
-				if (value == m_Language) return;
-				var oldLanguage = m_Language;
-				m_Language = value;
+				if (value == m_language) return;
+				var oldLanguage = m_language;
+				m_language = value;
 
 				// 保存设置（数据保存模块缺失时跳过保存，语言切换本身仍生效）
-				if (m_StorageModule != null)
+				if (m_storageModule != null)
 				{
-					m_StorageModule.SetString("Language", value.ToString());
-					m_StorageModule.Save();
+					m_storageModule.SetString("Language", value.ToString());
+					m_storageModule.Save();
 				}
 
 				// 同步语言偏好到 PlayerPrefs：下次启动 AOT 阶段（LaunchLocalization）从 PlayerPrefs 读取，
 				// 两阶段偏好不同源会导致 AOT 界面文本语言与本侧不一致
-				PlayerPrefs.SetInt(LaunchLocalization.LanguagePrefKey, (int)value);
+				PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)value);
 				PlayerPrefs.Save();
 
 				// 发送本地化语言改变事件
 				var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
-				m_EventModule.Broadcast(this, languageChangeEventArgs);
+				m_eventModule.Broadcast(this, languageChangeEventArgs);
 			}
 		}
 
@@ -112,25 +112,25 @@ namespace Hotfix.Framework.Localization
 		{
 			Instance = this;
 
-			m_EventModule  = ModuleManager.GetModule<EventModule>();
-			m_StorageModule = StorageModule.Instance;
+			m_eventModule  = ModuleManager.GetModule<EventModule>();
+			m_storageModule = StorageModule.Instance;
 
 			// 数据保存模块缺失（模块注册顺序调整/初始化失败）时退化为系统语言，不能直接解引用（否则 NRE 中断本模块初始化）
-			if (m_StorageModule == null)
+			if (m_storageModule == null)
 			{
 				FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
-				m_Language = FromSystemLanguage();
+				m_language = FromSystemLanguage();
 				return;
 			}
 
-			var value = m_StorageModule.GetString("Language");
+			var value = m_storageModule.GetString("Language");
 			if (value.IsNotNullOrWhiteSpace() && Enum.TryParse(value, true, out ELanguage result))
-				m_Language = result;
+				m_language = result;
 			else
-				m_Language = FromSystemLanguage();
+				m_language = FromSystemLanguage();
 
 			// 启动收敛：把本侧最终语言回写 PlayerPrefs，修正 AOT 偏好缺失/漂移（如旧版本仅存档无偏好）的情况
-			PlayerPrefs.SetInt(LaunchLocalization.LanguagePrefKey, (int)m_Language);
+			PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)m_language);
 			PlayerPrefs.Save();
 		}
 

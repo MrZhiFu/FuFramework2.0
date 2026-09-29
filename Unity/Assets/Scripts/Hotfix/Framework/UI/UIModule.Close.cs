@@ -61,11 +61,11 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 防御性守卫：已加载窗口的 SerialId 取自其加载完成时的临时序列号，加载完成时已从
-			// m_LoadingDict 移除，故正常流程下该分支不可达（历史上为"加载中被关闭"遗留）。
-			// 在途加载的中止统一由 CloseAllLoading → m_CancelLoadingSet 在 _OpenAsync 的取消校验点处理。
+			// m_loadingDict 移除，故正常流程下该分支不可达（历史上为"加载中被关闭"遗留）。
+			// 在途加载的中止统一由 CloseAllLoading → m_cancelLoadingSet 在 _OpenAsync 的取消校验点处理。
 			if (IsLoading(win.SerialId))
 			{
-				m_LoadingDict.Remove(win.SerialId);
+				m_loadingDict.Remove(win.SerialId);
 				return;
 			}
 
@@ -82,9 +82,9 @@ namespace Hotfix.Framework.UI
 
 			// 抛出关闭界面完成事件
 			var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
-			m_EventModule.Broadcast(this, closeUICompleteEventArgs);
+			m_eventModule.Broadcast(this, closeUICompleteEventArgs);
 
-			m_WaitRecycleQueue.Enqueue(win);
+			m_waitRecycleQueue.Enqueue(win);
 		}
 
 
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.UI
 
 			if (IsLoading(win.SerialId))
 			{
-				m_LoadingDict.Remove(win.SerialId);
+				m_loadingDict.Remove(win.SerialId);
 				return;
 			}
 
@@ -154,7 +154,7 @@ namespace Hotfix.Framework.UI
 
 			// 抛出关闭界面完成事件
 			var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
-			m_EventModule.Broadcast(this, closeUICompleteEventArgs);
+			m_eventModule.Broadcast(this, closeUICompleteEventArgs);
 
 			// 立即回收界面实例对象
 			Recycle(win);
@@ -190,12 +190,12 @@ namespace Hotfix.Framework.UI
 			// 只清字典不够：在途的 _OpenAsync 仍会在 await 之后继续创建并注册窗口（CloseAll 后界面上屏）。
 			// 先把在途序列号登记进取消集合，_OpenAsync 在每个 await 后的取消校验点命中即销毁半成品实例并中止；
 			// 再清空加载字典（IsLoading/GetAllLoadingSerialIds 立即反映"无加载中"）。
-			foreach (var (serialId, _) in m_LoadingDict)
+			foreach (var (serialId, _) in m_loadingDict)
 			{
-				m_CancelLoadingSet.Add(serialId);
+				m_cancelLoadingSet.Add(serialId);
 			}
 
-			m_LoadingDict.Clear();
+			m_loadingDict.Clear();
 		}
 
 		/// <summary>
@@ -213,7 +213,7 @@ namespace Hotfix.Framework.UI
 			}
 			finally
 			{
-				m_WinObjPool.Recycle(win);
+				m_winObjPool.Recycle(win);
 			}
 		}
 	}

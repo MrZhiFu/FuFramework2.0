@@ -17,67 +17,67 @@ namespace Hotfix.Framework.Mono
 		/// <summary>
 		/// 等待执行的 Update 回调列表
 		/// </summary>
-		private readonly List<Action> m_WaitUpdateList = new();
-		
+		private readonly List<Action> m_waitUpdateList = new();
+
 		/// <summary>
 		/// 正在执行的 Update 回调列表
 		/// </summary>
-		private readonly List<Action> m_DoingUpdateList = new();
+		private readonly List<Action> m_doingUpdateList = new();
 
 
 		/// <summary>
 		/// 等待执行的 FixedUpdate 回调列表
 		/// </summary>
-		private readonly List<Action> m_WaitFixedUpdateList = new();
+		private readonly List<Action> m_waitFixedUpdateList = new();
 
 		/// <summary>
 		/// 正在执行的 FixedUpdate 回调列表
 		/// </summary>
-		private readonly List<Action> m_DoingFixedUpdateList = new();
+		private readonly List<Action> m_doingFixedUpdateList = new();
 
 
 		/// <summary>
 		/// 等待执行的 LateUpdate 回调列表
 		/// </summary>
-		private readonly List<Action> m_WaitLateUpdateList = new();
+		private readonly List<Action> m_waitLateUpdateList = new();
 
 		/// <summary>
 		/// 正在执行的 LateUpdate 回调列表
 		/// </summary>
-		private readonly List<Action> m_DoingLateUpdateList = new();
+		private readonly List<Action> m_doingLateUpdateList = new();
 
 
 		/// <summary>
 		/// 等待执行的 Destroy 回调列表
 		/// </summary>
-		private readonly List<Action> m_WaitDestroyList = new();
+		private readonly List<Action> m_waitDestroyList = new();
 
 		/// <summary>
 		/// 正在执行的 Destroy 回调列表
 		/// </summary>
-		private readonly List<Action> m_DoingDestroyList = new();
+		private readonly List<Action> m_doingDestroyList = new();
 
 
 		/// <summary>
 		/// 等待执行的 OnApplicationPause 回调列表
 		/// </summary>
-		private List<Action<bool>> m_WaitOnApplicationPauseList = new();
+		private List<Action<bool>> m_waitOnApplicationPauseList = new();
 
 		/// <summary>
 		/// 正在执行的 OnApplicationPause 回调列表
 		/// </summary>
-		private List<Action<bool>> m_DoOnApplicationPauseList = new();
+		private List<Action<bool>> m_doOnApplicationPauseList = new();
 
 
 		/// <summary>
 		/// 等待执行的 OnApplicationFocus 回调列表
 		/// </summary>
-		private List<Action<bool>> m_WaitOnApplicationFocusList = new();
+		private List<Action<bool>> m_waitOnApplicationFocusList = new();
 
 		/// <summary>
 		/// 正在执行的 OnApplicationFocus 回调列表
 		/// </summary>
-		private List<Action<bool>> m_DoOnApplicationFocusList = new();
+		private List<Action<bool>> m_doOnApplicationFocusList = new();
 
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace Hotfix.Framework.Mono
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			QueueInvoking(m_DoingUpdateList, m_WaitUpdateList);
+			QueueInvoking(m_doingUpdateList, m_waitUpdateList);
 		}
 
 		/// <summary>
@@ -100,7 +100,7 @@ namespace Hotfix.Framework.Mono
 		/// </summary>
 		protected internal override void OnFixedUpdate()
 		{
-			QueueInvoking(m_DoingFixedUpdateList, m_WaitFixedUpdateList);
+			QueueInvoking(m_doingFixedUpdateList, m_waitFixedUpdateList);
 		}
 
 		/// <summary>
@@ -110,7 +110,7 @@ namespace Hotfix.Framework.Mono
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnLateUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			QueueInvoking(m_DoingLateUpdateList, m_WaitLateUpdateList);
+			QueueInvoking(m_doingLateUpdateList, m_waitLateUpdateList);
 		}
 
 		/// <summary>
@@ -118,14 +118,14 @@ namespace Hotfix.Framework.Mono
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			QueueInvoking(m_DoingDestroyList, m_WaitDestroyList);
+			QueueInvoking(m_doingDestroyList, m_waitDestroyList);
 
-			m_WaitUpdateList.Clear();
-			m_WaitDestroyList.Clear();
-			m_WaitFixedUpdateList.Clear();
-			m_WaitLateUpdateList.Clear();
-			m_WaitOnApplicationFocusList.Clear();
-			m_WaitOnApplicationPauseList.Clear();
+			m_waitUpdateList.Clear();
+			m_waitDestroyList.Clear();
+			m_waitFixedUpdateList.Clear();
+			m_waitLateUpdateList.Clear();
+			m_waitOnApplicationFocusList.Clear();
+			m_waitOnApplicationPauseList.Clear();
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Hotfix.Framework.Mono
 		/// <param name="focusStatus">应用程序的焦点状态</param>
 		public void OnApplicationFocus(bool focusStatus)
 		{
-			QueueInvoking(ref m_DoOnApplicationFocusList, ref m_WaitOnApplicationFocusList, focusStatus);
+			QueueInvoking(ref m_doOnApplicationFocusList, ref m_waitOnApplicationFocusList, focusStatus);
 		}
 
 		/// <summary>
@@ -143,7 +143,7 @@ namespace Hotfix.Framework.Mono
 		/// <param name="pauseStatus">应用程序的暂停状态</param>
 		public void OnApplicationPause(bool pauseStatus)
 		{
-			QueueInvoking(ref m_DoOnApplicationPauseList, ref m_WaitOnApplicationPauseList, pauseStatus);
+			QueueInvoking(ref m_doOnApplicationPauseList, ref m_waitOnApplicationPauseList, pauseStatus);
 		}
 
 
@@ -154,7 +154,7 @@ namespace Hotfix.Framework.Mono
 		public void AddUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitUpdateList.Add(action);
+			m_waitUpdateList.Add(action);
 		}
 
 		/// <summary>
@@ -164,7 +164,7 @@ namespace Hotfix.Framework.Mono
 		public void AddLateUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitLateUpdateList.Add(action);
+			m_waitLateUpdateList.Add(action);
 		}
 
 		/// <summary>
@@ -174,7 +174,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveLateUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitLateUpdateList.Remove(action);
+			m_waitLateUpdateList.Remove(action);
 		}
 
 		/// <summary>
@@ -184,7 +184,7 @@ namespace Hotfix.Framework.Mono
 		public void AddFixedUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitFixedUpdateList.Add(action);
+			m_waitFixedUpdateList.Add(action);
 		}
 
 		/// <summary>
@@ -194,7 +194,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveFixedUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitFixedUpdateList.Remove(action);
+			m_waitFixedUpdateList.Remove(action);
 		}
 
 		/// <summary>
@@ -204,7 +204,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveUpdateListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitUpdateList.Remove(action);
+			m_waitUpdateList.Remove(action);
 		}
 
 
@@ -215,7 +215,7 @@ namespace Hotfix.Framework.Mono
 		public void AddDestroyListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitDestroyList.Add(action);
+			m_waitDestroyList.Add(action);
 		}
 
 		/// <summary>
@@ -225,7 +225,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveDestroyListener(Action action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitDestroyList.Remove(action);
+			m_waitDestroyList.Remove(action);
 		}
 
 		/// <summary>
@@ -235,7 +235,7 @@ namespace Hotfix.Framework.Mono
 		public void AddOnApplicationPauseListener(Action<bool> action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitOnApplicationPauseList.Add(action);
+			m_waitOnApplicationPauseList.Add(action);
 		}
 
 		/// <summary>
@@ -245,7 +245,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveOnApplicationPauseListener(Action<bool> action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitOnApplicationPauseList.Remove(action);
+			m_waitOnApplicationPauseList.Remove(action);
 		}
 
 		/// <summary>
@@ -255,7 +255,7 @@ namespace Hotfix.Framework.Mono
 		public void AddOnApplicationFocusListener(Action<bool> action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitOnApplicationFocusList.Add(action);
+			m_waitOnApplicationFocusList.Add(action);
 		}
 
 		/// <summary>
@@ -265,7 +265,7 @@ namespace Hotfix.Framework.Mono
 		public void RemoveOnApplicationFocusListener(Action<bool> action)
 		{
 			action.NotNull(nameof(action));
-			m_WaitOnApplicationFocusList.Remove(action);
+			m_waitOnApplicationFocusList.Remove(action);
 		}
 
 		/// <summary>

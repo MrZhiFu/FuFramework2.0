@@ -14,17 +14,17 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// FGUI customData 中红点标识前缀
 		/// </summary>
-		private const string FlagRedDot = "red_dot:";
+		private const string FLAG_RED_DOT = "red_dot:";
 
 		/// <summary>
 		/// 红点节点 Key（从 customData 解析）
 		/// </summary>
-		private RedDotKey m_Key;
+		private RedDotKey m_key;
 
 		/// <summary>
 		/// 是否已绑定红点 Key
 		/// </summary>
-		private bool m_HasKey;
+		private bool m_hasKey;
 
 		/// <summary>
 		/// 初始化：自动解析 customData 中的 red_dot:&lt;key&gt; 并订阅红点变更事件
@@ -36,14 +36,14 @@ namespace Hotfix.Game.UI
 
 			if (Enum.TryParse<ERedDotKey>(keyValue, true, out var staticKey))
 			{
-				m_Key = staticKey;
+				m_key = staticKey;
 			}
 			else
 			{
-				m_Key = keyValue;
+				m_key = keyValue;
 			}
 
-			m_HasKey = true;
+			m_hasKey = true;
 			GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
 			RefreshCurrentState();
 		}
@@ -58,7 +58,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		private void OnDispose()
 		{
-			if (m_HasKey)
+			if (m_hasKey)
 				GlobalModule.EventModule.Unsubscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
 		}
 
@@ -70,11 +70,11 @@ namespace Hotfix.Game.UI
 		private void OnRedDotChanged(object sender, GameEventArgs e)
 		{
 			if (e is not RedDotChangedEventArgs args) return;
-			if (!m_HasKey) return;
+			if (!m_hasKey) return;
 
 			foreach (var key in args.ChangedKeys)
 			{
-				if (key != m_Key) continue;
+				if (key != m_key) continue;
 				RefreshCurrentState();
 				return;
 			}
@@ -124,7 +124,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		private void RefreshCurrentState()
 		{
-			var state = RedDotModule.Instance.GetState(m_Key);
+			var state = RedDotModule.Instance.GetState(m_key);
 			RefreshUI(state.Count, state.DisplayMode);
 		}
 
@@ -138,11 +138,11 @@ namespace Hotfix.Game.UI
 			if (string.IsNullOrEmpty(customData))
 				return false;
 
-			var segStart = customData.IndexOf(FlagRedDot, StringComparison.Ordinal);
+			var segStart = customData.IndexOf(FLAG_RED_DOT, StringComparison.Ordinal);
 			if (segStart < 0)
 				return false;
 
-			var dataStart = segStart + FlagRedDot.Length;
+			var dataStart = segStart + FLAG_RED_DOT.Length;
 			var pipePos = customData.IndexOf('|', dataStart);
 			result = pipePos >= 0
 				? customData.Substring(dataStart, pipePos - dataStart).Trim()

@@ -16,17 +16,17 @@ namespace Hotfix.Framework.FSM
 		/// <summary>
 		/// 有限状态机字典。key为状态机持有者类型和状态机名称的组合，value为有限状态机。
 		/// </summary>
-		private readonly Dictionary<TypeNamePair, Fsm> m_FsmDict = new();
+		private readonly Dictionary<TypeNamePair, Fsm> m_fsmDict = new();
 
 		/// <summary>
 		/// 临时有限状态机列表。用于在轮询中暂存有限状态机。
 		/// </summary>
-		private readonly List<Fsm> m_TempFsmList = new();
+		private readonly List<Fsm> m_tempFsmList = new();
 
 		/// <summary>
 		/// 获取有限状态机数量。
 		/// </summary>
-		public int Count => m_FsmDict.Count;
+		public int Count => m_fsmDict.Count;
 
 		/// <summary>
 		/// 初始化
@@ -40,15 +40,15 @@ namespace Hotfix.Framework.FSM
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			m_TempFsmList.Clear();
-			if (m_FsmDict.Count <= 0) return;
+			m_tempFsmList.Clear();
+			if (m_fsmDict.Count <= 0) return;
 
-			foreach (var fsm in m_FsmDict)
+			foreach (var fsm in m_fsmDict)
 			{
-				m_TempFsmList.Add(fsm.Value);
+				m_tempFsmList.Add(fsm.Value);
 			}
 
-			foreach (var fsm in m_TempFsmList)
+			foreach (var fsm in m_tempFsmList)
 			{
 				if (fsm.IsDestroyed) continue;
 				fsm.Update(deltaTime, unscaledDeltaTime);
@@ -61,18 +61,18 @@ namespace Hotfix.Framework.FSM
 		protected internal override void OnDispose()
 		{
 			// 先快照再逐项 Shutdown：Shutdown → ReferencePool.Recycle → Fsm.Clear → 用户 OnLeave/OnDestroy
-			// 可能重入 FsmModule（DestroyFsm/CreateFsm）修改 m_FsmDict——直接遍历会「遍历中修改容器」，
+			// 可能重入 FsmModule（DestroyFsm/CreateFsm）修改 m_fsmDict——直接遍历会「遍历中修改容器」，
 			// 且首个异常会让剩余 Fsm 永不 Shutdown。快照口径与 OnUpdate 一致。
-			m_TempFsmList.Clear();
-			foreach (var fsmPair in m_FsmDict)
+			m_tempFsmList.Clear();
+			foreach (var fsmPair in m_fsmDict)
 			{
-				m_TempFsmList.Add(fsmPair.Value);
+				m_tempFsmList.Add(fsmPair.Value);
 			}
 
 			// 先清字典再 Shutdown：期间重入的 DestroyFsm 因找不到条目直接返回 false，不会二次 Shutdown
-			m_FsmDict.Clear();
+			m_fsmDict.Clear();
 
-			foreach (var fsm in m_TempFsmList)
+			foreach (var fsm in m_tempFsmList)
 			{
 				if (fsm == null) continue;
 
@@ -87,7 +87,7 @@ namespace Hotfix.Framework.FSM
 				}
 			}
 
-			m_TempFsmList.Clear();
+			m_tempFsmList.Clear();
 		}
 
 
@@ -100,7 +100,7 @@ namespace Hotfix.Framework.FSM
 		/// <returns>是否存在有限状态机。</returns>
 		public bool HasFsm<T>() where T : class
 		{
-			return m_FsmDict.ContainsKey(new TypeNamePair(typeof(T)));
+			return m_fsmDict.ContainsKey(new TypeNamePair(typeof(T)));
 		}
 
 		/// <summary>
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.FSM
 		public bool HasFsm(Type owner)
 		{
 			if (owner == null) throw new InvalidOperationException("[FsmModule] 有限状态机持有者类型不能为空。");
-			return m_FsmDict.ContainsKey(new TypeNamePair(owner));
+			return m_fsmDict.ContainsKey(new TypeNamePair(owner));
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.FSM
 		/// <returns>是否存在有限状态机。</returns>
 		public bool HasFsm<T>(string fsmName) where T : class
 		{
-			return m_FsmDict.ContainsKey(new TypeNamePair(typeof(T), fsmName));
+			return m_fsmDict.ContainsKey(new TypeNamePair(typeof(T), fsmName));
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Hotfix.Framework.FSM
 		public bool HasFsm(Type owner, string fsmName)
 		{
 			if (owner == null) throw new InvalidOperationException("[FsmModule] 有限状态机持有者类型不能为空。");
-			return m_FsmDict.ContainsKey(new TypeNamePair(owner, fsmName));
+			return m_fsmDict.ContainsKey(new TypeNamePair(owner, fsmName));
 		}
 
 		/// <summary>
@@ -144,7 +144,7 @@ namespace Hotfix.Framework.FSM
 		/// <returns>要获取的有限状态机。</returns>
 		public Fsm GetFsm<T>() where T : class
 		{
-			return m_FsmDict.GetValueOrDefault(new TypeNamePair(typeof(T)));
+			return m_fsmDict.GetValueOrDefault(new TypeNamePair(typeof(T)));
 		}
 
 		/// <summary>
@@ -155,7 +155,7 @@ namespace Hotfix.Framework.FSM
 		public Fsm GetFsm(Type ownerType)
 		{
 			if (ownerType == null) throw new InvalidOperationException("[FsmModule] 有限状态机持有者类型不能为空。");
-			return m_FsmDict.GetValueOrDefault(new TypeNamePair(ownerType));
+			return m_fsmDict.GetValueOrDefault(new TypeNamePair(ownerType));
 		}
 
 		/// <summary>
@@ -166,7 +166,7 @@ namespace Hotfix.Framework.FSM
 		/// <returns>要获取的有限状态机。</returns>
 		public Fsm GetFsm<T>(string fsmName) where T : class
 		{
-			return m_FsmDict.GetValueOrDefault(new TypeNamePair(typeof(T), fsmName));
+			return m_fsmDict.GetValueOrDefault(new TypeNamePair(typeof(T), fsmName));
 		}
 
 		/// <summary>
@@ -178,7 +178,7 @@ namespace Hotfix.Framework.FSM
 		public Fsm GetFsm(Type ownerType, string fsmName)
 		{
 			if (ownerType == null) throw new InvalidOperationException("[FsmModule] 有限状态机持有者类型不能为空。");
-			return m_FsmDict.GetValueOrDefault(new TypeNamePair(ownerType, fsmName));
+			return m_fsmDict.GetValueOrDefault(new TypeNamePair(ownerType, fsmName));
 		}
 
 		/// <summary>
@@ -188,8 +188,8 @@ namespace Hotfix.Framework.FSM
 		public Fsm[] GetAllFsms()
 		{
 			var index   = 0;
-			var results = new Fsm[m_FsmDict.Count];
-			foreach (var (_, fsmBase) in m_FsmDict)
+			var results = new Fsm[m_fsmDict.Count];
+			foreach (var (_, fsmBase) in m_fsmDict)
 			{
 				results[index++] = fsmBase;
 			}
@@ -205,7 +205,7 @@ namespace Hotfix.Framework.FSM
 		{
 			if (results == null) throw new InvalidOperationException("[FsmModule] 结果列表不能为空。");
 			results.Clear();
-			foreach (var (_, fsmBase) in m_FsmDict)
+			foreach (var (_, fsmBase) in m_fsmDict)
 			{
 				results.Add(fsmBase);
 			}
@@ -237,7 +237,7 @@ namespace Hotfix.Framework.FSM
 				throw new InvalidOperationException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
 
 			var fsm = Fsm.Create(fsmName, owner, states);
-			m_FsmDict.Add(typeNamePair, fsm);
+			m_fsmDict.Add(typeNamePair, fsm);
 			return fsm;
 		}
 
@@ -268,7 +268,7 @@ namespace Hotfix.Framework.FSM
 				throw new InvalidOperationException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
 
 			var fsm = Fsm.Create(fsmName, owner, states);
-			m_FsmDict.Add(typeNamePair, fsm);
+			m_fsmDict.Add(typeNamePair, fsm);
 			return fsm;
 		}
 
@@ -347,9 +347,9 @@ namespace Hotfix.Framework.FSM
 		/// <returns></returns>
 		private bool InternalDestroyFsm(TypeNamePair typeNamePair)
 		{
-			if (!m_FsmDict.TryGetValue(typeNamePair, out var fsm)) return false;
+			if (!m_fsmDict.TryGetValue(typeNamePair, out var fsm)) return false;
 			fsm.Shutdown();
-			return m_FsmDict.Remove(typeNamePair);
+			return m_fsmDict.Remove(typeNamePair);
 		}
 
 		#endregion

@@ -10,7 +10,7 @@ namespace Hotfix.Game.UI
 		/// 初始化
 		/// </summary>
 		private void OnInit()
-		{ 
+		{
 			InitEvent();
 		}
 
@@ -27,13 +27,13 @@ namespace Hotfix.Game.UI
 			// Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
 		}
 
-		
+
 		/// <summary>
 		/// 销毁。
 		/// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。
 		/// </summary>
 		private void OnDispose() { }
-		
+
 		/// <summary>
 		/// 设置数据
 		/// </summary>

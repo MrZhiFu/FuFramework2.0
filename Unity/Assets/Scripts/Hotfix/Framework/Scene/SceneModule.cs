@@ -51,47 +51,47 @@ namespace Hotfix.Framework.Scene
 		}
 
 		/// <summary>
-		/// 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
-		/// </summary>
-		/// <summary>
 		/// 正在加载中的场景路径集合（await 前置位）。
-		/// m_LoadingSceneDict 需在 await 完成后拿到 SceneHandle 才登记，await 期间无法拦截并发同路径加载；
+		/// m_loadingSceneDict 需在 await 完成后拿到 SceneHandle 才登记，await 期间无法拦截并发同路径加载；
 		/// 此集合在 await 前占位，杜绝并发重复加载导致 Dictionary.Add 抛重复 key。
 		/// </summary>
-		private readonly HashSet<string> m_LoadingSceneSet = new();
+		private readonly HashSet<string> m_loadingSceneSet = new();
 
-		private readonly Dictionary<string, SceneHandle> m_LoadedSceneDict = new();
+		/// <summary>
+		/// 已加载的场景字典，Key为场景资源路径，Value为场景加载句柄
+		/// </summary>
+		private readonly Dictionary<string, SceneHandle> m_loadedSceneDict = new();
 
 		/// <summary>
 		/// 正在加载的场景字典，Key为场景资源路径，Value为场景加载句柄数据
 		/// </summary>
-		private readonly Dictionary<string, SceneHandleData> m_LoadingSceneDict = new();
+		private readonly Dictionary<string, SceneHandleData> m_loadingSceneDict = new();
 
 		/// <summary>
 		/// 正在卸载的场景字典，Key为场景资源路径，Value为场景加载句柄
 		/// </summary>
-		private readonly Dictionary<string, SceneHandle> m_UnloadingSceneDict = new();
+		private readonly Dictionary<string, SceneHandle> m_unloadingSceneDict = new();
 
 		/// <summary>
 		/// 资源管理模块
 		/// </summary>
-		private AssetModule m_AssetModule;
+		private AssetModule m_assetModule;
 
 		/// <summary>
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途场景加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_Scope = new();
+		private CancellationScope m_scope = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_Scope.Token;
+		public CancellationToken Token => m_scope.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_Scope.CancelAsync();
+		public UniTask CancelAsync() => m_scope.CancelAsync();
 
 		/// 事件订阅器
 		private EventRegister EventRegister { get; set; }
@@ -102,9 +102,9 @@ namespace Hotfix.Framework.Scene
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope = new CancellationScope(); // 新生命周期 = 新 Token
 			EventRegister = EventRegister.Create();
-			m_AssetModule = ModuleManager.GetModule<AssetModule>();
+			m_assetModule = ModuleManager.GetModule<AssetModule>();
 		}
 
 		/// <summary>
@@ -112,11 +112,11 @@ namespace Hotfix.Framework.Scene
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_Scope.Cancel(); // 随模块销毁取消在途场景加载
+			m_scope.Cancel(); // 随模块销毁取消在途场景加载
 
 			// 反向遍历已加载的场景，卸载所有已加载的场景
-			var loadedScenePaths = new string[m_LoadedSceneDict.Count];
-			m_LoadedSceneDict.Keys.CopyTo(loadedScenePaths, 0);
+			var loadedScenePaths = new string[m_loadedSceneDict.Count];
+			m_loadedSceneDict.Keys.CopyTo(loadedScenePaths, 0);
 			for (var i = loadedScenePaths.Length - 1; i >= 0; i--)
 			{
 				var loadedScenePath = loadedScenePaths[i];
@@ -124,10 +124,10 @@ namespace Hotfix.Framework.Scene
 				UnloadScene(loadedScenePath);
 			}
 
-			m_LoadedSceneDict.Clear();
-			m_LoadingSceneDict.Clear();
-			m_UnloadingSceneDict.Clear();
-			m_LoadingSceneSet.Clear(); // 若不清理，重启后 IsLoading 对旧路径恒 true，LoadScene 永久拒绝
+			m_loadedSceneDict.Clear();
+			m_loadingSceneDict.Clear();
+			m_unloadingSceneDict.Clear();
+			m_loadingSceneSet.Clear(); // 若不清理，重启后 IsLoading 对旧路径恒 true，LoadScene 永久拒绝
 
 			EventRegister.Release();
 			EventRegister = null;
@@ -156,7 +156,7 @@ namespace Hotfix.Framework.Scene
 			}
 
 			// 仅做资源存在性检查，绝不能用 LoadSceneAsync（会真正触发一次场景加载，且句柄无法释放）
-			return m_AssetModule.HasAssetPath(sceneAssetPath);
+			return m_assetModule.HasAssetPath(sceneAssetPath);
 		}
 
 		/// <summary>
@@ -167,7 +167,7 @@ namespace Hotfix.Framework.Scene
 		public bool IsLoaded(string sceneAssetPath)
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
-			return m_LoadedSceneDict.ContainsKey(sceneAssetPath);
+			return m_loadedSceneDict.ContainsKey(sceneAssetPath);
 		}
 
 		/// <summary>
@@ -178,7 +178,7 @@ namespace Hotfix.Framework.Scene
 		public bool IsLoading(string sceneAssetPath)
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
-			return m_LoadingSceneSet.Contains(sceneAssetPath) || m_LoadingSceneDict.ContainsKey(sceneAssetPath);
+			return m_loadingSceneSet.Contains(sceneAssetPath) || m_loadingSceneDict.ContainsKey(sceneAssetPath);
 		}
 
 		/// <summary>
@@ -189,7 +189,7 @@ namespace Hotfix.Framework.Scene
 		public bool IsUnloading(string sceneAssetPath)
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath)) throw new InvalidOperationException("[SceneModule] 场景资源路径无效!");
-			return m_UnloadingSceneDict.ContainsKey(sceneAssetPath);
+			return m_unloadingSceneDict.ContainsKey(sceneAssetPath);
 		}
 
 		/// <summary>
@@ -228,8 +228,8 @@ namespace Hotfix.Framework.Scene
 		/// <returns>已加载场景的资源路径。</returns>
 		public string[] GetAllLoadedSceneAssetPaths()
 		{
-			var results = new string[m_LoadedSceneDict.Count];
-			m_LoadedSceneDict.Keys.CopyTo(results, 0);
+			var results = new string[m_loadedSceneDict.Count];
+			m_loadedSceneDict.Keys.CopyTo(results, 0);
 			return results;
 		}
 
@@ -241,7 +241,7 @@ namespace Hotfix.Framework.Scene
 		{
 			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
 			results.Clear();
-			results.AddRange(m_LoadedSceneDict.Keys);
+			results.AddRange(m_loadedSceneDict.Keys);
 		}
 
 		/// <summary>
@@ -250,8 +250,8 @@ namespace Hotfix.Framework.Scene
 		/// <returns>正在加载场景的资源路径。</returns>
 		public string[] GetAllLoadingSceneAssetPaths()
 		{
-			var results = new string[m_LoadingSceneSet.Count];
-			m_LoadingSceneSet.CopyTo(results);
+			var results = new string[m_loadingSceneSet.Count];
+			m_loadingSceneSet.CopyTo(results);
 			return results;
 		}
 
@@ -263,7 +263,7 @@ namespace Hotfix.Framework.Scene
 		{
 			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
 			results.Clear();
-			results.AddRange(m_LoadingSceneSet);
+			results.AddRange(m_loadingSceneSet);
 		}
 
 		/// <summary>
@@ -272,8 +272,8 @@ namespace Hotfix.Framework.Scene
 		/// <returns>正在卸载场景的资源路径。</returns>
 		public string[] GetAllUnloadingSceneAssetPaths()
 		{
-			var results = new string[m_UnloadingSceneDict.Count];
-			m_UnloadingSceneDict.Keys.CopyTo(results, 0);
+			var results = new string[m_unloadingSceneDict.Count];
+			m_unloadingSceneDict.Keys.CopyTo(results, 0);
 			return results;
 		}
 
@@ -285,7 +285,7 @@ namespace Hotfix.Framework.Scene
 		{
 			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
 			results.Clear();
-			results.AddRange(m_UnloadingSceneDict.Keys);
+			results.AddRange(m_unloadingSceneDict.Keys);
 		}
 
 		#endregion
@@ -348,29 +348,29 @@ namespace Hotfix.Framework.Scene
 			if (IsLoaded(sceneAssetPath))
 				throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 已被加载过，不能重复加载!");
 
-			// await 前置位：先登记 loading 状态拦截并发同路径加载（m_LoadingSceneDict 需 await 完成拿到 handle 才能登记）
-			m_LoadingSceneSet.Add(sceneAssetPath);
-			var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
+			// await 前置位：先登记 loading 状态拦截并发同路径加载（m_loadingSceneDict 需 await 完成拿到 handle 才能登记）
+			m_loadingSceneSet.Add(sceneAssetPath);
+			var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
 			try
 			{
 				var sceneName = GetSceneName(sceneAssetPath);
-				var sceneOperationHandle = await m_AssetModule.LoadSceneAsync(sceneAssetPath, sceneMode, token, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
+				var sceneOperationHandle = await m_assetModule.LoadSceneAsync(sceneAssetPath, sceneMode, token, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
 				// 模块已销毁/生命周期变更/调用方取消（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
-				if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
+				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token || token.IsCancellationRequested)
 				{
 					// 此刻场景已加载成功：SceneHandle.Release() 不会卸载 Unity 场景，必须显式卸载，
-					// 否则场景既不进 m_LoadedSceneDict（IsLoaded 为 false，无法再走 UnloadScene）又真实驻留，成为不可回收的孤儿场景。
+					// 否则场景既不进 m_loadedSceneDict（IsLoaded 为 false，无法再走 UnloadScene）又真实驻留，成为不可回收的孤儿场景。
 					// 卸载完成后释放句柄：成功卸载时 YooAsset 的 sceneUnloaded 钩子已自动释放，此处为幂等兜底（卸载失败时仍需释放）。
 					sceneOperationHandle.UnloadSceneAsync().Completed += _ => sceneOperationHandle.Release();
 					throw new OperationCanceledException(capturedToken);
 				}
-				m_LoadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
+				m_loadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
 				sceneOperationHandle.Completed += OnLoadSceneCompleted;
 				return sceneOperationHandle;
 			}
 			finally
 			{
-				m_LoadingSceneSet.Remove(sceneAssetPath); // 成功/异常均移除占位
+				m_loadingSceneSet.Remove(sceneAssetPath); // 成功/异常均移除占位
 			}
 		}
 
@@ -396,11 +396,11 @@ namespace Hotfix.Framework.Scene
 			if (!IsLoaded(sceneAssetPath))
 				throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景未加载!");
 
-			if (!m_LoadedSceneDict.TryGetValue(sceneAssetPath, out var sceneOperationHandle)) return;
+			if (!m_loadedSceneDict.TryGetValue(sceneAssetPath, out var sceneOperationHandle)) return;
 
 			var unloadHandle = sceneOperationHandle.UnloadSceneAsync();
-			m_LoadedSceneDict.Remove(sceneAssetPath);
-			m_UnloadingSceneDict.Add(sceneAssetPath, sceneOperationHandle);
+			m_loadedSceneDict.Remove(sceneAssetPath);
+			m_unloadingSceneDict.Add(sceneAssetPath, sceneOperationHandle);
 
 			unloadHandle.Completed += OnUnloadSceneOperationHandleOnCompleted;
 			return;
@@ -411,21 +411,21 @@ namespace Hotfix.Framework.Scene
 				if (asyncOperationBase.Error.IsNullOrEmpty())
 				{
 					// 卸载成功
-					m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
+					m_unloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
 					if (sceneHandle == null) return;
 					FuLogger.LogInfo($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 成功！");
 					var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
-					m_UnloadingSceneDict.Remove(sceneAssetPath);
-					m_LoadedSceneDict.Remove(sceneAssetPath);
+					m_unloadingSceneDict.Remove(sceneAssetPath);
+					m_loadedSceneDict.Remove(sceneAssetPath);
 					EventRegister.Broadcast(this, unloadSceneSuccessEventArgs);
 				}
 				else
 				{
 					// 卸载失败：场景仍已加载，恢复登记以便重试卸载（不释放句柄——场景仍存在，YooAsset 的 sceneUnloaded 钩子不会触发，句柄仍有效）
-					m_UnloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
+					m_unloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
 					if (sceneHandle == null) return;
 					FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
-					m_UnloadingSceneDict.Remove(sceneAssetPath);
+					m_unloadingSceneDict.Remove(sceneAssetPath);
 
 					// 模块已销毁（OnDispose 已清空登记字典）：不再恢复登记（避免残留），显式释放句柄兜底，防卸载失败句柄泄漏
 					if (Token.IsCancellationRequested)
@@ -434,7 +434,7 @@ namespace Hotfix.Framework.Scene
 						return;
 					}
 
-					m_LoadedSceneDict.Add(sceneAssetPath, sceneHandle);
+					m_loadedSceneDict.Add(sceneAssetPath, sceneHandle);
 					var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
 					EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
 				}
@@ -468,7 +468,7 @@ namespace Hotfix.Framework.Scene
 			sceneHandle.NotNull(nameof(sceneHandle));
 
 			var assetPath = sceneHandle.GetAssetInfo().AssetPath;
-			m_LoadingSceneDict.Remove(assetPath, out var sceneHandleData);
+			m_loadingSceneDict.Remove(assetPath, out var sceneHandleData);
 
 			// 模块已销毁（OnDispose 已清空字典）：不登记，释放句柄避免泄漏
 			if (Token.IsCancellationRequested)
@@ -481,7 +481,7 @@ namespace Hotfix.Framework.Scene
 			if (sceneHandle.Status == EOperationStatus.Succeeded)
 			{
 				// 加载成功：登记已加载字典（失败不登记，否则 IsLoaded 恒 true 导致无法重试）
-				m_LoadedSceneDict.Add(assetPath, sceneHandle);
+				m_loadedSceneDict.Add(assetPath, sceneHandle);
 				FuLogger.LogInfo($"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 成功！");
 				var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
 				EventRegister.Broadcast(this, loadSceneSuccessEventArgs);

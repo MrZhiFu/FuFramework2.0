@@ -17,12 +17,12 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 预计的模块数量，用于预分配集合容量
 		/// </summary>
-		private const int ModuleCount = 25;
+		private const int MODULE_COUNT = 25;
 
 		/// <summary>
 		/// 记录所有已注册的模块列表
 		/// </summary>
-		private static readonly List<ModuleBase> ModuleList = new(ModuleCount);
+		private static readonly List<ModuleBase> ModuleList = new(MODULE_COUNT);
 
 		/// <summary>
 		/// 获取游戏框架模块（泛型版本）。

@@ -20,17 +20,17 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 事件组件
 		/// </summary>
-		private EventModule m_EventModule;
+		private EventModule m_eventModule;
 
 		/// <summary>
 		/// 对象池管理模块
 		/// </summary>
-		private ObjectPoolModule m_ObjectPoolModule;
+		private ObjectPoolModule m_objectPoolModule;
 
 		/// <summary>
 		/// 界面实例对象池
 		/// </summary>
-		private ObjectPool<WinObject> m_WinObjPool;
+		private ObjectPool<WinObject> m_winObjPool;
 
 		/// <summary>
 		/// FGui的包管理器
@@ -41,49 +41,49 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 正在加载中的界面字典, key为界面Id, value为界面名称
 		/// </summary>
-		private Dictionary<int, string> m_LoadingDict;
+		private Dictionary<int, string> m_loadingDict;
 
 		/// <summary>
 		/// 已被 CloseAllLoading 取消的在途加载序列号集合。
 		/// _OpenAsync 在每个 await 之后的取消校验点比对本集合，命中即销毁半成品实例并中止，
 		/// 避免「CloseAllLoading 只清字典，在途加载照常完成并注册窗口」。
 		/// </summary>
-		private HashSet<int> m_CancelLoadingSet;
+		private HashSet<int> m_cancelLoadingSet;
 
 		/// <summary>
 		/// 关闭后待回收的界面集合
 		/// </summary>
-		private Queue<WinBase> m_WaitRecycleQueue;
+		private Queue<WinBase> m_waitRecycleQueue;
 
 		/// <summary>
 		/// OnUpdate 专用的界面组快照列表。
 		/// 不得与其它遍历共用：组内界面的 Update 回调是用户代码，可能触发模块级操作
-		/// （AddGroup / OnDispose 会增删 m_UIGroupDict），共用缓存会导致正在遍历的列表被清空、
+		/// （AddGroup / OnDispose 会增删 m_uiGroupDict），共用缓存会导致正在遍历的列表被清空、
 		/// 本帧其后的界面组不再更新。
 		/// </summary>
-		private readonly List<UIGroup> m_CachedUpdateGroupList = new();
+		private readonly List<UIGroup> m_cachedUpdateGroupList = new();
 
 
 		/// <summary>
 		/// 界面自增序列号，每打开一个界面就加1
 		/// </summary>
-		private int m_SerialId;
+		private int m_serialId;
 
 
 		/// <summary>
 		/// 界面实例对象池自动销毁检查的间隔秒数
 		/// </summary>
-		private const float DefaultAutoDisposeCheckInterval = 60f;
+		private const float DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL = 60f;
 
 		/// <summary>
 		/// 界面实例对象池的容量
 		/// </summary>
-		private const int DefaultPoolCapacity = 16;
+		private const int DEFAULT_POOL_CAPACITY = 16;
 
 		/// <summary>
 		/// 界面实例对象池对象过期秒数
 		/// </summary>
-		private const float DefaultPoolExpireTimeAfterIdle = 60f;
+		private const float DEFAULT_POOL_EXPIRE_TIME_AFTER_IDLE = 60f;
 
 
 		/// <summary>
@@ -91,8 +91,8 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public float PoolAutoDisposeCheckInterval
 		{
-			get => m_WinObjPool.AutoDisposeCheckInterval;
-			set => m_WinObjPool.AutoDisposeCheckInterval = value;
+			get => m_winObjPool.AutoDisposeCheckInterval;
+			set => m_winObjPool.AutoDisposeCheckInterval = value;
 		}
 
 		/// <summary>
@@ -100,8 +100,8 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public int PoolCapacity
 		{
-			get => m_WinObjPool.Capacity;
-			set => m_WinObjPool.Capacity = value;
+			get => m_winObjPool.Capacity;
+			set => m_winObjPool.Capacity = value;
 		}
 
 		/// <summary>
@@ -110,8 +110,8 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public float PoolExpireTimeAfterIdle
 		{
-			get => m_WinObjPool.ExpireTimeAfterIdle;
-			set => m_WinObjPool.ExpireTimeAfterIdle = value;
+			get => m_winObjPool.ExpireTimeAfterIdle;
+			set => m_winObjPool.ExpireTimeAfterIdle = value;
 		}
 
 		/// <summary>
@@ -119,22 +119,22 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		protected internal override void OnInit()
 		{
-			m_UIGroupDict      = new Dictionary<EUILayer, UIGroup>();
-			m_LoadingDict      = new Dictionary<int, string>();
-			m_CancelLoadingSet = new HashSet<int>();
-			m_WaitRecycleQueue = new Queue<WinBase>();
+			m_uiGroupDict      = new Dictionary<EUILayer, UIGroup>();
+			m_loadingDict      = new Dictionary<int, string>();
+			m_cancelLoadingSet = new HashSet<int>();
+			m_waitRecycleQueue = new Queue<WinBase>();
 
-			m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-			m_WinObjPool       = m_ObjectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
+			m_objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+			m_winObjPool       = m_objectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
 
-			m_EventModule = ModuleManager.GetModule<EventModule>();
+			m_eventModule = ModuleManager.GetModule<EventModule>();
 			PkgManager    = new FuiPkgManager();
 
-			m_SerialId = 0;
+			m_serialId = 0;
 
-			PoolAutoDisposeCheckInterval = DefaultAutoDisposeCheckInterval;
-			PoolCapacity                 = DefaultPoolCapacity;
-			PoolExpireTimeAfterIdle      = DefaultPoolExpireTimeAfterIdle;
+			PoolAutoDisposeCheckInterval = DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL;
+			PoolCapacity                 = DEFAULT_POOL_CAPACITY;
+			PoolExpireTimeAfterIdle      = DEFAULT_POOL_EXPIRE_TIME_AFTER_IDLE;
 
 			// 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
 			SafeAreaHelper.Refresh();
@@ -163,9 +163,9 @@ namespace Hotfix.Framework.UI
 			SafeAreaHelper.OnUpdate();
 
 			// 回收等待回收的界面
-			while (m_WaitRecycleQueue.Count > 0)
+			while (m_waitRecycleQueue.Count > 0)
 			{
-				var ui = m_WaitRecycleQueue.Dequeue();
+				var ui = m_waitRecycleQueue.Dequeue();
 
 				// WinObject 对象池 Recycle 在池中找不到目标时会抛异常；若让其逃逸会中断 ModuleManager 本帧其后
 				// 所有模块的 Update，且该 win 会因跳过回收而泄漏，故逐项 try/catch 兜底（与 EntityModule 一致）。
@@ -181,16 +181,16 @@ namespace Hotfix.Framework.UI
 
 			// 驱动界面组帧更新。
 			// 先快照到复用列表再遍历（与 ObjectPoolModule.OnUpdate 一致）：界面 Update 回调是用户代码，
-			// 期间可能增删界面组（AddGroup / OnDispose 会改 m_UIGroupDict），直接枚举字典时枚举器一旦失效
+			// 期间可能增删界面组（AddGroup / OnDispose 会改 m_uiGroupDict），直接枚举字典时枚举器一旦失效
 			// 会从 ModuleManager.Update（无保护）逃逸并中断本帧其后所有模块。快照循环本身在回调之外的
 			// 单线程路径上执行，不会被并发修改，无需额外保护。
-			m_CachedUpdateGroupList.Clear();
-			foreach (var (_, group) in m_UIGroupDict)
+			m_cachedUpdateGroupList.Clear();
+			foreach (var (_, group) in m_uiGroupDict)
 			{
-				m_CachedUpdateGroupList.Add(group);
+				m_cachedUpdateGroupList.Add(group);
 			}
 
-			foreach (var group in m_CachedUpdateGroupList)
+			foreach (var group in m_cachedUpdateGroupList)
 			{
 				if (group == null || group.Pause) continue;
 
@@ -215,10 +215,10 @@ namespace Hotfix.Framework.UI
 			SafeAreaHelper.OnSafeAreaChanged -= ApplyGRootSafeArea;
 
 			// 逐个回收各组内界面的 WinInfo：WinInfo 经引用池 Acquire，唯一回收点是 UIGroup.Remove。
-			// 原先直接 m_UIGroupDict.Clear() 会丢弃这些 WinInfo，只要销毁时还有打开的界面就会造成引用池泄漏。
+			// 原先直接 m_uiGroupDict.Clear() 会丢弃这些 WinInfo，只要销毁时还有打开的界面就会造成引用池泄漏。
 			// 复用同一列表避免按组多次分配；Remove 会同步出队，随后再整体清空字典。
 			var groupWins = new List<WinBase>();
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				if (group == null) continue;
 
@@ -246,7 +246,7 @@ namespace Hotfix.Framework.UI
 						// Recycle（_OnRecycle + 归还对象池）。否则销毁时仍打开的窗口只回收了 WinInfo，
 						// 其 WinObject 仍处于使用中，会残留在池里直至 ObjectPoolModule 强制回收并打出
 						// 「仍有对象处于使用中」告警。
-						m_WaitRecycleQueue.Enqueue(win);
+						m_waitRecycleQueue.Enqueue(win);
 					}
 				}
 
@@ -256,9 +256,9 @@ namespace Hotfix.Framework.UI
 			// 先排空回收队列（窗口完成 _OnRecycle 并归还对象池），再销毁界面组：
 			// 顺序不可颠倒——组的 Dispose 会递归销毁其下的显示对象（含仍挂在组内的窗口 WinUI），
 			// 若先销毁组，回收队列中的窗口 WinUI 已被销毁，_OnRecycle 将操作已销毁对象。
-			while (m_WaitRecycleQueue.Count > 0)
+			while (m_waitRecycleQueue.Count > 0)
 			{
-				var ui = m_WaitRecycleQueue.Dequeue();
+				var ui = m_waitRecycleQueue.Dequeue();
 				try
 				{
 					Recycle(ui);
@@ -272,7 +272,7 @@ namespace Hotfix.Framework.UI
 			// 逐个销毁界面组：UIGroup 是挂在 GRoot.inst 下的 GComponent，只 Clear 字典会把它永久留在
 			// GRoot 下（每次模块重启泄漏一组 GComponent 及其关系/子对象）。GObject.Dispose 内部会
 			// RemoveFromParent 并释放关系与子对象，故无需再单独 RemoveChild。
-			foreach (var (_, group) in m_UIGroupDict)
+			foreach (var (_, group) in m_uiGroupDict)
 			{
 				if (group == null) continue;
 
@@ -286,12 +286,12 @@ namespace Hotfix.Framework.UI
 				}
 			}
 
-			m_UIGroupDict.Clear();
-			m_LoadingDict.Clear();
-			m_CancelLoadingSet.Clear();
+			m_uiGroupDict.Clear();
+			m_loadingDict.Clear();
+			m_cancelLoadingSet.Clear();
 
 			// 清空快照列表：避免持有已销毁的界面组引用（与 ObjectPoolModule.OnDispose 清理缓存列表一致）
-			m_CachedUpdateGroupList.Clear();
+			m_cachedUpdateGroupList.Clear();
 
 			PkgManager.RemoveAllPkg();
 			ReleaseBlur();

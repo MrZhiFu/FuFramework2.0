@@ -16,21 +16,21 @@ namespace Hotfix.Framework.ObjectPool
 	{
 		/// <summary>
 		/// DisposeOverCapacity() 专用的对象池快照列表。
-		/// 不得与 m_CachedObjPoolList / m_CachedUpdatePoolList 共用：遍历期间某个池的 OnDispose 回调
+		/// 不得与 m_cachedObjPoolList / m_cachedUpdatePoolList 共用：遍历期间某个池的 OnDispose 回调
 		/// 可能再次调用模块级 API（DisposeOverCapacity/DisposeAllUnused 会 Clear 并重填共享缓存），
 		/// 共用会导致外层正在遍历的列表被清空、本批其余池被静默跳过。隔离口径与 OnUpdate 一致。
 		/// </summary>
-		private readonly List<ObjectPoolBase> m_CachedDisposeOverCapacityPoolList = new();
+		private readonly List<ObjectPoolBase> m_cachedDisposeOverCapacityPoolList = new();
 
 		/// <summary>
 		/// DisposeAllUnused() 专用的对象池快照列表（隔离原因同上）。
 		/// </summary>
-		private readonly List<ObjectPoolBase> m_CachedDisposeAllUnusedPoolList = new();
+		private readonly List<ObjectPoolBase> m_cachedDisposeAllUnusedPoolList = new();
 
 		/// <summary>
 		/// 获取对象池数量。
 		/// </summary>
-		public int Count => m_ObjPoolDict.Count;
+		public int Count => m_objPoolDict.Count;
 
 		#region 创建对象池
 
@@ -43,7 +43,7 @@ namespace Hotfix.Framework.ObjectPool
 		/// <returns>创建的对象池。</returns>
 		public ObjectPool<T> CreateObjectPool<T>(string poolName, bool allowSpawnInUse = false) where T : ObjectBase
 		{
-			return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeCheckInterval, DefaultCapacity, DefaultExpireTime, DefaultPriority);
+			return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL, DEFAULT_CAPACITY, DEFAULT_EXPIRE_TIME, DEFAULT_PRIORITY);
 		}
 
 		/// <summary>
@@ -58,7 +58,7 @@ namespace Hotfix.Framework.ObjectPool
 		/// <returns>创建的对象池。</returns>
 		public ObjectPool<T> CreateObjectPool<T>(string poolName, int capacity, float expireTimeAfterIdle, int priority, bool allowSpawnInUse = false) where T : ObjectBase
 		{
-			return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DefaultAutoDisposeCheckInterval, capacity, expireTimeAfterIdle, priority);
+			return CreateObjectPoolInternal<T>(poolName, allowSpawnInUse, DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL, capacity, expireTimeAfterIdle, priority);
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.ObjectPool
 			if (sort)
 			{
 				var results = new List<ObjectPoolBase>();
-				foreach (var (_, objPool) in m_ObjPoolDict)
+				foreach (var (_, objPool) in m_objPoolDict)
 				{
 					results.Add(objPool);
 				}
@@ -133,8 +133,8 @@ namespace Hotfix.Framework.ObjectPool
 			else
 			{
 				var index   = 0;
-				var results = new ObjectPoolBase[m_ObjPoolDict.Count];
-				foreach (var (_, objPool) in m_ObjPoolDict)
+				var results = new ObjectPoolBase[m_objPoolDict.Count];
+				foreach (var (_, objPool) in m_objPoolDict)
 				{
 					results[index++] = objPool;
 				}
@@ -153,7 +153,7 @@ namespace Hotfix.Framework.ObjectPool
 			if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
 
 			results.Clear();
-			foreach (var (_, objPool) in m_ObjPoolDict)
+			foreach (var (_, objPool) in m_objPoolDict)
 			{
 				results.Add(objPool);
 			}
@@ -214,8 +214,8 @@ namespace Hotfix.Framework.ObjectPool
 			FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中超过容量的可销毁对象...");
 
 			// 使用本 API 专属的快照字段，与 DisposeAllUnused / OnUpdate / OnDispose 的缓存互不干扰
-			GetAllObjectPools(true, m_CachedDisposeOverCapacityPoolList);
-			foreach (var objectPool in m_CachedDisposeOverCapacityPoolList)
+			GetAllObjectPools(true, m_cachedDisposeOverCapacityPoolList);
+			foreach (var objectPool in m_cachedDisposeOverCapacityPoolList)
 			{
 				objectPool.DisposeOverCapacity();
 			}
@@ -229,8 +229,8 @@ namespace Hotfix.Framework.ObjectPool
 			FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中的所有未使用对象...");
 
 			// 使用本 API 专属的快照字段，与 DisposeOverCapacity / OnUpdate / OnDispose 的缓存互不干扰
-			GetAllObjectPools(true, m_CachedDisposeAllUnusedPoolList);
-			foreach (var objectPool in m_CachedDisposeAllUnusedPoolList)
+			GetAllObjectPools(true, m_cachedDisposeAllUnusedPoolList);
+			foreach (var objectPool in m_cachedDisposeAllUnusedPoolList)
 			{
 				objectPool.DisposeAllUnused();
 			}

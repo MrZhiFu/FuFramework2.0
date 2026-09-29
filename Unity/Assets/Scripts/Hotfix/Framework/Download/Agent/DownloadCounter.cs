@@ -13,19 +13,19 @@ namespace Hotfix.Framework.Download
 	internal sealed class DownloadCounter
 	{
 		/// 下载计数器链表容器
-		private readonly FuLinkedList<DownloadCounterNode> m_DownloadCounterNodeList;
+		private readonly FuLinkedList<DownloadCounterNode> m_downloadCounterNodeList;
 
 		/// 更新间隔(秒)
-		private float m_UpdateInterval;
+		private float m_updateInterval;
 
 		/// 记录间隔(秒)
-		private float m_RecordInterval;
+		private float m_recordInterval;
 
 		/// 计数累加器
-		private float m_Accumulator;
+		private float m_accumulator;
 
 		/// 剩余时间(秒)
-		private float m_LeftTime;
+		private float m_leftTime;
 
 		/// 当前下载进度
 		public float CurrentSpeed { get; private set; }
@@ -34,11 +34,11 @@ namespace Hotfix.Framework.Download
 		// ReSharper disable once UnusedMember.Local
 		public float UpdateInterval
 		{
-			get => m_UpdateInterval;
+			get => m_updateInterval;
 			set
 			{
 				if (value <= 0f) throw new InvalidOperationException("更新间隔无效，必须大于0.");
-				m_UpdateInterval = value;
+				m_updateInterval = value;
 				Reset();
 			}
 		}
@@ -47,11 +47,11 @@ namespace Hotfix.Framework.Download
 		// ReSharper disable once UnusedMember.Local
 		public float RecordInterval
 		{
-			get => m_RecordInterval;
+			get => m_recordInterval;
 			set
 			{
 				if (value <= 0f) throw new InvalidOperationException("记录间隔无效，必须大于0.");
-				m_RecordInterval = value;
+				m_recordInterval = value;
 				Reset();
 			}
 		}
@@ -66,10 +66,10 @@ namespace Hotfix.Framework.Download
 			if (updateInterval <= 0f) throw new InvalidOperationException("更新间隔无效，必须大于0.");
 			if (recordInterval <= 0f) throw new InvalidOperationException("记录间隔无效，必须大于0.");
 
-			m_DownloadCounterNodeList = new FuLinkedList<DownloadCounterNode>();
+			m_downloadCounterNodeList = new FuLinkedList<DownloadCounterNode>();
 
-			m_UpdateInterval = updateInterval;
-			m_RecordInterval = recordInterval;
+			m_updateInterval = updateInterval;
+			m_recordInterval = recordInterval;
 
 			Reset();
 		}
@@ -86,43 +86,43 @@ namespace Hotfix.Framework.Download
 		/// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
 		public void Update(float deltaTime, float unscaledDeltaTime)
 		{
-			if (m_DownloadCounterNodeList.Count <= 0) return;
+			if (m_downloadCounterNodeList.Count <= 0) return;
 
-			m_Accumulator += unscaledDeltaTime;
-			if (m_Accumulator > m_RecordInterval)
-				m_Accumulator = m_RecordInterval;
+			m_accumulator += unscaledDeltaTime;
+			if (m_accumulator > m_recordInterval)
+				m_accumulator = m_recordInterval;
 
-			m_LeftTime -= unscaledDeltaTime;
-			foreach (var downloadCounterNode in m_DownloadCounterNodeList)
+			m_leftTime -= unscaledDeltaTime;
+			foreach (var downloadCounterNode in m_downloadCounterNodeList)
 			{
 				downloadCounterNode.Update(deltaTime, unscaledDeltaTime);
 			}
 
-			while (m_DownloadCounterNodeList.Count > 0)
+			while (m_downloadCounterNodeList.Count > 0)
 			{
-				var downloadCounterNode = m_DownloadCounterNodeList.First.Value;
-				if (downloadCounterNode.ElapseSeconds < m_RecordInterval) break;
+				var downloadCounterNode = m_downloadCounterNodeList.First.Value;
+				if (downloadCounterNode.ElapseSeconds < m_recordInterval) break;
 
 				ReferencePool.Recycle(downloadCounterNode);
-				m_DownloadCounterNodeList.RemoveFirst();
+				m_downloadCounterNodeList.RemoveFirst();
 			}
 
-			if (m_DownloadCounterNodeList.Count <= 0)
+			if (m_downloadCounterNodeList.Count <= 0)
 			{
 				Reset();
 				return;
 			}
 
-			if (m_LeftTime <= 0f)
+			if (m_leftTime <= 0f)
 			{
 				var totalDeltaLength = 0L;
-				foreach (var downloadCounterNode in m_DownloadCounterNodeList)
+				foreach (var downloadCounterNode in m_downloadCounterNodeList)
 				{
 					totalDeltaLength += downloadCounterNode.DeltaLength;
 				}
 
-				CurrentSpeed =  m_Accumulator > 0f ? totalDeltaLength / m_Accumulator : 0f;
-				m_LeftTime   += m_UpdateInterval;
+				CurrentSpeed =  m_accumulator > 0f ? totalDeltaLength / m_accumulator : 0f;
+				m_leftTime   += m_updateInterval;
 			}
 		}
 
@@ -135,10 +135,10 @@ namespace Hotfix.Framework.Download
 			if (deltaLength <= 0) return;
 
 			DownloadCounterNode downloadCounterNode;
-			if (m_DownloadCounterNodeList.Count > 0)
+			if (m_downloadCounterNodeList.Count > 0)
 			{
-				downloadCounterNode = m_DownloadCounterNodeList.Last.Value;
-				if (downloadCounterNode.ElapseSeconds < m_UpdateInterval)
+				downloadCounterNode = m_downloadCounterNodeList.Last.Value;
+				if (downloadCounterNode.ElapseSeconds < m_updateInterval)
 				{
 					downloadCounterNode.AddDeltaLength(deltaLength);
 					return;
@@ -147,20 +147,20 @@ namespace Hotfix.Framework.Download
 
 			downloadCounterNode = DownloadCounterNode.Create();
 			downloadCounterNode.AddDeltaLength(deltaLength);
-			m_DownloadCounterNodeList.AddLast(downloadCounterNode);
+			m_downloadCounterNodeList.AddLast(downloadCounterNode);
 		}
 
 		private void Reset()
 		{
-			foreach (var downloadCounterNode in m_DownloadCounterNodeList)
+			foreach (var downloadCounterNode in m_downloadCounterNodeList)
 			{
 				ReferencePool.Recycle(downloadCounterNode);
 			}
 
-			m_DownloadCounterNodeList.Clear();
+			m_downloadCounterNodeList.Clear();
 			CurrentSpeed  = 0f;
-			m_Accumulator = 0f;
-			m_LeftTime    = 0f;
+			m_accumulator = 0f;
+			m_leftTime    = 0f;
 		}
 	}
 }

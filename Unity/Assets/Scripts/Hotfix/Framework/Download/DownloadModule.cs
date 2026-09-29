@@ -24,58 +24,58 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 默认下载任务优先级。
 		/// </summary>
-		internal const int DefaultPriority = 0;
+		internal const int DEFAULT_PRIORITY = 0;
 
 		/// <summary>
 		///  1 兆字节: 1M(Megabyte）= 1024KB = 1024*1024byte
 		/// </summary>
-		private const int OneMegaBytes = 1024 * 1024;
+		private const int ONE_MEGA_BYTES = 1024 * 1024;
 
 		/// <summary>
 		/// 下载代理辅助器个数
 		/// </summary>
-		private const int DownloadAgentHelperCount = 3;
+		private const int DOWNLOAD_AGENT_HELPER_COUNT = 3;
 
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
-		private EventModule m_EventModule;
+		private EventModule m_eventModule;
 
 		/// <summary>
 		/// 下载任务的任务池。
 		/// 类型全限定：本文件因 CancelAsync 需引用 Cysharp.Threading.Tasks，而其中也定义了 TaskPool&lt;T&gt;，
 		/// 裸写 TaskPool&lt;DownloadTask&gt; 会与其产生歧义（CS0104）。
 		/// </summary>
-		private readonly Core.TaskPool<DownloadTask> m_TaskPool = new();
+		private readonly Core.TaskPool<DownloadTask> m_taskPool = new();
 
 		/// <summary>
 		/// 下载计数器，1秒更新一次，10秒记录一次，用于计算下载速度
 		/// </summary>
-		private readonly DownloadCounter m_DownloadCounter = new(1f, 10f);
+		private readonly DownloadCounter m_downloadCounter = new(1f, 10f);
 
 		/// <summary>
 		/// 正在下载的任务字典，key为任务编号，value为下载数据
 		/// </summary>
-		private readonly ConcurrentDictionary<int, DownloadData> m_DownloadingTaskDict = new();
+		private readonly ConcurrentDictionary<int, DownloadData> m_downloadingTaskDict = new();
 
 		/// <summary>
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// 下载任务由任务池在主循环同步驱动（无 await 型在途操作），故在途计数恒为 0；
 		/// OnDispose 时 Cancel，模块被 ModuleManager.CancelAllAsync 排水到时完成全部在途 Tcs。
 		/// </summary>
-		private CancellationScope m_Scope = new();
+		private CancellationScope m_scope = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发。
 		/// </summary>
-		public CancellationToken Token => m_Scope.Token;
+		public CancellationToken Token => m_scope.Token;
 
 		/// <summary>
 		/// 触发取消并完成所有在途下载后才返回。供框架重启取消清理（ModuleManager.CancelAllAsync 排水）。
 		/// </summary>
 		public async UniTask CancelAsync()
 		{
-			await m_Scope.CancelAsync(); // 触发取消（下载任务无 await 型在途操作，计数为 0 时立即返回）
+			await m_scope.CancelAsync(); // 触发取消（下载任务无 await 型在途操作，计数为 0 时立即返回）
 
 			// 完成任务池已移除后的全部在途 Tcs：否则 await AddDownloadAsync 的调用方永久挂起，
 			// DownloadData 亦随字典跨生命周期泄漏。幂等：字典已空时为空操作。
@@ -93,7 +93,7 @@ namespace Hotfix.Framework.Download
 			// 先摘取再完成：TrySetResult 会同步执行等待方续体，续体可能再次 AddDownload/RemoveDownload。
 			// 先把条目移出字典（先收拢到局部列表再 Clear），可保证续体新建的条目不被误清、其 Tcs 也不被漏完成。
 			List<DownloadData> pending = null;
-			foreach (var (_, downloadData) in m_DownloadingTaskDict)
+			foreach (var (_, downloadData) in m_downloadingTaskDict)
 			{
 				(pending ??= new List<DownloadData>()).Add(downloadData);
 			}
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Download
 
 			// 先清字典再完成 Tcs：TrySetResult 会同步执行等待方续体，续体若有重试逻辑会再次 AddDownload，
 			// 先清空可保证续体新建的条目不会被本轮的 Clear 误摘走。
-			m_DownloadingTaskDict.Clear();
+			m_downloadingTaskDict.Clear();
 
 			foreach (var downloadData in pending)
 			{
@@ -125,20 +125,20 @@ namespace Hotfix.Framework.Download
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_Scope  = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope  = new CancellationScope(); // 新生命周期 = 新 Token
 
 			Timeout   = 30f;
-			FlushSize = OneMegaBytes;
+			FlushSize = ONE_MEGA_BYTES;
 
-			m_EventModule = ModuleManager.GetModule<EventModule>();
-			if (m_EventModule == null)
+			m_eventModule = ModuleManager.GetModule<EventModule>();
+			if (m_eventModule == null)
 			{
 				FuLogger.LogFatal("[DownloadModule] 事件管理模块为空!");
 				return;
 			}
 
 			// 添加下载任务处理器
-			for (var i = 0; i < DownloadAgentHelperCount; i++)
+			for (var i = 0; i < DOWNLOAD_AGENT_HELPER_COUNT; i++)
 			{
 				AddDownloadAgentHelper();
 			}
@@ -151,8 +151,8 @@ namespace Hotfix.Framework.Download
 		/// <param name="unscaledDeltaTime"></param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			m_TaskPool.Update(deltaTime, unscaledDeltaTime);
-			m_DownloadCounter.Update(deltaTime, unscaledDeltaTime);
+			m_taskPool.Update(deltaTime, unscaledDeltaTime);
+			m_downloadCounter.Update(deltaTime, unscaledDeltaTime);
 		}
 
 		/// <summary>
@@ -160,7 +160,7 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_Scope.Cancel(); // 随模块销毁触发取消（排水等待由 CancelAsync 负责）
+			m_scope.Cancel(); // 随模块销毁触发取消（排水等待由 CancelAsync 负责）
 
 			// 先关任务池：其同步移除全部任务，此后不会再有任何成功/失败回调来完成任务 Tcs（代理 Reset 只中止
 			// UWR，不派发事件）；且池内代理被全部 Shutdown 后 TotalAgentCount 为 0，销毁期间续体再调 AddDownload
@@ -168,7 +168,7 @@ namespace Hotfix.Framework.Download
 			// 放在 finally 前是为了保证即便任务清理抛异常，下面的 Tcs 收尾仍会执行（否则 await AddDownloadAsync 永久挂起）。
 			try
 			{
-				m_TaskPool.Shutdown();
+				m_taskPool.Shutdown();
 			}
 			finally
 			{
@@ -177,7 +177,7 @@ namespace Hotfix.Framework.Download
 				CompleteAndClearAllDownloads();
 			}
 
-			m_DownloadCounter.Shutdown();
+			m_downloadCounter.Shutdown();
 			Instance = null;
 		}
 
@@ -195,7 +195,7 @@ namespace Hotfix.Framework.Download
 			downloadAgent.DownloadAgentFailure += OnDownloadAgentFailure;
 
 			// 向任务池中加入下载任务执行代理
-			m_TaskPool.AddAgent(downloadAgent);
+			m_taskPool.AddAgent(downloadAgent);
 		}
 
 
@@ -214,7 +214,7 @@ namespace Hotfix.Framework.Download
 			}
 
 			var downloadStartEventArgs = DownloadStartEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_EventModule.Broadcast(this, downloadStartEventArgs);
+			m_eventModule.Broadcast(this, downloadStartEventArgs);
 		}
 
 		/// <summary>
@@ -229,9 +229,9 @@ namespace Hotfix.Framework.Download
 				return;
 			}
 
-			m_DownloadCounter.RecordDeltaLength(deltaLength);
+			m_downloadCounter.RecordDeltaLength(deltaLength);
 			var downloadUpdateEventArgs = DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_EventModule.Broadcast(this, downloadUpdateEventArgs);
+			m_eventModule.Broadcast(this, downloadUpdateEventArgs);
 		}
 
 		/// <summary>
@@ -247,8 +247,8 @@ namespace Hotfix.Framework.Download
 			}
 
 			var downloadSuccessEventArgs = DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_EventModule.Broadcast(this, downloadSuccessEventArgs);
-			if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))
+			m_eventModule.Broadcast(this, downloadSuccessEventArgs);
+			if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))
 			{
 				downloadData.Tcs.TrySetResult(true);
 			}
@@ -279,7 +279,7 @@ namespace Hotfix.Framework.Download
 				}
 
 				// 从当前任务中移除，但保留任务信息以便重新添加
-				if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData01))
+				if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData01))
 				{
 					// 重新添加下载任务，从头开始下载
 					var newSerialId = AddDownload(sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.Task.Tag, sender.Task.Priority, sender.Task.UserData);
@@ -294,8 +294,8 @@ namespace Hotfix.Framework.Download
 
 			FuLogger.LogError($"[DownloadModule]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
 			var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
-			m_EventModule.Broadcast(this, downloadFailureEventArgs);
-			if (m_DownloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))
+			m_eventModule.Broadcast(this, downloadFailureEventArgs);
+			if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))
 			{
 				downloadData02.Tcs.TrySetResult(false);
 			}

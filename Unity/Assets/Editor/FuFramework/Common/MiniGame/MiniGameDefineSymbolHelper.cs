@@ -20,12 +20,12 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 开启微信小游戏的适配的宏定义
 		/// </summary>
-		public const string EnableWeChatMiniGameScriptingDefineSymbol = "ENABLE_WECHAT_MINI_GAME";
+		public const string ENABLE_WE_CHAT_MINI_GAME_SCRIPTING_DEFINE_SYMBOL = "ENABLE_WECHAT_MINI_GAME";
 
 		/// <summary>
 		/// 开启抖音小游戏的适配的宏定义
 		/// </summary>
-		public const string EnableDouYinMiniGameScriptingDefineSymbol = "ENABLE_DOUYIN_MINI_GAME";
+		public const string ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL = "ENABLE_DOUYIN_MINI_GAME";
 
 
 		/// <summary>
@@ -34,12 +34,12 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/MiniGame/WeChat/Open", false, FuMenuPriority.MINI_GAME_WECHAT_OPEN)]
 		public static void OpenWeChatMiniGame()
 		{
-			if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, EnableWeChatMiniGameScriptingDefineSymbol))
+			if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, ENABLE_WE_CHAT_MINI_GAME_SCRIPTING_DEFINE_SYMBOL))
 			{
-				ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableWeChatMiniGameScriptingDefineSymbol);
+				ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_WE_CHAT_MINI_GAME_SCRIPTING_DEFINE_SYMBOL);
 			}
 
-			Debug.Log($"微信小游戏宏定义 [{EnableDouYinMiniGameScriptingDefineSymbol}] 已经打开");
+			Debug.Log($"微信小游戏宏定义 [{ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL}] 已经打开");
 		}
 
 
@@ -49,7 +49,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/MiniGame/WeChat/Close", false, FuMenuPriority.MINI_GAME_WECHAT_CLOSE)]
 		public static void CloseWeChatMiniGame()
 		{
-			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableWeChatMiniGameScriptingDefineSymbol);
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_WE_CHAT_MINI_GAME_SCRIPTING_DEFINE_SYMBOL);
 		}
 
 		/// <summary>
@@ -58,12 +58,12 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/MiniGame/DouYin/Open", false, FuMenuPriority.MINI_GAME_DOUYIN_OPEN)]
 		public static void OpenDouYinMiniGame()
 		{
-			if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, EnableDouYinMiniGameScriptingDefineSymbol))
+			if (!ScriptingDefineSymbols.HasScriptingDefineSymbol(BuildTargetGroup.WebGL, ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL))
 			{
-				ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableDouYinMiniGameScriptingDefineSymbol);
+				ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL);
 			}
 
-			Debug.Log($"抖音小游戏宏定义 [{EnableDouYinMiniGameScriptingDefineSymbol}] 已经打开");
+			Debug.Log($"抖音小游戏宏定义 [{ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL}] 已经打开");
 		}
 
 		/// <summary>
@@ -72,7 +72,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/MiniGame/DouYin/Close", false, FuMenuPriority.MINI_GAME_DOUYIN_CLOSE)]
 		public static void CloseDouYinMiniGame()
 		{
-			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableDouYinMiniGameScriptingDefineSymbol);
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_DOU_YIN_MINI_GAME_SCRIPTING_DEFINE_SYMBOL);
 		}
 	}
 }

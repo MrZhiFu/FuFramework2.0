@@ -37,16 +37,16 @@ namespace Hotfix.Framework.ObjectPool
 			}
 
 			// 同一目标对象不允许重复注册，避免双字典写入不一致
-			if (m_TargetObjectDict.ContainsKey(obj.Target))
+			if (m_targetObjectDict.ContainsKey(obj.Target))
 				throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{new TypeNamePair(typeof(T), Name)}' 中已存在目标对象.");
 
-			m_ObjectMultiDict.Add(obj.Name, obj);
-			m_TargetObjectDict.Add(obj.Target, obj);
+			m_objectMultiDict.Add(obj.Name, obj);
+			m_targetObjectDict.Add(obj.Target, obj);
 
 			// 对象是否已处于使用中，若是则直接走一次生成流程（计数+1、刷新最后使用时间、触发 OnSpawn）
 			if (inUse) obj.Spawn();
 
-			if (Count > m_Capacity)
+			if (Count > m_capacity)
 			{
 				// 注册后立即裁剪时，必须保证“本次刚注册的对象”不被当场销毁——否则调用方会把一个已被销毁、
 				// 已归还引用池的句柄当作有效对象使用（inUse=false 且容量极小时尤其容易命中）。
@@ -74,7 +74,7 @@ namespace Hotfix.Framework.ObjectPool
 		{
 			if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 
-			if (!m_ObjectMultiDict.TryGetValue(name, out var objects)) return null;
+			if (!m_objectMultiDict.TryGetValue(name, out var objects)) return null;
 
 			// 第一步：只读遍历，收集无效对象并选出可获取的候选对象。
 			// 这一段里不调用任何用户代码：FuLinkedListRange 的枚举器是沿 LinkedListNode.Next 直走的裸指针遍历
@@ -164,10 +164,10 @@ namespace Hotfix.Framework.ObjectPool
 			FuLogger.LogWarning($"[ObjectPoolModule] 对象池“{new TypeNamePair(typeof(T), Name)}”中的对象 '{objName}' 的目标真实对象已被 Unity 销毁（假 null），视为无效对象，已从对象池中剔除。");
 
 			if (!string.IsNullOrEmpty(objName))
-				m_ObjectMultiDict.Remove(objName, obj);
+				m_objectMultiDict.Remove(objName, obj);
 
 			if (obj.Target != null)
-				m_TargetObjectDict.Remove(obj.Target);
+				m_targetObjectDict.Remove(obj.Target);
 
 			// 已解除登记后必须补全销毁与回收：ObjectBase : IReference，正常都能回收。
 			try
@@ -253,7 +253,7 @@ namespace Hotfix.Framework.ObjectPool
 		private void RecycleInternal(T obj)
 		{
 			obj.Recycle();
-			if (Count > m_Capacity && obj.SpawnCount <= 0)
+			if (Count > m_capacity && obj.SpawnCount <= 0)
 			{
 				DisposeOverCapacity();
 			}
@@ -268,7 +268,7 @@ namespace Hotfix.Framework.ObjectPool
 		{
 			if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[ObjectPoolModule] 对象名称不能为空.");
 
-			if (!m_ObjectMultiDict.TryGetValue(name, out var objects)) return false;
+			if (!m_objectMultiDict.TryGetValue(name, out var objects)) return false;
 
 			foreach (var obj in objects)
 			{
@@ -344,7 +344,7 @@ namespace Hotfix.Framework.ObjectPool
 		public override ObjectInfo[] GetAllObjectInfos()
 		{
 			var results = new List<ObjectInfo>();
-			foreach (var (_, objectRang) in m_ObjectMultiDict)
+			foreach (var (_, objectRang) in m_objectMultiDict)
 			{
 				foreach (var obj in objectRang)
 				{
@@ -363,7 +363,7 @@ namespace Hotfix.Framework.ObjectPool
 		private T GetObject(object target)
 		{
 			if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
-			return m_TargetObjectDict.GetValueOrDefault(target);
+			return m_targetObjectDict.GetValueOrDefault(target);
 		}
 	}
 }

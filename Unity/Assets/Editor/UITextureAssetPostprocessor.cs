@@ -16,7 +16,7 @@ namespace FuFramework.UI.Editor
 	{
 		private void OnPreprocessTexture()
 		{
-			var isBundleUI   = assetPath.Contains(UtilityAOT.Path.Combine(UtilityAOT.AssetPath.BundlesPath, "UI"));
+			var isBundleUI   = assetPath.Contains(UtilityAOT.Path.Combine(UtilityAOT.AssetPath.BUNDLES_PATH, "UI"));
 			var isResourceUI = assetPath.Contains(UtilityAOT.Path.Combine("Resources",                   "UI"));
 			if (!isBundleUI && !isResourceUI) return;
 

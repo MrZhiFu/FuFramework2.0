@@ -7,33 +7,33 @@ namespace Hotfix.Framework.Event
 	/// <summary>
 	/// 事件管理模块。
 	/// 功能：
-	///     1. 用于管理事件，提供一些便捷的方法。
+	///     1. 管理事件，提供便捷方法。
 	///     2. 支持事件的抛出和订阅。
-	///     3. 包装一个事件池，实际交由事件池管理事件。
+	///     3. 包装事件池，实际交由事件池管理。
 	/// </summary>
 	public sealed class EventModule : ModuleBase
 	{
 		/// <summary>
 		/// 事件池。
 		/// </summary>
-		private EventPool<GameEventArgs> m_EventPool;
+		private EventPool<GameEventArgs> m_eventPool;
 
 		/// <summary>
 		/// 获取事件处理函数的数量。
 		/// </summary>
-		public int EventHandlerCount => m_EventPool.EventHandlerCount;
+		public int EventHandlerCount => m_eventPool.EventHandlerCount;
 
 		/// <summary>
 		/// 获取事件数量。
 		/// </summary>
-		public int EventCount => m_EventPool.EventCount;
+		public int EventCount => m_eventPool.EventCount;
 
 		/// <summary>
 		/// 初始化。
 		/// </summary>
 		protected internal override void OnInit()
 		{
-			m_EventPool = new EventPool<GameEventArgs>();
+			m_eventPool = new EventPool<GameEventArgs>();
 		}
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace Hotfix.Framework.Event
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			m_EventPool.Update(deltaTime, unscaledDeltaTime);
+			m_eventPool.Update(deltaTime, unscaledDeltaTime);
 		}
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_EventPool.Shutdown();
+			m_eventPool.Shutdown();
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <param name="id">事件类型编号。</param>
 		/// <returns>事件处理函数的数量。</returns>
-		public int Count(string id) => m_EventPool.Count(id);
+		public int Count(string id) => m_eventPool.Count(id);
 
 		/// <summary>
 		/// 检查是否已存在指定事件对应的处理函数。
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Event
 		/// <returns>是否存在事件处理函数。</returns>
 		public bool Check(string id, EventHandler<GameEventArgs> handler)
 		{
-			return m_EventPool.Check(id, handler);
+			return m_eventPool.Check(id, handler);
 		}
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace Hotfix.Framework.Event
 		/// <param name="handler">要订阅的事件处理函数。</param>
 		public void Subscribe(string id, EventHandler<GameEventArgs> handler)
 		{
-			m_EventPool.Subscribe(id, handler);
+			m_eventPool.Subscribe(id, handler);
 		}
 
 		/// <summary>
@@ -95,14 +95,14 @@ namespace Hotfix.Framework.Event
 		public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
 		{
 			if (!Check(id, handler)) return;
-			m_EventPool.Unsubscribe(id, handler);
+			m_eventPool.Unsubscribe(id, handler);
 		}
 
 		/// <summary>
 		/// 设置默认事件处理函数。
 		/// </summary>
 		/// <param name="handler">要设置的默认事件处理函数。</param>
-		public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_EventPool.SetDefaultHandler(handler);
+		public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_eventPool.SetDefaultHandler(handler);
 
 		/// <summary>
 		/// 抛出事件，事件会延迟到抛出后的下一帧由主线程分发。
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <param name="sender">事件源。</param>
 		/// <param name="e">事件参数。</param>
-		public void Broadcast(object sender, GameEventArgs e) => m_EventPool.Broadcast(sender, e);
+		public void Broadcast(object sender, GameEventArgs e) => m_eventPool.Broadcast(sender, e);
 
 		/// <summary>
 		/// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Event
 		public void Broadcast(object sender, string eventId)
 		{
 			eventId.NotNullOrEmpty(nameof(eventId));
-			m_EventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
+			m_eventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
 		}
 
 		/// <summary>
@@ -130,18 +130,18 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <param name="sender">事件源。</param>
 		/// <param name="e">事件参数。</param>
-		public void BroadcastNow(object sender, GameEventArgs e) => m_EventPool.BroadcastNow(sender, e);
+		public void BroadcastNow(object sender, GameEventArgs e) => m_eventPool.BroadcastNow(sender, e);
 
 		/// <summary>
 		/// 遍历所有事件处理函数。
 		/// 仅限主线程调用（重入识别标志非原子，主线程限制口径同 BroadcastNow）。
 		/// </summary>
-		public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_EventPool.ForEachHandler(action);
+		public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_eventPool.ForEachHandler(action);
 
 		/// <summary>
 		/// 遍历所有事件。
 		/// 仅限主线程调用（主线程限制口径同 BroadcastNow）；回调内不得修改或回收未分发的事件参数。
 		/// </summary>
-		public void ForEachEvent(Action<object, GameEventArgs> action) => m_EventPool.ForEachEvent(action);
+		public void ForEachEvent(Action<object, GameEventArgs> action) => m_eventPool.ForEachEvent(action);
 	}
 }

@@ -11,7 +11,7 @@ namespace AOT.Framework.Core.Utility
 		/// 功能：
 		///     1. 判断文件是否存在。
 		///     2. 读取指定路径的文件内容。
-		/// 
+		///
 		/// BetterStreamingAssets是一款旨在简化并优化Unity项目中流式资产操作的插件。
 		/// 它通过模仿System.IO.File和System.IO.Directory的API设计，使得开发者能够以更低的开销直接访问游戏中的流式资产，特别是在对效率要求苛刻的Android平台。
 		/// 注意：所有文件名应保持小写，并避免非ASCII字符的使用
@@ -21,7 +21,7 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 插件是否已初始化
 			/// </summary>
-			private static bool m_IsInited = false;
+			private static bool m_isInited = false;
 
 			/// <summary>
 			/// 判断文件是否存在
@@ -93,9 +93,9 @@ namespace AOT.Framework.Core.Utility
 			/// </summary>
 			private static void CheckInited()
 			{
-				if (m_IsInited) return;
+				if (m_isInited) return;
 				BetterStreamingAssets.Initialize();
-				m_IsInited = true;
+				m_isInited = true;
 			}
 		}
 	}

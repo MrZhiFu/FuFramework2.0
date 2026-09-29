@@ -17,27 +17,27 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 下载代理辅助器(使用UnityWebRequest实现)
 		/// </summary>
-		private readonly UnityWebRequestDownloadAgentHelper m_Owner;
+		private readonly UnityWebRequestDownloadAgentHelper m_owner;
 
 		/// <summary>
 		/// 获取本处理器所属的下载代理辅助器。
 		/// 供 DownloadAgent 在事件回调中据 sender 判定「事件是否来自自己的辅助器」——
 		/// 四个下载辅助器事件的 Id 是共享的（多播语义），每次 Broadcast 会分发给全部订阅的下载代理。
 		/// </summary>
-		internal UnityWebRequestDownloadAgentHelper Owner => m_Owner;
+		internal UnityWebRequestDownloadAgentHelper Owner => m_owner;
 
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
-		private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
+		private readonly EventModule m_eventModule = ModuleManager.GetModule<EventModule>();
 
 		/// <summary>
 		/// 构造一个下载处理器
 		/// </summary>
 		/// <param name="owner">传递一个固定大小的Buffer作为下载的缓冲区</param>
-		public DownloadHandler(UnityWebRequestDownloadAgentHelper owner) : base(owner.m_CachedBytes)
+		public DownloadHandler(UnityWebRequestDownloadAgentHelper owner) : base(owner.m_cachedBytes)
 		{
-			m_Owner = owner;
+			m_owner = owner;
 		}
 
 		/// <summary>
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Download
 		/// <returns></returns>
 		protected override bool ReceiveData(byte[] datas, int dataLength)
 		{
-			if (m_Owner == null || m_Owner.m_Disposed || m_Owner.m_UnityWebRequest == null || dataLength <= 0)
+			if (m_owner == null || m_owner.m_disposed || m_owner.m_unityWebRequest == null || dataLength <= 0)
 				return base.ReceiveData(datas, dataLength);
 
 			// 发送更新数据流事件
@@ -69,11 +69,11 @@ namespace Hotfix.Framework.Download
 			Buffer.BlockCopy(datas, 0, bytes, 0, dataLength);
 
 			var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(bytes, 0, dataLength);
-			m_EventModule.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
+			m_eventModule.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
 
 			// 发送更新数据大小事件
 			var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(dataLength);
-			m_EventModule.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
+			m_eventModule.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
 
 			return base.ReceiveData(datas, dataLength);
 		}

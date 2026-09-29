@@ -25,8 +25,8 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public bool Paused
 		{
-			get => m_TaskPool.Paused;
-			set => m_TaskPool.Paused = value;
+			get => m_taskPool.Paused;
+			set => m_taskPool.Paused = value;
 		}
 
 		/// <summary>
@@ -42,27 +42,27 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 获取下载代理总数量。
 		/// </summary>
-		public int TotalAgentCount => m_TaskPool.TotalAgentCount;
+		public int TotalAgentCount => m_taskPool.TotalAgentCount;
 
 		/// <summary>
 		/// 获取可用下载代理数量。
 		/// </summary>
-		public int FreeAgentCount => m_TaskPool.FreeAgentCount;
+		public int FreeAgentCount => m_taskPool.FreeAgentCount;
 
 		/// <summary>
 		/// 获取工作中下载代理数量。
 		/// </summary>
-		public int WorkingAgentCount => m_TaskPool.WorkingAgentCount;
+		public int WorkingAgentCount => m_taskPool.WorkingAgentCount;
 
 		/// <summary>
 		/// 获取等待下载任务数量。
 		/// </summary>
-		public int WaitingTaskCount => m_TaskPool.WaitingTaskCount;
+		public int WaitingTaskCount => m_taskPool.WaitingTaskCount;
 
 		/// <summary>
 		/// 获取当前下载速度。
 		/// </summary>
-		public float CurrentSpeed => m_DownloadCounter.CurrentSpeed;
+		public float CurrentSpeed => m_downloadCounter.CurrentSpeed;
 
 		#region 获取下载任务信息
 
@@ -71,33 +71,33 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		/// <param name="serialId">要获取信息的下载任务的序列编号。</param>
 		/// <returns>下载任务的信息。</returns>
-		public TaskInfo GetDownloadInfo(int serialId) => m_TaskPool.GetTaskInfo(serialId);
+		public TaskInfo GetDownloadInfo(int serialId) => m_taskPool.GetTaskInfo(serialId);
 
 		/// <summary>
 		/// 根据下载任务的标签获取下载任务的信息。
 		/// </summary>
 		/// <param name="taskTag">要获取信息的下载任务的标签。</param>
 		/// <returns>下载任务的信息。</returns>
-		public TaskInfo[] GetDownloadInfos(string taskTag) => m_TaskPool.GetTaskInfos(taskTag);
+		public TaskInfo[] GetDownloadInfos(string taskTag) => m_taskPool.GetTaskInfos(taskTag);
 
 		/// <summary>
 		/// 根据下载任务的标签获取下载任务的信息。
 		/// </summary>
 		/// <param name="taskTag">要获取信息的下载任务的标签。</param>
 		/// <param name="results">下载任务的信息。</param>
-		public void GetDownloadInfos(string taskTag, List<TaskInfo> results) => m_TaskPool.GetTaskInfos(taskTag, results);
+		public void GetDownloadInfos(string taskTag, List<TaskInfo> results) => m_taskPool.GetTaskInfos(taskTag, results);
 
 		/// <summary>
 		/// 获取所有下载任务的信息。
 		/// </summary>
 		/// <returns>所有下载任务的信息。</returns>
-		public TaskInfo[] GetAllDownloadInfos() => m_TaskPool.GetAllTaskInfos();
+		public TaskInfo[] GetAllDownloadInfos() => m_taskPool.GetAllTaskInfos();
 
 		/// <summary>
 		/// 获取所有下载任务的信息。
 		/// </summary>
 		/// <param name="results">所有下载任务的信息。</param>
-		public void GetAllDownloadInfos(List<TaskInfo> results) => m_TaskPool.GetAllTaskInfos(results);
+		public void GetAllDownloadInfos(List<TaskInfo> results) => m_taskPool.GetAllTaskInfos(results);
 
 		#endregion
 
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Download
 		/// <returns>新增下载任务的序列编号。</returns>
 		public int AddDownload(string downloadedFullPath, string downloadUri)
 		{
-			return AddDownload(downloadedFullPath, downloadUri, null, DefaultPriority, null);
+			return AddDownload(downloadedFullPath, downloadUri, null, DEFAULT_PRIORITY, null);
 		}
 
 		/// <summary>
@@ -122,8 +122,8 @@ namespace Hotfix.Framework.Download
 		/// <returns>返回是否下载成功</returns>
 		public UniTask<bool> AddDownloadAsync(string downloadPath, string downloadUri)
 		{
-			var serialId = AddDownload(downloadPath, downloadUri, null, DefaultPriority, null);
-			return m_DownloadingTaskDict.TryGetValue(serialId, out var downloadData) ? downloadData.Tcs.Task : default;
+			var serialId = AddDownload(downloadPath, downloadUri, null, DEFAULT_PRIORITY, null);
+			return m_downloadingTaskDict.TryGetValue(serialId, out var downloadData) ? downloadData.Tcs.Task : default;
 		}
 
 		/// <summary>
@@ -135,7 +135,7 @@ namespace Hotfix.Framework.Download
 		/// <returns>新增下载任务的序列编号。</returns>
 		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag)
 		{
-			return AddDownload(downloadedFullPath, downloadUri, taskTag, DefaultPriority, null);
+			return AddDownload(downloadedFullPath, downloadUri, taskTag, DEFAULT_PRIORITY, null);
 		}
 
 		/// <summary>
@@ -159,7 +159,7 @@ namespace Hotfix.Framework.Download
 		/// <returns>新增下载任务的序列编号。</returns>
 		public int AddDownload(string downloadedFullPath, string downloadUri, object userData)
 		{
-			return AddDownload(downloadedFullPath, downloadUri, null, DefaultPriority, userData);
+			return AddDownload(downloadedFullPath, downloadUri, null, DEFAULT_PRIORITY, userData);
 		}
 
 		/// <summary>
@@ -185,7 +185,7 @@ namespace Hotfix.Framework.Download
 		/// <returns>新增下载任务的序列编号。</returns>
 		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, object userData)
 		{
-			return AddDownload(downloadedFullPath, downloadUri, taskTag, DefaultPriority, userData);
+			return AddDownload(downloadedFullPath, downloadUri, taskTag, DEFAULT_PRIORITY, userData);
 		}
 
 		/// <summary>
@@ -219,11 +219,11 @@ namespace Hotfix.Framework.Download
 
 			// 创建下载任务
 			var downloadTask = DownloadTask.Create(downloadedFullPath, downloadUri, taskTag, priority, FlushSize, Timeout, userData);
-			m_TaskPool.AddTask(downloadTask);
+			m_taskPool.AddTask(downloadTask);
 
 			// 记录下载任务信息
 			var downloadData = new DownloadData(downloadUri, taskTag, downloadTask.SerialId, userData);
-			m_DownloadingTaskDict.TryAdd(downloadTask.SerialId, downloadData);
+			m_downloadingTaskDict.TryAdd(downloadTask.SerialId, downloadData);
 			return downloadTask.SerialId;
 		}
 
@@ -238,9 +238,9 @@ namespace Hotfix.Framework.Download
 		/// <returns>是否移除下载任务成功。</returns>
 		public bool RemoveDownload(int serialId)
 		{
-			var removed = m_TaskPool.RemoveTask(serialId);
+			var removed = m_taskPool.RemoveTask(serialId);
 
-			if (m_DownloadingTaskDict.TryRemove(serialId, out var downloadData))
+			if (m_downloadingTaskDict.TryRemove(serialId, out var downloadData))
 			{
 				// 条目被丢弃即完成其 Tcs（false = 未成功，与模块既有失败语义一致），
 				// 否则 await AddDownloadAsync 的调用方将永久挂起。
@@ -259,12 +259,12 @@ namespace Hotfix.Framework.Download
 		{
 			// 先从任务池移除全部同标签任务再处理字典条目：顺序反了的话，Tcs 完成所唤醒的续体若立刻重试
 			// AddDownload（同标签），新任务会被随后的 RemoveTasks 一并移除而其回调永不触发 → 新条目 Tcs 永久挂起。
-			var count = m_TaskPool.RemoveTasks(taskTag);
+			var count = m_taskPool.RemoveTasks(taskTag);
 
 			// 先枚举收集「全部」匹配项再逐个处理：原实现只摘除首个匹配项却调用 RemoveTasks 移除全部同标签任务，
 			// 其余 DownloadData 会永久滞留在字典中，且其 Tcs 永不完成（await 永久挂起）。
 			List<int> serialIds = null;
-			foreach (var downloadData in m_DownloadingTaskDict.Values)
+			foreach (var downloadData in m_downloadingTaskDict.Values)
 			{
 				if (downloadData.Tag != taskTag) continue;
 				(serialIds ??= new List<int>()).Add(downloadData.SerialId);
@@ -274,7 +274,7 @@ namespace Hotfix.Framework.Download
 			{
 				foreach (var serialId in serialIds)
 				{
-					if (!m_DownloadingTaskDict.TryRemove(serialId, out var downloadData)) continue;
+					if (!m_downloadingTaskDict.TryRemove(serialId, out var downloadData)) continue;
 					downloadData.Tcs.TrySetResult(false); // 与 RemoveDownload 一致：丢弃条目即完成 Tcs
 				}
 			}
@@ -291,7 +291,7 @@ namespace Hotfix.Framework.Download
 			// 先移除任务池中的全部任务，再完成并清空字典条目：
 			// 顺序反了的话，Tcs 完成所唤醒的续体若立刻重试 AddDownload，新任务会落在「池中任务已被移除、
 			// 成功/失败回调永不触发」的空档，其 Tcs 将永久挂起（CompleteAndClearAllDownloads 的前置条件即此顺序）。
-			var count = m_TaskPool.RemoveAllTasks();
+			var count = m_taskPool.RemoveAllTasks();
 			CompleteAndClearAllDownloads();
 			return count;
 		}

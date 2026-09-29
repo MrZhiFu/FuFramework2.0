@@ -33,11 +33,11 @@ namespace Hotfix.Framework.Asset
 		/// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
 		public async UniTask<AssetHandle> LoadAssetAsync(string path, CancellationToken token)
 		{
-			m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+			m_scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_Scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
-				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_scope.Token, token)) // 模块或调用方任一取消即中止
 				{
 					var package = GetReadyDefaultPackage();
 					var handle  = package.LoadAssetAsync(path);
@@ -71,11 +71,11 @@ namespace Hotfix.Framework.Asset
 		/// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
 		public async UniTask<AssetHandle> LoadAssetAsync<T>(string path, CancellationToken token) where T : Object
 		{
-			m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+			m_scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_Scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
-				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_scope.Token, token)) // 模块或调用方任一取消即中止
 				{
 					var package = GetReadyDefaultPackage();
 					var handle  = package.LoadAssetAsync<T>(path);
@@ -109,11 +109,11 @@ namespace Hotfix.Framework.Asset
 		/// <returns>资源句柄，使用完毕必须调用 Release()。</returns>
 		public async UniTask<AssetHandle> LoadAssetAsync(string path, Type type, CancellationToken token)
 		{
-			m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+			m_scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_Scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_scope.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
-				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_scope.Token, token)) // 模块或调用方任一取消即中止
 				{
 					var package = GetReadyDefaultPackage();
 					var handle  = package.LoadAssetAsync(path, type);
@@ -152,11 +152,11 @@ namespace Hotfix.Framework.Asset
 		/// <returns>场景句柄，使用完毕须调用 Release。</returns>
 		public async UniTask<SceneHandle> LoadSceneAsync(string path, LoadSceneMode sceneMode, CancellationToken token, Action<float> onProgress = null)
 		{
-			m_Scope.Token.ThrowIfCancellationRequested();
+			m_scope.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
-			using (m_Scope.Begin())
+			using (m_scope.Begin())
 			{
-				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_Scope.Token, token)) // 模块或调用方任一取消即中止
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_scope.Token, token)) // 模块或调用方任一取消即中止
 				{
 					var package = GetReadyDefaultPackage();
 					var handle  = package.LoadSceneAsync(path, sceneMode);
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.Asset
 		/// 句柄按路径缓存并引用计数：同一 prefab 多实例共享句柄，实例销毁时调用 ReleaseInstantiate 释放。
 		/// 返回 InstantiateResult（携带实例与创建时生命周期代数）：重启（OnDispose/重新初始化）后
 		/// 旧生命周期存活的实例调用 ReleaseInstantiate 会被代际校验识别并忽略，杜绝误释放新生命周期同路径引用。
-		/// 注意：句柄按路径在 m_InstantiateRefDict 中登记并引用计数，释放权唯一归属该计数；
+		/// 注意：句柄按路径在 m_instantiateRefDict 中登记并引用计数，释放权唯一归属该计数；
 		/// 并发首次实例化时各调用方各自加载，多加载出的句柄在登记后立即释放（YooAsset 按 provider 去重，不会重复 IO）。
 		/// </summary>
 		/// <param name="path">资源路径</param>
@@ -211,12 +211,12 @@ namespace Hotfix.Framework.Asset
 		/// <returns>实例化结果，实例销毁时调用 ReleaseInstantiate(result) 释放引用。</returns>
 		public async UniTask<InstantiateResult> InstantiateAsync(string path, CancellationToken token)
 		{
-			m_Scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁（Token 取消）则拒绝，抛 OperationCanceledException
+			m_scope.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁（Token 取消）则拒绝，抛 OperationCanceledException
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			var capturedToken = m_Scope.Token;            // 在途守卫 + 结果标记：捕获本生命周期 Token（旧 Token 被取消或更换即识别为旧生命周期）
+			var capturedToken = m_scope.Token;            // 在途守卫 + 结果标记：捕获本生命周期 Token（旧 Token 被取消或更换即识别为旧生命周期）
 
 			AssetHandle assetHandle;
-			if (m_InstantiateRefDict.TryGetValue(path, out var entry))
+			if (m_instantiateRefDict.TryGetValue(path, out var entry))
 			{
 				// 快路径：已登记则直接复用，不触碰 YooAsset
 				entry.RefCount++;
@@ -232,7 +232,7 @@ namespace Hotfix.Framework.Asset
 				var loadedHandle = await LoadAssetAsync(path, token);
 
 				// 模块销毁/生命周期变更/调用方取消：释放本次句柄，不登记、不实例化
-				if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
+				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token || token.IsCancellationRequested)
 				{
 					loadedHandle.Release();
 
@@ -243,7 +243,7 @@ namespace Hotfix.Framework.Asset
 				}
 
 				// 加载期间可能已被并发请求登记：复用其句柄，并释放本次多加载出来的那一份，使引用计数归位
-				if (m_InstantiateRefDict.TryGetValue(path, out var existing))
+				if (m_instantiateRefDict.TryGetValue(path, out var existing))
 				{
 					existing.RefCount++;
 					if (!ReferenceEquals(existing.Handle, loadedHandle))
@@ -255,7 +255,7 @@ namespace Hotfix.Framework.Asset
 				}
 				else
 				{
-					m_InstantiateRefDict[path] = new InstantiateRef { Handle = loadedHandle, RefCount = 1 };
+					m_instantiateRefDict[path] = new InstantiateRef { Handle = loadedHandle, RefCount = 1 };
 					assetHandle = loadedHandle;
 				}
 			}
@@ -266,7 +266,7 @@ namespace Hotfix.Framework.Asset
 				await instantiateOperation;
 
 				// 模块销毁/生命周期变更/调用方取消后：句柄已随 OnDispose 释放，不返回孤儿实例；销毁已实例化的对象，抛 OperationCanceledException（catch 中 ReleaseInstantiateInternal 兜底回滚）
-				if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token || token.IsCancellationRequested)
+				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token || token.IsCancellationRequested)
 				{
 					if (instantiateOperation.Result != null)
 						Object.Destroy(instantiateOperation.Result);
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.Asset
 			{
 				// 生命周期已变更（重启）时不得回滚引用：引用字典已被 OnDispose 清空，
 				// 且可能已存在新生命周期同路径条目，误回滚会卸载新生命周期存活的实例资源；仅在本代际时回滚本次占用
-				if (capturedToken == m_Scope.Token)
+				if (capturedToken == m_scope.Token)
 					ReleaseInstantiateInternal(path);
 				throw;
 			}
@@ -305,7 +305,7 @@ namespace Hotfix.Framework.Asset
 		{
 			if (Token.IsCancellationRequested) return;                           // 模块已销毁：引用字典已清空，直接忽略（含 null 参数，teardown 防御不抛）
 			if (result == null) throw new ArgumentNullException(nameof(result)); // 存活模块传入 null 属调用方 bug，快速失败
-			if (result.Token != m_Scope.Token)
+			if (result.Token != m_scope.Token)
 			{
 				// 跨生命周期释放：旧生命周期结果携带的 Token 与当前不同，直接忽略防误卸载新生命周期同路径引用；
 				// 属调用方违反"重启后不得对旧实例释放"契约，告警便于定位

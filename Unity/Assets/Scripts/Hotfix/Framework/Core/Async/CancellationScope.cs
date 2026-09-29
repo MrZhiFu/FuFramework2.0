@@ -21,8 +21,8 @@ namespace Hotfix.Framework.Core
 		UniTask CancelAsync();
 	}
 
-	
-	
+
+
 	/// <summary>
 	/// 取消范围登记：实现 ICancelAsync（可取消 + 可 await 排水等待），内部持有 CTS + 在途计数 + 「全部完成」TCS，
 	/// 供模块/装载器组合复用。
@@ -34,41 +34,41 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 取消令牌源。Cancel/CancelAsync 触发取消，Token 供在途操作观察。
 		/// </summary>
-		private readonly CancellationTokenSource m_Cts = new();
+		private readonly CancellationTokenSource m_cts = new();
 
 		/// <summary>
 		/// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
 		/// </summary>
-		private int m_InFlightCount;
+		private int m_inFlightCount;
 
 		/// <summary>
 		/// 「全部完成」信号。在途计数归零时完成并立即置空（复位），唤醒等待 CancelAsync 的调用方；惰性创建。
 		/// 必须复位：UniTaskCompletionSource 完成后 await 会立即返回，
 		/// 若不复位，二次 CancelAsync（此时又有了在途操作）会立刻返回、排水失效。
 		/// </summary>
-		private UniTaskCompletionSource m_AllDoneTcs;
+		private UniTaskCompletionSource m_allDoneTcs;
 
 		/// <summary>
 		/// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_Cts.Token;
+		public CancellationToken Token => m_cts.Token;
 
 		/// <summary>
 		/// 同步触发取消（供 OnDispose/Dispose 等同步销毁钩子调用）；取消清理等待由 CancelAsync 负责。
 		/// </summary>
-		public void Cancel() => m_Cts.Cancel();
+		public void Cancel() => m_cts.Cancel();
 
 		/// <summary>
 		/// 触发取消并等待所有在途操作完成清理后才返回。可重入、幂等。
 		/// </summary>
 		public async UniTask CancelAsync()
 		{
-			m_Cts.Cancel();
-			if (m_InFlightCount == 0) return;
+			m_cts.Cancel();
+			if (m_inFlightCount == 0) return;
 
-			// 归零时 m_AllDoneTcs 已被置空，此处按需新建；已完成/已取消的 TCS 不得重复等待
-			m_AllDoneTcs ??= new UniTaskCompletionSource();
-			await m_AllDoneTcs.Task;
+			// 归零时 m_allDoneTcs 已被置空，此处按需新建；已完成/已取消的 TCS 不得重复等待
+			m_allDoneTcs ??= new UniTaskCompletionSource();
+			await m_allDoneTcs.Task;
 		}
 
 		/// <summary>
@@ -78,12 +78,12 @@ namespace Hotfix.Framework.Core
 		/// <returns>在途操作作用域，操作清理完成后必须 Dispose（用 using）。</returns>
 		public BeginScope Begin()
 		{
-			m_InFlightCount++;
+			m_inFlightCount++;
 			return new BeginScope(this);
 		}
-		
-		
-		
+
+
+
 		/// <summary>
 		/// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
 		/// 共享同一 CancellationScope 引用，按值复制无堆分配。
@@ -93,12 +93,12 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
 			/// </summary>
-			private readonly CancellationScope m_Owner;
+			private readonly CancellationScope m_owner;
 
 			/// <summary>
 			/// 是否已释放（幂等标记）：防止重复 Dispose 把在途计数减成负数，导致后续 CancelAsync 永久挂起。
 			/// </summary>
-			private bool m_Disposed;
+			private bool m_disposed;
 
 			/// <summary>
 			/// 创建在途操作作用域。
@@ -106,8 +106,8 @@ namespace Hotfix.Framework.Core
 			/// <param name="owner">所属的取消范围。</param>
 			internal BeginScope(CancellationScope owner)
 			{
-				m_Owner    = owner;
-				m_Disposed = false;
+				m_owner    = owner;
+				m_disposed = false;
 			}
 
 			/// <summary>
@@ -116,14 +116,14 @@ namespace Hotfix.Framework.Core
 			/// </summary>
 			public void Dispose()
 			{
-				if (m_Disposed || m_Owner == null) return;
-				m_Disposed = true;
+				if (m_disposed || m_owner == null) return;
+				m_disposed = true;
 
-				if (--m_Owner.m_InFlightCount == 0)
+				if (--m_owner.m_inFlightCount == 0)
 				{
 					// 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Begin 也能拿到干净状态
-					var allDoneTcs = m_Owner.m_AllDoneTcs;
-					m_Owner.m_AllDoneTcs = null;
+					var allDoneTcs = m_owner.m_allDoneTcs;
+					m_owner.m_allDoneTcs = null;
 					allDoneTcs?.TrySetResult();
 				}
 			}

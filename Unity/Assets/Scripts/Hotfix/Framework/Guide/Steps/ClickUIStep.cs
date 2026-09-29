@@ -18,7 +18,7 @@ namespace Hotfix.Framework.Guide
 		/// <summary>
 		/// 点击目标UI组件
 		/// </summary>
-		private GComponent m_TargetUI;
+		private GComponent m_targetUI;
 
 		/// <summary>
 		/// 执行步骤。
@@ -64,28 +64,28 @@ namespace Hotfix.Framework.Guide
 				return;
 			}
 
-			m_TargetUI = targetClickUI;
+			m_targetUI = targetClickUI;
 
 			// 添加目标UI点击回调
-			m_TargetUI.onClick.Add(Complete);
+			m_targetUI.onClick.Add(Complete);
 
 			// 执行点击UI引导
-			GuideAction.DoClickUIGuide(m_TargetUI);
+			GuideAction.DoClickUIGuide(m_targetUI);
 		}
 
 		protected override void OnComplete()
 		{
 			// 移除监听器，结束点击UI引导
-			m_TargetUI?.onClick.Remove(Complete);
+			m_targetUI?.onClick.Remove(Complete);
 			GuideAction?.EndClickUIGuide();
-			m_TargetUI = null;
+			m_targetUI = null;
 			base.OnComplete();
 		}
 
 		/// <summary>
 		/// 步骤取消。
 		/// 覆写原因：基类 Cancel() 只调 OnCancel()、不经过 Clear()；而本步骤被 SkipCurrentStep / JumpToStep /
-		/// ForceNextStep / GoToPreviousStep 取消后仍留在 m_AllStepDict 中，若不解绑，m_TargetUI 未清、
+		/// ForceNextStep / GoToPreviousStep 取消后仍留在 m_allStepDict 中，若不解绑，m_targetUI 未清、
 		/// onClick 仍挂着 Complete —— 玩家点该 UI 会驱动「已取消的步骤」跳步。
 		/// 因此这里做与 Clear() 完全相同的解绑（同一 Complete 方法组引用），并结束点击UI引导
 		/// （取消在途打开 + 关闭已打开引导窗，见 GuideActionImpl.EndClickUIGuide）。
@@ -93,23 +93,23 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		protected override void OnCancel()
 		{
-			m_TargetUI?.onClick.Remove(Complete);
-			m_TargetUI = null;
+			m_targetUI?.onClick.Remove(Complete);
+			m_targetUI = null;
 			GuideAction?.EndClickUIGuide();
 			base.OnCancel();
 		}
 
 		/// <summary>
 		/// 清理步骤。
-		/// 覆写原因：基类 Clear() 只置空 StepInfo，不会移除 onClick 监听、也不会清空 m_TargetUI。
+		/// 覆写原因：基类 Clear() 只置空 StepInfo，不会移除 onClick 监听、也不会清空 m_targetUI。
 		/// 步骤被 Cancel 后回池（或直接 Clear 回收）时，池对象会长期持有旧界面的 GComponent（界面 onClick 仍挂着本步骤实例，
 		/// 双向悬挂）；复用后 OnExecute 再次 Add 同一回调，同一次点击会触发两次 Complete。
 		/// 此处用与 OnExecute 中 Add 完全相同的回调引用（Complete）做 Remove。
 		/// </summary>
 		public override void Clear()
 		{
-			m_TargetUI?.onClick.Remove(Complete);
-			m_TargetUI = null;
+			m_targetUI?.onClick.Remove(Complete);
+			m_targetUI = null;
 			base.Clear();
 		}
 

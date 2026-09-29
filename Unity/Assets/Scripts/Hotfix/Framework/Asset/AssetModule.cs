@@ -27,23 +27,23 @@ namespace Hotfix.Framework.Asset
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_Scope = new();
+		private CancellationScope m_scope = new();
 
 		/// <summary>
 		/// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
 		/// 实例化对象共享资源引用，调用方在实例销毁时通过 ReleaseInstantiate 释放。
 		/// </summary>
-		private readonly Dictionary<string, InstantiateRef> m_InstantiateRefDict = new();
+		private readonly Dictionary<string, InstantiateRef> m_instantiateRefDict = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_Scope.Token;
+		public CancellationToken Token => m_scope.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_Scope.CancelAsync();
+		public UniTask CancelAsync() => m_scope.CancelAsync();
 
 		/// <summary>
 		/// 初始化
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Asset
 		protected internal override void OnInit()
 		{
 			// 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
-			m_Scope = new CancellationScope();
+			m_scope = new CancellationScope();
 
 			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
 			DefaultPackageName = GameSetting.Instance.DefaultPackageName;
@@ -65,17 +65,17 @@ namespace Hotfix.Framework.Asset
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_Scope.Cancel(); // 随模块销毁取消所有在途异步操作
+			m_scope.Cancel(); // 随模块销毁取消所有在途异步操作
 
 			// 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
 			// （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。
-			foreach (var kvp in m_InstantiateRefDict)
+			foreach (var kvp in m_instantiateRefDict)
 			{
 				kvp.Value.Handle.Release();
 				UnloadAsset(kvp.Key);
 			}
 
-			m_InstantiateRefDict.Clear();
+			m_instantiateRefDict.Clear();
 
 			// 注意：此处不做整包 UnloadAllAssetsAsync——它是强制销毁全部 provider（含其他模块 Sound/Scene/Entity 仍持有的活句柄），
 			// 且重启时 fire-and-forget 会误伤新生命周期刚创建的 provider。各模块应自行释放自己持有的句柄。
@@ -126,12 +126,12 @@ namespace Hotfix.Framework.Asset
 		/// <param name="path">资源路径。</param>
 		private void ReleaseInstantiateInternal(string path)
 		{
-			if (!m_InstantiateRefDict.TryGetValue(path, out var entry)) return;
+			if (!m_instantiateRefDict.TryGetValue(path, out var entry)) return;
 			if (entry.RefCount   <= 0) return;
 			if (--entry.RefCount > 0) return;
 
 			entry.Handle.Release();
-			m_InstantiateRefDict.Remove(path);
+			m_instantiateRefDict.Remove(path);
 
 			// 引用归零后显式卸载：句柄 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，
 			// 需 UnloadAsset 才能真正释放，否则该 prefab 的 bundle 永久残留（内存只增不减）。

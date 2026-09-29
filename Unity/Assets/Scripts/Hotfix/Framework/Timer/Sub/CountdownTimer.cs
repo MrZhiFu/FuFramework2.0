@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Timer
 
 		/// <summary>
 		/// 更新计时器
-		/// 功能：根据时间增量减少剩余时间，并触发更新回调 
+		/// 功能：根据时间增量减少剩余时间，并触发更新回调
 		/// </summary>
 		/// <param name="deltaTime">增量时间（秒）</param>
 		/// <param name="_">暂不使用</param>

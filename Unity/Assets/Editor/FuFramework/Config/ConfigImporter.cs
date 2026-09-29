@@ -33,7 +33,7 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// 启用二进制配置表的环境变量符号
 		/// </summary>
-		private const string EnableBinaryConfigSymbol = "ENABLE_BINARY_CONFIG";
+		private const string ENABLE_BINARY_CONFIG_SYMBOL = "ENABLE_BINARY_CONFIG";
 
 		/// <summary>
 		/// 导入 JSON 格式的配置表
@@ -76,11 +76,11 @@ namespace FuFramework.Config.Editor
 				// 如果导出 JSON 格式的配置表，则移除启用二进制配置表的环境变量符号，否则添加启用二进制配置表的环境变量符号
 				if (target == EDataTarget.Json)
 				{
-					ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableBinaryConfigSymbol);
+					ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_BINARY_CONFIG_SYMBOL);
 				}
 				else
 				{
-					ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableBinaryConfigSymbol);
+					ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_BINARY_CONFIG_SYMBOL);
 				}
 
 				// 刷新并保存Unity资源

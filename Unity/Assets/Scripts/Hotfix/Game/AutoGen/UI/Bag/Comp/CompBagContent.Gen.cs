@@ -17,9 +17,9 @@ namespace Hotfix.Game.UI
 {
     public partial class CompBagContent : GComponent
     {
-        private TimerRegister m_TimerRegister;     // 计时器注册器
-        private EventRegister m_EventRegister;     // 业务逻辑事件注册器
-        private FuiEventRegister m_UIEventRegister;// UI事件注册器
+        private TimerRegister m_timerRegister;     // 计时器注册器
+        private EventRegister m_eventRegister;     // 业务逻辑事件注册器
+        private FuiEventRegister m_uiEventRegister;// UI事件注册器
 
 		private Controller IsSelectedItem;
 		private GList listItem;
@@ -56,9 +56,9 @@ namespace Hotfix.Game.UI
 		{
 			base.ConstructFromXML(xml);
 			InitUIComp();
-			m_UIEventRegister = FuiEventRegister.Create();
-			m_EventRegister = EventRegister.Create();
-			m_TimerRegister = TimerRegister.Create();
+			m_uiEventRegister = FuiEventRegister.Create();
+			m_eventRegister = EventRegister.Create();
+			m_timerRegister = TimerRegister.Create();
 			InitUIEvent();
 			OnInit();
 		}
@@ -81,39 +81,39 @@ namespace Hotfix.Game.UI
         {
             FuLogger.LogInfo($"销毁界面组件-{GetType().Name}");
             OnDispose();
-            m_UIEventRegister?.Release();
-            m_EventRegister?.Release();
-            m_TimerRegister?.Release();
+            m_uiEventRegister?.Release();
+            m_eventRegister?.Release();
+            m_timerRegister?.Release();
             base.Dispose();
         }
 
         #region UI事件处理
 
-        protected void AddUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.AddUIListener(listener, callback);
+        protected void AddUIListener(EventListener listener, EventCallback1 callback) => m_uiEventRegister.AddUIListener(listener, callback);
 
-        protected void SetUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.SetUIListener(listener, callback);
+        protected void SetUIListener(EventListener listener, EventCallback1 callback) => m_uiEventRegister.SetUIListener(listener, callback);
 
-        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => m_UIEventRegister.RemoveUIListener(listener, callback);
+        protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
 
-        protected void ClearUIListener(EventListener listener) => m_UIEventRegister.ClearUIListener(listener);
+        protected void ClearUIListener(EventListener listener) => m_uiEventRegister.ClearUIListener(listener);
 
-        protected void ClearAllUIListener() => m_UIEventRegister.ClearAllUIListener();
+        protected void ClearAllUIListener() => m_uiEventRegister.ClearAllUIListener();
 
         #endregion
 
         #region 业务逻辑事件处理
 
-        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => m_EventRegister.Subscribe(eventId, handler);
+        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => m_eventRegister.Subscribe(eventId, handler);
 
-        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => m_EventRegister.UnSubscribe(eventId, handler);
+        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => m_eventRegister.UnSubscribe(eventId, handler);
 
-        protected void Broadcast(string eventId, GameEventArgs e) => m_EventRegister.Broadcast(eventId, e);
+        protected void Broadcast(string eventId, GameEventArgs e) => m_eventRegister.Broadcast(eventId, e);
 
-        protected void Broadcast(object sender, string eventId) => m_EventRegister.Broadcast(sender, eventId);
+        protected void Broadcast(object sender, string eventId) => m_eventRegister.Broadcast(sender, eventId);
 
-        protected void BroadcastNow(object sender, GameEventArgs e) => m_EventRegister.BroadcastNow(sender, e);
+        protected void BroadcastNow(object sender, GameEventArgs e) => m_eventRegister.BroadcastNow(sender, e);
 
-        protected void UnSubscribeAll() => m_EventRegister.UnSubscribeAll();
+        protected void UnSubscribeAll() => m_eventRegister.UnSubscribeAll();
 
         #endregion
 
@@ -121,34 +121,34 @@ namespace Hotfix.Game.UI
 
         protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
         {
-            m_TimerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            m_timerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
         }
 
         protected void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            m_TimerRegister.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            m_timerRegister.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
 
         protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
         {
-            m_TimerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            m_timerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
         }
 
-        protected void PauseTimer(int timerId) => m_TimerRegister.PauseTimer(timerId);
+        protected void PauseTimer(int timerId) => m_timerRegister.PauseTimer(timerId);
 
-        protected void ResumeTimer(int timerId) => m_TimerRegister.ResumeTimer(timerId);
+        protected void ResumeTimer(int timerId) => m_timerRegister.ResumeTimer(timerId);
 
-        protected void StopTimer(int timerId) => m_TimerRegister.StopTimer(timerId);
+        protected void StopTimer(int timerId) => m_timerRegister.StopTimer(timerId);
 
-        protected void PauseAllTimers() => m_TimerRegister.PauseAllTimers();
+        protected void PauseAllTimers() => m_timerRegister.PauseAllTimers();
 
-        protected void ResumeAllTimers() => m_TimerRegister.ResumeAllTimers();
+        protected void ResumeAllTimers() => m_timerRegister.ResumeAllTimers();
 
-        protected void StopAllTimers() => m_TimerRegister.StopAllTimers();
+        protected void StopAllTimers() => m_timerRegister.StopAllTimers();
 
-        protected bool IsTimerExist(int timerId) => m_TimerRegister.IsTimerExist(timerId);
+        protected bool IsTimerExist(int timerId) => m_timerRegister.IsTimerExist(timerId);
 
-        protected bool IsTimerPaused(int timerId) => m_TimerRegister.IsTimerPaused(timerId);
+        protected bool IsTimerPaused(int timerId) => m_timerRegister.IsTimerPaused(timerId);
 
         #endregion
     }

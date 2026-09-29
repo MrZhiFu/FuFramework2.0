@@ -10,30 +10,30 @@ namespace FuFramework.Core.Editor
 	/// </summary>
 	public static class LogScriptingDefineSymbols
 	{
-		private const string EnableLogSymbol = "ENABLE_LOG"; // 开启所有级别日志(预定义符号)
+		private const string ENABLE_LOG_SYMBOL = "ENABLE_LOG"; // 开启所有级别日志(预定义符号)
 
-		private const string EnableInfoAndAboveLogSymbol    = "ENABLE_INFO_AND_ABOVE_LOG";    // 开启信息(Info)及以上级别的日志(预定义符号)
-		private const string EnableDebugAndAboveLogSymbol   = "ENABLE_DEBUG_AND_ABOVE_LOG";   // 开启调试(Debug)及以上级别的日志(预定义符号)
-		private const string EnableWarningAndAboveLogSymbol = "ENABLE_WARNING_AND_ABOVE_LOG"; // 开启警告(Warning)及以上级别的日志(预定义符号)
-		private const string EnableErrorAndAboveLogSymbol   = "ENABLE_ERROR_AND_ABOVE_LOG";   // 开启错误(Error)及以上级别的日志(预定义符号)
-		private const string EnableFatalAndAboveLogSymbol   = "ENABLE_FATAL_AND_ABOVE_LOG";   // 开启严重错误(Fatal)及以上级别的日志(预定义符号)
+		private const string ENABLE_INFO_AND_ABOVE_LOG_SYMBOL    = "ENABLE_INFO_AND_ABOVE_LOG";    // 开启信息(Info)及以上级别的日志(预定义符号)
+		private const string ENABLE_DEBUG_AND_ABOVE_LOG_SYMBOL   = "ENABLE_DEBUG_AND_ABOVE_LOG";   // 开启调试(Debug)及以上级别的日志(预定义符号)
+		private const string ENABLE_WARNING_AND_ABOVE_LOG_SYMBOL = "ENABLE_WARNING_AND_ABOVE_LOG"; // 开启警告(Warning)及以上级别的日志(预定义符号)
+		private const string ENABLE_ERROR_AND_ABOVE_LOG_SYMBOL   = "ENABLE_ERROR_AND_ABOVE_LOG";   // 开启错误(Error)及以上级别的日志(预定义符号)
+		private const string ENABLE_FATAL_AND_ABOVE_LOG_SYMBOL   = "ENABLE_FATAL_AND_ABOVE_LOG";   // 开启严重错误(Fatal)及以上级别的日志(预定义符号)
 
-		private const string EnableInfoLogSymbol    = "ENABLE_INFO_LOG";    // 仅开启信息(Info)级别的日志(预定义符号)
-		private const string EnableDebugLogSymbol   = "ENABLE_DEBUG_LOG";   // 仅开启调试(Debug)级别的日志(预定义符号)
-		private const string EnableWarningLogSymbol = "ENABLE_WARNING_LOG"; // 仅开启警告(Warning)级别的日志(预定义符号)
-		private const string EnableErrorLogSymbol   = "ENABLE_ERROR_LOG";   // 仅开启错误(Error)级别的日志(预定义符号)
-		private const string EnableFatalLogSymbol   = "ENABLE_FATAL_LOG";   // 仅开启严重错误(Fatal)级别的日志(预定义符号)
+		private const string ENABLE_INFO_LOG_SYMBOL    = "ENABLE_INFO_LOG";    // 仅开启信息(Info)级别的日志(预定义符号)
+		private const string ENABLE_DEBUG_LOG_SYMBOL   = "ENABLE_DEBUG_LOG";   // 仅开启调试(Debug)级别的日志(预定义符号)
+		private const string ENABLE_WARNING_LOG_SYMBOL = "ENABLE_WARNING_LOG"; // 仅开启警告(Warning)级别的日志(预定义符号)
+		private const string ENABLE_ERROR_LOG_SYMBOL   = "ENABLE_ERROR_LOG";   // 仅开启错误(Error)级别的日志(预定义符号)
+		private const string ENABLE_FATAL_LOG_SYMBOL   = "ENABLE_FATAL_LOG";   // 仅开启严重错误(Fatal)级别的日志(预定义符号)
 
 		/// <summary>
 		/// 指定级别及以上级别的日志预定义符号。
 		/// </summary>
 		private static readonly string[] AboveLogSymbols =
 		{
-			EnableInfoAndAboveLogSymbol,
-			EnableDebugAndAboveLogSymbol,
-			EnableWarningAndAboveLogSymbol,
-			EnableErrorAndAboveLogSymbol,
-			EnableFatalAndAboveLogSymbol
+			ENABLE_INFO_AND_ABOVE_LOG_SYMBOL,
+			ENABLE_DEBUG_AND_ABOVE_LOG_SYMBOL,
+			ENABLE_WARNING_AND_ABOVE_LOG_SYMBOL,
+			ENABLE_ERROR_AND_ABOVE_LOG_SYMBOL,
+			ENABLE_FATAL_AND_ABOVE_LOG_SYMBOL
 		};
 
 		/// <summary>
@@ -41,11 +41,11 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		private static readonly string[] SpecifyLogSymbols =
 		{
-			EnableInfoLogSymbol,
-			EnableDebugLogSymbol,
-			EnableWarningLogSymbol,
-			EnableErrorLogSymbol,
-			EnableFatalLogSymbol
+			ENABLE_INFO_LOG_SYMBOL,
+			ENABLE_DEBUG_LOG_SYMBOL,
+			ENABLE_WARNING_LOG_SYMBOL,
+			ENABLE_ERROR_LOG_SYMBOL,
+			ENABLE_FATAL_LOG_SYMBOL
 		};
 
 		/// <summary>
@@ -55,7 +55,7 @@ namespace FuFramework.Core.Editor
 		public static void EnableAllLogs()
 		{
 			DisableAllLogs();
-			ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableLogSymbol);
+			ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -64,7 +64,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/禁用所有日志", false, FuMenuPriority.LOG_DISABLE_ALL)]
 		public static void DisableAllLogs()
 		{
-			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogSymbol);
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_LOG_SYMBOL);
 
 			foreach (var specifyLogScriptingDefineSymbol in SpecifyLogSymbols)
 			{
@@ -83,7 +83,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/开启信息(Info)及以上级别的日志", false, FuMenuPriority.LOG_ENABLE_INFO_ABOVE)]
 		public static void EnableInfoAndAboveLogs()
 		{
-			SetAboveLogScriptingDefineSymbol(EnableInfoAndAboveLogSymbol);
+			SetAboveLogScriptingDefineSymbol(ENABLE_INFO_AND_ABOVE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/开启调试(Debug)及以上级别的日志", false, FuMenuPriority.LOG_ENABLE_DEBUG_ABOVE)]
 		public static void EnableDebugAndAboveLogs()
 		{
-			SetAboveLogScriptingDefineSymbol(EnableDebugAndAboveLogSymbol);
+			SetAboveLogScriptingDefineSymbol(ENABLE_DEBUG_AND_ABOVE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -101,7 +101,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/开启警告(Warning)及以上级别的日志", false, FuMenuPriority.LOG_ENABLE_WARNING_ABOVE)]
 		public static void EnableWarningAndAboveLogs()
 		{
-			SetAboveLogScriptingDefineSymbol(EnableWarningAndAboveLogSymbol);
+			SetAboveLogScriptingDefineSymbol(ENABLE_WARNING_AND_ABOVE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -110,7 +110,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/开启错误(Error)及以上级别的日志", false, FuMenuPriority.LOG_ENABLE_ERROR_ABOVE)]
 		public static void EnableErrorAndAboveLogs()
 		{
-			SetAboveLogScriptingDefineSymbol(EnableErrorAndAboveLogSymbol);
+			SetAboveLogScriptingDefineSymbol(ENABLE_ERROR_AND_ABOVE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -119,7 +119,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/开启严重错误(Fatal)及以上级别的日志", false, FuMenuPriority.LOG_ENABLE_FATAL_ABOVE)]
 		public static void EnableFatalAndAboveLogs()
 		{
-			SetAboveLogScriptingDefineSymbol(EnableFatalAndAboveLogSymbol);
+			SetAboveLogScriptingDefineSymbol(ENABLE_FATAL_AND_ABOVE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/仅开启信息(Info)级别日志", false, FuMenuPriority.LOG_ONLY_INFO)]
 		public static void EnableInfoLogOnly()
 		{
-			SetSpecifyLogScriptingDefineSymbols(new[] { EnableInfoLogSymbol });
+			SetSpecifyLogScriptingDefineSymbols(new[] { ENABLE_INFO_LOG_SYMBOL });
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/仅开启调试(Debug)级别日志", false, FuMenuPriority.LOG_ONLY_DEBUG)]
 		public static void EnableDebugLogOnly()
 		{
-			SetSpecifyLogScriptingDefineSymbols(new[] { EnableDebugLogSymbol });
+			SetSpecifyLogScriptingDefineSymbols(new[] { ENABLE_DEBUG_LOG_SYMBOL });
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/仅开启警告(Warning)级别日志", false, FuMenuPriority.LOG_ONLY_WARNING)]
 		public static void EnableWarningLogOnly()
 		{
-			SetSpecifyLogScriptingDefineSymbols(new[] { EnableWarningLogSymbol });
+			SetSpecifyLogScriptingDefineSymbols(new[] { ENABLE_WARNING_LOG_SYMBOL });
 		}
 
 		/// <summary>
@@ -155,7 +155,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/仅开启错误(Error)级别日志", false, FuMenuPriority.LOG_ONLY_ERROR)]
 		public static void EnableErrorLogOnly()
 		{
-			SetSpecifyLogScriptingDefineSymbols(new[] { EnableErrorLogSymbol });
+			SetSpecifyLogScriptingDefineSymbols(new[] { ENABLE_ERROR_LOG_SYMBOL });
 		}
 
 		/// <summary>
@@ -164,7 +164,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/日志设置/仅开启严重错误(Fatal)级别日志", false, FuMenuPriority.LOG_ONLY_FATAL)]
 		public static void EnableFatalLogOnly()
 		{
-			SetSpecifyLogScriptingDefineSymbols(new[] { EnableFatalLogSymbol });
+			SetSpecifyLogScriptingDefineSymbols(new[] { ENABLE_FATAL_LOG_SYMBOL });
 		}
 
 

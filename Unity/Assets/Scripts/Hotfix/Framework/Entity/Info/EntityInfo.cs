@@ -30,13 +30,13 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 子实体列表。
 		/// </summary>
-		private readonly List<Entity> m_ChildEntities = new();
+		private readonly List<Entity> m_childEntities = new();
 
 
 		/// <summary>
 		/// 获取子实体数量。
 		/// </summary>
-		public int ChildEntityCount => m_ChildEntities.Count;
+		public int ChildEntityCount => m_childEntities.Count;
 
 		/// <summary>
 		/// 创建实体信息。
@@ -61,14 +61,14 @@ namespace Hotfix.Framework.Entity
 			Entity       = null;
 			Status       = EEntityStatus.Unknown;
 			ParentEntity = null;
-			m_ChildEntities.Clear();
+			m_childEntities.Clear();
 		}
 
 		/// <summary>
 		/// 获取第一个子实体。
 		/// </summary>
 		/// <returns></returns>
-		public Entity GetChildEntity() => m_ChildEntities.Count > 0 ? m_ChildEntities[0] : null;
+		public Entity GetChildEntity() => m_childEntities.Count > 0 ? m_childEntities[0] : null;
 
 		/// <summary>
 		/// 获取所有子实体。
@@ -76,8 +76,8 @@ namespace Hotfix.Framework.Entity
 		/// <returns></returns>
 		public Entity[] GetChildEntities()
 		{
-			var results = new Entity[m_ChildEntities.Count];
-			m_ChildEntities.CopyTo(results, 0);
+			var results = new Entity[m_childEntities.Count];
+			m_childEntities.CopyTo(results, 0);
 			return results;
 		}
 
@@ -90,7 +90,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (results is null) throw new InvalidOperationException("[EntityInfo] 结果列表为空!");
 			results.Clear();
-			results.AddRange(m_ChildEntities);
+			results.AddRange(m_childEntities);
 		}
 
 		/// <summary>
@@ -100,8 +100,8 @@ namespace Hotfix.Framework.Entity
 		/// <exception cref="InvalidOperationException"></exception>
 		public void AddChildEntity(Entity childEntity)
 		{
-			if (m_ChildEntities.Contains(childEntity)) throw new InvalidOperationException("[EntityInfo]添加子实体失败, 子实体已存在, 不能重复添加!");
-			m_ChildEntities.Add(childEntity);
+			if (m_childEntities.Contains(childEntity)) throw new InvalidOperationException("[EntityInfo]添加子实体失败, 子实体已存在, 不能重复添加!");
+			m_childEntities.Add(childEntity);
 		}
 
 		/// <summary>
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Entity
 		/// <exception cref="InvalidOperationException"></exception>
 		public void RemoveChildEntity(Entity childEntity)
 		{
-			if (m_ChildEntities.Remove(childEntity)) return;
+			if (m_childEntities.Remove(childEntity)) return;
 			throw new InvalidOperationException("[EntityInfo]移除子实体失败, 子实体不存在, 不能移除!");
 		}
 	}

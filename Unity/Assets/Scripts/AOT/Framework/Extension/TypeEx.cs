@@ -12,7 +12,6 @@ namespace AOT.Framework.Extension
 	{
 		/// <summary>
 		/// 判断类型是否实现了指定的接口。
-		/// 此方法用于检查一个具体类型是否实现了目标接口。
 		/// </summary>
 		/// <param name="self">要判断的类型。必须是非空的具体类型。</param>
 		/// <param name="targetType">要判断的接口类型。必须是非空的接口类型。</param>

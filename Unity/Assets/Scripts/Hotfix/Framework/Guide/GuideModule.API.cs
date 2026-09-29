@@ -29,39 +29,39 @@ namespace Hotfix.Framework.Guide
 		/// <summary>
 		/// 是否正在引导中
 		/// </summary>
-		public bool IsGuiding => m_CurrentStep != null;
+		public bool IsGuiding => m_currentStep != null;
 
 		/// <summary>
 		/// 当前引导 ID
 		/// </summary>
-		public int? CurrentGuideId => m_CurrentGuide?.Id;
+		public int? CurrentGuideId => m_currentGuide?.Id;
 
 		/// <summary>
 		/// 当前步骤 ID
 		/// </summary>
-		public int? CurrentStepId => m_CurrentStep?.StepInfo.Id;
+		public int? CurrentStepId => m_currentStep?.StepInfo.Id;
 
 		/// <summary>
 		/// 当前引导配置
 		/// </summary>
-		public GuideData CurrentGuide => m_CurrentGuide;
+		public GuideData CurrentGuide => m_currentGuide;
 
 		/// <summary>
 		/// 当前步骤
 		/// </summary>
-		public BaseStep CurrentStep => m_CurrentStep;
+		public BaseStep CurrentStep => m_currentStep;
 
 		/// <summary>
 		/// 执行引导动作接口。
-		/// 赋值时一并捕获其 ICancelAsync 视图，供本模块的 CancelAsync 排水（见 m_GuideActionCancellable）。
+		/// 赋值时一并捕获其 ICancelAsync 视图，供本模块的 CancelAsync 排水（见 m_guideActionCancellable）。
 		/// </summary>
 		public IGuideAction GuideAction
 		{
-			get => m_GuideAction;
+			get => m_guideAction;
 			set
 			{
-				m_GuideAction           = value;
-				m_GuideActionCancellable = value as ICancelAsync;
+				m_guideAction           = value;
+				m_guideActionCancellable = value as ICancelAsync;
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace Hotfix.Framework.Guide
 		/// 取消令牌：跟随引导动作执行器的模块级取消范围（两条引导异步链在其中登记在途）。
 		/// OnDispose → 引导动作 Dispose 后取消。
 		/// </summary>
-		public CancellationToken Token => m_GuideActionCancellable?.Token ?? default;
+		public CancellationToken Token => m_guideActionCancellable?.Token ?? default;
 
 		/// <summary>
 		/// 触发取消并等待两条引导异步链（点击UI引导 / 对话引导）清理完毕后返回，可重入、幂等。
@@ -117,7 +117,7 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		public UniTask CancelAsync()
 		{
-			var cancellable = m_GuideActionCancellable;
+			var cancellable = m_guideActionCancellable;
 			return cancellable?.CancelAsync() ?? UniTask.CompletedTask;
 		}
 
@@ -133,7 +133,7 @@ namespace Hotfix.Framework.Guide
 		/// <returns>是否成功开始引导</returns>
 		public bool StartGuide(int guideId, bool forceRestart = false)
 		{
-			if (!m_GuideDict.TryGetValue(guideId, out var guide))
+			if (!m_guideDict.TryGetValue(guideId, out var guide))
 			{
 				FuLogger.LogError($"[GuideModule] 找不到引导: {guideId}");
 				return false;
@@ -148,7 +148,7 @@ namespace Hotfix.Framework.Guide
 		public bool StartFirstGuide(bool forceRestart = false)
 		{
 			GuideData firstGuide = null;
-			foreach (var guide in m_GuideDict.Values)
+			foreach (var guide in m_guideDict.Values)
 			{
 				firstGuide = guide;
 				break;
@@ -169,11 +169,11 @@ namespace Hotfix.Framework.Guide
 		/// <param name="markAsCompleted">是否标记为已完成</param>
 		public void InterruptGuide(bool markAsCompleted = false)
 		{
-			if (m_CurrentStep == null) return;
+			if (m_currentStep == null) return;
 
 			var guideId = CurrentGuideId;
 
-			m_CurrentStep.Cancel();
+			m_currentStep.Cancel();
 
 			if (markAsCompleted && guideId.HasValue)
 			{
@@ -198,7 +198,7 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		public void CompleteCurrentStep()
 		{
-			var completedStep = m_CurrentStep;
+			var completedStep = m_currentStep;
 			if (completedStep == null) return;
 
 			if (!completedStep.CanComplete())
@@ -210,7 +210,7 @@ namespace Hotfix.Framework.Guide
 			try
 			{
 				// 顺序：先 Complete（推进）再广播完成事件，二者不可调换。
-				// 若在推进前广播，此刻该步仍为 Executing、CanComplete() 仍为 true、m_CurrentStep 仍是该步，
+				// 若在推进前广播，此刻该步仍为 Executing、CanComplete() 仍为 true、m_currentStep 仍是该步，
 				// 监听者在回调里 SkipCurrentStep/JumpToStep/StartGuide 会先推进一次，返回后 Complete 内部的
 				// JumpToStep(NextStepId) 分支又会推进一次 → 一步跨两步。
 				// 历史不在此重复记录：推进时 JumpToStep 已把当前步骤记入历史，再记一次会让同一 ID 入栈两次。
@@ -223,7 +223,7 @@ namespace Hotfix.Framework.Guide
 				// 末步（无 NextStepId）时 BaseStep.Complete 不会推进，需在此收尾结束引导。
 				// 放在广播之后：FinishGuide 会回收步骤实例并把 StepInfo 置空，先回收会把死对象交给监听者。
 				// 仅当当前步仍是被完成的那一步（Complete 与监听者都未推动）时才收尾，避免重复推进。
-				if (ReferenceEquals(m_CurrentStep, completedStep))
+				if (ReferenceEquals(m_currentStep, completedStep))
 				{
 					MoveToNextStep();
 				}
@@ -241,18 +241,18 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		public void SkipCurrentStep()
 		{
-			if (m_CurrentStep == null) return;
+			if (m_currentStep == null) return;
 
-			if (m_CurrentStep.StepInfo.CanJump)
+			if (m_currentStep.StepInfo.CanJump)
 			{
-				FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_CurrentStep.StepInfo.Id}");
-				m_CurrentStep.Cancel();
-				PushStepHistory(m_CurrentStep);
+				FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_currentStep.StepInfo.Id}");
+				m_currentStep.Cancel();
+				PushStepHistory(m_currentStep);
 				MoveToNextStep();
 			}
 			else
 			{
-				FuLogger.LogWarning($"[GuideModule] 步骤 {m_CurrentStep.StepInfo.Id} 不可跳过");
+				FuLogger.LogWarning($"[GuideModule] 步骤 {m_currentStep.StepInfo.Id} 不可跳过");
 			}
 		}
 
@@ -261,22 +261,22 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		public void GoToPreviousStep()
 		{
-			if (m_StepHistoryStack.Count == 0)
+			if (m_stepHistoryStack.Count == 0)
 			{
 				FuLogger.LogWarning("[GuideModule] 没有历史步骤可返回");
 				return;
 			}
 
-			m_CurrentStep?.Cancel();
+			m_currentStep?.Cancel();
 
-			var previousStepId = m_StepHistoryStack.Pop();
-			if (!m_AllStepDict.TryGetValue(previousStepId, out var previousStep))
+			var previousStepId = m_stepHistoryStack.Pop();
+			if (!m_allStepDict.TryGetValue(previousStepId, out var previousStep))
 			{
 				FuLogger.LogWarning($"[GuideModule] 历史步骤已不可用: {previousStepId}");
 				return;
 			}
 
-			m_CurrentStep = previousStep;
+			m_currentStep = previousStep;
 			ExecuteCurrentStep();
 
 			FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStepId}");
@@ -289,19 +289,19 @@ namespace Hotfix.Framework.Guide
 		/// <returns>是否跳转成功</returns>
 		public bool JumpToStep(int stepId)
 		{
-			if (!m_AllStepDict.ContainsKey(stepId))
+			if (!m_allStepDict.ContainsKey(stepId))
 			{
 				FuLogger.LogError($"[GuideModule] 步骤ID不存在: {stepId}");
 				return false;
 			}
 
-			if (m_CurrentStep != null)
+			if (m_currentStep != null)
 			{
-				m_CurrentStep.Cancel();
-				PushStepHistory(m_CurrentStep);
+				m_currentStep.Cancel();
+				PushStepHistory(m_currentStep);
 			}
 
-			m_CurrentStep = m_AllStepDict[stepId];
+			m_currentStep = m_allStepDict[stepId];
 			ExecuteCurrentStep();
 
 			FuLogger.LogInfo($"[GuideModule] 跳转到步骤: {stepId}");
@@ -313,14 +313,14 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		public void ForceNextStep()
 		{
-			if (m_CurrentStep == null) return;
+			if (m_currentStep == null) return;
 
-			var nextStepId = m_CurrentStep.StepInfo.NextStepId;
-			m_CurrentStep.Cancel();
+			var nextStepId = m_currentStep.StepInfo.NextStepId;
+			m_currentStep.Cancel();
 
-			if (nextStepId.HasValue && m_AllStepDict.TryGetValue(nextStepId.Value, out var nextStep))
+			if (nextStepId.HasValue && m_allStepDict.TryGetValue(nextStepId.Value, out var nextStep))
 			{
-				m_CurrentStep = nextStep;
+				m_currentStep = nextStep;
 				ExecuteCurrentStep();
 			}
 			else
@@ -340,14 +340,14 @@ namespace Hotfix.Framework.Guide
 		/// <returns>是否已完成</returns>
 		public bool IsGuideCompleted(int guideId)
 		{
-			if (m_GuideCompletionCacheDict.TryGetValue(guideId, out var completed))
+			if (m_guideCompletionCacheDict.TryGetValue(guideId, out var completed))
 			{
 				return completed;
 			}
 
 			completed = PlayerPrefs.GetInt($"Guide_Completed_{guideId}", 0) == 1;
 
-			m_GuideCompletionCacheDict[guideId] = completed;
+			m_guideCompletionCacheDict[guideId] = completed;
 			return completed;
 		}
 
@@ -360,8 +360,8 @@ namespace Hotfix.Framework.Guide
 			PlayerPrefs.SetInt($"Guide_Completed_{guideId}", 1);
 			// PlayerPrefs.Save() 是同步全量落盘，直接在引导完成/中断路径调用会在帧内阻塞主线程；
 			// 故只标脏位，由 OnPerSecondUpdate 合并落盘（至多每秒一次）、OnDispose 兜底落盘。
-			m_GuideDataDirty                    = true;
-			m_GuideCompletionCacheDict[guideId] = true;
+			m_guideDataDirty                    = true;
+			m_guideCompletionCacheDict[guideId] = true;
 
 			FuLogger.LogInfo($"[GuideModule] 标记引导为已完成: {guideId}");
 		}
@@ -373,10 +373,10 @@ namespace Hotfix.Framework.Guide
 		public void ResetGuide(int guideId)
 		{
 			PlayerPrefs.DeleteKey($"Guide_Completed_{guideId}");
-			m_GuideCompletionCacheDict.Remove(guideId);
+			m_guideCompletionCacheDict.Remove(guideId);
 
 			// 删除同样是未落盘的改动，与 MarkGuideAsCompleted 共用同一延迟落盘路径
-			m_GuideDataDirty = true;
+			m_guideDataDirty = true;
 
 			FuLogger.LogInfo($"[GuideModule] 重置引导状态: {guideId}");
 		}
@@ -390,18 +390,18 @@ namespace Hotfix.Framework.Guide
 		/// </summary>
 		/// <param name="stepId">步骤ID</param>
 		/// <returns>步骤实例</returns>
-		public BaseStep GetStep(int stepId) => m_AllStepDict.GetValueOrDefault(stepId);
+		public BaseStep GetStep(int stepId) => m_allStepDict.GetValueOrDefault(stepId);
 
 		/// <summary>
 		/// 获取所有步骤
 		/// </summary>
 		/// <returns>步骤字典</returns>
-		public Dictionary<int, BaseStep> GetAllSteps() => new(m_AllStepDict);
+		public Dictionary<int, BaseStep> GetAllSteps() => new(m_allStepDict);
 
 		/// <summary>
 		/// 获取当前引导信息
 		/// </summary>
-		public GuideData GetCurrentGuideInfo() => m_CurrentGuide;
+		public GuideData GetCurrentGuideInfo() => m_currentGuide;
 
 		#endregion
 	}

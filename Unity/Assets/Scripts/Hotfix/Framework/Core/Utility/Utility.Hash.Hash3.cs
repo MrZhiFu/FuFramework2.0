@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Core
 					//----------
 					// body
 
-					int i = 0;
+					var i = 0;
 					for (uint j = nBlocks; j > 0; --j)
 					{
 						uint k1L = System.BitConverter.ToUInt32(data, i);

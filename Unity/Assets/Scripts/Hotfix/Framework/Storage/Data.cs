@@ -20,12 +20,12 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 记录本地存储的数据项的字典。key为数据项名称，value为数据项值。
 		/// </summary>
-		private readonly SortedDictionary<string, string> m_DataDict = new(StringComparer.Ordinal);
+		private readonly SortedDictionary<string, string> m_dataDict = new(StringComparer.Ordinal);
 
 		/// <summary>
 		/// 获取本地存储的数据项数量。
 		/// </summary>
-		public int Count => m_DataDict.Count;
+		public int Count => m_dataDict.Count;
 
 		/// <summary>
 		/// 序列化数据。
@@ -34,8 +34,8 @@ namespace Hotfix.Framework.Storage
 		public void Serialize(Stream stream)
 		{
 			using var binaryWriter = new BinaryWriter(stream, Encoding.UTF8);
-			binaryWriter.Write7BitEncodedInt32(m_DataDict.Count);
-			foreach (var (key, value) in m_DataDict)
+			binaryWriter.Write7BitEncodedInt32(m_dataDict.Count);
+			foreach (var (key, value) in m_dataDict)
 			{
 				binaryWriter.Write(key);
 				binaryWriter.Write(value);
@@ -48,13 +48,13 @@ namespace Hotfix.Framework.Storage
 		/// <param name="stream">指定流。</param>
 		public void Deserialize(Stream stream)
 		{
-			m_DataDict.Clear();
+			m_dataDict.Clear();
 			using var binaryReader = new BinaryReader(stream, Encoding.UTF8);
 			var       settingCount = binaryReader.Read7BitEncodedInt32();
 			for (var i = 0; i < settingCount; i++)
 			{
 				// 用索引器赋值而非 Add：Add 遇到重复键（文件被外部篡改/旧版本残留）会抛异常导致整份存档读取失败
-				m_DataDict[binaryReader.ReadString()] = binaryReader.ReadString();
+				m_dataDict[binaryReader.ReadString()] = binaryReader.ReadString();
 			}
 		}
 
@@ -65,8 +65,8 @@ namespace Hotfix.Framework.Storage
 		public string[] GetAllDataNames()
 		{
 			var index    = 0;
-			var allNames = new string[m_DataDict.Count];
-			foreach (var setting in m_DataDict)
+			var allNames = new string[m_dataDict.Count];
+			foreach (var setting in m_dataDict)
 			{
 				allNames[index++] = setting.Key;
 			}
@@ -82,7 +82,7 @@ namespace Hotfix.Framework.Storage
 		{
 			if (results == null) throw new InvalidOperationException("[Data] 结果列表不能为空.");
 			results.Clear();
-			foreach (var setting in m_DataDict)
+			foreach (var setting in m_dataDict)
 			{
 				results.Add(setting.Key);
 			}
@@ -93,19 +93,19 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		/// <param name="dataName">要检查本地存储的数据项的名称。</param>
 		/// <returns>指定的本地存储的数据项是否存在。</returns>
-		public bool HasData(string dataName) => m_DataDict.ContainsKey(dataName);
+		public bool HasData(string dataName) => m_dataDict.ContainsKey(dataName);
 
 		/// <summary>
 		/// 移除指定本地存储的数据项。
 		/// </summary>
 		/// <param name="dataName">要移除本地存储的数据项的名称。</param>
 		/// <returns>是否移除指定本地存储的数据项成功。</returns>
-		public bool RemoveData(string dataName) => m_DataDict.Remove(dataName);
+		public bool RemoveData(string dataName) => m_dataDict.Remove(dataName);
 
 		/// <summary>
 		/// 清空所有本地存储的数据项。
 		/// </summary>
-		public void RemoveAllData() => m_DataDict.Clear();
+		public void RemoveAllData() => m_dataDict.Clear();
 
 		#region Get
 
@@ -117,7 +117,7 @@ namespace Hotfix.Framework.Storage
 		/// <returns>读取的布尔值。</returns>
 		public bool GetBool(string dataName, bool defaultValue = false)
 		{
-			if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
+			if (!m_dataDict.TryGetValue(dataName, out var value)) return defaultValue;
 			if (bool.TryParse(value, out var result)) return result;
 			throw new InvalidOperationException($"[Data] 无法将 {value} 转换为布尔值.");
 		}
@@ -130,7 +130,7 @@ namespace Hotfix.Framework.Storage
 		/// <returns>读取的整数值。</returns>
 		public int GetInt(string dataName, int defaultValue = 0)
 		{
-			if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
+			if (!m_dataDict.TryGetValue(dataName, out var value)) return defaultValue;
 			if (int.TryParse(value, out var result)) return result;
 			throw new InvalidOperationException($"[Data] 无法将 {value} 转换为整数值.");
 		}
@@ -144,7 +144,7 @@ namespace Hotfix.Framework.Storage
 		/// <exception cref="InvalidOperationException"></exception>
 		public long GetLong(string dataName, long defaultValue = 0)
 		{
-			if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
+			if (!m_dataDict.TryGetValue(dataName, out var value)) return defaultValue;
 			if (long.TryParse(value, out var result)) return result;
 			throw new InvalidOperationException($"[Data] 无法将 {value} 转换为长整数值.");
 		}
@@ -157,7 +157,7 @@ namespace Hotfix.Framework.Storage
 		/// <returns>读取的浮点数值。</returns>
 		public float GetFloat(string dataName, float defaultValue = 0)
 		{
-			if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
+			if (!m_dataDict.TryGetValue(dataName, out var value)) return defaultValue;
 			if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)) return result;
 			throw new InvalidOperationException($"[Data] 无法将 {value} 转换为浮点数值.");
 		}
@@ -171,7 +171,7 @@ namespace Hotfix.Framework.Storage
 		/// <exception cref="InvalidOperationException"></exception>
 		public double GetDouble(string dataName, double defaultValue = 0)
 		{
-			if (!m_DataDict.TryGetValue(dataName, out var value)) return defaultValue;
+			if (!m_dataDict.TryGetValue(dataName, out var value)) return defaultValue;
 			if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)) return result;
 			throw new InvalidOperationException($"[Data] 无法将 {value} 转换为双精度浮点数值.");
 		}
@@ -184,7 +184,7 @@ namespace Hotfix.Framework.Storage
 		/// <returns>读取的字符串值。</returns>
 		public string GetString(string dataName, string defaultValue = null)
 		{
-			return m_DataDict.GetValueOrDefault(dataName, defaultValue);
+			return m_dataDict.GetValueOrDefault(dataName, defaultValue);
 		}
 
 		#endregion
@@ -196,33 +196,33 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		/// <param name="dataName">要写入本地存储的数据项的名称。</param>
 		/// <param name="value">要写入的布尔值。</param>
-		public void SetBool(string dataName, bool value) => m_DataDict[dataName] = value.ToString();
+		public void SetBool(string dataName, bool value) => m_dataDict[dataName] = value.ToString();
 
 		/// <summary>
 		/// 向指定本地存储的数据项写入整数值。
 		/// </summary>
 		/// <param name="dataName">要写入本地存储的数据项的名称。</param>
 		/// <param name="value">要写入的整数值。</param>
-		public void SetInt(string dataName, int value) => m_DataDict[dataName] = value.ToString();
+		public void SetInt(string dataName, int value) => m_dataDict[dataName] = value.ToString();
 
 		/// <summary>
 		/// 向指定本地存储的数据项写入长整数值。
 		/// </summary>
 		/// <param name="dataName"></param>
 		/// <param name="value"></param>
-		public void SetLong(string dataName, long value) => m_DataDict[dataName] = value.ToString();
+		public void SetLong(string dataName, long value) => m_dataDict[dataName] = value.ToString();
 
 		/// <summary>
 		/// 向指定本地存储的数据项写入浮点数值。
 		/// </summary>
 		/// <param name="dataName">要写入本地存储的数据项的名称。</param>
 		/// <param name="value">要写入的浮点数值。</param>
-		public void SetFloat(string dataName, float value) => m_DataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
+		public void SetFloat(string dataName, float value) => m_dataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
 
 		/// <summary>
 		/// 向指定本地存储的数据项写入双精度浮点数值。
 		/// </summary>
-		public void SetDouble(string dataName, double value) => m_DataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
+		public void SetDouble(string dataName, double value) => m_dataDict[dataName] = value.ToString(CultureInfo.InvariantCulture);
 
 		/// <summary>
 		/// 向指定本地存储的数据项写入字符串值。null 归一为空串：
@@ -230,7 +230,7 @@ namespace Hotfix.Framework.Storage
 		/// </summary>
 		/// <param name="dataName">要写入本地存储的数据项的名称。</param>
 		/// <param name="value">要写入的字符串值（null 视为空串）。</param>
-		public void SetString(string dataName, string value) => m_DataDict[dataName] = value ?? string.Empty;
+		public void SetString(string dataName, string value) => m_dataDict[dataName] = value ?? string.Empty;
 
 		#endregion
 	}

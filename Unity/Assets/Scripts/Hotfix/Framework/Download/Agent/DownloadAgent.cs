@@ -14,19 +14,19 @@ namespace Hotfix.Framework.Download
 	internal sealed class DownloadAgent : ITaskAgent<DownloadTask>, IDisposable
 	{
 		/// 下载代理辅助器
-		private readonly UnityWebRequestDownloadAgentHelper m_Helper;
+		private readonly UnityWebRequestDownloadAgentHelper m_helper;
 
 		/// 下载文件流
-		private FileStream m_FileStream;
+		private FileStream m_fileStream;
 
 		/// 等待刷新的大小(将缓冲区写入磁盘的临界大小)
-		private int m_WaitFlushSize;
+		private int m_waitFlushSize;
 
 		/// 是否已销毁
-		private bool m_Disposed;
+		private bool m_disposed;
 
 		/// 事件管理模块
-		private readonly EventModule m_EventModule = ModuleManager.GetModule<EventModule>();
+		private readonly EventModule m_eventModule = ModuleManager.GetModule<EventModule>();
 
 
 		/// 下载开始委托
@@ -48,16 +48,16 @@ namespace Hotfix.Framework.Download
 		/// <param name="downloadAgentHelper">下载代理辅助器。</param>
 		public DownloadAgent(UnityWebRequestDownloadAgentHelper downloadAgentHelper)
 		{
-			m_Helper = downloadAgentHelper ?? throw new InvalidOperationException("[DownloadAgent]下载代理辅助器为空!");
+			m_helper = downloadAgentHelper ?? throw new InvalidOperationException("[DownloadAgent]下载代理辅助器为空!");
 
 			Task             = null;
-			m_FileStream     = null;
-			m_WaitFlushSize  = 0;
+			m_fileStream     = null;
+			m_waitFlushSize  = 0;
 			WaitTime         = 0f;
 			StartLength      = 0L;
 			DownloadedLength = 0L;
 			SavedLength      = 0L;
-			m_Disposed       = false;
+			m_disposed       = false;
 
 			DownloadAgentStart   = null;
 			DownloadAgentUpdate  = null;
@@ -100,10 +100,10 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void Initialize()
 		{
-			m_EventModule.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
-			m_EventModule.Subscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-			m_EventModule.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
-			m_EventModule.Subscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
+			m_eventModule.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
+			m_eventModule.Subscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
+			m_eventModule.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
+			m_eventModule.Subscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
 		}
 
 		/// <summary>
@@ -113,7 +113,7 @@ namespace Hotfix.Framework.Download
 		/// <param name="unscaledDeltaTime">无时间缩放的真实帧间隔流逝时间，以秒为单位。</param>
 		public void Update(float deltaTime, float unscaledDeltaTime)
 		{
-			m_Helper.OnUpdate();
+			m_helper.OnUpdate();
 
 			// 检查Task是否为null，避免空引用异常
 			if (Task == null || Task.Status != DownloadTaskStatus.Doing) return;
@@ -143,10 +143,10 @@ namespace Hotfix.Framework.Download
 		{
 			Dispose();
 
-			m_EventModule.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
-			m_EventModule.Unsubscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-			m_EventModule.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
-			m_EventModule.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
+			m_eventModule.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
+			m_eventModule.Unsubscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
+			m_eventModule.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
+			m_eventModule.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
 		}
 
 		/// <summary>
@@ -165,9 +165,9 @@ namespace Hotfix.Framework.Download
 			{
 				if (File.Exists(downloadFile))
 				{
-					m_FileStream = File.OpenWrite(downloadFile);
-					m_FileStream.Seek(0L, SeekOrigin.End);
-					StartLength      = SavedLength = m_FileStream.Length;
+					m_fileStream = File.OpenWrite(downloadFile);
+					m_fileStream.Seek(0L, SeekOrigin.End);
+					StartLength      = SavedLength = m_fileStream.Length;
 					DownloadedLength = 0L;
 				}
 				else
@@ -176,7 +176,7 @@ namespace Hotfix.Framework.Download
 					if (directory != null && !Directory.Exists(directory))
 						Directory.CreateDirectory(directory);
 
-					m_FileStream = new FileStream(downloadFile, FileMode.Create, FileAccess.Write);
+					m_fileStream = new FileStream(downloadFile, FileMode.Create, FileAccess.Write);
 					StartLength  = SavedLength = DownloadedLength = 0L;
 				}
 
@@ -184,9 +184,9 @@ namespace Hotfix.Framework.Download
 
 				// 使用帮助类开始下载
 				if (StartLength > 0L)
-					m_Helper.Download(Task.DownloadUri, StartLength); // 断点续传
+					m_helper.Download(Task.DownloadUri, StartLength); // 断点续传
 				else
-					m_Helper.Download(Task.DownloadUri); // 全新下载
+					m_helper.Download(Task.DownloadUri); // 全新下载
 
 				return EStartTaskStatus.CanResume;
 			}
@@ -212,16 +212,16 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void Reset()
 		{
-			m_Helper.Reset();
+			m_helper.Reset();
 
-			if (m_FileStream != null)
+			if (m_fileStream != null)
 			{
-				m_FileStream.Close();
-				m_FileStream = null;
+				m_fileStream.Close();
+				m_fileStream = null;
 			}
 
 			Task             = null;
-			m_WaitFlushSize  = 0;
+			m_waitFlushSize  = 0;
 			WaitTime         = 0f;
 			StartLength      = 0L;
 			DownloadedLength = 0L;
@@ -233,15 +233,15 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void Dispose()
 		{
-			if (m_Disposed) return;
+			if (m_disposed) return;
 
-			if (m_FileStream != null)
+			if (m_fileStream != null)
 			{
-				m_FileStream.Dispose();
-				m_FileStream = null;
+				m_fileStream.Dispose();
+				m_fileStream = null;
 			}
 
-			m_Disposed = true;
+			m_disposed = true;
 
 			// ReSharper disable once GCSuppressFinalizeForTypeWithoutDestructor
 			GC.SuppressFinalize(this);
@@ -252,7 +252,7 @@ namespace Hotfix.Framework.Download
 		/// 四个下载辅助器事件的 Id 是共享的（多播语义），多个下载代理订阅了同一 Id，
 		/// 一次 Broadcast 会分发给全部代理；若不过滤 sender，任一辅助器的数据/完成/错误事件
 		/// 会被所有代理处理 → 并发下载时串写文件、并在任一任务完成时误完成他人任务。
-		/// sender 为 <see cref="DownloadHandler"/> 时须属于本代理的 m_Helper；
+		/// sender 为 <see cref="DownloadHandler"/> 时须属于本代理的 m_helper；
 		/// sender 为 this（代理内部超时/异常路径的直接调用）则放行。
 		/// </summary>
 		private bool IsOwnEvent(object sender)
@@ -262,10 +262,10 @@ namespace Hotfix.Framework.Download
 
 			// 完成/错误事件：由 UnityWebRequestDownloadAgentHelper.OnUpdate 以 helper 自身为 sender 广播
 			//（该 helper 并不继承 DownloadHandler，故必须单独判定，否则完成/失败会被拦死、下载永不成功）
-			if (ReferenceEquals(sender, m_Helper)) return true;
+			if (ReferenceEquals(sender, m_helper)) return true;
 
 			// 数据/长度事件：由 helper 持有的 DownloadHandler 在其 ReceiveData 中以 handler 自身为 sender 广播
-			return sender is DownloadHandler handler && ReferenceEquals(handler.Owner, m_Helper);
+			return sender is DownloadHandler handler && ReferenceEquals(handler.Owner, m_helper);
 		}
 
 		/// <summary>
@@ -283,14 +283,14 @@ namespace Hotfix.Framework.Download
 				// 检查Task是否为null，避免空引用异常
 				if (Task == null) return;
 
-				m_FileStream.Write(e.GetBytes(), e.Offset, e.Length);
-				m_WaitFlushSize += e.Length;
+				m_fileStream.Write(e.GetBytes(), e.Offset, e.Length);
+				m_waitFlushSize += e.Length;
 				SavedLength     += e.Length;
 
-				if (m_WaitFlushSize >= Task.FlushSize)
+				if (m_waitFlushSize >= Task.FlushSize)
 				{
-					m_FileStream.Flush();
-					m_WaitFlushSize = 0;
+					m_fileStream.Flush();
+					m_waitFlushSize = 0;
 				}
 			}
 			catch (Exception exception)
@@ -341,9 +341,9 @@ namespace Hotfix.Framework.Download
 			if (SavedLength != CurrentLength)
 				throw new InvalidOperationException("[DownloadAgent] 已存储的大小和当前大小不一致");
 
-			m_Helper.Reset();
-			m_FileStream.Close();
-			m_FileStream = null;
+			m_helper.Reset();
+			m_fileStream.Close();
+			m_fileStream = null;
 
 			if (File.Exists(Task.DownloadedFullPath))
 				File.Delete(Task.DownloadedFullPath);
@@ -365,11 +365,11 @@ namespace Hotfix.Framework.Download
 			if (!IsOwnEvent(sender)) return;
 			if (gameEventArgs is not DownloadAgentHelperErrorEventArgs e) return;
 
-			m_Helper.Reset();
-			if (m_FileStream != null)
+			m_helper.Reset();
+			if (m_fileStream != null)
 			{
-				m_FileStream.Close();
-				m_FileStream = null;
+				m_fileStream.Close();
+				m_fileStream = null;
 			}
 
 			// 检查Task是否为null，避免空引用异常

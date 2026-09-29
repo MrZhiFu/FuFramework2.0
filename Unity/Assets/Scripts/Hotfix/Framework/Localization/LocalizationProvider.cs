@@ -17,7 +17,7 @@ namespace Hotfix.Framework.Localization
 		/// <summary>
 		/// 缓存多语言配置表，避免每次调用都从配置表中获取
 		/// </summary>
-		private TbLocalization m_TbLocalization;
+		private TbLocalization m_tbLocalization;
 
 		/// <summary>
 		/// 获取本地化多语言
@@ -30,9 +30,9 @@ namespace Hotfix.Framework.Localization
 			if (string.IsNullOrEmpty(key)) return string.Empty;
 
 			// 获取多语言配置表并缓存
-			m_TbLocalization ??= ConfigModule.Instance.GetConfig<TbLocalization>();
+			m_tbLocalization ??= ConfigModule.Instance.GetConfig<TbLocalization>();
 
-			var localization = m_TbLocalization?.Get(key);
+			var localization = m_tbLocalization?.Get(key);
 			if (localization == null)
 			{
 				FuLogger.LogError($"[LocalizationProvider] 多语言key '{key}' 没找到，请检查多语言配置表!");

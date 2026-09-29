@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 获取网络频道数量。
 		/// </summary>
-		public int NetworkChannelCount => m_NetworkChannelDict.Count;
+		public int NetworkChannelCount => m_networkChannelDict.Count;
 
 		#region 查询网络频道
 
@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>是否存在网络频道。</returns>
 		public bool HasNetworkChannel(string channelName)
 		{
-			return m_NetworkChannelDict.ContainsKey(channelName ?? string.Empty);
+			return m_networkChannelDict.ContainsKey(channelName ?? string.Empty);
 		}
 
 		/// <summary>
@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>要获取的网络频道。</returns>
 		public INetworkChannel GetNetworkChannel(string channelName)
 		{
-			return m_NetworkChannelDict.GetValueOrDefault(channelName ?? string.Empty);
+			return m_networkChannelDict.GetValueOrDefault(channelName ?? string.Empty);
 		}
 
 		/// <summary>
@@ -46,8 +46,8 @@ namespace Hotfix.Framework.Network
 		public INetworkChannel[] GetAllNetworkChannels()
 		{
 			var index   = 0;
-			var results = new INetworkChannel[m_NetworkChannelDict.Count];
-			foreach (var networkChannel in m_NetworkChannelDict)
+			var results = new INetworkChannel[m_networkChannelDict.Count];
+			foreach (var networkChannel in m_networkChannelDict)
 			{
 				results[index++] = networkChannel.Value;
 			}
@@ -64,7 +64,7 @@ namespace Hotfix.Framework.Network
 			results.NotNull(nameof(results));
 
 			results.Clear();
-			foreach (var networkChannel in m_NetworkChannelDict)
+			foreach (var networkChannel in m_networkChannelDict)
 			{
 				results.Add(networkChannel.Value);
 			}
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Network
 			networkChannel.NetworkChannelClosed        += OnNetworkChannelClosed;
 			networkChannel.NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
 			networkChannel.NetworkChannelError         += OnNetworkChannelError;
-			m_NetworkChannelDict.Add(channelName, networkChannel);
+			m_networkChannelDict.Add(channelName, networkChannel);
 			return networkChannel;
 		}
 
@@ -115,13 +115,13 @@ namespace Hotfix.Framework.Network
 		public bool DestroyNetworkChannel(string channelName)
 		{
 			channelName.NotNullOrEmpty(nameof(channelName));
-			if (!m_NetworkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
+			if (!m_networkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
 			networkChannel.NetworkChannelConnected     -= OnNetworkChannelConnected;
 			networkChannel.NetworkChannelClosed        -= OnNetworkChannelClosed;
 			networkChannel.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
 			networkChannel.NetworkChannelError         -= OnNetworkChannelError;
 			networkChannel.Shutdown();
-			return channelName != null && m_NetworkChannelDict.Remove(channelName);
+			return channelName != null && m_networkChannelDict.Remove(channelName);
 		}
 
 		#endregion

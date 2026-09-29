@@ -25,20 +25,20 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 用于压缩和解压缩内存数据的缓冲区大小（以字节为单位）
 			/// </summary>
-			private const int BufferSize = 8192;
+			private const int BUFFER_SIZE = 8192;
 
 			/// <summary>
 			/// 压缩级别
 			/// </summary>
-			public const int CompressionLevel = 6;
+			public const int COMPRESSION_LEVEL = 6;
 
-			/// <summary> 
+			/// <summary>
 			/// 压缩文件
-			/// </summary> 
-			/// <param name="fileToZip">要压缩的文件完整路径</param> 
-			/// <param name="zippedPath">压缩后的文件完整路径</param> 
-			/// <param name="password">密码</param> 
-			/// <returns>是否成功</returns> 
+			/// </summary>
+			/// <param name="fileToZip">要压缩的文件完整路径</param>
+			/// <param name="zippedPath">压缩后的文件完整路径</param>
+			/// <param name="password">密码</param>
+			/// <returns>是否成功</returns>
 			public static bool CompressFile(string fileToZip, string zippedPath, string password = null)
 			{
 				if (!System.IO.File.Exists(fileToZip))
@@ -86,13 +86,13 @@ namespace Hotfix.Framework.Core
 				return true;
 			}
 
-			/// <summary> 
-			/// 压缩文件夹  
-			/// </summary> 
-			/// <param name="folderToZip">要压缩的文件夹完整路径</param> 
-			/// <param name="zippedPath">压缩后的文件完整路径</param> 
-			/// <param name="password">密码</param> 
-			/// <returns>是否成功</returns> 
+			/// <summary>
+			/// 压缩文件夹
+			/// </summary>
+			/// <param name="folderToZip">要压缩的文件夹完整路径</param>
+			/// <param name="zippedPath">压缩后的文件完整路径</param>
+			/// <param name="password">密码</param>
+			/// <returns>是否成功</returns>
 			public static bool CompressDirectory(string folderToZip, string zippedPath, string password = null)
 			{
 				if (folderToZip.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWith("/"))
@@ -109,19 +109,19 @@ namespace Hotfix.Framework.Core
 				return true;
 			}
 
-			/// <summary> 
-			/// 压缩文件夹  
-			/// </summary> 
-			/// <param name="folderToZip">要压缩的文件夹路径</param> 
-			/// <param name="stream">压缩前的Stream,方法执行后变为压缩完成后的文件</param> 
-			/// <param name="password">密码</param> 
-			/// <returns>是否压缩成功返回ZipOutputStream，否则返回null</returns> 
+			/// <summary>
+			/// 压缩文件夹
+			/// </summary>
+			/// <param name="folderToZip">要压缩的文件夹路径</param>
+			/// <param name="stream">压缩前的Stream,方法执行后变为压缩完成后的文件</param>
+			/// <param name="password">密码</param>
+			/// <returns>是否压缩成功返回ZipOutputStream，否则返回null</returns>
 			public static ZipOutputStream CompressDirectoryToZipStream(string folderToZip, Stream stream, string password = null)
 			{
 				if (!Directory.Exists(folderToZip)) return null;
 
 				var zipStream = new ZipOutputStream(stream);
-				zipStream.SetLevel(CompressionLevel);
+				zipStream.SetLevel(COMPRESSION_LEVEL);
 
 				if (!string.IsNullOrEmpty(password))
 				{
@@ -138,13 +138,13 @@ namespace Hotfix.Framework.Core
 				return null;
 			}
 
-			/// <summary> 
-			/// 解压功能(解压文件/文件夹到指定文件夹) 
-			/// </summary> 
-			/// <param name="fileToUnZip">待解压的文件夹</param> 
-			/// <param name="zippedPath">压缩后的文件完整路径</param> 
-			/// <param name="password">密码</param> 
-			/// <returns>是否成功</returns> 
+			/// <summary>
+			/// 解压功能(解压文件/文件夹到指定文件夹)
+			/// </summary>
+			/// <param name="fileToUnZip">待解压的文件夹</param>
+			/// <param name="zippedPath">压缩后的文件完整路径</param>
+			/// <param name="password">密码</param>
+			/// <returns>是否成功</returns>
 			public static bool DecompressFile(string fileToUnZip, string zippedPath, string password = null)
 			{
 				if (!System.IO.File.Exists(fileToUnZip)) return false;
@@ -168,11 +168,11 @@ namespace Hotfix.Framework.Core
 						if (zipEntry.IsDirectory) continue;
 						if (string.IsNullOrEmpty(zipEntry.Name)) continue;
 
-						string fileName = Path.Combine(zippedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
+						var fileName = Path.Combine(zippedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
 						var    index    = zipEntry.Name.LastIndexOf('/');
 						if (index != -1)
 						{
-							string path = zippedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
+							var path = zippedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
 							Directory.CreateDirectory(path);
 						}
 
@@ -180,7 +180,7 @@ namespace Hotfix.Framework.Core
 						// 且 zipEntry.Size 不可信（可能为 -1/超大），不应据此一次性分配
 						using (var output = System.IO.File.Create(fileName))
 						{
-							var buffer = new byte[BufferSize];
+							var buffer = new byte[BUFFER_SIZE];
 							int read;
 							while ((read = zipStream.Read(buffer, 0, buffer.Length)) > 0)
 							{
@@ -212,7 +212,7 @@ namespace Hotfix.Framework.Core
 
 				using var compressorMemoryStream = new MemoryStream();
 
-				var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+				var buffer = ArrayPool<byte>.Shared.Rent(BUFFER_SIZE);
 				try
 				{
 					while (!compressor.IsFinished)
@@ -255,7 +255,7 @@ namespace Hotfix.Framework.Core
 				decompressor.SetInput(content, 0, content.Length);
 				using var decompressMemoryStream = new MemoryStream();
 
-				var buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+				var buffer = ArrayPool<byte>.Shared.Rent(BUFFER_SIZE);
 				try
 				{
 					while (!decompressor.IsFinished)
@@ -285,13 +285,13 @@ namespace Hotfix.Framework.Core
 				}
 			}
 
-			/// <summary> 
-			/// 递归压缩文件夹的内部方法 
-			/// </summary> 
-			/// <param name="folderToZip">要压缩的文件夹路径</param> 
-			/// <param name="zipStream">压缩输出流</param> 
-			/// <param name="parentFolderName">此文件夹的上级文件夹</param> 
-			/// <returns>是否成功</returns> 
+			/// <summary>
+			/// 递归压缩文件夹的内部方法
+			/// </summary>
+			/// <param name="folderToZip">要压缩的文件夹路径</param>
+			/// <param name="zipStream">压缩输出流</param>
+			/// <param name="parentFolderName">此文件夹的上级文件夹</param>
+			/// <returns>是否成功</returns>
 			private static bool CompressDirectory(string folderToZip, ZipOutputStream zipStream, string parentFolderName)
 			{
 				// 这段是创建空文件夹,注释掉可以去掉空文件夹(因为在写入文件的时候也会创建文件夹)

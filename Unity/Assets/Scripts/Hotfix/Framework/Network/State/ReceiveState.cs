@@ -10,11 +10,11 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	internal sealed class ReceiveState : IDisposable
 	{
-		public const int  DefaultBufferLength = 1024 * 64;
-		public const int  PacketHeaderLength  = 14;
+		public const int  DEFAULT_BUFFER_LENGTH = 1024 * 64;
+		public const int  PACKET_HEADER_LENGTH  = 14;
 		private      bool m_disposed          = false;
 
-		public MemoryStream Stream { get; private set; } = new(DefaultBufferLength);
+		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 是否为空消息体
@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Network
 
 		public IPacketReceiveHeaderHandler PacketHeader { get; set; }
 
-		public void PrepareForPacketHeader(int packetHeaderLength = PacketHeaderLength)
+		public void PrepareForPacketHeader(int packetHeaderLength = PACKET_HEADER_LENGTH)
 		{
 			Reset(packetHeaderLength, null);
 		}

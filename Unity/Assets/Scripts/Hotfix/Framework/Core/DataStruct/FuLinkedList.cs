@@ -12,7 +12,7 @@ namespace Hotfix.Framework.Core
 	///     1. 支持链表的遍历、插入、删除等操作。
 	///     2. 支持链表的遍历方向(正向/反向)。
 	///     3. 支持链表的遍历顺序(按插入顺序/按值顺序)。
-	/// 
+	///
 	/// 实现原理：结合一个缓存队列对链表节点的生成做了优化。
 	///     缓存队列用于存储已使用的链表节点，避免重复创建节点。
 	/// </summary>
@@ -22,56 +22,56 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 存放目标元素的链表
 		/// </summary>
-		private readonly LinkedList<T> m_LinkedList;
+		private readonly LinkedList<T> m_linkedList;
 
 		/// <summary>
 		/// 缓存链表节点的队列
 		/// </summary>
-		private readonly Queue<LinkedListNode<T>> m_CachedNodeQueue;
+		private readonly Queue<LinkedListNode<T>> m_cachedNodeQueue;
 
 		/// <summary>
 		/// 初始化游戏框架链表类的新实例。
 		/// </summary>
 		public FuLinkedList()
 		{
-			m_LinkedList      = new LinkedList<T>();
-			m_CachedNodeQueue = new Queue<LinkedListNode<T>>();
+			m_linkedList      = new LinkedList<T>();
+			m_cachedNodeQueue = new Queue<LinkedListNode<T>>();
 		}
 
 		/// <summary>
 		/// 获取链表中实际包含的结点数量。
 		/// </summary>
-		public int Count => m_LinkedList.Count;
+		public int Count => m_linkedList.Count;
 
 		/// <summary>
 		/// 获取链表结点缓存数量。
 		/// </summary>
-		public int CachedNodeCount => m_CachedNodeQueue.Count;
+		public int CachedNodeCount => m_cachedNodeQueue.Count;
 
 		/// <summary>
 		/// 获取链表的第一个结点。
 		/// </summary>
-		public LinkedListNode<T> First => m_LinkedList.First;
+		public LinkedListNode<T> First => m_linkedList.First;
 
 		/// <summary>
 		/// 获取链表的最后一个结点。
 		/// </summary>
-		public LinkedListNode<T> Last => m_LinkedList.Last;
+		public LinkedListNode<T> Last => m_linkedList.Last;
 
 		/// <summary>
 		/// 获取一个值，该值指示 ICollection`1 是否为只读。
 		/// </summary>
-		public bool IsReadOnly => (m_LinkedList as ICollection<T>).IsReadOnly;
+		public bool IsReadOnly => (m_linkedList as ICollection<T>).IsReadOnly;
 
 		/// <summary>
 		/// 获取可用于同步对 ICollection 的访问的对象。
 		/// </summary>
-		public object SyncRoot => (m_LinkedList as ICollection).SyncRoot;
+		public object SyncRoot => (m_linkedList as ICollection).SyncRoot;
 
 		/// <summary>
 		/// 获取一个值，该值指示是否同步对 ICollection 的访问（线程安全）。
 		/// </summary>
-		public bool IsSynchronized => (m_LinkedList as ICollection).IsSynchronized;
+		public bool IsSynchronized => (m_linkedList as ICollection).IsSynchronized;
 
 		/// <summary>
 		/// 在链表中指定的现有结点后添加包含指定值的新结点。
@@ -82,7 +82,7 @@ namespace Hotfix.Framework.Core
 		public LinkedListNode<T> AddAfter(LinkedListNode<T> node, T value)
 		{
 			var newNode = _AcquireNode(value);
-			m_LinkedList.AddAfter(node, newNode);
+			m_linkedList.AddAfter(node, newNode);
 			return newNode;
 		}
 
@@ -91,7 +91,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		/// <param name="node">指定的现有结点。</param>
 		/// <param name="newNode">指定的新结点。</param>
-		public void AddAfter(LinkedListNode<T> node, LinkedListNode<T> newNode) => m_LinkedList.AddAfter(node, newNode);
+		public void AddAfter(LinkedListNode<T> node, LinkedListNode<T> newNode) => m_linkedList.AddAfter(node, newNode);
 
 		/// <summary>
 		/// 在链表中指定的现有结点前添加包含指定值的新结点。
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Core
 		public LinkedListNode<T> AddBefore(LinkedListNode<T> node, T value)
 		{
 			var newNode = _AcquireNode(value);
-			m_LinkedList.AddBefore(node, newNode);
+			m_linkedList.AddBefore(node, newNode);
 			return newNode;
 		}
 
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		/// <param name="node">指定的现有结点。</param>
 		/// <param name="newNode">指定的新结点。</param>
-		public void AddBefore(LinkedListNode<T> node, LinkedListNode<T> newNode) => m_LinkedList.AddBefore(node, newNode);
+		public void AddBefore(LinkedListNode<T> node, LinkedListNode<T> newNode) => m_linkedList.AddBefore(node, newNode);
 
 		/// <summary>
 		/// 在链表的开头处添加包含指定值的新结点。
@@ -121,7 +121,7 @@ namespace Hotfix.Framework.Core
 		public LinkedListNode<T> AddFirst(T value)
 		{
 			var node = _AcquireNode(value);
-			m_LinkedList.AddFirst(node);
+			m_linkedList.AddFirst(node);
 			return node;
 		}
 
@@ -129,7 +129,7 @@ namespace Hotfix.Framework.Core
 		/// 在链表的开头处添加指定的新结点。
 		/// </summary>
 		/// <param name="node">指定的新结点。</param>
-		public void AddFirst(LinkedListNode<T> node) => m_LinkedList.AddFirst(node);
+		public void AddFirst(LinkedListNode<T> node) => m_linkedList.AddFirst(node);
 
 		/// <summary>
 		/// 在链表的结尾处添加包含指定值的新结点。
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.Core
 		public LinkedListNode<T> AddLast(T value)
 		{
 			var node = _AcquireNode(value);
-			m_LinkedList.AddLast(node);
+			m_linkedList.AddLast(node);
 			return node;
 		}
 
@@ -147,62 +147,62 @@ namespace Hotfix.Framework.Core
 		/// 在链表的结尾处添加指定的新结点。
 		/// </summary>
 		/// <param name="node">指定的新结点。</param>
-		public void AddLast(LinkedListNode<T> node) => m_LinkedList.AddLast(node);
+		public void AddLast(LinkedListNode<T> node) => m_linkedList.AddLast(node);
 
 		/// <summary>
 		/// 从链表中移除所有结点。
 		/// </summary>
 		public void Clear()
 		{
-			var current = m_LinkedList.First;
+			var current = m_linkedList.First;
 			while (current != null)
 			{
 				_ReleaseNode(current);
 				current = current.Next;
 			}
 
-			m_LinkedList.Clear();
+			m_linkedList.Clear();
 		}
 
 		/// <summary>
 		/// 清除链表结点缓存。
 		/// </summary>
-		public void ClearCachedNodes() => m_CachedNodeQueue.Clear();
+		public void ClearCachedNodes() => m_cachedNodeQueue.Clear();
 
 		/// <summary>
 		/// 确定某值是否在链表中。
 		/// </summary>
 		/// <param name="value">指定值。</param>
 		/// <returns>某值是否在链表中。</returns>
-		public bool Contains(T value) => m_LinkedList.Contains(value);
+		public bool Contains(T value) => m_linkedList.Contains(value);
 
 		/// <summary>
 		/// 从目标数组的指定索引处开始将整个链表复制到兼容的一维数组。
 		/// </summary>
 		/// <param name="array">一维数组，它是从链表复制的元素的目标。数组必须具有从零开始的索引。</param>
 		/// <param name="index">array 中从零开始的索引，从此处开始复制。</param>
-		public void CopyTo(T[] array, int index) => m_LinkedList.CopyTo(array, index);
+		public void CopyTo(T[] array, int index) => m_linkedList.CopyTo(array, index);
 
 		/// <summary>
 		/// 从特定的 ICollection 索引开始，将数组的元素复制到一个数组中。
 		/// </summary>
 		/// <param name="array">一维数组，它是从 ICollection 复制的元素的目标。数组必须具有从零开始的索引。</param>
 		/// <param name="index">array 中从零开始的索引，从此处开始复制。</param>
-		public void CopyTo(Array array, int index) => ((ICollection)m_LinkedList).CopyTo(array, index);
+		public void CopyTo(Array array, int index) => ((ICollection)m_linkedList).CopyTo(array, index);
 
 		/// <summary>
 		/// 查找包含指定值的第一个结点。
 		/// </summary>
 		/// <param name="value">要查找的指定值。</param>
 		/// <returns>包含指定值的第一个结点。</returns>
-		public LinkedListNode<T> Find(T value) => m_LinkedList.Find(value);
+		public LinkedListNode<T> Find(T value) => m_linkedList.Find(value);
 
 		/// <summary>
 		/// 查找包含指定值的最后一个结点。
 		/// </summary>
 		/// <param name="value">要查找的指定值。</param>
 		/// <returns>包含指定值的最后一个结点。</returns>
-		public LinkedListNode<T> FindLast(T value) => m_LinkedList.FindLast(value);
+		public LinkedListNode<T> FindLast(T value) => m_linkedList.FindLast(value);
 
 		/// <summary>
 		/// 从链表中移除指定值的第一个匹配项。
@@ -211,10 +211,10 @@ namespace Hotfix.Framework.Core
 		/// <returns>是否移除成功。</returns>
 		public bool Remove(T value)
 		{
-			var node = m_LinkedList.Find(value);
+			var node = m_linkedList.Find(value);
 			if (node == null) return false;
 
-			m_LinkedList.Remove(node);
+			m_linkedList.Remove(node);
 			_ReleaseNode(node);
 			return true;
 		}
@@ -225,7 +225,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="node">指定的结点。</param>
 		public void Remove(LinkedListNode<T> node)
 		{
-			m_LinkedList.Remove(node);
+			m_linkedList.Remove(node);
 			_ReleaseNode(node);
 		}
 
@@ -234,10 +234,10 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void RemoveFirst()
 		{
-			var first = m_LinkedList.First;
+			var first = m_linkedList.First;
 			if (first == null) throw new InvalidOperationException("[FuLinkedList]移除开头结点失败，链表开头结点为空!");
 
-			m_LinkedList.RemoveFirst();
+			m_linkedList.RemoveFirst();
 			_ReleaseNode(first);
 		}
 
@@ -246,10 +246,10 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void RemoveLast()
 		{
-			var last = m_LinkedList.Last;
+			var last = m_linkedList.Last;
 			if (last == null) throw new InvalidOperationException("[FuLinkedList]移除结尾结点失败，链表结尾结点为空!");
 
-			m_LinkedList.RemoveLast();
+			m_linkedList.RemoveLast();
 			_ReleaseNode(last);
 		}
 
@@ -259,7 +259,7 @@ namespace Hotfix.Framework.Core
 		/// <returns>循环访问集合的枚举数。</returns>
 		public Enumerator GetEnumerator()
 		{
-			return new Enumerator(m_LinkedList);
+			return new Enumerator(m_linkedList);
 		}
 
 		/// <summary>
@@ -270,9 +270,9 @@ namespace Hotfix.Framework.Core
 		private LinkedListNode<T> _AcquireNode(T value)
 		{
 			LinkedListNode<T> node;
-			if (m_CachedNodeQueue.Count > 0)
+			if (m_cachedNodeQueue.Count > 0)
 			{
-				node       = m_CachedNodeQueue.Dequeue();
+				node       = m_cachedNodeQueue.Dequeue();
 				node.Value = value;
 				return node;
 			}
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.Core
 		private void _ReleaseNode(LinkedListNode<T> node)
 		{
 			node.Value = default;
-			m_CachedNodeQueue.Enqueue(node);
+			m_cachedNodeQueue.Enqueue(node);
 		}
 
 		/// <summary>
@@ -315,39 +315,39 @@ namespace Hotfix.Framework.Core
 		[StructLayout(LayoutKind.Auto)]
 		public struct Enumerator : IEnumerator<T>
 		{
-			private LinkedList<T>.Enumerator m_Enumerator;
+			private LinkedList<T>.Enumerator m_enumerator;
 
 			internal Enumerator(LinkedList<T> linkedList)
 			{
 				if (linkedList == null) throw new InvalidOperationException("[FuLinkedList.Enumerator] 传入的链表为空!");
-				m_Enumerator = linkedList.GetEnumerator();
+				m_enumerator = linkedList.GetEnumerator();
 			}
 
 			/// <summary>
 			/// 获取当前结点。
 			/// </summary>
-			public T Current => m_Enumerator.Current;
+			public T Current => m_enumerator.Current;
 
 			/// <summary>
 			/// 获取当前的枚举数。
 			/// </summary>
-			object IEnumerator.Current => m_Enumerator.Current;
+			object IEnumerator.Current => m_enumerator.Current;
 
 			/// <summary>
 			/// 清理枚举数。
 			/// </summary>
-			public void Dispose() => m_Enumerator.Dispose();
+			public void Dispose() => m_enumerator.Dispose();
 
 			/// <summary>
 			/// 获取下一个结点。
 			/// </summary>
 			/// <returns>返回下一个结点。</returns>
-			public bool MoveNext() => m_Enumerator.MoveNext();
+			public bool MoveNext() => m_enumerator.MoveNext();
 
 			/// <summary>
 			/// 重置枚举数。
 			/// </summary>
-			void IEnumerator.Reset() => ((IEnumerator<T>)m_Enumerator).Reset();
+			void IEnumerator.Reset() => ((IEnumerator<T>)m_enumerator).Reset();
 		}
 	}
 }

@@ -40,7 +40,7 @@ namespace Hotfix.Framework.Model
 		/// <summary>
 		/// 本地存储的文件名(默认为类名)。
 		/// </summary>
-		private string m_FileName;
+		private string m_fileName;
 
 		/// <summary>
 		/// 本地存储管理器。
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Model
 		/// 加载是否失败。失败（存档损坏/反序列化异常）后禁止回写：
 		/// 此时对象内为「半残值」，OnDispose 无条件的全量保存会覆写掉磁盘上尚可修复的原始存档。
 		/// </summary>
-		private bool m_LoadFailed;
+		private bool m_loadFailed;
 
 		/// <summary>
 		/// 获取存储的文件名（可重写以自定义）
@@ -64,12 +64,12 @@ namespace Hotfix.Framework.Model
 		protected sealed override void OnInitData()
 		{
 			base.OnInitData();
-			m_FileName    = GetFileName();
+			m_fileName    = GetFileName();
 			_storageModule = StorageModule.Instance;
 
 			if (_storageModule == null)
 			{
-				FuLogger.LogError($"初始化Model-{m_FileName}时，数据保存管理器未找到!");
+				FuLogger.LogError($"初始化Model-{m_fileName}时，数据保存管理器未找到!");
 				return;
 			}
 
@@ -92,7 +92,7 @@ namespace Hotfix.Framework.Model
 		{
 			try
 			{
-				var dataJson = _storageModule.GetString(m_FileName, m_FileName);
+				var dataJson = _storageModule.GetString(m_fileName, m_fileName);
 				if (string.IsNullOrEmpty(dataJson))
 				{
 					OnFirstInitDate();
@@ -101,13 +101,13 @@ namespace Hotfix.Framework.Model
 
 				// JSON 字符串中的数据填充到自身对象中
 				JsonConvert.PopulateObject(dataJson, this);
-				FuLogger.LogInfo($"Model数据加载成功: {m_FileName}");
+				FuLogger.LogInfo($"Model数据加载成功: {m_fileName}");
 			}
 			catch (System.Exception ex)
 			{
 				// 置失败标记：本次对象内容不可信（可能只填充了部分字段），禁止后续保存覆写磁盘原始存档
-				m_LoadFailed = true;
-				FuLogger.LogError($"读取Model数据{m_FileName}出错：{ex.Message}（已跳过回写，避免覆盖磁盘原始存档）");
+				m_loadFailed = true;
+				FuLogger.LogError($"读取Model数据{m_fileName}出错：{ex.Message}（已跳过回写，避免覆盖磁盘原始存档）");
 			}
 		}
 
@@ -118,27 +118,27 @@ namespace Hotfix.Framework.Model
 		{
 			if (_storageModule == null)
 			{
-				FuLogger.LogWarning($"无法保存{m_FileName}，数据保存管理器未找到!");
+				FuLogger.LogWarning($"无法保存{m_fileName}，数据保存管理器未找到!");
 				return;
 			}
 
 			// 加载失败时对象内为半残值：回写会用残缺数据覆盖磁盘原始存档，导致坏档不可恢复，故整体跳过保存
-			if (m_LoadFailed)
+			if (m_loadFailed)
 			{
-				FuLogger.LogWarning($"无法保存{m_FileName}，数据加载失败（存档可能损坏），为避免覆盖原始存档已跳过保存!");
+				FuLogger.LogWarning($"无法保存{m_fileName}，数据加载失败（存档可能损坏），为避免覆盖原始存档已跳过保存!");
 				return;
 			}
 
 			try
 			{
 				var dataJson = JsonConvert.SerializeObject(this, Formatting.None);
-				_storageModule.SetString(m_FileName, dataJson, m_FileName);
-				_storageModule.Save(m_FileName);
-				FuLogger.LogInfo($"Model数据保存成功: {m_FileName}");
+				_storageModule.SetString(m_fileName, dataJson, m_fileName);
+				_storageModule.Save(m_fileName);
+				FuLogger.LogInfo($"Model数据保存成功: {m_fileName}");
 			}
 			catch (System.Exception ex)
 			{
-				FuLogger.LogError($"存储Model数据{m_FileName}出错：{ex.Message}");
+				FuLogger.LogError($"存储Model数据{m_fileName}出错：{ex.Message}");
 			}
 		}
 
@@ -147,7 +147,7 @@ namespace Hotfix.Framework.Model
 		/// </summary>
 		protected virtual void OnFirstInitDate()
 		{
-			FuLogger.LogInfo($"首次初始化Model: {m_FileName}");
+			FuLogger.LogInfo($"首次初始化Model: {m_fileName}");
 		}
 	}
 }

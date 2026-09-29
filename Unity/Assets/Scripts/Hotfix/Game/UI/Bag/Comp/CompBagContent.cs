@@ -31,10 +31,10 @@ namespace Hotfix.Game.UI
 			}
 		}
 
-		private List<ItemTypeData> m_Tabs = new(); // 道具类型页签列表
-		private List<BagItem> m_BagItems = new(); // 背包道具列表
+		private List<ItemTypeData> m_tabs = new(); // 道具类型页签列表
+		private List<BagItem> m_bagItems = new(); // 背包道具列表
 
-		private BagItem m_SelectBagItem = null; // 选中的背包道具
+		private BagItem m_selectBagItem = null; // 选中的背包道具
 
 		/// <summary>
 		/// 初始化
@@ -42,7 +42,7 @@ namespace Hotfix.Game.UI
 		private void OnInit()
 		{
 			InitEvent();
-			
+
 			InitData();
 		}
 
@@ -68,8 +68,8 @@ namespace Hotfix.Game.UI
 
 		private void InitData()
 		{
-			m_BagItems = new List<BagItem>();
-			m_Tabs = new List<ItemTypeData>
+			m_bagItems = new List<BagItem>();
+			m_tabs = new List<ItemTypeData>
 			{
 				new(EItemType.Item, "道具"),
 				new(EItemType.Equip, "装备"),
@@ -84,11 +84,11 @@ namespace Hotfix.Game.UI
 		/// 注意：UI事件，业务逻辑事件，计时器在 Dispose 中统一释放，无需在这里手动移除。
 		/// </summary>
 		private void OnDispose() { }
-		
+
 		public void Refresh()
-		{  
-			listItem.numItems = m_BagItems.Count;
-			listType.numItems = m_Tabs.Count;
+		{
+			listItem.numItems = m_bagItems.Count;
+			listType.numItems = m_tabs.Count;
 		}
 
 		/// <summary>
@@ -107,7 +107,7 @@ namespace Hotfix.Game.UI
 		/// <param name="bagItem"></param>
 		private void UpdateSelectItem(BagItem bagItem)
 		{
-			m_SelectBagItem = bagItem;
+			m_selectBagItem = bagItem;
 			compBagItem.SetData(bagItem);
 		}
 
@@ -120,7 +120,7 @@ namespace Hotfix.Game.UI
 		private void OnClickListItemItem(EventContext ctx)
 		{
 			var idx = listItem.GetChildIndex((GObject)ctx.data);
-			var bagItem = m_BagItems[idx];
+			var bagItem = m_bagItems[idx];
 			UpdateSelectItem(bagItem);
 		}
 
@@ -131,7 +131,7 @@ namespace Hotfix.Game.UI
 		/// <param name="item"></param>
 		private void OnRenderListItemItem(int idx, GObject item)
 		{
-			var bagItem = m_BagItems[idx];
+			var bagItem = m_bagItems[idx];
 			if (item is not CompBagItem compItem) return;
 			//var data = xxxModel:GetListPlayerDataByIdx(idx);
 			compItem.SetData(bagItem.ItemId, bagItem.Count);
@@ -144,21 +144,21 @@ namespace Hotfix.Game.UI
 		private void OnClickListTypeItem(EventContext ctx)
 		{
 			var idx = listType.GetChildIndex((GObject)ctx.data);
-			var itemTypeData = m_Tabs[idx];
+			var itemTypeData = m_tabs[idx];
 
-			m_BagItems.Clear();
-			m_BagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
-			if (m_BagItems.Count > 0)
+			m_bagItems.Clear();
+			m_bagItems.AddRange(BagManager.Instance.GetBagItemsByType(itemTypeData.Type));
+			if (m_bagItems.Count > 0)
 			{
 				listItem.selectedIndex = 0;
 				SetController(EIsSelectedItem.Yes);
-				var bagItem = m_BagItems[0];
+				var bagItem = m_bagItems[0];
 				UpdateSelectItem(bagItem);
 			}
 			else
 			{
 				SetController(EIsSelectedItem.No);
-				m_SelectBagItem = null;
+				m_selectBagItem = null;
 			}
 		}
 
@@ -171,7 +171,7 @@ namespace Hotfix.Game.UI
 		{
 			if (item is not CompTypeItem compItem) return;
 			//var data = xxxModel:GetListPlayerDataByIdx(idx);
-			compItem.SetData(m_Tabs[idx].Name);
+			compItem.SetData(m_tabs[idx].Name);
 		}
 
 		#endregion

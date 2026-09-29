@@ -46,31 +46,31 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 动态子节点字典(Key：父节点，Value：父节点下的所有动态子节点集合)(用于 SyncDynamicNode 增量更新)
 		/// </summary>
-		private readonly Dictionary<RedDotKey, HashSet<long>> m_DynamicIdDict = new();
+		private readonly Dictionary<RedDotKey, HashSet<long>> m_dynamicIdDict = new();
 
 
 		/// <summary>
 		/// 本帧待重算的脏节点集合，用于批量重算节点
 		/// </summary>
-		private readonly HashSet<RedDotNode> m_DirtyNodeSet = new();
+		private readonly HashSet<RedDotNode> m_dirtyNodeSet = new();
 
 		/// <summary>
 		/// 本帧脏节点重算用的快照列表（双缓冲）。
-		/// Calculator 为用户代码，可能经 BroadcastNow 触发 OnTriggerEvent 改动 m_DirtyNodeSet，
+		/// Calculator 为用户代码，可能经 BroadcastNow 触发 OnTriggerEvent 改动 m_dirtyNodeSet，
 		/// 故必须先快照再遍历，且遍历期间新增的脏节点不得被本轮清理丢弃。
 		/// </summary>
-		private readonly List<RedDotNode> m_DirtySnapshot = new();
+		private readonly List<RedDotNode> m_dirtySnapshot = new();
 
 		/// <summary>
 		/// 本帧发生变更的节点 Key 集合(用于去重后广播)
 		/// </summary>
-		private readonly HashSet<RedDotKey> m_ChangedKeySet = new();
+		private readonly HashSet<RedDotKey> m_changedKeySet = new();
 
 
 		/// <summary>
 		/// 事件对应的节点字典 (key：事件ID，Value：订阅此事件的节点集合)(用于反订阅节点的事件))
 		/// </summary>
-		private readonly Dictionary<string, HashSet<RedDotNode>> m_EventToNodes = new();
+		private readonly Dictionary<string, HashSet<RedDotNode>> m_eventToNodes = new();
 
 
 		#region 已读持久化
@@ -78,17 +78,17 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 已读静态节点 Key 集合(存为 ERedDotKey 的 int 值)
 		/// </summary>
-		private readonly HashSet<int> m_ReadSet = new();
+		private readonly HashSet<int> m_readSet = new();
 
 		/// <summary>
 		/// 已读状态在 StorageModule 中的 Key
 		/// </summary>
-		private const string ReadStorageKey = "ReadSet";
+		private const string READ_STORAGE_KEY = "ReadSet";
 
 		/// <summary>
 		/// 已读状态在 StorageModule 中的文件名
 		/// </summary>
-		private const string ReadStorageFile = "RedDotData";
+		private const string READ_STORAGE_FILE = "RedDotData";
 
 		#endregion
 
@@ -159,12 +159,12 @@ namespace Hotfix.Framework.RedDot
 		protected internal override void OnDispose()
 		{
 			// 清理事件订阅
-			foreach (var eventId in m_EventToNodes.Keys)
+			foreach (var eventId in m_eventToNodes.Keys)
 			{
 				GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
 			}
 
-			m_EventToNodes.Clear();
+			m_eventToNodes.Clear();
 
 			// 清理所有节点
 			foreach (var node in NodeDict.Values)
@@ -173,11 +173,11 @@ namespace Hotfix.Framework.RedDot
 			}
 
 			NodeDict.Clear();
-			m_DirtyNodeSet.Clear();
-			m_DirtySnapshot.Clear();
-			m_ChangedKeySet.Clear();
-			m_DynamicIdDict.Clear();
-			m_ReadSet.Clear();
+			m_dirtyNodeSet.Clear();
+			m_dirtySnapshot.Clear();
+			m_changedKeySet.Clear();
+			m_dynamicIdDict.Clear();
+			m_readSet.Clear();
 			Instance = null;
 		}
 
@@ -189,24 +189,24 @@ namespace Hotfix.Framework.RedDot
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
 			// 处理脏节点
-			if (m_DirtyNodeSet.Count > 0)
+			if (m_dirtyNodeSet.Count > 0)
 			{
 				// 先快照：Calculator 为用户代码，执行期间可能经 BroadcastNow 触发 OnTriggerEvent 改动
-				// m_DirtyNodeSet。直接 foreach 活集合会抛「集合已修改」；若遍历后整体 Clear，遍历期间
+				// m_dirtyNodeSet。直接 foreach 活集合会抛「集合已修改」；若遍历后整体 Clear，遍历期间
 				// 新加入的脏节点又会被丢弃、永不重算。故快照到缓存列表，逐个处理并从活集合移除。
-				m_DirtySnapshot.Clear();
-				foreach (var dirtyNode in m_DirtyNodeSet)
+				m_dirtySnapshot.Clear();
+				foreach (var dirtyNode in m_dirtyNodeSet)
 				{
-					m_DirtySnapshot.Add(dirtyNode);
+					m_dirtySnapshot.Add(dirtyNode);
 				}
 
-				for (var i = 0; i < m_DirtySnapshot.Count; i++)
+				for (var i = 0; i < m_dirtySnapshot.Count; i++)
 				{
-					var node = m_DirtySnapshot[i];
+					var node = m_dirtySnapshot[i];
 
 					// 先移出活集合：若 Calculator 在重算期间（经 BroadcastNow）把本节点重新标记为脏，
 					// 它会重新加入活集合，留待下一帧重算，不会被本轮末尾的清理误删。
-					m_DirtyNodeSet.Remove(node);
+					m_dirtyNodeSet.Remove(node);
 
 					node.IsDirty = false;
 					if (node.Calculator == null) continue;
@@ -226,11 +226,11 @@ namespace Hotfix.Framework.RedDot
 					}
 				}
 
-				m_DirtySnapshot.Clear();
+				m_dirtySnapshot.Clear();
 			}
 
 			// 广播所有本帧累积的变更(脏节点 + MarkRead 等)
-			if (m_ChangedKeySet.Count > 0)
+			if (m_changedKeySet.Count > 0)
 			{
 				BroadcastChangedKeys();
 			}
@@ -261,10 +261,10 @@ namespace Hotfix.Framework.RedDot
 			{
 				if (string.IsNullOrEmpty(eventId)) continue;
 
-				if (!m_EventToNodes.TryGetValue(eventId, out var nodeSet))
+				if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet))
 				{
 					nodeSet                 = new HashSet<RedDotNode>();
-					m_EventToNodes[eventId] = nodeSet;
+					m_eventToNodes[eventId] = nodeSet;
 				}
 
 				if (nodeSet.Count == 0)
@@ -289,12 +289,12 @@ namespace Hotfix.Framework.RedDot
 				{
 					if (string.IsNullOrEmpty(eventId)) continue;
 
-					if (!m_EventToNodes.TryGetValue(eventId, out var nodeSet)) continue;
+					if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet)) continue;
 					nodeSet.Remove(node);
 
 					if (nodeSet.Count != 0) continue;
 					GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
-					m_EventToNodes.Remove(eventId);
+					m_eventToNodes.Remove(eventId);
 				}
 			}
 
@@ -309,13 +309,13 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="e">事件参数</param>
 		private void OnTriggerEvent(object sender, GameEventArgs e)
 		{
-			if (!m_EventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
+			if (!m_eventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
 
 			foreach (var node in nodeSet)
 			{
 				if (node.IsDirty) continue;
 				node.IsDirty = true;
-				m_DirtyNodeSet.Add(node);
+				m_dirtyNodeSet.Add(node);
 			}
 		}
 
@@ -367,7 +367,7 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (StorageModule.Instance == null) return;
 
-			var list = StorageModule.Instance.GetObject<List<int>>(ReadStorageKey, ReadStorageFile);
+			var list = StorageModule.Instance.GetObject<List<int>>(READ_STORAGE_KEY, READ_STORAGE_FILE);
 			if (list == null) return;
 
 			foreach (var id in list)
@@ -378,7 +378,7 @@ namespace Hotfix.Framework.RedDot
 					continue;
 				}
 
-				m_ReadSet.Add(id);
+				m_readSet.Add(id);
 				var       staticKey = (ERedDotKey)id;
 				RedDotKey key       = staticKey;
 				if (NodeDict.TryGetValue(key, out var node))
@@ -394,8 +394,8 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		private void SaveReadState()
 		{
-			var list = new List<int>(m_ReadSet);
-			StorageModule.Instance.SetObject(ReadStorageKey, list, ReadStorageFile);
+			var list = new List<int>(m_readSet);
+			StorageModule.Instance.SetObject(READ_STORAGE_KEY, list, READ_STORAGE_FILE);
 		}
 
 		#endregion
@@ -424,7 +424,7 @@ namespace Hotfix.Framework.RedDot
 		/// 收集本帧变更的节点 Key，供 OnUpdate 批量广播
 		/// </summary>
 		/// <param name="node">发生变化的节点</param>
-		private void OnNodeTotalCountChanged(RedDotNode node) => m_ChangedKeySet.Add(node.Key);
+		private void OnNodeTotalCountChanged(RedDotNode node) => m_changedKeySet.Add(node.Key);
 
 		/// <summary>
 		/// 批量广播本帧变更
@@ -432,14 +432,14 @@ namespace Hotfix.Framework.RedDot
 		private void BroadcastChangedKeys()
 		{
 			var args = RedDotChangedEventArgs.Create();
-			foreach (var key in m_ChangedKeySet)
+			foreach (var key in m_changedKeySet)
 			{
 				args.ChangedKeys.Add(key);
 			}
 
 			GlobalModule.EventModule.Broadcast(this, args);
 
-			m_ChangedKeySet.Clear();
+			m_changedKeySet.Clear();
 		}
 
 		/// <summary>

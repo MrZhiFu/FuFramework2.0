@@ -16,11 +16,11 @@ namespace Hotfix.Game.Manager_ToDelete
 	/// </summary>
 	public sealed class BagManager : Singleton<BagManager>, IMessageHandler
 	{
-		private readonly Dictionary<int, BagItem> m_ItemDic = new Dictionary<int, BagItem>();
+		private readonly Dictionary<int, BagItem> m_itemDic = new Dictionary<int, BagItem>();
 
 		public List<BagItem> GetItems()
 		{
-			return new List<BagItem>(m_ItemDic.Values);
+			return new List<BagItem>(m_itemDic.Values);
 		}
 
 		/// <summary>
@@ -38,17 +38,17 @@ namespace Hotfix.Game.Manager_ToDelete
 		{
 			foreach (var keyValuePair in msg.ItemDic)
 			{
-				if (m_ItemDic.TryGetValue(keyValuePair.Key, out var item))
+				if (m_itemDic.TryGetValue(keyValuePair.Key, out var item))
 				{
 					item.Count = keyValuePair.Value.Count;
-					if (m_ItemDic[keyValuePair.Key].Count <= 0)
+					if (m_itemDic[keyValuePair.Key].Count <= 0)
 					{
-						m_ItemDic.Remove(keyValuePair.Key);
+						m_itemDic.Remove(keyValuePair.Key);
 					}
 				}
 				else
 				{
-					m_ItemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
+					m_itemDic[keyValuePair.Key] = new BagItem() { ItemId = keyValuePair.Key, Count = keyValuePair.Value.Count };
 				}
 			}
 
@@ -68,7 +68,7 @@ namespace Hotfix.Game.Manager_ToDelete
 
 			foreach (var item in respBagInfo.ItemDic)
 			{
-				m_ItemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
+				m_itemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
 			}
 		}
 
@@ -85,12 +85,12 @@ namespace Hotfix.Game.Manager_ToDelete
 				return;
 			}
 
-			if (m_ItemDic.TryGetValue(respUseItem.ItemId, out var value))
+			if (m_itemDic.TryGetValue(respUseItem.ItemId, out var value))
 			{
 				value.Count -= respUseItem.Count;
 				if (value.Count <= 0)
 				{
-					m_ItemDic.Remove(respUseItem.ItemId);
+					m_itemDic.Remove(respUseItem.ItemId);
 				}
 			}
 
@@ -104,10 +104,10 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// <returns></returns>
 		public List<BagItem> GetBagItemsByType(EItemType bagType)
 		{
-			var result = new List<BagItem>(m_ItemDic.Count);
+			var result = new List<BagItem>(m_itemDic.Count);
 			var tbItemConfig = ConfigModule.Instance.GetConfig<TbItem>();
 			var itemType = bagType;
-			foreach (var bagItem in m_ItemDic)
+			foreach (var bagItem in m_itemDic)
 			{
 				var itemConfig = tbItemConfig.Get(bagItem.Key);
 				if (itemConfig.IsNotNull() && itemConfig.Type == itemType)

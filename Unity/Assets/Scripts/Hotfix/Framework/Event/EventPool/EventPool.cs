@@ -23,92 +23,92 @@ namespace Hotfix.Framework.Event
 		/// <summary>
 		/// 事件默认处理器
 		/// </summary>
-		private EventHandler<T> m_DefaultHandler;
+		private EventHandler<T> m_defaultHandler;
 
 		/// <summary>
 		/// 事件队列
 		/// </summary>
-		private readonly Queue<Event> m_EventQueue;
+		private readonly Queue<Event> m_eventQueue;
 
 		/// <summary>
 		/// 帧分发批次缓存（复用同一列表，避免每次 Update 分配新列表产生 GC）
 		/// </summary>
-		private readonly List<Event> m_CachedEventBatch = new();
+		private readonly List<Event> m_cachedEventBatch = new();
 
 		/// <summary>
 		/// 事件处理器多值字典，key为事件Id，value为事件处理函数列表
 		/// </summary>
-		private readonly FuMultiDictionary<string, EventHandler<T>> m_EventHandlerMultiDict;
+		private readonly FuMultiDictionary<string, EventHandler<T>> m_eventHandlerMultiDict;
 
 		/// <summary>
 		/// 待删除的事件处理器列表（延迟移除方案，确保事件处理时使用的是最新的处理函数handler列表）。
 		/// 同一 (id, handler) 只登记一条（引用计数归零才登记、期间重新订阅即撤销登记），
 		/// 否则「退订 → 重订阅」交错时，重复的登记会把后来者的订阅一并移除。
 		/// </summary>
-		private readonly List<(string id, EventHandler<T> handler)> m_WaitRemoveHandlerList;
+		private readonly List<(string id, EventHandler<T> handler)> m_waitRemoveHandlerList;
 
 		/// <summary>
 		/// (id, handler) 条目的订阅引用计数：多个订阅者（如多个 EventRegister、多个模块）共享同一处理函数时，
 		/// 各自计一份，退订只递减自己那一份，归零才真正移除条目；分发时只调用一次。
-		/// 不变式：计数 &gt; 0 ⇔ 条目在 m_EventHandlerMultiDict 中；计数 == 0 ⇔ 条目仍在字典中但已登记待移除。
+		/// 不变式：计数 &gt; 0 ⇔ 条目在 m_eventHandlerMultiDict 中；计数 == 0 ⇔ 条目仍在字典中但已登记待移除。
 		/// </summary>
-		private readonly Dictionary<(string id, EventHandler<T> handler), int> m_HandlerRefCountDict;
+		private readonly Dictionary<(string id, EventHandler<T> handler), int> m_handlerRefCountDict;
 
 		/// <summary>
 		/// 分发 handler 前的快照缓存（复用同一列表，避免每次分发分配新列表产生 GC）。
 		/// 快照用于隔离「分发过程中新订阅的 handler」，仅非重入分发使用。
 		/// </summary>
-		private readonly List<EventHandler<T>> m_CachedHandlerSnapshot = new();
+		private readonly List<EventHandler<T>> m_cachedHandlerSnapshot = new();
 
 		/// <summary>
 		/// 是否正在分发 handler（用于识别重入的嵌套分发，避免嵌套时覆盖外层快照）
 		/// </summary>
-		private bool m_IsHandlingEvent;
+		private bool m_isHandlingEvent;
 
 		/// <summary>
 		/// 是否正在执行帧批次分发（用于检测嵌套 Update——嵌套时内层 batch.Clear() 会清掉
 		/// 外层正在遍历的批次，契约上禁止嵌套驱动；断言期检测到即报错定位）。
 		/// </summary>
-		private bool m_IsUpdatingEvents;
+		private bool m_isUpdatingEvents;
 
 		/// <summary>
 		/// ForEachHandler 的 (id, handler) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
-		/// 仅非重入遍历使用（重入识别见 m_IsForEachHandler）。
+		/// 仅非重入遍历使用（重入识别见 m_isForEachHandler）。
 		/// </summary>
-		private readonly List<(string id, EventHandler<T> handler)> m_CachedHandlerPairSnapshot = new();
+		private readonly List<(string id, EventHandler<T> handler)> m_cachedHandlerPairSnapshot = new();
 
 		/// <summary>
 		/// 是否正在遍历事件处理函数（用于识别重入的嵌套遍历，避免嵌套时清空外层正在遍历的快照列表）
 		/// </summary>
-		private bool m_IsForEachHandler;
+		private bool m_isForEachHandler;
 
 		/// <summary>
 		/// ForEachEvent 的 (sender, eventArgs) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
-		/// 仅非重入遍历使用（重入识别见 m_IsForEachEvent）。
+		/// 仅非重入遍历使用（重入识别见 m_isForEachEvent）。
 		/// </summary>
-		private readonly List<(object sender, T eventArgs)> m_CachedEventArgsSnapshot = new();
+		private readonly List<(object sender, T eventArgs)> m_cachedEventArgsSnapshot = new();
 
 		/// <summary>
 		/// 是否正在遍历事件（用于识别重入的嵌套遍历，避免嵌套时清空外层正在遍历的快照列表）
 		/// </summary>
-		private bool m_IsForEachEvent;
+		private bool m_isForEachEvent;
 
 		/// <summary>
 		/// 构造线程 ID（断言期校验公共入口仅被该线程访问）。
 		/// 无条件编译：[Conditional] 语义要求被断言方法及其依赖字段始终存在。
 		/// </summary>
-		private readonly int m_CreatorThreadId;
+		private readonly int m_creatorThreadId;
 
 		/// <summary>
 		/// 初始化事件池的新实例。
 		/// </summary>
 		public EventPool()
 		{
-			m_EventQueue            = new Queue<Event>();
-			m_EventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<T>>();
-			m_WaitRemoveHandlerList = new List<(string, EventHandler<T>)>();
-			m_HandlerRefCountDict   = new Dictionary<(string, EventHandler<T>), int>();
-			m_CreatorThreadId       = Thread.CurrentThread.ManagedThreadId;
+			m_eventQueue            = new Queue<Event>();
+			m_eventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<T>>();
+			m_waitRemoveHandlerList = new List<(string, EventHandler<T>)>();
+			m_handlerRefCountDict   = new Dictionary<(string, EventHandler<T>), int>();
+			m_creatorThreadId       = Thread.CurrentThread.ManagedThreadId;
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Event
 			{
 				AssertMainThread();
 				var count = 0;
-				foreach (var (_, handlers) in m_EventHandlerMultiDict)
+				foreach (var (_, handlers) in m_eventHandlerMultiDict)
 				{
 					count += handlers.Count;
 				}
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.Event
 			get
 			{
 				AssertMainThread();
-				return m_EventQueue.Count;
+				return m_eventQueue.Count;
 			}
 		}
 
@@ -153,22 +153,22 @@ namespace Hotfix.Framework.Event
 			// 批次数量在进入时固定，处理过程中新入队的事件留到下一帧，杜绝同帧无限级联。
 			// 嵌套 Update（如事件处理函数内手动驱动帧更新）会复用同一批次列表，内层 Clear 会清掉
 			// 外层正在遍历的批次 → 外层剩余事件既不分发也不回收。故契约禁止嵌套，断言期检测到立即报错。
-			var batch = m_CachedEventBatch;
+			var batch = m_cachedEventBatch;
 #if UNITY_ASSERTIONS
-			if (m_IsUpdatingEvents)
+			if (m_isUpdatingEvents)
 				FuLogger.LogError("[EventPool]检测到嵌套 Update：禁止在事件处理函数内手动驱动帧更新，外层批次将被打断。");
 #endif
-			m_IsUpdatingEvents = true;
+			m_isUpdatingEvents = true;
 
 			try
 			{
-				var count = m_EventQueue.Count;
+				var count = m_eventQueue.Count;
 				if (count <= 0) return;
 
 				batch.Clear();
 				for (var i = 0; i < count; i++)
 				{
-					batch.Add(m_EventQueue.Dequeue());
+					batch.Add(m_eventQueue.Dequeue());
 				}
 
 				// 逐条分发并回收；handler 抛异常时未处理的批次事件仍占用池对象，用 finally 兜底回收
@@ -229,7 +229,7 @@ namespace Hotfix.Framework.Event
 			}
 			finally
 			{
-				m_IsUpdatingEvents = false;
+				m_isUpdatingEvents = false;
 			}
 		}
 
@@ -240,10 +240,10 @@ namespace Hotfix.Framework.Event
 		{
 			AssertMainThread();
 			Clear();
-			m_EventHandlerMultiDict.Clear();
-			m_WaitRemoveHandlerList.Clear();
-			m_HandlerRefCountDict.Clear();
-			m_DefaultHandler = null;
+			m_eventHandlerMultiDict.Clear();
+			m_waitRemoveHandlerList.Clear();
+			m_handlerRefCountDict.Clear();
+			m_defaultHandler = null;
 		}
 
 		/// <summary>
@@ -256,9 +256,9 @@ namespace Hotfix.Framework.Event
 			// 逐个出队并回收池节点：直接 Clear() 会把队列中的 Event 节点（池对象）丢弃，导致 ReferencePool 计数泄漏。
 			// 队列中的节点全部是「已入队、未分发」，其 EventArgs 也由本池持有，必须一并回收：
 			// Event.Clear() 只置 null 不回收，只回收节点会让事件参数计数跨 Shutdown/重启持续累积（ClearAll 保留计数）。
-			while (m_EventQueue.Count > 0)
+			while (m_eventQueue.Count > 0)
 			{
-				var eventNode = m_EventQueue.Dequeue();
+				var eventNode = m_eventQueue.Dequeue();
 				// 逐项隔离回收：ReferencePool.Recycle 一旦抛异常，不得中断整轮排水，
 				// 否则其后节点与事件参数全部不再归还（ReferencePool 计数永久漂移）；故各自 try/catch 吞掉并继续。
 				try
@@ -287,7 +287,7 @@ namespace Hotfix.Framework.Event
 		public int Count(string id)
 		{
 			AssertMainThread();
-			return m_EventHandlerMultiDict.TryGetValue(id, out var handlers) ? handlers.Count : 0;
+			return m_eventHandlerMultiDict.TryGetValue(id, out var handlers) ? handlers.Count : 0;
 		}
 
 		/// <summary>
@@ -298,7 +298,7 @@ namespace Hotfix.Framework.Event
 			AssertMainThread();
 			if (handler == null) throw new InvalidOperationException("[EventPool]事件对应的处理函数不能为空!");
 
-			return m_EventHandlerMultiDict.Contains(id, handler);
+			return m_eventHandlerMultiDict.Contains(id, handler);
 		}
 
 		/// <summary>
@@ -312,28 +312,28 @@ namespace Hotfix.Framework.Event
 			if (handler == null) throw new InvalidOperationException("[EventPool]事件对应的处理函数不能为空!");
 
 			// 该事件尚无任何订阅：直接建立首个条目
-			if (!m_EventHandlerMultiDict.Contains(id))
+			if (!m_eventHandlerMultiDict.Contains(id))
 			{
-				m_EventHandlerMultiDict.Add(id, handler);
-				m_HandlerRefCountDict[(id, handler)] = 1;
+				m_eventHandlerMultiDict.Add(id, handler);
+				m_handlerRefCountDict[(id, handler)] = 1;
 				return;
 			}
 
 			// 同一 (id, handler) 再次订阅（多订阅者场景）：按引用计数累计，不重复入字典，分发时只调用一次
-			if (m_EventHandlerMultiDict.Contains(id, handler))
+			if (m_eventHandlerMultiDict.Contains(id, handler))
 			{
 				// 计数为 0 表示条目此前已登记待移除（尚未被 ProcessWaitRemoveHandlers 摘除），
 				// 本次订阅即撤销该登记，令订阅立即生效——否则「退订 → 重订阅」交错时，新订阅会被延迟删除吞掉。
 				var key = (id, handler);
-				m_HandlerRefCountDict.TryGetValue(key, out var refCount);
-				m_HandlerRefCountDict[key] = refCount + 1;
-				m_WaitRemoveHandlerList.Remove(key);
+				m_handlerRefCountDict.TryGetValue(key, out var refCount);
+				m_handlerRefCountDict[key] = refCount + 1;
+				m_waitRemoveHandlerList.Remove(key);
 				return;
 			}
 
 			// 同一事件的不同处理函数（多播）：追加到该事件的处理链表，各自独立计数
-			m_EventHandlerMultiDict.Add(id, handler);
-			m_HandlerRefCountDict[(id, handler)] = 1;
+			m_eventHandlerMultiDict.Add(id, handler);
+			m_handlerRefCountDict[(id, handler)] = 1;
 		}
 
 		/// <summary>
@@ -349,18 +349,18 @@ namespace Hotfix.Framework.Event
 
 			var key = (id, handler);
 			// 未计数的 (id, handler)（从未订阅）直接忽略
-			if (!m_HandlerRefCountDict.TryGetValue(key, out var refCount)) return;
+			if (!m_handlerRefCountDict.TryGetValue(key, out var refCount)) return;
 
 			if (refCount > 1)
 			{
-				m_HandlerRefCountDict[key] = refCount - 1;
+				m_handlerRefCountDict[key] = refCount - 1;
 				return;
 			}
 
 			// 归零（重复退订时 refCount 已为 0，保持 0 不再递减）：登记延迟移除，登记去重保证一条
-			m_HandlerRefCountDict[key] = 0;
-			if (!m_WaitRemoveHandlerList.Contains(key))
-				m_WaitRemoveHandlerList.Add(key);
+			m_handlerRefCountDict[key] = 0;
+			if (!m_waitRemoveHandlerList.Contains(key))
+				m_waitRemoveHandlerList.Add(key);
 		}
 
 		/// <summary>
@@ -369,7 +369,7 @@ namespace Hotfix.Framework.Event
 		public void SetDefaultHandler(EventHandler<T> handler)
 		{
 			AssertMainThread();
-			m_DefaultHandler = handler;
+			m_defaultHandler = handler;
 		}
 
 		/// <summary>
@@ -384,7 +384,7 @@ namespace Hotfix.Framework.Event
 			if (eArgs == null) throw new InvalidOperationException("[EventPool]事件参数不能为空!");
 
 			var tempEvent = Event.Create(sender, eArgs);
-			m_EventQueue.Enqueue(tempEvent);
+			m_eventQueue.Enqueue(tempEvent);
 		}
 
 		/// <summary>
@@ -400,7 +400,7 @@ namespace Hotfix.Framework.Event
 
 		/// <summary>
 		/// 遍历所有事件处理函数（仅限诊断/调试用途）。
-		/// 回调内可重入触发分发/遍历——重入识别见 m_IsForEachHandler，重入时使用局部快照互不干扰。
+		/// 回调内可重入触发分发/遍历——重入识别见 m_isForEachHandler，重入时使用局部快照互不干扰。
 		/// </summary>
 		public void ForEachHandler(Action<string, EventHandler<T>> action)
 		{
@@ -409,23 +409,23 @@ namespace Hotfix.Framework.Event
 			// 先快照 (id, handler) 再调用回调：
 			// 直接遍历链表时，回调内（同线程重入）新增订阅会以 AddBefore(range.End) 插在尾部被本次遍历再次访问，
 			// 与 HandleEvent 同款问题；快照隔离同时避免回调期间集合被修改。
-			// 重入识别（写法同 HandleEvent 的 m_IsHandlingEvent）：嵌套遍历若复用同一缓存列表，内层 Clear 会清掉
+			// 重入识别（写法同 HandleEvent 的 m_isHandlingEvent）：嵌套遍历若复用同一缓存列表，内层 Clear 会清掉
 			// 外层正在遍历的快照 → 外层剩余项既不派发也不回收。故非重入复用缓存字段、重入改用局部列表。
 			List<(string id, EventHandler<T> handler)> snapshot;
-			if (m_IsForEachHandler)
+			if (m_isForEachHandler)
 			{
 				snapshot = new List<(string id, EventHandler<T> handler)>();
 			}
 			else
 			{
-				snapshot           = m_CachedHandlerPairSnapshot;
-				m_IsForEachHandler = true;
+				snapshot           = m_cachedHandlerPairSnapshot;
+				m_isForEachHandler = true;
 			}
 
 			try
 			{
 				snapshot.Clear();
-				foreach (var (id, handlers) in m_EventHandlerMultiDict)
+				foreach (var (id, handlers) in m_eventHandlerMultiDict)
 				{
 					foreach (var handler in handlers)
 					{
@@ -440,8 +440,8 @@ namespace Hotfix.Framework.Event
 			}
 			finally
 			{
-				if (ReferenceEquals(snapshot, m_CachedHandlerPairSnapshot))
-					m_IsForEachHandler = false;
+				if (ReferenceEquals(snapshot, m_cachedHandlerPairSnapshot))
+					m_isForEachHandler = false;
 			}
 		}
 
@@ -457,20 +457,20 @@ namespace Hotfix.Framework.Event
 			// 快照隔离避免回调期间队列被修改，重入识别与 ForEachHandler 一致：
 			// 非重入复用缓存字段、重入改用局部列表，且缓存复用下零分配。
 			List<(object sender, T eventArgs)> snapshot;
-			if (m_IsForEachEvent)
+			if (m_isForEachEvent)
 			{
 				snapshot = new List<(object sender, T eventArgs)>();
 			}
 			else
 			{
-				snapshot         = m_CachedEventArgsSnapshot;
-				m_IsForEachEvent = true;
+				snapshot         = m_cachedEventArgsSnapshot;
+				m_isForEachEvent = true;
 			}
 
 			try
 			{
 				snapshot.Clear();
-				foreach (var tempEvent in m_EventQueue)
+				foreach (var tempEvent in m_eventQueue)
 				{
 					snapshot.Add((tempEvent.Sender, tempEvent.EventArgs));
 				}
@@ -482,8 +482,8 @@ namespace Hotfix.Framework.Event
 			}
 			finally
 			{
-				if (ReferenceEquals(snapshot, m_CachedEventArgsSnapshot))
-					m_IsForEachEvent = false;
+				if (ReferenceEquals(snapshot, m_cachedEventArgsSnapshot))
+					m_isForEachEvent = false;
 			}
 		}
 
@@ -512,21 +512,21 @@ namespace Hotfix.Framework.Event
 				// 分发前先把该 id 的 handler 快照到临时列表再逐个调用：Subscribe 走 AddBefore(range.End) 插在尾部，
 				// 若沿链表边遍历边调用，回调内新订阅（例如注册自身）的 handler 会被本次分发再次调用，可致同帧无限循环。
 				List<EventHandler<T>> snapshot;
-				if (m_IsHandlingEvent)
+				if (m_isHandlingEvent)
 				{
 					// 重入（handler 内 BroadcastNow 触发嵌套分发）：复用外层快照会被清空，单独分配
 					snapshot = new List<EventHandler<T>>();
 				}
 				else
 				{
-					snapshot = m_CachedHandlerSnapshot;
+					snapshot = m_cachedHandlerSnapshot;
 					snapshot.Clear();
-					m_IsHandlingEvent = true;
+					m_isHandlingEvent = true;
 				}
 
 				try
 				{
-					var hasHandlers = m_EventHandlerMultiDict.TryGetValue(eventId, out var handlerRange);
+					var hasHandlers = m_eventHandlerMultiDict.TryGetValue(eventId, out var handlerRange);
 					if (hasHandlers)
 					{
 						for (var currentNode = handlerRange.First; currentNode != null && currentNode != handlerRange.End; currentNode = currentNode.Next)
@@ -553,12 +553,12 @@ namespace Hotfix.Framework.Event
 							}
 						}
 					}
-					else if (m_DefaultHandler != null)
+					else if (m_defaultHandler != null)
 					{
 						// 默认处理器同样隔离：单个默认处理器异常不得中断本次分发，更不能向上逃逸。
 						try
 						{
-							m_DefaultHandler.Invoke(sender, eArgs);
+							m_defaultHandler.Invoke(sender, eArgs);
 						}
 						catch (Exception exception)
 						{
@@ -569,8 +569,8 @@ namespace Hotfix.Framework.Event
 				}
 				finally
 				{
-					if (ReferenceEquals(snapshot, m_CachedHandlerSnapshot))
-						m_IsHandlingEvent = false;
+					if (ReferenceEquals(snapshot, m_cachedHandlerSnapshot))
+						m_isHandlingEvent = false;
 				}
 			}
 			finally
@@ -599,20 +599,20 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		private void ProcessWaitRemoveHandlers()
 		{
-			if (m_WaitRemoveHandlerList.Count == 0) return;
+			if (m_waitRemoveHandlerList.Count == 0) return;
 
-			foreach (var (id, handler) in m_WaitRemoveHandlerList)
+			foreach (var (id, handler) in m_waitRemoveHandlerList)
 			{
 				var key = (id, handler);
 
 				// 登记之后又被重新订阅（Subscribe 会撤销登记，此处为双保险）：计数回到正数则不摘除
-				if (m_HandlerRefCountDict.TryGetValue(key, out var refCount) && refCount > 0) continue;
+				if (m_handlerRefCountDict.TryGetValue(key, out var refCount) && refCount > 0) continue;
 
-				m_EventHandlerMultiDict.Remove(id, handler);
-				m_HandlerRefCountDict.Remove(key);
+				m_eventHandlerMultiDict.Remove(id, handler);
+				m_handlerRefCountDict.Remove(key);
 			}
 
-			m_WaitRemoveHandlerList.Clear();
+			m_waitRemoveHandlerList.Clear();
 		}
 
 		/// <summary>
@@ -623,7 +623,7 @@ namespace Hotfix.Framework.Event
 		[Conditional("UNITY_ASSERTIONS")]
 		private void AssertMainThread()
 		{
-			if (Thread.CurrentThread.ManagedThreadId != m_CreatorThreadId)
+			if (Thread.CurrentThread.ManagedThreadId != m_creatorThreadId)
 				FuLogger.LogError($"[EventPool]事件池仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
 		}
 	}

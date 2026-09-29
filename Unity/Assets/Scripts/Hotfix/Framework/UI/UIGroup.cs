@@ -19,13 +19,13 @@ namespace Hotfix.Framework.UI
 	public sealed class UIGroup : GComponent
 	{
 		/// 界面组是否暂停
-		private bool m_Pause;
+		private bool m_pause;
 
 		/// 获取或设置界面组所在的层级。
 		public EUILayer Layer { get; private set; }
 
 		/// 界面组内的界面列表
-		private readonly FuLinkedList<WinInfo> m_UIInfoList = new();
+		private readonly FuLinkedList<WinInfo> m_uiInfoList = new();
 
 
 		/// <summary>
@@ -33,11 +33,11 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public bool Pause
 		{
-			get => m_Pause;
+			get => m_pause;
 			set
 			{
-				if (m_Pause == value) return;
-				m_Pause = value;
+				if (m_pause == value) return;
+				m_pause = value;
 				Refresh();
 			}
 		}
@@ -45,12 +45,12 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 获取界面组中界面数量。
 		/// </summary>
-		public int UICount => m_UIInfoList.Count;
+		public int UICount => m_uiInfoList.Count;
 
 		/// <summary>
 		/// 获取当前界面。
 		/// </summary>
-		public WinBase CurrentWinBase => m_UIInfoList.First?.Value.Win;
+		public WinBase CurrentWinBase => m_uiInfoList.First?.Value.Win;
 
 		/// <summary>
 		/// 初始化界面组的新实例。
@@ -59,18 +59,18 @@ namespace Hotfix.Framework.UI
 		public void Init(EUILayer layer)
 		{
 			Layer   = layer;
-			m_Pause = false;
+			m_pause = false;
 
 			// WinInfo 经引用池 Acquire，唯一回收点是 UIGroup.Remove：若对非空列表直接 Clear 会丢弃这些实例，
 			// 造成引用池泄漏。当前唯一调用方传入的是新建空组，这里仍按通用契约逐个回收后再清空。
-			if (m_UIInfoList.Count > 0)
+			if (m_uiInfoList.Count > 0)
 			{
-				foreach (var uiInfo in m_UIInfoList)
+				foreach (var uiInfo in m_uiInfoList)
 				{
 					if (uiInfo != null) ReferencePool.Recycle(uiInfo);
 				}
 
-				m_UIInfoList.Clear();
+				m_uiInfoList.Clear();
 			}
 
 			sortingOrder = (int)layer;
@@ -84,15 +84,15 @@ namespace Hotfix.Framework.UI
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		public void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			if (m_Pause) return;
-			var current = m_UIInfoList.First;
+			if (m_pause) return;
+			var current = m_uiInfoList.First;
 			while (current != null)
 			{
 				// 先缓存下一个节点：win._OnUpdate 是用户代码，可能在其中关闭自身
 				//（UIModule.Close → UIGroup.Remove → FuLinkedList.Remove 会 detach 本节点，
 				// 使 current.Next 变为 null，并把节点回收进节点缓存队列供复用）。
 				// 若在回调之后才读 current.Next，本帧该组后续窗口会被全部跳过，节点被复用后还可能跳进「新」节点。
-				// 与 EntityGroup.Update 的 m_CachedNode 预取写法保持一致。
+				// 与 EntityGroup.Update 的 m_cachedNode 预取写法保持一致。
 				var next = current.Next;
 
 				// 当前节点可能在本帧更早的某个窗口回调里已被关闭（例如前一个窗口关闭了「下一个」窗口）：
@@ -121,7 +121,7 @@ namespace Hotfix.Framework.UI
 		/// <returns>界面组中是否存在界面。</returns>
 		public bool Has(int serialId)
 		{
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				if (uiInfo.Win.SerialId == serialId)
 					return true;
@@ -145,7 +145,7 @@ namespace Hotfix.Framework.UI
 		public bool Has(string winName)
 		{
 			winName.NotNullOrEmpty(nameof(winName));
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				if (uiInfo.Win.WinName == winName)
 					return true;
@@ -161,7 +161,7 @@ namespace Hotfix.Framework.UI
 		/// <returns>要获取的界面。</returns>
 		public WinBase Get(int serialId)
 		{
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				if (uiInfo.Win.SerialId == serialId)
 				{
@@ -186,7 +186,7 @@ namespace Hotfix.Framework.UI
 		public WinBase Get(string winName)
 		{
 			winName.NotNullOrEmpty(nameof(winName));
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				if (uiInfo.Win.WinName == winName)
 				{
@@ -206,7 +206,7 @@ namespace Hotfix.Framework.UI
 			var result = new WinBase[UICount];
 
 			var i = 0;
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				result[i++] = uiInfo.Win;
 			}
@@ -222,7 +222,7 @@ namespace Hotfix.Framework.UI
 		{
 			results.NotNull(nameof(results));
 			results.Clear();
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				results.Add(uiInfo.Win);
 			}
@@ -238,7 +238,7 @@ namespace Hotfix.Framework.UI
 				throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.WinName}'.");
 
 			var uiInfo = WinInfo.Create(win);
-			m_UIInfoList.AddFirst(uiInfo);
+			m_uiInfoList.AddFirst(uiInfo);
 		}
 
 		/// <summary>
@@ -251,7 +251,7 @@ namespace Hotfix.Framework.UI
 			if (uiInfo == null)
 				throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.WinName}' 的UI界面信息.");
 
-			if (!m_UIInfoList.Remove(uiInfo))
+			if (!m_uiInfoList.Remove(uiInfo))
 				throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.WinName}'.");
 
 			// 释放界面信息实例
@@ -264,10 +264,10 @@ namespace Hotfix.Framework.UI
 		public void Refresh()
 		{
 			// 从链表头部开始遍历
-			var current = m_UIInfoList.First;
+			var current = m_uiInfoList.First;
 
 			var isCover = false;   // 是否覆盖后面的界面，初始为false，表示第一个界面需要显示完整，后续界面需要被覆盖
-			var isPause = m_Pause; // 是否暂停的标志，初始值由组暂停状态决定，后续根据界面暂停状态更新
+			var isPause = m_pause; // 是否暂停的标志，初始值由组暂停状态决定，后续根据界面暂停状态更新
 
 			while (current != null)
 			{
@@ -275,7 +275,7 @@ namespace Hotfix.Framework.UI
 				// 等界面回调，回调内可能关闭当前界面或后续界面（UIModule.Close → UIGroup.Remove → FuLinkedList.Remove
 				// 会 detach 本节点并把节点回收进节点缓存队列供复用），使 current.Next 变为 null。
 				// 若在回调之后才读 current.Next，本帧该组后续界面会被全部跳过，节点被复用后还可能跳进「新」节点。
-				// 与 OnUpdate 的 m_CachedNode 预取写法保持一致。
+				// 与 OnUpdate 的 m_cachedNode 预取写法保持一致。
 				var next = current.Next;
 
 				// 当前节点可能已被本帧更早的某个界面回调关闭：_ReleaseNode 会把 Value 置为 default=null，
@@ -368,7 +368,7 @@ namespace Hotfix.Framework.UI
 		private WinInfo GetInfo(WinBase win)
 		{
 			win.NotNull(nameof(win));
-			foreach (var uiInfo in m_UIInfoList)
+			foreach (var uiInfo in m_uiInfoList)
 			{
 				if (uiInfo.Win == win)
 					return uiInfo;

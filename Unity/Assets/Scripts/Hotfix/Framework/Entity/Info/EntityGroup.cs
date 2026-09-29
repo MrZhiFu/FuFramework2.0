@@ -19,17 +19,17 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 实体实例对象池。
 		/// </summary>
-		private readonly ObjectPool<EntityObject> m_EntityPool;
+		private readonly ObjectPool<EntityObject> m_entityPool;
 
 		/// <summary>
 		/// 实体组实体链表。
 		/// </summary>
-		private readonly FuLinkedList<Entity> m_Entities;
+		private readonly FuLinkedList<Entity> m_entities;
 
 		/// <summary>
 		/// 缓存实体的链表节点。
 		/// </summary>
-		private LinkedListNode<Entity> m_CachedNode;
+		private LinkedListNode<Entity> m_cachedNode;
 
 		/// <summary>
 		/// 获取实体组名称。
@@ -45,15 +45,15 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 获取实体组中实体数量。
 		/// </summary>
-		public int EntityCount => m_Entities.Count;
+		public int EntityCount => m_entities.Count;
 
 		/// <summary>
 		/// 获取或设置实体组实例对象池自动销毁检查的间隔秒数。
 		/// </summary>
 		public float PoolAutoDisposeCheckInterval
 		{
-			get => m_EntityPool.AutoDisposeCheckInterval;
-			set => m_EntityPool.AutoDisposeCheckInterval = value;
+			get => m_entityPool.AutoDisposeCheckInterval;
+			set => m_entityPool.AutoDisposeCheckInterval = value;
 		}
 
 		/// <summary>
@@ -61,8 +61,8 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		public int PoolCapacity
 		{
-			get => m_EntityPool.Capacity;
-			set => m_EntityPool.Capacity = value;
+			get => m_entityPool.Capacity;
+			set => m_entityPool.Capacity = value;
 		}
 
 		/// <summary>
@@ -71,8 +71,8 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		public float PoolExpireTimeAfterIdle
 		{
-			get => m_EntityPool.ExpireTimeAfterIdle;
-			set => m_EntityPool.ExpireTimeAfterIdle = value;
+			get => m_entityPool.ExpireTimeAfterIdle;
+			set => m_entityPool.ExpireTimeAfterIdle = value;
 		}
 
 		/// <summary>
@@ -80,8 +80,8 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		public int PoolObjectPriority
 		{
-			get => m_EntityPool.Priority;
-			set => m_EntityPool.Priority = value;
+			get => m_entityPool.Priority;
+			set => m_entityPool.Priority = value;
 		}
 
 		/// <summary>
@@ -98,12 +98,12 @@ namespace Hotfix.Framework.Entity
 			GroupGo = groupGo ?? throw new InvalidOperationException("[EntityGroup] 构造实体组实例失败，实体组GameObject为空.");
 
 			var poolName = $"EntityPool-{Name}";
-			m_EntityPool = objectPoolModule.CreateObjectPool<EntityObject>(poolName, row.PoolCapacity, row.PoolExpireTimeAfterIdle, row.PoolPriority);
+			m_entityPool = objectPoolModule.CreateObjectPool<EntityObject>(poolName, row.PoolCapacity, row.PoolExpireTimeAfterIdle, row.PoolPriority);
 
-			m_EntityPool.AutoDisposeCheckInterval = row.PoolAutoDisposeCheckInterval;
+			m_entityPool.AutoDisposeCheckInterval = row.PoolAutoDisposeCheckInterval;
 
-			m_Entities   = new FuLinkedList<Entity>();
-			m_CachedNode = null;
+			m_entities   = new FuLinkedList<Entity>();
+			m_cachedNode = null;
 		}
 
 		/// <summary>
@@ -113,13 +113,13 @@ namespace Hotfix.Framework.Entity
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		public void Update(float deltaTime, float unscaledDeltaTime)
 		{
-			var current = m_Entities.First;
+			var current = m_entities.First;
 			while (current != null)
 			{
-				m_CachedNode = current.Next;
+				m_cachedNode = current.Next;
 				current.Value.OnUpdate(deltaTime, unscaledDeltaTime);
-				current      = m_CachedNode;
-				m_CachedNode = null;
+				current      = m_cachedNode;
+				m_cachedNode = null;
 			}
 		}
 
@@ -130,7 +130,7 @@ namespace Hotfix.Framework.Entity
 		/// <returns>实体组中是否存在实体。</returns>
 		public bool HasEntity(int entityId)
 		{
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.Id == entityId)
 					return true;
@@ -147,7 +147,7 @@ namespace Hotfix.Framework.Entity
 		public bool HasEntity(string entityAssetName)
 		{
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.EntityAssetName == entityAssetName)
 					return true;
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.Entity
 		/// <returns>要获取的实体。</returns>
 		public Entity GetEntity(int entityId)
 		{
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.Id == entityId)
 					return entity;
@@ -180,7 +180,7 @@ namespace Hotfix.Framework.Entity
 		public Entity GetEntity(string entityAssetName)
 		{
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.EntityAssetName == entityAssetName)
 					return entity;
@@ -198,7 +198,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
 			var results = new List<Entity>();
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.EntityAssetName == entityAssetName)
 					results.Add(entity);
@@ -217,7 +217,7 @@ namespace Hotfix.Framework.Entity
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityGroup] 实体资源名称为空.");
 			if (results is null) throw new InvalidOperationException("[EntityGroup] 结果列表为空.");
 			results.Clear();
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				if (entity.EntityAssetName == entityAssetName)
 					results.Add(entity);
@@ -230,9 +230,9 @@ namespace Hotfix.Framework.Entity
 		/// <returns>实体组中的所有实体。</returns>
 		public Entity[] GetAllEntities()
 		{
-			var results = new Entity[m_Entities.Count];
+			var results = new Entity[m_entities.Count];
 			var index   = 0;
-			foreach (var entity in m_Entities)
+			foreach (var entity in m_entities)
 			{
 				results[index++] = entity;
 			}
@@ -248,14 +248,14 @@ namespace Hotfix.Framework.Entity
 		{
 			if (results is null) throw new InvalidOperationException("[EntityGroup] 结果列表为空.");
 			results.Clear();
-			results.AddRange(m_Entities);
+			results.AddRange(m_entities);
 		}
 
 		/// <summary>
 		/// 往实体组增加实体。
 		/// </summary>
 		/// <param name="entity">要增加的实体。</param>
-		public void AddEntity(Entity entity) => m_Entities.AddLast(entity);
+		public void AddEntity(Entity entity) => m_entities.AddLast(entity);
 
 		/// <summary>
 		/// 从实体组移除实体。
@@ -263,9 +263,9 @@ namespace Hotfix.Framework.Entity
 		/// <param name="entity">要移除的实体。</param>
 		public void RemoveEntity(Entity entity)
 		{
-			if (m_CachedNode != null && m_CachedNode.Value == entity)
-				m_CachedNode = m_CachedNode.Next;
-			if (!m_Entities.Remove(entity))
+			if (m_cachedNode != null && m_cachedNode.Value == entity)
+				m_cachedNode = m_cachedNode.Next;
+			if (!m_entities.Remove(entity))
 				throw new InvalidOperationException($"[EntityGroup] 移除实体失败，实体组 '{Name}' 中不存在指定的实体 '[{entity.Id}]{entity.EntityAssetName}'.");
 		}
 
@@ -274,26 +274,26 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		/// <param name="obj"></param>
 		/// <param name="inUse">对象注册时是否已处于使用中。</param>
-		public void RegisterEntityObject(EntityObject obj, bool inUse) => m_EntityPool.Register(obj, inUse);
+		public void RegisterEntityObject(EntityObject obj, bool inUse) => m_entityPool.Register(obj, inUse);
 
 		/// <summary>
 		/// 生成一个指定实体实例对象。
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		public EntityObject SpawnEntityObject(string name) => m_EntityPool.Spawn(name);
+		public EntityObject SpawnEntityObject(string name) => m_entityPool.Spawn(name);
 
 		/// <summary>
 		/// 回收指定实体实例对象。
 		/// </summary>
 		/// <param name="entity"></param>
-		public void RecycleEntity(Entity entity) => m_EntityPool.Recycle(entity.Go);
+		public void RecycleEntity(Entity entity) => m_entityPool.Recycle(entity.Go);
 
 		/// <summary>
 		/// 回收实体实例对象到对象池。
 		/// </summary>
 		/// <param name="entityObject">要回收的实体实例对象。</param>
-		public void RecycleEntityObject(EntityObject entityObject) => m_EntityPool.Recycle(entityObject);
+		public void RecycleEntityObject(EntityObject entityObject) => m_entityPool.Recycle(entityObject);
 
 		/// <summary>
 		/// 设置实体实例对象是否被锁定。
@@ -304,7 +304,7 @@ namespace Hotfix.Framework.Entity
 		public void SetEntityObjectLocked(object entityGo, bool locked)
 		{
 			if (entityGo is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象是否被锁定时异常，实体实例为空.");
-			m_EntityPool.SetLocked(entityGo, locked);
+			m_entityPool.SetLocked(entityGo, locked);
 		}
 
 		/// <summary>
@@ -316,7 +316,7 @@ namespace Hotfix.Framework.Entity
 		public void SetEntityObjectPriority(object entityGo, int priority)
 		{
 			if (entityGo is null) throw new InvalidOperationException("[EntityGroup] 设置实体实例对象优先级时异常，实体实例为空.");
-			m_EntityPool.SetPriority(entityGo, priority);
+			m_entityPool.SetPriority(entityGo, priority);
 		}
 
 		/// <summary>
@@ -327,7 +327,7 @@ namespace Hotfix.Framework.Entity
 		public void DisposeEntityPool(ObjectPoolModule objectPoolModule)
 		{
 			if (objectPoolModule is null) throw new InvalidOperationException("[EntityGroup] 销毁实体组对象池失败，对象池管理模块为空.");
-			objectPoolModule.DisposeObjectPool(m_EntityPool);
+			objectPoolModule.DisposeObjectPool(m_entityPool);
 		}
 	}
 }

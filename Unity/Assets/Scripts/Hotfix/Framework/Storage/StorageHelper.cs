@@ -24,12 +24,12 @@ namespace Hotfix.Framework.Storage
 		/// 浮点相等判定容差。
 		/// 勿用 float.Epsilon/double.Epsilon（均为最小非零次正规数），Math.Abs(a - b) &lt; Epsilon 实际等价于精确相等。
 		/// </summary>
-		private const float FloatCompareEpsilon = 1e-6f;
+		private const float FLOAT_COMPARE_EPSILON = 1e-6f;
 
 		/// <summary>
-		/// 双精度相等判定容差（同 FloatCompareEpsilon 说明）。
+		/// 双精度相等判定容差（同 FLOAT_COMPARE_EPSILON 说明）。
 		/// </summary>
-		private const double DoubleCompareEpsilon = 1e-12;
+		private const double DOUBLE_COMPARE_EPSILON = 1e-12;
 
 		/// <summary>
 		/// 文件名
@@ -79,7 +79,7 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 最后保存时间
 		/// </summary>
-		private float m_LastSaveTime;
+		private float m_lastSaveTime;
 
 		/// <summary>
 		/// 获取数据项数量。
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Storage
 			if (string.IsNullOrEmpty(fileName)) throw new InvalidOperationException("[[DataSaveHelper] 文件名不能为空");
 
 			FileName = fileName;
-			var path = Path.Combine(Application.persistentDataPath, StorageModule.DirRoot, fileName);
+			var path = Path.Combine(Application.persistentDataPath, StorageModule.DIR_ROOT, fileName);
 			FilePath = UtilityAOT.Path.GetRegularPath(path);
 
 			Data = new Data();
@@ -108,7 +108,7 @@ namespace Hotfix.Framework.Storage
 			Serializer.RegisterSerializeCallback(0, DefaultSerializeCallback);
 			Serializer.RegisterDeserializeCallback(0, DefaultDeserializeCallback);
 
-			m_LastSaveTime   = Time.realtimeSinceStartup;
+			m_lastSaveTime   = Time.realtimeSinceStartup;
 			IsDirty          = false;
 			EnableAutoSave   = enableAutoSave;
 			AutoSaveInterval = autoSaveInterval;
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.Storage
 			if (!EnableAutoSave || !IsDirty) return;
 
 			var currentTime = Time.realtimeSinceStartup;
-			if (currentTime - m_LastSaveTime >= AutoSaveInterval)
+			if (currentTime - m_lastSaveTime >= AutoSaveInterval)
 			{
 				FuLogger.LogInfo($"[[DataSaveHelper] 自动保存数据文件: {FileName}");
 				Save();
@@ -237,7 +237,7 @@ namespace Hotfix.Framework.Storage
 
 					FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功（已加密）: {FileName}");
 					IsDirty        = false;                     // 清除脏数据标记
-					m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
+					m_lastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
 					return true;
 				}
 				else
@@ -249,7 +249,7 @@ namespace Hotfix.Framework.Storage
 					{
 						FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功: {FileName}");
 						IsDirty        = false;                     // 清除脏数据标记
-						m_LastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
+						m_lastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
 					}
 
 					return result;
@@ -431,7 +431,7 @@ namespace Hotfix.Framework.Storage
 		public void SetFloat(string dataName, float value)
 		{
 			var oldValue = Data.GetFloat(dataName);
-			if (Math.Abs(oldValue - value) < FloatCompareEpsilon) return;
+			if (Math.Abs(oldValue - value) < FLOAT_COMPARE_EPSILON) return;
 			Data.SetFloat(dataName, value);
 			IsDirty = true;
 		}
@@ -444,7 +444,7 @@ namespace Hotfix.Framework.Storage
 		public void SetDouble(string dataName, double value)
 		{
 			var oldValue = Data.GetDouble(dataName);
-			if (Math.Abs(oldValue - value) < DoubleCompareEpsilon) return;
+			if (Math.Abs(oldValue - value) < DOUBLE_COMPARE_EPSILON) return;
 			Data.SetDouble(dataName, value);
 			IsDirty = true;
 		}

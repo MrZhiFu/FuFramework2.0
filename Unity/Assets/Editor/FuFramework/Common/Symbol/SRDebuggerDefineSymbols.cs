@@ -12,7 +12,7 @@ namespace FuFramework.Core.Editor
 	public static class SRDebuggerDefineSymbols
 	{
 		/// 开启SRDebugger工具(预定义符号)
-		private const string EnableLogSymbol = "ENABLE_SRDEBUGGER";
+		private const string ENABLE_LOG_SYMBOL = "ENABLE_SRDEBUGGER";
 
 		/// <summary>
 		/// 开启 SRDebugger 工具。
@@ -20,7 +20,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/SRDebugger工具/开启", false, FuMenuPriority.SR_DEBUGGER_ENABLE)]
 		public static void EnableSRDebugger()
 		{
-			ScriptingDefineSymbols.AddScriptingDefineSymbol(EnableLogSymbol);
+			ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_LOG_SYMBOL);
 		}
 
 		/// <summary>
@@ -29,7 +29,7 @@ namespace FuFramework.Core.Editor
 		[MenuItem("FuFramework/SRDebugger工具/关闭", false, FuMenuPriority.SR_DEBUGGER_DISABLE)]
 		public static void DisableSRDebugger()
 		{
-			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(EnableLogSymbol);
+			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_LOG_SYMBOL);
 		}
 	}
 }

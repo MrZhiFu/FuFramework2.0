@@ -18,68 +18,68 @@ namespace Hotfix.Framework.Core
 	/// </summary>
 	public static class GlobalModule
 	{
-		private static ObjectPoolModule    m_ObjectPoolModule;    // 对象池模块
-		private static EventModule         m_EventModule;         // 事件管理模块
-		private static AssetModule         m_AssetModule;         // 资源管理模块
+		private static ObjectPoolModule    m_objectPoolModule;    // 对象池模块
+		private static EventModule         m_eventModule;         // 事件管理模块
+		private static AssetModule         m_assetModule;         // 资源管理模块
 
-		private static TimerModule         m_TimerModule;         // 计时器管理模块
-		private static FsmModule           m_FsmModule;           // 有限状态机管理模块
-		private static ProcedureModule     m_ProcedureModule;     // 流程管理模块
-		private static UIModule            m_UIModule;            // UI管理模块
-		private static MonoModule          m_MonoModule;          // Mono管理模块
-		// private static AdvertisementModule   m_AdvertisementModule;   // TODO 广告管理模块
-		// private static GameAnalyticsModule   m_GameAnalyticsModule;   // TODO 游戏分析管理模块
+		private static TimerModule         m_timerModule;         // 计时器管理模块
+		private static FsmModule           m_fsmModule;           // 有限状态机管理模块
+		private static ProcedureModule     m_procedureModule;     // 流程管理模块
+		private static UIModule            m_uiModule;            // UI管理模块
+		private static MonoModule          m_monoModule;          // Mono管理模块
+		// private static AdvertisementModule   m_advertisementModule;   // TODO 广告管理模块
+		// private static GameAnalyticsModule   m_gameAnalyticsModule;   // TODO 游戏分析管理模块
 
 		/// <summary>
 		/// 获取对象池模块。
 		/// </summary>
-		public static ObjectPoolModule ObjectPoolModule => m_ObjectPoolModule ??= ModuleManager.GetModule<ObjectPoolModule>();
+		public static ObjectPoolModule ObjectPoolModule => m_objectPoolModule ??= ModuleManager.GetModule<ObjectPoolModule>();
 
 		/// <summary>
 		/// 获取事件管理模块。
 		/// </summary>
-		public static EventModule EventModule => m_EventModule ??= ModuleManager.GetModule<EventModule>();
+		public static EventModule EventModule => m_eventModule ??= ModuleManager.GetModule<EventModule>();
 
 		/// <summary>
 		/// 获取资源管理模块。
 		/// </summary>
-		public static AssetModule AssetModule => m_AssetModule ??= ModuleManager.GetModule<AssetModule>();
+		public static AssetModule AssetModule => m_assetModule ??= ModuleManager.GetModule<AssetModule>();
 
 
 
 		/// <summary>
 		/// 获取计时器管理模块。
 		/// </summary>
-		public static TimerModule TimerModule => m_TimerModule ??= ModuleManager.GetModule<TimerModule>();
+		public static TimerModule TimerModule => m_timerModule ??= ModuleManager.GetModule<TimerModule>();
 
 		/// <summary>
 		/// 获取有限状态机管理模块。
 		/// </summary>
-		public static FsmModule FsmModule => m_FsmModule ??= ModuleManager.GetModule<FsmModule>();
+		public static FsmModule FsmModule => m_fsmModule ??= ModuleManager.GetModule<FsmModule>();
 
 		/// <summary>
 		/// 获取流程管理模块。
 		/// </summary>
-		public static ProcedureModule ProcedureModule => m_ProcedureModule ??= ModuleManager.GetModule<ProcedureModule>();
+		public static ProcedureModule ProcedureModule => m_procedureModule ??= ModuleManager.GetModule<ProcedureModule>();
 
 		/// <summary>
 		/// 获取UI管理模块。
 		/// </summary>
-		public static UIModule UIModule => m_UIModule ??= ModuleManager.GetModule<UIModule>();
+		public static UIModule UIModule => m_uiModule ??= ModuleManager.GetModule<UIModule>();
 
 		/// <summary>
 		/// 获取Mono管理模块。
 		/// </summary>
-		public static MonoModule MonoModule => m_MonoModule ??= ModuleManager.GetModule<MonoModule>();
+		public static MonoModule MonoModule => m_monoModule ??= ModuleManager.GetModule<MonoModule>();
 
 		///// <summary>
 		///// 获取广告管理模块。// TODO
 		///// </summary>
-		// private static AdvertisementModule AdvertisementModule => m_AdvertisementModule ??= ModuleManager.GetModule<AdvertisementModule>();
+		// private static AdvertisementModule AdvertisementModule => m_advertisementModule ??= ModuleManager.GetModule<AdvertisementModule>();
 
 		///// <summary>
 		///// 获取游戏分析管理模块。// TODO
 		///// </summary>
-		// private static GameAnalyticsModule GameAnalyticsModule => m_GameAnalyticsModule ?? ModuleManager.GetModule<GameAnalyticsModule>();
+		// private static GameAnalyticsModule GameAnalyticsModule => m_gameAnalyticsModule ?? ModuleManager.GetModule<GameAnalyticsModule>();
 	}
 }

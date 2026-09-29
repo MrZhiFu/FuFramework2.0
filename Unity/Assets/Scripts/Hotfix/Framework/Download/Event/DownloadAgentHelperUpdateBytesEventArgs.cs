@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 下载的数据流。
 		/// </summary>
-		private byte[] m_Bytes;
+		private byte[] m_bytes;
 
 		/// <summary>
 		/// 获取数据流的偏移。
@@ -37,14 +37,14 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 获取下载的数据流。
 		/// </summary>
-		public byte[] GetBytes() => m_Bytes;
+		public byte[] GetBytes() => m_bytes;
 
 		/// <summary>
 		/// 清理下载代理辅助器更新数据流事件。
 		/// </summary>
 		public override void Clear()
 		{
-			m_Bytes = null;
+			m_bytes = null;
 			Offset  = 0;
 			Length  = 0;
 		}
@@ -63,7 +63,7 @@ namespace Hotfix.Framework.Download
 			if (length <= 0 || offset + length > bytes.Length) throw new InvalidOperationException("数据流的长度不正确.");
 
 			var downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
-			downloadAgentHelperUpdateBytesEventArgs.m_Bytes = bytes;
+			downloadAgentHelperUpdateBytesEventArgs.m_bytes = bytes;
 			downloadAgentHelperUpdateBytesEventArgs.Offset  = offset;
 			downloadAgentHelperUpdateBytesEventArgs.Length  = length;
 			return downloadAgentHelperUpdateBytesEventArgs;

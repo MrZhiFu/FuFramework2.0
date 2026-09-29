@@ -14,8 +14,8 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	internal sealed class SystemTcpNetworkChannel : NetworkChannelBase
 	{
-		private ConnectState m_ConnectState;
-		private SystemNetSocket m_SystemNetSocket;
+		private ConnectState m_connectState;
+		private SystemNetSocket m_systemNetSocket;
 
 		/// <summary>
 		/// 初始化网络频道的新实例。
@@ -45,8 +45,8 @@ namespace Hotfix.Framework.Network
 		{
 			if (IsVerifyAddress)
 			{
-				m_SystemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				PSocket = m_SystemNetSocket;
+				m_systemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+				PSocket = m_systemNetSocket;
 			}
 
 			if (PSocket == null)
@@ -81,7 +81,7 @@ namespace Hotfix.Framework.Network
 			{
 				var position = (int)PReceiveState.Stream.Position;
 				var length = (int)(PReceiveState.Stream.Length - PReceiveState.Stream.Position);
-				m_SystemNetSocket.BeginReceive(PReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_SystemNetSocket);
+				m_systemNetSocket.BeginReceive(PReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
@@ -239,7 +239,7 @@ namespace Hotfix.Framework.Network
 			// 将收到的消息加入到链表最后（接收回调在线程池线程，需与主线程消费互斥）
 			lock (PExecutionMessageLock)
 			{
-				m_ExecutionMessageLinkedList.AddLast(messageObject);
+				m_executionMessageLinkedList.AddLast(messageObject);
 			}
 
 			PReceivedPacketCount++;
@@ -277,8 +277,8 @@ namespace Hotfix.Framework.Network
 		{
 			try
 			{
-				m_SystemNetSocket.BeginSend(PSendState.Stream.GetBuffer(), (int)PSendState.Stream.Position,
-					(int)(PSendState.Stream.Length - PSendState.Stream.Position), SocketFlags.None, SendCallback, m_SystemNetSocket);
+				m_systemNetSocket.BeginSend(PSendState.Stream.GetBuffer(), (int)PSendState.Stream.Position,
+					(int)(PSendState.Stream.Length - PSendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
@@ -334,8 +334,8 @@ namespace Hotfix.Framework.Network
 			try
 			{
 				PIsConnecting = true;
-				m_ConnectState = new ConnectState(m_SystemNetSocket, userData);
-				((SystemNetSocket)PSocket).BeginConnect(ConnectEndPoint.Address, ConnectEndPoint.Port, ConnectCallback, m_ConnectState);
+				m_connectState = new ConnectState(m_systemNetSocket, userData);
+				((SystemNetSocket)PSocket).BeginConnect(ConnectEndPoint.Address, ConnectEndPoint.Port, ConnectCallback, m_connectState);
 			}
 			catch (Exception exception)
 			{
@@ -378,7 +378,7 @@ namespace Hotfix.Framework.Network
 			lock (PSendPacketPool) PSendPacketPool.Clear();
 			lock (PHeartBeatLock) PHeartBeatState.Reset(true);
 
-			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, m_ConnectState.UserData);
+			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, m_connectState.UserData);
 			PActive = true;
 			ReceiveAsync();
 		}

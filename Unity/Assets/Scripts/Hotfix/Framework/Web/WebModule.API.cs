@@ -26,14 +26,14 @@ namespace Hotfix.Framework.Web
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
-		/// 模块未初始化（m_Scope 未建）时返回不可取消的空令牌，避免提前访问抛 NRE。
+		/// 模块未初始化（m_scope 未建）时返回不可取消的空令牌，避免提前访问抛 NRE。
 		/// </summary>
-		public CancellationToken Token => m_Scope?.Token ?? CancellationToken.None;
+		public CancellationToken Token => m_scope?.Token ?? CancellationToken.None;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_Scope.CancelAsync();
+		public UniTask CancelAsync() => m_scope.CancelAsync();
 
 		/// <summary>
 		/// 获取或设置超时时间（秒）。
@@ -46,14 +46,14 @@ namespace Hotfix.Framework.Web
 		/// </summary>
 		public int MaxConnectionPerServer
 		{
-			get => m_MaxConnectionPerServer;
-			set => m_MaxConnectionPerServer = value < 1 ? 1 : value;
+			get => m_maxConnectionPerServer;
+			set => m_maxConnectionPerServer = value < 1 ? 1 : value;
 		}
 
 		/// <summary>
 		/// 每个服务器的最大连接数（后备字段）。
 		/// </summary>
-		private int m_MaxConnectionPerServer = 8;
+		private int m_maxConnectionPerServer = 8;
 
 		/// <summary>
 		/// 请求超时时间的 TimeSpan 表示。

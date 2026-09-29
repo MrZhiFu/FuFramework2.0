@@ -19,7 +19,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 记录UI响应事件的字典, key: 可相应UI元素，如按钮，value：该UI元素上的可响应事件回调
 		/// </summary>
-		private readonly Dictionary<EventListener, List<EventCallback1>> m_UIEventListenerDic = new();
+		private readonly Dictionary<EventListener, List<EventCallback1>> m_uiEventListenerDic = new();
 
 		/// <summary>
 		/// 创建FUI事件注册器
@@ -40,12 +40,12 @@ namespace Hotfix.Framework.UI
 				return;
 			}
 
-			if (!m_UIEventListenerDic.ContainsKey(listener))
+			if (!m_uiEventListenerDic.ContainsKey(listener))
 			{
-				m_UIEventListenerDic[listener] = new List<EventCallback1>();
+				m_uiEventListenerDic[listener] = new List<EventCallback1>();
 			}
 
-			m_UIEventListenerDic[listener].Add(callback);
+			m_uiEventListenerDic[listener].Add(callback);
 			listener.Add(callback);
 		}
 
@@ -62,7 +62,7 @@ namespace Hotfix.Framework.UI
 				return;
 			}
 
-			if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
+			if (!m_uiEventListenerDic.TryGetValue(listener, out var handlers))
 			{
 				FuLogger.LogError($"[FuiEventRegister] 移除FUI监听事件失败, 监听器 {listener} 不存在");
 				return;
@@ -90,7 +90,7 @@ namespace Hotfix.Framework.UI
 				return;
 			}
 
-			if (m_UIEventListenerDic.TryGetValue(listener, out var handlers))
+			if (m_uiEventListenerDic.TryGetValue(listener, out var handlers))
 			{
 				if (handlers.Count > 0)
 				{
@@ -105,7 +105,7 @@ namespace Hotfix.Framework.UI
 			else
 			{
 				handlers                       = new List<EventCallback1>();
-				m_UIEventListenerDic[listener] = handlers;
+				m_uiEventListenerDic[listener] = handlers;
 			}
 
 			handlers.Add(callback);
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.UI
 				return;
 			}
 
-			if (!m_UIEventListenerDic.TryGetValue(listener, out var handlers))
+			if (!m_uiEventListenerDic.TryGetValue(listener, out var handlers))
 			{
 				FuLogger.LogError($"[FuiEventRegister] 清理FUI监听事件失败, 监听器 {listener} 不存在");
 				return;
@@ -135,7 +135,7 @@ namespace Hotfix.Framework.UI
 				listener.Remove(handler);
 			}
 
-			m_UIEventListenerDic[listener].Clear();
+			m_uiEventListenerDic[listener].Clear();
 		}
 
 		/// <summary>
@@ -143,12 +143,12 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public void ClearAllUIListener()
 		{
-			foreach (var listener in m_UIEventListenerDic.Keys)
+			foreach (var listener in m_uiEventListenerDic.Keys)
 			{
 				ClearUIListener(listener);
 			}
 
-			m_UIEventListenerDic.Clear();
+			m_uiEventListenerDic.Clear();
 		}
 
 		/// <summary>

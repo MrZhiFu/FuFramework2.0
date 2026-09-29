@@ -23,13 +23,13 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly Func<UniTask<JSONNode>> m_LoadFunc;
+        private readonly Func<UniTask<JSONNode>> m_loadFunc;
 
         /// <summary>
         /// 创建表实例
         /// </summary>
         /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
-        public TbLanguageDef(Func<UniTask<JSONNode>> loadFunc) => m_LoadFunc = loadFunc;
+        public TbLanguageDef(Func<UniTask<JSONNode>> loadFunc) => m_loadFunc = loadFunc;
 
         /// <summary>
         /// 异步加载本表数据
@@ -37,7 +37,7 @@ namespace Hotfix.Game.Config
         /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var jsonNode = await m_LoadFunc();
+            var jsonNode = await m_loadFunc();
 
             DataList.Clear();
             LongKeyDataDict.Clear();

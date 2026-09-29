@@ -64,8 +64,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 处理RPC回复消息。
-		/// 此方法用于处理接收到的RPC回复消息，并触发相应的结束处理程序。
+		/// 处理RPC回复消息，并触发相应的结束处理程序。
 		/// </summary>
 		/// <param name="message">要处理的消息对象，必须实现IResponseMessage接口。</param>
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>

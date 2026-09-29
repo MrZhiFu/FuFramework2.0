@@ -17,7 +17,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 0 ~ 0.1 表示模拟执行前的准备时间(视觉效果，不影响功能)
 		/// </summary>
-		private const float ReadyTime = 0.1f;
+		private const float READY_TIME = 0.1f;
 
 		/// <summary>
 		/// 执行批处理命令(.bat或.sh)
@@ -27,7 +27,7 @@ namespace FuFramework.Core.Editor
 		/// <returns>是否执行成功</returns>
 		public static bool RunBatch(string cmdPath, string workDir)
 		{
-			EditorUtility.DisplayProgressBar("执行批处理", "准备执行: " + cmdPath, ReadyTime);
+			EditorUtility.DisplayProgressBar("执行批处理", "准备执行: " + cmdPath, READY_TIME);
 
 			try
 			{
@@ -114,7 +114,7 @@ namespace FuFramework.Core.Editor
 		/// <param name="process">进程实例</param>
 		private static void RunProcess(Process process)
 		{
-			var fProgress    = ReadyTime;
+			var fProgress    = READY_TIME;
 			var errorBuilder = new System.Text.StringBuilder();
 
 			process.Start();

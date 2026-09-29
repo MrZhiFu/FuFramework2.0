@@ -21,27 +21,27 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 滚动位置
 		/// </summary>
-		protected Vector2 m_ScrollPos;
+		protected Vector2 m_scrollPos;
 
 		/// <summary>
 		/// 搜索过滤字符串（由子类消费）
 		/// </summary>
-		protected string m_SearchFilter = "";
+		protected string m_searchFilter = "";
 
 		/// <summary>
 		/// 是否自动刷新（每 RefreshInterval 秒重绘一次）
 		/// </summary>
-		protected bool m_AutoRefresh = true;
+		protected bool m_autoRefresh = true;
 
 		/// <summary>
 		/// 上次自动刷新时间
 		/// </summary>
-		private double m_LastRefreshTime;
+		private double m_lastRefreshTime;
 
 		/// <summary>
 		/// 上一帧的 Play 状态（用于 Play→非 Play 跳变时仅执行一次 ResetReflection）
 		/// </summary>
-		private bool m_WasPlaying;
+		private bool m_wasPlaying;
 
 		#endregion
 
@@ -138,8 +138,8 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		private void OnEditorUpdate()
 		{
-			if (!m_AutoRefresh || !Application.isPlaying) return;
-			if (EditorApplication.timeSinceStartup - m_LastRefreshTime < RefreshInterval) return;
+			if (!m_autoRefresh || !Application.isPlaying) return;
+			if (EditorApplication.timeSinceStartup - m_lastRefreshTime < RefreshInterval) return;
 
 			Repaint();
 		}
@@ -155,9 +155,9 @@ namespace FuFramework.Core.Editor
 			// 字典与字段——如 ConfigModuleWindow 的字段编辑撤销缓存），防止持有已失效的热更实例
 			if (!Application.isPlaying)
 			{
-				if (m_WasPlaying)
+				if (m_wasPlaying)
 				{
-					m_WasPlaying = false;
+					m_wasPlaying = false;
 					ResetReflection();
 				}
 
@@ -165,7 +165,7 @@ namespace FuFramework.Core.Editor
 				return;
 			}
 
-			m_WasPlaying = true;
+			m_wasPlaying = true;
 
 			if (!EnsureReflection())
 			{
@@ -174,7 +174,7 @@ namespace FuFramework.Core.Editor
 			}
 
 			// 自动刷新到点：重建钩子在可见的 OnGUI 内按节拍执行
-			if (m_AutoRefresh && EditorApplication.timeSinceStartup - m_LastRefreshTime >= RefreshInterval)
+			if (m_autoRefresh && EditorApplication.timeSinceStartup - m_lastRefreshTime >= RefreshInterval)
 			{
 				InvokeRefresh();
 			}
@@ -182,7 +182,7 @@ namespace FuFramework.Core.Editor
 			DrawOverview();
 			EditorGUILayout.Separator();
 
-			m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
+			m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
 			DrawContent();
 			EditorGUILayout.EndScrollView();
 		}
@@ -192,7 +192,7 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		private void InvokeRefresh()
 		{
-			m_LastRefreshTime = EditorApplication.timeSinceStartup;
+			m_lastRefreshTime = EditorApplication.timeSinceStartup;
 			OnRefresh();
 		}
 
@@ -208,10 +208,10 @@ namespace FuFramework.Core.Editor
 			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
 			GUILayout.Label("搜索:", GUILayout.Width(40));
-			m_SearchFilter = GUILayout.TextField(m_SearchFilter, EditorStyles.toolbarTextField, GUILayout.Width(SearchFieldWidth));
+			m_searchFilter = GUILayout.TextField(m_searchFilter, EditorStyles.toolbarTextField, GUILayout.Width(SearchFieldWidth));
 
 			GUILayout.Space(20);
-			m_AutoRefresh = GUILayout.Toggle(m_AutoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
+			m_autoRefresh = GUILayout.Toggle(m_autoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
 
 			GUILayout.FlexibleSpace();
 

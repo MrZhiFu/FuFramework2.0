@@ -57,41 +57,41 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// 配置表折叠状态缓存（按表名）
 		/// </summary>
-		private readonly Dictionary<string, bool> m_TableFoldoutStates = new();
+		private readonly Dictionary<string, bool> m_tableFoldoutStates = new();
 
 		/// <summary>
 		/// 展开表的行数据缓存（按表名，配置加载后只读，缓存安全）
 		/// </summary>
-		private readonly Dictionary<string, object[]> m_RowsCache = new();
+		private readonly Dictionary<string, object[]> m_rowsCache = new();
 
 		/// <summary>
 		/// 表内行搜索过滤字符串（按表名）
 		/// </summary>
-		private readonly Dictionary<string, string> m_RowSearchFilters = new();
+		private readonly Dictionary<string, string> m_rowSearchFilters = new();
 
 		/// <summary>
 		/// 行折叠状态缓存（key 为 表名|行索引，行数据只读稳定，索引稳定）
 		/// </summary>
-		private readonly Dictionary<string, bool> m_RowFoldoutStates = new();
+		private readonly Dictionary<string, bool> m_rowFoldoutStates = new();
 
 		/// <summary>
 		/// 字段编辑撤销缓存：行对象引用 → 属性名 → 原始值。
 		/// 首次编辑某字段时记录原值，供「重置」回滚与「编辑高亮」判定。
 		/// 行是活配置对象（Luban bean 未重写 Equals，引用相等作 key 安全）。
 		/// </summary>
-		private readonly Dictionary<object, Dictionary<string, object>> m_FieldOriginalValues = new();
+		private readonly Dictionary<object, Dictionary<string, object>> m_fieldOriginalValues = new();
 
 		/// <summary>
 		/// 写回失败时间戳缓存：行对象引用 → 属性名 → 失败时刻（EditorApplication.timeSinceStartup）。
 		/// 失败后 2 秒内该字段红色标注；成功后移除。
 		/// </summary>
-		private readonly Dictionary<object, Dictionary<string, double>> m_WriteFailTimes = new();
+		private readonly Dictionary<object, Dictionary<string, double>> m_writeFailTimes = new();
 
 		/// <summary>
 		/// 数值字段在途编辑文本缓存：行引用 → 属性名 → 用户正在输入的文本。
 		/// 数值字段用 TextField + TryParse 校验，仅在文本可完整解析时提交，避免 Unity 数值控件对非法输入提交 0。
 		/// </summary>
-		private readonly Dictionary<object, Dictionary<string, string>> m_FieldEditText = new();
+		private readonly Dictionary<object, Dictionary<string, string>> m_fieldEditText = new();
 
 		#endregion
 
@@ -100,27 +100,27 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// ConfigModule 类型
 		/// </summary>
-		private Type m_ConfigModuleType;
+		private Type m_configModuleType;
 
 		/// <summary>
 		/// ConfigModule 实例
 		/// </summary>
-		private object m_ModuleInstance;
+		private object m_moduleInstance;
 
 		/// <summary>
 		/// ConfigModule.Count 属性
 		/// </summary>
-		private PropertyInfo m_ModuleCountProperty;
+		private PropertyInfo m_moduleCountProperty;
 
 		/// <summary>
 		/// ConfigModule.CfgNames 属性
 		/// </summary>
-		private PropertyInfo m_CfgNamesProperty;
+		private PropertyInfo m_cfgNamesProperty;
 
 		/// <summary>
 		/// ConfigModule.GetConfig(string) 方法
 		/// </summary>
-		private MethodInfo m_GetConfigMethod;
+		private MethodInfo m_getConfigMethod;
 
 		#endregion
 
@@ -132,7 +132,7 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		private void OnDestroy()
 		{
-			if (m_FieldOriginalValues.Count == 0) return;
+			if (m_fieldOriginalValues.Count == 0) return;
 			EditorApplication.delayCall += PromptSaveChangesOnClose;
 		}
 
@@ -141,7 +141,7 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		private void PromptSaveChangesOnClose()
 		{
-			if (m_FieldOriginalValues.Count == 0) return;
+			if (m_fieldOriginalValues.Count == 0) return;
 			var summary = BuildChangeSummary();
 			var ok = EditorUtility.DisplayDialog("配置调试", $"发现存在变更值\n{summary}\n\n是否需要保存变更记录？", "确定", "取消");
 			if (ok)
@@ -163,7 +163,7 @@ namespace FuFramework.Config.Editor
 		/// <returns>简要信息字符串</returns>
 		private string BuildChangeSummary()
 		{
-			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var cfgNames = m_cfgNamesProperty?.GetValue(m_moduleInstance) as string[];
 			var affectedTables = new List<string>();
 			var rowCount = 0;
 			var fieldCount = 0;
@@ -172,14 +172,14 @@ namespace FuFramework.Config.Editor
 			{
 				foreach (var cfgName in cfgNames)
 				{
-					var table = m_GetConfigMethod?.Invoke(m_ModuleInstance, new object[] { cfgName });
+					var table = m_getConfigMethod?.Invoke(m_moduleInstance, new object[] { cfgName });
 					if (table == null) continue;
 
 					var rows = GetRows(table, cfgName);
 					var hasChange = false;
 					foreach (var row in rows)
 					{
-						if (!m_FieldOriginalValues.TryGetValue(row, out var orig)) continue;
+						if (!m_fieldOriginalValues.TryGetValue(row, out var orig)) continue;
 						hasChange = true;
 						rowCount++;
 						fieldCount += orig.Count;
@@ -212,7 +212,7 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		protected override void DrawOverview()
 		{
-			var count = m_ModuleCountProperty?.GetValue(m_ModuleInstance) ?? 0;
+			var count = m_moduleCountProperty?.GetValue(m_moduleInstance) ?? 0;
 			EditorGUILayout.LabelField($"配置表总个数：{count}");
 		}
 
@@ -221,7 +221,7 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		protected override void DrawContent()
 		{
-			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var cfgNames = m_cfgNamesProperty?.GetValue(m_moduleInstance) as string[];
 			if (cfgNames == null || cfgNames.Length == 0)
 			{
 				EditorGUILayout.HelpBox("配置表为空", MessageType.Info);
@@ -239,9 +239,9 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		protected override void ExpandAll()
 		{
-			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var cfgNames = m_cfgNamesProperty?.GetValue(m_moduleInstance) as string[];
 			if (cfgNames == null) return;
-			SetAllFoldouts(cfgNames, m_TableFoldoutStates, true);
+			SetAllFoldouts(cfgNames, m_tableFoldoutStates, true);
 		}
 
 		/// <summary>
@@ -249,9 +249,9 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		protected override void CollapseAll()
 		{
-			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var cfgNames = m_cfgNamesProperty?.GetValue(m_moduleInstance) as string[];
 			if (cfgNames == null) return;
-			SetAllFoldouts(cfgNames, m_TableFoldoutStates, false);
+			SetAllFoldouts(cfgNames, m_tableFoldoutStates, false);
 		}
 
 		#endregion
@@ -265,27 +265,27 @@ namespace FuFramework.Config.Editor
 		private void DrawTable(string cfgName)
 		{
 			// 表名搜索过滤
-			if (!string.IsNullOrEmpty(m_SearchFilter)
-			    && !cfgName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+			if (!string.IsNullOrEmpty(m_searchFilter)
+			    && !cfgName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 			{
 				return;
 			}
 
-			var table = m_GetConfigMethod?.Invoke(m_ModuleInstance, new object[] { cfgName });
+			var table = m_getConfigMethod?.Invoke(m_moduleInstance, new object[] { cfgName });
 			if (table == null) return;
 
-			if (!m_TableFoldoutStates.TryGetValue(cfgName, out var isOpen))
+			if (!m_tableFoldoutStates.TryGetValue(cfgName, out var isOpen))
 			{
 				isOpen = true;
-				m_TableFoldoutStates[cfgName] = true;
+				m_tableFoldoutStates[cfgName] = true;
 			}
 
 			var rowCount = GetTableCount(table);
 			var foldoutOldColor = GUI.color;
 			GUI.color = Color.cyan;
-			m_TableFoldoutStates[cfgName] = EditorGUILayout.Foldout(isOpen, $"{cfgName} ({rowCount} 行)", true);
+			m_tableFoldoutStates[cfgName] = EditorGUILayout.Foldout(isOpen, $"{cfgName} ({rowCount} 行)", true);
 			GUI.color = foldoutOldColor;
-			if (!m_TableFoldoutStates[cfgName]) return;
+			if (!m_tableFoldoutStates[cfgName]) return;
 
 			EditorGUILayout.BeginVertical("box");
 			{
@@ -357,16 +357,16 @@ namespace FuFramework.Config.Editor
 		/// <param name="cfgName">配置表名称</param>
 		private void DrawRows(object table, string cfgName)
 		{
-			if (!m_RowSearchFilters.TryGetValue(cfgName, out var rowFilter))
+			if (!m_rowSearchFilters.TryGetValue(cfgName, out var rowFilter))
 			{
 				rowFilter = "";
-				m_RowSearchFilters[cfgName] = rowFilter;
+				m_rowSearchFilters[cfgName] = rowFilter;
 			}
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("行搜索:", GUILayout.Width(60));
 			rowFilter = GUILayout.TextField(rowFilter, GUILayout.MinWidth(200));
-			m_RowSearchFilters[cfgName] = rowFilter;
+			m_rowSearchFilters[cfgName] = rowFilter;
 			EditorGUILayout.EndHorizontal();
 
 			var rows = GetRows(table, cfgName);
@@ -393,7 +393,7 @@ namespace FuFramework.Config.Editor
 		/// <returns>行数据列表</returns>
 		private List<object> GetRows(object table, string cfgName)
 		{
-			if (m_RowsCache.TryGetValue(cfgName, out var cached))
+			if (m_rowsCache.TryGetValue(cfgName, out var cached))
 			{
 				return new List<object>(cached);
 			}
@@ -408,7 +408,7 @@ namespace FuFramework.Config.Editor
 					if (item != null) list.Add(item);
 				}
 
-				m_RowsCache[cfgName] = list.ToArray();
+				m_rowsCache[cfgName] = list.ToArray();
 				return list;
 			}
 
@@ -509,10 +509,10 @@ namespace FuFramework.Config.Editor
 			// 非法输入不提交（值不变）；失焦时恢复显示原配置值，避免非法文本红框停留。
 			if (IsNumericType(type))
 			{
-				if (!m_FieldEditText.TryGetValue(row, out var editDict))
+				if (!m_fieldEditText.TryGetValue(row, out var editDict))
 				{
 					editDict = new Dictionary<string, string>();
-					m_FieldEditText[row] = editDict;
+					m_fieldEditText[row] = editDict;
 				}
 
 				if (!editDict.TryGetValue(prop.Name, out var pending))
@@ -612,14 +612,14 @@ namespace FuFramework.Config.Editor
 		/// <param name="currentValue">当前值</param>
 		private void DrawEditableField(object row, PropertyInfo prop, object currentValue)
 		{
-			var isEdited = m_FieldOriginalValues.TryGetValue(row, out var origDict)
+			var isEdited = m_fieldOriginalValues.TryGetValue(row, out var origDict)
 			               && origDict.ContainsKey(prop.Name);
-			var isWriteFail = m_WriteFailTimes.TryGetValue(row, out var failDict)
+			var isWriteFail = m_writeFailTimes.TryGetValue(row, out var failDict)
 			                  && failDict.TryGetValue(prop.Name, out var failTime)
 			                  && EditorApplication.timeSinceStartup - failTime < 2.0;
 			// 数值字段在途文本非法（TryParse 失败）→ 红色提示，值不提交
 			var isInvalidInput = IsNumericType(prop.PropertyType)
-					     && m_FieldEditText.TryGetValue(row, out var editDict)
+					     && m_fieldEditText.TryGetValue(row, out var editDict)
 					     && editDict.TryGetValue(prop.Name, out var editText)
 					     && !TryParseNumeric(prop.PropertyType, editText, out _);
 
@@ -652,7 +652,7 @@ namespace FuFramework.Config.Editor
 					if (origDict == null)
 					{
 						origDict = new Dictionary<string, object>();
-						m_FieldOriginalValues[row] = origDict;
+						m_fieldOriginalValues[row] = origDict;
 					}
 
 					if (!origDict.ContainsKey(prop.Name))
@@ -663,18 +663,18 @@ namespace FuFramework.Config.Editor
 					{
 						// 值改回原值：清除撤销缓存条目（面板高亮消失，导出不再出现无意义变更）
 						origDict.Remove(prop.Name);
-						if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+						if (origDict.Count == 0) m_fieldOriginalValues.Remove(row);
 					}
 
 					if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
-						m_WriteFailTimes.Remove(row);
+						m_writeFailTimes.Remove(row);
 				}
 				catch (Exception e)
 				{
 					if (failDict == null)
 					{
 						failDict = new Dictionary<string, double>();
-						m_WriteFailTimes[row] = failDict;
+						m_writeFailTimes[row] = failDict;
 					}
 
 					failDict[prop.Name] = EditorApplication.timeSinceStartup;
@@ -695,21 +695,21 @@ namespace FuFramework.Config.Editor
 						{
 							prop.SetValue(row, originalValue);
 							origDict.Remove(prop.Name);
-							if (origDict.Count == 0) m_FieldOriginalValues.Remove(row);
+							if (origDict.Count == 0) m_fieldOriginalValues.Remove(row);
 						}
 
 						// 重置后清空该字段在途编辑文本（已编辑恢复原值、非法输入清除），避免下一帧读回旧文本
-						if (m_FieldEditText.TryGetValue(row, out var resetEditDict)) resetEditDict.Remove(prop.Name);
+						if (m_fieldEditText.TryGetValue(row, out var resetEditDict)) resetEditDict.Remove(prop.Name);
 						GUIUtility.keyboardControl = 0; // 释放输入框焦点，立即显示重置后的值（否则需等失焦才刷新）
 						if (failDict != null && failDict.Remove(prop.Name) && failDict.Count == 0)
-							m_WriteFailTimes.Remove(row);
+							m_writeFailTimes.Remove(row);
 					}
 					catch (Exception e)
 					{
 						if (failDict == null)
 						{
 							failDict = new Dictionary<string, double>();
-							m_WriteFailTimes[row] = failDict;
+							m_writeFailTimes[row] = failDict;
 						}
 
 						failDict[prop.Name] = EditorApplication.timeSinceStartup;
@@ -728,14 +728,14 @@ namespace FuFramework.Config.Editor
 		private void DrawRow(object row, string cfgName, int index)
 		{
 			var foldoutKey = $"{cfgName}|{index}";
-			if (!m_RowFoldoutStates.TryGetValue(foldoutKey, out var isOpen))
+			if (!m_rowFoldoutStates.TryGetValue(foldoutKey, out var isOpen))
 			{
 				isOpen = false;
-				m_RowFoldoutStates[foldoutKey] = isOpen;
+				m_rowFoldoutStates[foldoutKey] = isOpen;
 			}
 
-			m_RowFoldoutStates[foldoutKey] = EditorGUILayout.Foldout(isOpen, GetRowLabel(row, index), true);
-			if (!m_RowFoldoutStates[foldoutKey]) return;
+			m_rowFoldoutStates[foldoutKey] = EditorGUILayout.Foldout(isOpen, GetRowLabel(row, index), true);
+			if (!m_rowFoldoutStates[foldoutKey]) return;
 
 			EditorGUILayout.BeginVertical("box");
 			{
@@ -809,13 +809,13 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		private void ExportChangeLog()
 		{
-			if (m_FieldOriginalValues.Count == 0)
+			if (m_fieldOriginalValues.Count == 0)
 			{
 				EditorUtility.DisplayDialog("记录变更", "当前没有需要记录的变更。", "确定");
 				return;
 			}
 
-			var cfgNames = m_CfgNamesProperty?.GetValue(m_ModuleInstance) as string[];
+			var cfgNames = m_cfgNamesProperty?.GetValue(m_moduleInstance) as string[];
 			if (cfgNames == null || cfgNames.Length == 0) return;
 
 			var sb = new StringBuilder();
@@ -825,14 +825,14 @@ namespace FuFramework.Config.Editor
 
 			foreach (var cfgName in cfgNames)
 			{
-				var table = m_GetConfigMethod?.Invoke(m_ModuleInstance, new object[] { cfgName });
+				var table = m_getConfigMethod?.Invoke(m_moduleInstance, new object[] { cfgName });
 				if (table == null) continue;
 
 				var rows = GetRows(table, cfgName);
 				var changedRows = new List<object>();
 				foreach (var row in rows)
 				{
-					if (m_FieldOriginalValues.ContainsKey(row)) changedRows.Add(row);
+					if (m_fieldOriginalValues.ContainsKey(row)) changedRows.Add(row);
 				}
 
 				if (changedRows.Count == 0) continue;
@@ -841,7 +841,7 @@ namespace FuFramework.Config.Editor
 				foreach (var row in changedRows)
 				{
 					sb.AppendLine($"### id {GetRowIdentity(row)}");
-					var orig = m_FieldOriginalValues[row];
+					var orig = m_fieldOriginalValues[row];
 					foreach (var kv in orig)
 					{
 						object newValue;
@@ -954,17 +954,17 @@ namespace FuFramework.Config.Editor
 		/// <returns>初始化成功返回 true</returns>
 		protected override bool EnsureReflection()
 		{
-			if (m_ModuleInstance != null) return true;
+			if (m_moduleInstance != null) return true;
 
-			m_ConfigModuleType = HotfixReflection.ConfigModule;
-			if (m_ConfigModuleType == null) return false;
+			m_configModuleType = HotfixReflection.ConfigModule;
+			if (m_configModuleType == null) return false;
 
-			m_ModuleInstance = HotfixReflection.GetStaticInstance(m_ConfigModuleType);
-			if (m_ModuleInstance == null) return false;
+			m_moduleInstance = HotfixReflection.GetStaticInstance(m_configModuleType);
+			if (m_moduleInstance == null) return false;
 
-			m_ModuleCountProperty = m_ConfigModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
-			m_CfgNamesProperty    = m_ConfigModuleType.GetProperty("CfgNames", BindingFlags.Public | BindingFlags.Instance);
-			m_GetConfigMethod     = m_ConfigModuleType.GetMethod("GetConfig", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string) }, null);
+			m_moduleCountProperty = m_configModuleType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
+			m_cfgNamesProperty    = m_configModuleType.GetProperty("CfgNames", BindingFlags.Public | BindingFlags.Instance);
+			m_getConfigMethod     = m_configModuleType.GetMethod("GetConfig", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string) }, null);
 
 			return true;
 		}
@@ -974,18 +974,18 @@ namespace FuFramework.Config.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_ConfigModuleType    = null;
-			m_ModuleInstance      = null;
-			m_ModuleCountProperty = null;
-			m_CfgNamesProperty    = null;
-			m_GetConfigMethod     = null;
-			m_TableFoldoutStates.Clear();
-			m_RowsCache.Clear();
-			m_RowSearchFilters.Clear();
-			m_RowFoldoutStates.Clear();
-			m_FieldOriginalValues.Clear();
-			m_WriteFailTimes.Clear();
-			m_FieldEditText.Clear();
+			m_configModuleType    = null;
+			m_moduleInstance      = null;
+			m_moduleCountProperty = null;
+			m_cfgNamesProperty    = null;
+			m_getConfigMethod     = null;
+			m_tableFoldoutStates.Clear();
+			m_rowsCache.Clear();
+			m_rowSearchFilters.Clear();
+			m_rowFoldoutStates.Clear();
+			m_fieldOriginalValues.Clear();
+			m_writeFailTimes.Clear();
+			m_fieldEditText.Clear();
 		}
 
 		#endregion

@@ -18,12 +18,12 @@ namespace AOT.Launch
 		/// <summary>
 		/// 资源加载UI界面。
 		/// </summary>
-		private WinLauncher m_WinLauncher;
+		private WinLauncher m_winLauncher;
 
 		/// <summary>
 		/// 更新确认框的回调。
 		/// </summary>
-		private Action m_OnConfirm;
+		private Action m_onConfirm;
 
 		/// <summary>
 		/// 创建并显示加载界面。
@@ -53,13 +53,13 @@ namespace AOT.Launch
 		{
 			UIPackage.AddPackage("UI/Launcher");
 
-			m_WinLauncher = new WinLauncher
+			m_winLauncher = new WinLauncher
 			{
-				m_View = UIPackage.CreateObject("Launcher", "WinLauncher").asCom
+				m_view = UIPackage.CreateObject("Launcher", "WinLauncher").asCom
 			};
-			m_WinLauncher.m_View.MakeFullScreen();
+			m_winLauncher.m_view.MakeFullScreen();
 
-			GRoot.inst.AddChild(m_WinLauncher.m_View);
+			GRoot.inst.AddChild(m_winLauncher.m_view);
 		}
 
 		/// <summary>
@@ -67,8 +67,8 @@ namespace AOT.Launch
 		/// </summary>
 		private void InitWinLauncher()
 		{
-			m_WinLauncher.InitUIComp();
-			m_WinLauncher.btnOk.onClick.Set(OnBtnOkClick);
+			m_winLauncher.InitUIComp();
+			m_winLauncher.btnOk.onClick.Set(OnBtnOkClick);
 		}
 
 		/// <summary>
@@ -77,8 +77,8 @@ namespace AOT.Launch
 		/// <param name="text">提示文本</param>
 		public void SetTip(string text)
 		{
-			if (m_WinLauncher.txtTips != null)
-				m_WinLauncher.txtTips.text = text;
+			if (m_winLauncher.txtTips != null)
+				m_winLauncher.txtTips.text = text;
 		}
 
 		/// <summary>
@@ -90,8 +90,8 @@ namespace AOT.Launch
 		{
 			SetDownloading(true);
 
-			if (m_WinLauncher.progressBar != null)
-				m_WinLauncher.progressBar.value = progress * 100f;
+			if (m_winLauncher.progressBar != null)
+				m_winLauncher.progressBar.value = progress * 100f;
 
 			SetTip(text);
 		}
@@ -100,13 +100,13 @@ namespace AOT.Launch
 		/// 设置是否显示更新确认框。
 		/// </summary>
 		/// <param name="need">是否显示更新确认框</param>
-		public void SetNeedUpgrade(bool need) => m_WinLauncher.SetController(need ? WinLauncher.EIsNeedUpgrade.Yes : WinLauncher.EIsNeedUpgrade.No);
+		public void SetNeedUpgrade(bool need) => m_winLauncher.SetController(need ? WinLauncher.EIsNeedUpgrade.Yes : WinLauncher.EIsNeedUpgrade.No);
 
 		/// <summary>
 		/// 设置是否处于下载中状态。
 		/// </summary>
 		/// <param name="downloading">是否处于下载中状态</param>
-		public void SetDownloading(bool downloading) => m_WinLauncher.SetController(downloading ? WinLauncher.EIsDownloading.Yes : WinLauncher.EIsDownloading.No);
+		public void SetDownloading(bool downloading) => m_winLauncher.SetController(downloading ? WinLauncher.EIsDownloading.Yes : WinLauncher.EIsDownloading.No);
 
 		/// <summary>
 		/// 显示更新确认框。
@@ -116,29 +116,29 @@ namespace AOT.Launch
 		public void ShowUpdateDialog(string content, Action onConfirm)
 		{
 			SetNeedUpgrade(true);
-			m_WinLauncher.btnOk.title     = LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_dialog_ok_btn);
-			m_WinLauncher.txtContent.text = content;
-			m_WinLauncher.txtContent.onClick.Set(ctx =>
+			m_winLauncher.btnOk.title     = LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_dialog_ok_btn);
+			m_winLauncher.txtContent.text = content;
+			m_winLauncher.txtContent.onClick.Set(ctx =>
 			{
 				if (ctx.data != null) UtilityAOT.Application.OpenURL(ctx.data.ToString());
 			});
-			m_OnConfirm = onConfirm;
+			m_onConfirm = onConfirm;
 		}
 
 		/// <summary>
 		/// 确认按钮点击事件处理。
 		/// </summary>
 		/// <param name="ctx"></param>
-		private void OnBtnOkClick(EventContext ctx) => m_OnConfirm?.Invoke();
+		private void OnBtnOkClick(EventContext ctx) => m_onConfirm?.Invoke();
 
 		/// <summary>
 		/// 关闭并销毁加载界面。
 		/// </summary>
 		public void Close()
 		{
-			if (m_WinLauncher?.m_View == null) return;
-			GRoot.inst.RemoveChild(m_WinLauncher.m_View, true);
-			m_WinLauncher = null;
+			if (m_winLauncher?.m_view == null) return;
+			GRoot.inst.RemoveChild(m_winLauncher.m_view, true);
+			m_winLauncher = null;
 		}
 	}
 }

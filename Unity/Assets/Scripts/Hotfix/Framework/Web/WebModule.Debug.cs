@@ -21,74 +21,74 @@ namespace Hotfix.Framework.Web
 		/// <summary>
 		/// 调试环形记录容量。
 		/// </summary>
-		internal const int DebugLogCapacity = 200;
+		internal const int DEBUG_LOG_CAPACITY = 200;
 
 		/// <summary>
 		/// 记录中请求体文本的最大保留长度，超出部分截断。
 		/// </summary>
-		private const int DebugLogBodyMaxLength = 2000;
+		private const int DEBUG_LOG_BODY_MAX_LENGTH = 2000;
 
 		#region 调试字段
 
 		/// <summary>
 		/// 累计发起请求总数（入队即计）。
 		/// </summary>
-		private int m_SubmitCount;
+		private int m_submitCount;
 
 		/// <summary>
 		/// 累计发起的 JSON 请求数。
 		/// </summary>
-		private int m_JsonSubmitCount;
+		private int m_jsonSubmitCount;
 
 		/// <summary>
 		/// 累计发起的 Pb 请求数。
 		/// </summary>
-		private int m_PbSubmitCount;
+		private int m_pbSubmitCount;
 
 		/// <summary>
 		/// 累计成功请求数。
 		/// </summary>
-		private int m_SuccessCount;
+		private int m_successCount;
 
 		/// <summary>
 		/// 累计失败请求数（网络错误 / 构建异常等）。
 		/// </summary>
-		private int m_FailedCount;
+		private int m_failedCount;
 
 		/// <summary>
 		/// 累计超时请求数。
 		/// </summary>
-		private int m_TimeoutCount;
+		private int m_timeoutCount;
 
 		/// <summary>
 		/// 累计取消请求数（调用方取消 / 模块销毁 / 调试急救取消）。
 		/// </summary>
-		private int m_CanceledCount;
+		private int m_canceledCount;
 
 		/// <summary>
 		/// 累计发送字节数。
 		/// </summary>
-		private long m_SentBytes;
+		private long m_sentBytes;
 
 		/// <summary>
 		/// 累计接收字节数。
 		/// </summary>
-		private long m_RecvBytes;
+		private long m_recvBytes;
 
 		/// <summary>
 		/// 最近请求记录的环形缓冲（数组为容器）。
 		/// </summary>
-		private readonly WebLogEntry[] m_DebugLogRing = new WebLogEntry[DebugLogCapacity];
+		private readonly WebLogEntry[] m_debugLogRing = new WebLogEntry[DEBUG_LOG_CAPACITY];
 
 		/// <summary>
 		/// 环形缓冲中最旧记录的索引。
 		/// </summary>
-		private int m_DebugLogHead;
+		private int m_debugLogHead;
 
 		/// <summary>
 		/// 环形缓冲中现有记录条数。
 		/// </summary>
-		private int m_DebugLogCount;
+		private int m_debugLogCount;
 
 		#endregion
 
@@ -103,11 +103,11 @@ namespace Hotfix.Framework.Web
 			if (DebugRecordingEnabled)
 			{
 				webJsonData.EnqueueTimeUtc = DateTime.UtcNow;
-				m_JsonSubmitCount++;
-				m_SubmitCount++;
+				m_jsonSubmitCount++;
+				m_submitCount++;
 			}
 
-			m_WaitingJsonQueue.Enqueue(webJsonData);
+			m_waitingJsonQueue.Enqueue(webJsonData);
 		}
 
 		/// <summary>
@@ -119,11 +119,11 @@ namespace Hotfix.Framework.Web
 			if (DebugRecordingEnabled)
 			{
 				webPbData.EnqueueTimeUtc = DateTime.UtcNow;
-				m_PbSubmitCount++;
-				m_SubmitCount++;
+				m_pbSubmitCount++;
+				m_submitCount++;
 			}
 
-			m_WaitingPbQueue.Enqueue(webPbData);
+			m_waitingPbQueue.Enqueue(webPbData);
 		}
 
 		#endregion
@@ -156,21 +156,21 @@ namespace Hotfix.Framework.Web
 			switch (result)
 			{
 				case EWebRequestResult.Success:
-					m_SuccessCount++;
+					m_successCount++;
 					break;
 				case EWebRequestResult.Timeout:
-					m_TimeoutCount++;
+					m_timeoutCount++;
 					break;
 				case EWebRequestResult.Failed:
-					m_FailedCount++;
+					m_failedCount++;
 					break;
 				case EWebRequestResult.Canceled:
-					m_CanceledCount++;
+					m_canceledCount++;
 					break;
 			}
 
-			m_SentBytes += sendBytes;
-			m_RecvBytes += recvBytes;
+			m_sentBytes += sendBytes;
+			m_recvBytes += recvBytes;
 
 			var nowUtc  = DateTime.UtcNow;
 			var totalMs = webData.EnqueueTimeUtc == default ? 0 : Math.Max(0, (int)(nowUtc              - webData.EnqueueTimeUtc).TotalMilliseconds);
@@ -178,9 +178,9 @@ namespace Hotfix.Framework.Web
 
 			// 请求体预览（JSON POST / Pb 类 JSON 文本）；过长则截断以控制环形记录内存
 			var requestBody = webData.DebugRequestBody;
-			if (!string.IsNullOrEmpty(requestBody) && requestBody.Length > DebugLogBodyMaxLength)
+			if (!string.IsNullOrEmpty(requestBody) && requestBody.Length > DEBUG_LOG_BODY_MAX_LENGTH)
 			{
-				requestBody = requestBody.Substring(0, DebugLogBodyMaxLength) + "\n...（已截断）";
+				requestBody = requestBody.Substring(0, DEBUG_LOG_BODY_MAX_LENGTH) + "\n...（已截断）";
 			}
 
 			PushLog(new WebLogEntry(nowUtc, result, webData is WebPbData, webData.IsGet, webData.URL, waitMs, totalMs, sendBytes, recvBytes, error, requestBody));
@@ -192,16 +192,16 @@ namespace Hotfix.Framework.Web
 		/// <param name="entry">记录条目。</param>
 		private void PushLog(WebLogEntry entry)
 		{
-			if (m_DebugLogCount == DebugLogCapacity)
+			if (m_debugLogCount == DEBUG_LOG_CAPACITY)
 			{
-				m_DebugLogRing[m_DebugLogHead] = entry;
-				m_DebugLogHead                 = (m_DebugLogHead + 1) % DebugLogCapacity;
+				m_debugLogRing[m_debugLogHead] = entry;
+				m_debugLogHead                 = (m_debugLogHead + 1) % DEBUG_LOG_CAPACITY;
 			}
 			else
 			{
-				var index = (m_DebugLogHead + m_DebugLogCount) % DebugLogCapacity;
-				m_DebugLogRing[index] = entry;
-				m_DebugLogCount++;
+				var index = (m_debugLogHead + m_debugLogCount) % DEBUG_LOG_CAPACITY;
+				m_debugLogRing[index] = entry;
+				m_debugLogCount++;
 			}
 		}
 
@@ -231,8 +231,8 @@ namespace Hotfix.Framework.Web
 		/// <returns>模块调试信息快照。</returns>
 		public WebModuleDebugInfo GetDebugSnapshot()
 		{
-			return new WebModuleDebugInfo(m_SubmitCount, m_JsonSubmitCount, m_PbSubmitCount, m_SuccessCount, m_FailedCount, m_TimeoutCount, m_CanceledCount,
-										  m_SentBytes, m_RecvBytes, m_WaitingJsonQueue.Count, m_SendingJsonList.Count, m_WaitingPbQueue.Count, m_SendingPbList.Count);
+			return new WebModuleDebugInfo(m_submitCount, m_jsonSubmitCount, m_pbSubmitCount, m_successCount, m_failedCount, m_timeoutCount, m_canceledCount,
+										  m_sentBytes, m_recvBytes, m_waitingJsonQueue.Count, m_sendingJsonList.Count, m_waitingPbQueue.Count, m_sendingPbList.Count);
 		}
 
 		/// <summary>
@@ -241,27 +241,27 @@ namespace Hotfix.Framework.Web
 		/// <returns>实时请求信息数组。</returns>
 		public WebLiveRequestInfo[] GetCurrentRequests()
 		{
-			var totalCount = m_WaitingJsonQueue.Count + m_SendingJsonList.Count + m_WaitingPbQueue.Count + m_SendingPbList.Count;
+			var totalCount = m_waitingJsonQueue.Count + m_sendingJsonList.Count + m_waitingPbQueue.Count + m_sendingPbList.Count;
 			var infos      = new WebLiveRequestInfo[totalCount];
 			var index      = 0;
 
 			// 直接 foreach 具体容器（Queue/List 的结构化枚举器），避免经 IEnumerable<T> 迭代产生装箱分配
-			foreach (var data in m_WaitingJsonQueue)
+			foreach (var data in m_waitingJsonQueue)
 			{
 				infos[index++] = CreateJsonLiveInfo(data, EWebRequestState.Waiting);
 			}
 
-			foreach (var data in m_SendingJsonList)
+			foreach (var data in m_sendingJsonList)
 			{
 				infos[index++] = CreateJsonLiveInfo(data, EWebRequestState.Sending);
 			}
 
-			foreach (var data in m_WaitingPbQueue)
+			foreach (var data in m_waitingPbQueue)
 			{
 				infos[index++] = CreatePbLiveInfo(data, EWebRequestState.Waiting);
 			}
 
-			foreach (var data in m_SendingPbList)
+			foreach (var data in m_sendingPbList)
 			{
 				infos[index++] = CreatePbLiveInfo(data, EWebRequestState.Sending);
 			}
@@ -270,17 +270,17 @@ namespace Hotfix.Framework.Web
 		}
 
 		/// <summary>
-		/// 获取最近请求记录（调试专用）。返回数组按时间从新到旧排列，最多 DebugLogCapacity 条。
+		/// 获取最近请求记录（调试专用）。返回数组按时间从新到旧排列，最多 DEBUG_LOG_CAPACITY 条。
 		/// </summary>
 		/// <returns>最近请求记录数组。</returns>
 		public WebLogEntry[] GetRecentLogs()
 		{
-			var logs = new WebLogEntry[m_DebugLogCount];
-			for (var i = 0; i < m_DebugLogCount; i++)
+			var logs = new WebLogEntry[m_debugLogCount];
+			for (var i = 0; i < m_debugLogCount; i++)
 			{
 				// 环形索引递增方向为从旧到新，倒序填充使返回数组从新到旧
-				var ringIndex = (m_DebugLogHead + i) % DebugLogCapacity;
-				logs[m_DebugLogCount - 1 - i] = m_DebugLogRing[ringIndex];
+				var ringIndex = (m_debugLogHead + i) % DEBUG_LOG_CAPACITY;
+				logs[m_debugLogCount - 1 - i] = m_debugLogRing[ringIndex];
 			}
 
 			return logs;
@@ -291,25 +291,25 @@ namespace Hotfix.Framework.Web
 		/// </summary>
 		public void ClearDebugHistory()
 		{
-			m_SubmitCount     = 0;
-			m_JsonSubmitCount = 0;
-			m_PbSubmitCount   = 0;
-			m_SuccessCount    = 0;
-			m_FailedCount     = 0;
-			m_TimeoutCount    = 0;
-			m_CanceledCount   = 0;
-			m_SentBytes       = 0;
-			m_RecvBytes       = 0;
+			m_submitCount     = 0;
+			m_jsonSubmitCount = 0;
+			m_pbSubmitCount   = 0;
+			m_successCount    = 0;
+			m_failedCount     = 0;
+			m_timeoutCount    = 0;
+			m_canceledCount   = 0;
+			m_sentBytes       = 0;
+			m_recvBytes       = 0;
 
 			// 逐槽位置 default 释放记录引用（URL/Error/RequestBody 等字符串），
 			// 仅重置 head/count 会让旧记录一直被数组钉住、无法回收
-			for (var i = 0; i < DebugLogCapacity; i++)
+			for (var i = 0; i < DEBUG_LOG_CAPACITY; i++)
 			{
-				m_DebugLogRing[i] = default;
+				m_debugLogRing[i] = default;
 			}
 
-			m_DebugLogHead  = 0;
-			m_DebugLogCount = 0;
+			m_debugLogHead  = 0;
+			m_debugLogCount = 0;
 		}
 
 		/// <summary>
@@ -318,27 +318,27 @@ namespace Hotfix.Framework.Web
 		/// </summary>
 		public void CancelAllPendingForDebug()
 		{
-			while (m_WaitingJsonQueue.Count > 0)
+			while (m_waitingJsonQueue.Count > 0)
 			{
-				CancelRequestForDebug(m_WaitingJsonQueue.Dequeue(), "等待中被调试面板取消");
+				CancelRequestForDebug(m_waitingJsonQueue.Dequeue(), "等待中被调试面板取消");
 			}
 
-			while (m_WaitingPbQueue.Count > 0)
+			while (m_waitingPbQueue.Count > 0)
 			{
-				CancelRequestForDebug(m_WaitingPbQueue.Dequeue(), "等待中被调试面板取消");
+				CancelRequestForDebug(m_waitingPbQueue.Dequeue(), "等待中被调试面板取消");
 			}
 
-			while (m_SendingJsonList.Count > 0)
+			while (m_sendingJsonList.Count > 0)
 			{
-				var webData = m_SendingJsonList[0];
-				m_SendingJsonList.RemoveAt(0);
+				var webData = m_sendingJsonList[0];
+				m_sendingJsonList.RemoveAt(0);
 				CancelRequestForDebug(webData, "发送中被调试面板取消");
 			}
 
-			while (m_SendingPbList.Count > 0)
+			while (m_sendingPbList.Count > 0)
 			{
-				var webData = m_SendingPbList[0];
-				m_SendingPbList.RemoveAt(0);
+				var webData = m_sendingPbList[0];
+				m_sendingPbList.RemoveAt(0);
 				CancelRequestForDebug(webData, "发送中被调试面板取消");
 			}
 		}
@@ -428,12 +428,12 @@ namespace Hotfix.Framework.Web
 						}
 					}
 
-					var result = await PostToString(url, form, m_Scope.Token);
+					var result = await PostToString(url, form, m_scope.Token);
 					responseText = result?.Result;
 				}
 				else
 				{
-					var result = await GetToString(url, m_Scope.Token);
+					var result = await GetToString(url, m_scope.Token);
 					responseText = result?.Result;
 				}
 

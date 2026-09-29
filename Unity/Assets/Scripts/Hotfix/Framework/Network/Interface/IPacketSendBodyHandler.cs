@@ -9,7 +9,7 @@ namespace Hotfix.Framework.Network
 	public interface IPacketSendBodyHandler
 	{
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="messageBodyBuffer"></param>
 		/// <param name="destination"></param>

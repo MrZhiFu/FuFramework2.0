@@ -31,7 +31,7 @@ namespace Hotfix.Game.UI
 
 		/// <summary>
 		/// 初始化
-		/// </summary>  
+		/// </summary>
 		protected override void OnInit()
 		{
 			InitUIComp();

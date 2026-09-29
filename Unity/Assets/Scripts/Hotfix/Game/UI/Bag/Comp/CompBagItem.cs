@@ -28,7 +28,7 @@ namespace Hotfix.Game.UI
 			// Example:Subscribe(XxxEventArgs.EventId, XxxEventArgs.Create(xxx));
 		}
 
-		
+
 		/// <summary>
 		/// 销毁。
 		/// 注意：UI事件，业务逻辑事件，计时器会自动从所属的View中移除，无需在这里手动移除。

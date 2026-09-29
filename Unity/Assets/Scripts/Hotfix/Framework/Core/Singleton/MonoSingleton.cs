@@ -14,12 +14,12 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 单例对象
 		/// </summary>
-		private static T m_Instance;
+		private static T m_instance;
 
 		/// <summary>
 		/// 是否已初始化--防止重复初始化
 		/// </summary>
-		private static bool m_IsInitialized;
+		private static bool m_isInitialized;
 
 		/// <summary>
 		/// 单例对象
@@ -28,31 +28,31 @@ namespace Hotfix.Framework.Core
 		{
 			get
 			{
-				if (m_Instance != null)
+				if (m_instance != null)
 				{
-					return m_Instance;
+					return m_instance;
 				}
 
-				m_Instance = FindFirstObjectByType<T>();
-				if (m_Instance != null)
+				m_instance = FindFirstObjectByType<T>();
+				if (m_instance != null)
 				{
 					// 确保手动放置在场景中的实例也被正确初始化
-					if (!m_IsInitialized)
+					if (!m_isInitialized)
 					{
-						m_Instance.Init();
+						m_instance.Init();
 					}
-					return m_Instance;
+					return m_instance;
 				}
 
 				// 创建新实例
 				var singletonObject = new GameObject();
-				m_Instance           = singletonObject.AddComponent<T>();
+				m_instance           = singletonObject.AddComponent<T>();
 				singletonObject.name = $"[Singleton] {typeof(T).Name}";
 
 				DontDestroyOnLoad(singletonObject);
-				m_Instance.Init();
+				m_instance.Init();
 
-				return m_Instance;
+				return m_instance;
 			}
 		}
 
@@ -65,7 +65,7 @@ namespace Hotfix.Framework.Core
 			if (!Application.isPlaying) return;
 
 			// 防止在场景中手动放置了多个单例组件而导致创建重复实例
-			if (m_Instance && m_Instance != this)
+			if (m_instance && m_instance != this)
 			{
 				FuLogger.LogWarning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
 				DestroyImmediate(gameObject);
@@ -73,12 +73,12 @@ namespace Hotfix.Framework.Core
 			}
 
 			// 确保场景中手动放置的单例组件也被正确初始化
-			if (!m_Instance)
+			if (!m_instance)
 			{
-				m_Instance = this as T;
+				m_instance = this as T;
 				DontDestroyOnLoad(gameObject);
 
-				if (!m_IsInitialized)
+				if (!m_isInitialized)
 					Init();
 			}
 		}
@@ -88,10 +88,10 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void OnDestroy()
 		{
-			if (m_Instance != this) return;
+			if (m_instance != this) return;
 			OnDispose();
-			m_Instance      = null;
-			m_IsInitialized = false;
+			m_instance      = null;
+			m_isInitialized = false;
 		}
 
 		/// <summary>
@@ -99,8 +99,8 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void Init()
 		{
-			if (m_IsInitialized) return;
-			m_IsInitialized = true;
+			if (m_isInitialized) return;
+			m_isInitialized = true;
 			OnInit();
 		}
 

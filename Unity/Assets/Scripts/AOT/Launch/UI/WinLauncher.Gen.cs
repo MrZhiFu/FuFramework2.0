@@ -9,7 +9,7 @@ namespace AOT.Launch.UI
 {
     public class WinLauncher
     {
-        public GComponent m_View;
+        public GComponent m_view;
 
 		public Controller IsNeedUpgrade;
 		public Controller IsDownloading;
@@ -63,12 +63,12 @@ namespace AOT.Launch.UI
         /// </summary>
         internal void InitUIComp()
         {
-			IsNeedUpgrade = m_View.GetController("IsNeedUpgrade");
-			IsDownloading = m_View.GetController("IsDownloading");
-			txtTips = (GTextField)m_View.GetChild("_txtTips");
-			progressBar = (GProgressBar)m_View.GetChild("_progressBar");
-			btnOk = (GButton)m_View.GetChild("_btnOk");
-			txtContent = (GRichTextField)m_View.GetChild("_txtContent");
+			IsNeedUpgrade = m_view.GetController("IsNeedUpgrade");
+			IsDownloading = m_view.GetController("IsDownloading");
+			txtTips = (GTextField)m_view.GetChild("_txtTips");
+			progressBar = (GProgressBar)m_view.GetChild("_progressBar");
+			btnOk = (GButton)m_view.GetChild("_btnOk");
+			txtContent = (GRichTextField)m_view.GetChild("_txtContent");
         }
     }
 }

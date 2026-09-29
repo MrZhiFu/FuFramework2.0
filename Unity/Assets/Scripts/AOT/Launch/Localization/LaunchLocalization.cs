@@ -21,12 +21,12 @@ namespace AOT.Launch.Localization
 		/// 语言偏好在 PlayerPrefs 中的存储键（值为 (int)ELanguage）。
 		/// 热更侧切换语言时（LocalizationModule）须以本键同步写入，保证下次启动 AOT 阶段读到相同偏好。
 		/// </summary>
-		public const string LanguagePrefKey = "AOT_Localization_Language";
+		public const string LANGUAGE_PREF_KEY = "AOT_Localization_Language";
 
 		/// <summary>
 		/// Resources 下 AOT 本地化表数据的加载路径（不含扩展名）。
 		/// </summary>
-		private const string DataPath = "LaunchLocalizationText/tblocalizationaot";
+		private const string DATA_PATH = "LaunchLocalizationText/tblocalizationaot";
 
 		/// <summary>
 		/// 多语言行数据字典。key 为多语言 key，value 为行数据。
@@ -50,10 +50,10 @@ namespace AOT.Launch.Localization
 			// AOT 阶段注入 FGUI 声明式多语言解析委托（热更阶段会被 HotfixLauncher 覆盖为热更表版本）
 			FairyGUI.GObject.GetLanguageText = key => GetLanguage(key);
 
-			var textAsset = Resources.Load<TextAsset>(DataPath);
+			var textAsset = Resources.Load<TextAsset>(DATA_PATH);
 			if (textAsset == null)
 			{
-				FuLogger.LogError($"[LaunchLocalization] Resources 下未找到 {DataPath}，AOT 本地化不可用!");
+				FuLogger.LogError($"[LaunchLocalization] Resources 下未找到 {DATA_PATH}，AOT 本地化不可用!");
 				return;
 			}
 
@@ -162,7 +162,7 @@ namespace AOT.Launch.Localization
 		/// <returns>当前语言</returns>
 		private static ELanguage LoadLanguagePreference()
 		{
-			var value = PlayerPrefs.GetInt(LanguagePrefKey, (int)ELanguage.Unspecified);
+			var value = PlayerPrefs.GetInt(LANGUAGE_PREF_KEY, (int)ELanguage.Unspecified);
 			if (value > (int)ELanguage.Unspecified && value <= (int)ELanguage.Vietnamese)
 			{
 				return (ELanguage)value;

@@ -14,14 +14,14 @@ namespace Hotfix.Framework.UI
 	public sealed class BlurCapture : MonoBehaviour
 	{
 		/// <summary>
-		/// 是否执行截屏。为 true 时将当前帧合成画面 Blit 到 m_CaptureRT。
+		/// 是否执行截屏。为 true 时将当前帧合成画面 Blit 到 m_captureRT。
 		/// </summary>
-		public bool m_Capture;
+		public bool m_capture;
 
 		/// <summary>
 		/// 半分辨率截屏目标 RenderTexture（由 UIModule.Blur 注入）。
 		/// </summary>
-		public RenderTexture m_CaptureRT;
+		public RenderTexture m_captureRT;
 
 		/// <summary>
 		/// StageCamera 渲染完成回调：source 为完整合成帧。
@@ -31,8 +31,8 @@ namespace Hotfix.Framework.UI
 		private void OnRenderImage(RenderTexture source, RenderTexture destination)
 		{
 			// 截屏：仅在捕获帧把当前合成帧复制到半分辨率 RT，供模糊覆盖层采样。
-			if (m_Capture && m_CaptureRT != null)
-				Graphics.Blit(source, m_CaptureRT);
+			if (m_capture && m_captureRT != null)
+				Graphics.Blit(source, m_captureRT);
 
 			// 原样输出：把渲染画面写回屏幕输出目标，保证画面正常显示。
 			Graphics.Blit(source, destination);

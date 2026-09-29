@@ -23,12 +23,12 @@ namespace AOT.Launch
 		/// <summary>
 		/// 最大下载数。
 		/// </summary>
-		private static int m_DownloadingMaxNum;
+		private static int m_downloadingMaxNum;
 
 		/// <summary>
 		/// 失败重试次数。
 		/// </summary>
-		private static int m_FailedTryAgainNum;
+		private static int m_failedTryAgainNum;
 
 		/// <summary>
 		/// 资源运行模式。
@@ -56,8 +56,8 @@ namespace AOT.Launch
 		{
 			PlayMode            = GameSetting.Instance.PlayMode;
 			DefaultPackageName  = GameSetting.Instance.DefaultPackageName;
-			m_DownloadingMaxNum = GameSetting.Instance.DownloadingMaxNum;
-			m_FailedTryAgainNum = GameSetting.Instance.FailedTryAgainNum;
+			m_downloadingMaxNum = GameSetting.Instance.DownloadingMaxNum;
+			m_failedTryAgainNum = GameSetting.Instance.FailedTryAgainNum;
 
 			// 初始化 YooAsset 与默认资源包。
 			if (!YooAssetInitialized)
@@ -185,7 +185,7 @@ namespace AOT.Launch
 		/// 创建资源下载器。
 		/// </summary>
 		public static ResourceDownloaderOperation CreateDownloader() =>
-			DefaultPackage.CreateResourceDownloader(new ResourceDownloaderOptions(m_DownloadingMaxNum, m_FailedTryAgainNum));
+			DefaultPackage.CreateResourceDownloader(new ResourceDownloaderOptions(m_downloadingMaxNum, m_failedTryAgainNum));
 
 		/// <summary>
 		/// 加载程序集字节文件(用于 AOT/Hotfix DLL)。

@@ -17,43 +17,43 @@ namespace Hotfix.Framework.ObjectPool
 		/// <summary>
 		/// 对象池默认容量。
 		/// </summary>
-		private const int DefaultCapacity = int.MaxValue;
+		private const int DEFAULT_CAPACITY = int.MaxValue;
 
 		/// <summary>
 		/// 对象池默认自动销毁检查间隔秒数(默认不检查自动销毁)。
 		/// </summary>
-		private const float DefaultAutoDisposeCheckInterval = float.MaxValue;
+		private const float DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL = float.MaxValue;
 
 		/// <summary>
 		/// 对象池默认过期时间(默认不会过期)。
 		/// </summary>
-		private const float DefaultExpireTime = float.MaxValue;
+		private const float DEFAULT_EXPIRE_TIME = float.MaxValue;
 
 		/// <summary>
 		/// 对象池默认优先级。
 		/// </summary>
-		private const int DefaultPriority = 0;
+		private const int DEFAULT_PRIORITY = 0;
 
 		/// <summary>
 		/// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。
 		/// </summary>
-		private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_ObjPoolDict = new();
+		private readonly Dictionary<TypeNamePair, ObjectPoolBase> m_objPoolDict = new();
 
 		/// <summary>
 		/// OnDispose 专用的对象池快照列表（确保销毁循环期间池的 OnDispose 回调增删模块字典也不会破坏遍历）。
-		/// 注意：模块级对外 API 已各自拆出专属字段——DisposeOverCapacity 用 m_CachedDisposeOverCapacityPoolList、
-		/// DisposeAllUnused 用 m_CachedDisposeAllUnusedPoolList（见 ObjectPoolModule.API.cs），
+		/// 注意：模块级对外 API 已各自拆出专属字段——DisposeOverCapacity 用 m_cachedDisposeOverCapacityPoolList、
+		/// DisposeAllUnused 用 m_cachedDisposeAllUnusedPoolList（见 ObjectPoolModule.API.cs），
 		/// 因为它们会在遍历期间被重入调用并 Clear/重填，共用同一列表会清空外层正在遍历的数据。
 		/// </summary>
-		private readonly List<ObjectPoolBase> m_CachedObjPoolList = new();
+		private readonly List<ObjectPoolBase> m_cachedObjPoolList = new();
 
 		/// <summary>
 		/// OnUpdate 专用的对象池快照列表。
-		/// 不得与 m_CachedObjPoolList 共用：池的 Update 回调里可能触发模块级操作
-		/// （DisposeOverCapacity/DisposeAllUnused 会清空并重填 m_CachedObjPoolList），
+		/// 不得与 m_cachedObjPoolList 共用：池的 Update 回调里可能触发模块级操作
+		/// （DisposeOverCapacity/DisposeAllUnused 会清空并重填 m_cachedObjPoolList），
 		/// 共用会导致正在遍历的列表被清空、异常被吞、本帧其后的池不再更新。
 		/// </summary>
-		private readonly List<ObjectPoolBase> m_CachedUpdatePoolList = new();
+		private readonly List<ObjectPoolBase> m_cachedUpdatePoolList = new();
 
 		/// <summary>
 		/// 初始化。
@@ -76,14 +76,14 @@ namespace Hotfix.Framework.ObjectPool
 			try
 			{
 				// 使用 OnUpdate 专属字段，避免池的 Update 回调里触发模块级操作（清空共享缓存）破坏遍历
-				m_CachedUpdatePoolList.Clear();
-				foreach (var (_, objPool) in m_ObjPoolDict)
+				m_cachedUpdatePoolList.Clear();
+				foreach (var (_, objPool) in m_objPoolDict)
 				{
-					m_CachedUpdatePoolList.Add(objPool);
+					m_cachedUpdatePoolList.Add(objPool);
 				}
 
 				// 单个对象池异常不影响其他池更新
-				foreach (var objPool in m_CachedUpdatePoolList)
+				foreach (var objPool in m_cachedUpdatePoolList)
 				{
 					try
 					{
@@ -110,13 +110,13 @@ namespace Hotfix.Framework.ObjectPool
 			Application.lowMemory -= OnLowMemory;
 
 			// 复制到缓存列表，避免对象池 OnDispose 中修改模块字典导致遍历异常
-			m_CachedObjPoolList.Clear();
-			foreach (var (_, objPool) in m_ObjPoolDict)
+			m_cachedObjPoolList.Clear();
+			foreach (var (_, objPool) in m_objPoolDict)
 			{
-				m_CachedObjPoolList.Add(objPool);
+				m_cachedObjPoolList.Add(objPool);
 			}
 
-			foreach (var objPool in m_CachedObjPoolList)
+			foreach (var objPool in m_cachedObjPoolList)
 			{
 				try
 				{
@@ -128,9 +128,9 @@ namespace Hotfix.Framework.ObjectPool
 				}
 			}
 
-			m_ObjPoolDict.Clear();
-			m_CachedObjPoolList.Clear();
-			m_CachedUpdatePoolList.Clear();
+			m_objPoolDict.Clear();
+			m_cachedObjPoolList.Clear();
+			m_cachedUpdatePoolList.Clear();
 		}
 
 		/// <summary>
@@ -147,14 +147,14 @@ namespace Hotfix.Framework.ObjectPool
 		/// </summary>
 		/// <param name="typeNamePair">类型与名称的组合。</param>
 		/// <returns>是否存在对象池。</returns>
-		private bool HasObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.ContainsKey(typeNamePair);
+		private bool HasObjectPoolInternal(TypeNamePair typeNamePair) => m_objPoolDict.ContainsKey(typeNamePair);
 
 		/// <summary>
 		/// 获取对象池。
 		/// </summary>
 		/// <param name="typeNamePair">类型与名称的组合。</param>
 		/// <returns>要获取的对象池。</returns>
-		private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair) => m_ObjPoolDict.GetValueOrDefault(typeNamePair);
+		private ObjectPoolBase GetObjectPoolInternal(TypeNamePair typeNamePair) => m_objPoolDict.GetValueOrDefault(typeNamePair);
 
 		/// <summary>
 		/// 创建对象池。
@@ -178,7 +178,7 @@ namespace Hotfix.Framework.ObjectPool
 				throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{typeNamePair}' 已存在, 不可重复创建.");
 
 			var objectPool = new ObjectPool<T>(poolName, allowSpawnInUse, autoDisposeCheckInterval, capacity, expireTimeAfterIdle, priority);
-			m_ObjPoolDict.Add(typeNamePair, objectPool);
+			m_objPoolDict.Add(typeNamePair, objectPool);
 			return objectPool;
 		}
 
@@ -189,12 +189,12 @@ namespace Hotfix.Framework.ObjectPool
 		/// <returns>是否销毁对象池成功。</returns>
 		private bool DisposeObjectPoolInternal(TypeNamePair typeNamePair)
 		{
-			if (!m_ObjPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
+			if (!m_objPoolDict.TryGetValue(typeNamePair, out var objectPool)) return false;
 
 			// 先摘除登记再 OnDispose：OnDispose 会强制回收池内对象（用户代码，可能重入本模块的
 			// Spawn/Recycle/DisposeObjectPool）。若先 OnDispose 再移除，重入期间本池仍可见，
 			// 可能被重复销毁或对同批对象二次回收；且 OnDispose 抛异常时池会永久残留在字典里。
-			m_ObjPoolDict.Remove(typeNamePair);
+			m_objPoolDict.Remove(typeNamePair);
 
 			try
 			{

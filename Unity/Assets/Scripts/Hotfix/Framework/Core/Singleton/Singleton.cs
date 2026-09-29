@@ -7,11 +7,11 @@ namespace Hotfix.Framework.Core
 	/// <typeparam name="T"></typeparam>
 	public abstract class Singleton<T> where T : class, new()
 	{
-		private static T m_Instance;
+		private static T m_instance;
 
 		/// <summary>
 		/// 获取单例对象
 		/// </summary>
-		public static T Instance => m_Instance ??= new T();
+		public static T Instance => m_instance ??= new T();
 	}
 }

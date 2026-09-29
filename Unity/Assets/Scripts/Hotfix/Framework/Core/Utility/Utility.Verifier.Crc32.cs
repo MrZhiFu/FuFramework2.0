@@ -21,37 +21,37 @@ namespace Hotfix.Framework.Core
 				/// <summary>
 				/// CRC32 算法的查找表长度(256)。
 				/// </summary>
-				private const int TableLength = 256;
+				private const int TABLE_LENGTH = 256;
 
 				/// <summary>
 				/// CRC32 算法的默认多项式(0xedb88320 十进制为3,990,539,042)。
 				/// </summary>
-				private const uint DefaultPolynomial = 0xedb88320;
+				private const uint DEFAULT_POLYNOMIAL = 0xedb88320;
 
 				/// <summary>
 				/// CRC32 算法的默认种子值(0xffffffff 十进制为4,294,967,295)。
 				/// </summary>
-				private const uint DefaultSeed = 0xffffffff;
+				private const uint DEFAULT_SEED = 0xffffffff;
 
 				/// <summary>
 				/// CRC32 算法的种子值。
 				/// </summary>
-				private readonly uint m_Seed;
+				private readonly uint m_seed;
 
 				/// <summary>
 				/// 存储预计算的CRC32查找表。
 				/// </summary>
-				private readonly uint[] m_Table;
+				private readonly uint[] m_table;
 
 				/// <summary>
 				/// 当前的哈希值。
 				/// </summary>
-				private uint m_Hash;
+				private uint m_hash;
 
 				/// <summary>
 				/// 使用默认多项式和种子初始化 CRC32。
 				/// </summary>
-				public Crc32() : this(DefaultPolynomial, DefaultSeed) { }
+				public Crc32() : this(DEFAULT_POLYNOMIAL, DEFAULT_SEED) { }
 
 				/// <summary>
 				/// 使用指定的多项式和种子初始化 CRC32。
@@ -60,15 +60,15 @@ namespace Hotfix.Framework.Core
 				/// <param name="seed">CRC32 种子值。</param>
 				public Crc32(uint polynomial, uint seed)
 				{
-					m_Seed  = seed;
-					m_Table = InitializeTable(polynomial);
-					m_Hash  = seed;
+					m_seed  = seed;
+					m_table = InitializeTable(polynomial);
+					m_hash  = seed;
 				}
 
 				/// <summary>
 				/// 重置 CRC32 哈希值。
 				/// </summary>
-				public void Initialize() => m_Hash = m_Seed;
+				public void Initialize() => m_hash = m_seed;
 
 				/// <summary>
 				/// 计算指定字节数组的 CRC32 哈希值。
@@ -77,12 +77,12 @@ namespace Hotfix.Framework.Core
 				/// <param name="offset">字节数组中开始计算的偏移量。</param>
 				/// <param name="length">要计算的字节数量。</param>
 				public void HashCore(byte[] bytes, int offset, int length)
-					=> m_Hash = CalculateHash(m_Table, m_Hash, bytes, offset, length);
+					=> m_hash = CalculateHash(m_table, m_hash, bytes, offset, length);
 
 				/// <summary>
 				/// 完成 CRC32 哈希计算并返回最终结果。
 				/// </summary>
-				public uint HashFinal() => ~m_Hash;
+				public uint HashFinal() => ~m_hash;
 
 				/// <summary>
 				/// 计算 CRC32 哈希值。
@@ -114,8 +114,8 @@ namespace Hotfix.Framework.Core
 				/// <returns>CRC32 查找表。</returns>
 				private static uint[] InitializeTable(uint polynomial)
 				{
-					var table = new uint[TableLength];
-					for (var i = 0; i < TableLength; i++)
+					var table = new uint[TABLE_LENGTH];
+					for (var i = 0; i < TABLE_LENGTH; i++)
 					{
 						var entry = (uint)i;
 						for (var j = 0; j < 8; j++)

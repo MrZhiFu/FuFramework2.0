@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Config
 		/// 配置表字典。key为配置表名称，value为配置表数据。
 		/// 配置在启动期一次性加载、加载后只读，故使用普通 Dictionary 保证读取路径最快。
 		/// </summary>
-		private readonly Dictionary<string, IDataTable> m_CfgDataDict = new(StringComparer.Ordinal);
+		private readonly Dictionary<string, IDataTable> m_cfgDataDict = new(StringComparer.Ordinal);
 
 		/// <summary>
 		/// 初始化。
@@ -24,7 +24,7 @@ namespace Hotfix.Framework.Config
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_CfgDataDict.Clear();
+			m_cfgDataDict.Clear();
 		}
 
 		/// <summary>

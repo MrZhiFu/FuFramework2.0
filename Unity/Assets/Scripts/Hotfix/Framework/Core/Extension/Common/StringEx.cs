@@ -38,8 +38,8 @@ namespace Hotfix.Framework.Core
 			if (target      == null) return false;
 			if (self.Length != target.Length) return false;
 
-			int aPos = self.Length   - 1;
-			int bPos = target.Length - 1;
+			var aPos = self.Length   - 1;
+			var bPos = target.Length - 1;
 
 			while (aPos >= 0 && bPos >= 0 && self[aPos] == target[bPos])
 			{
@@ -64,8 +64,8 @@ namespace Hotfix.Framework.Core
 			if (target      == null) return false;
 			if (self.Length < target.Length) return false;
 
-			int ap = self.Length   - 1;
-			int bp = target.Length - 1;
+			var ap = self.Length   - 1;
+			var bp = target.Length - 1;
 
 			while (ap >= 0 && bp >= 0 && self[ap] == target[bp])
 			{
@@ -81,7 +81,7 @@ namespace Hotfix.Framework.Core
 		/// 判断字符串是否以目标字符串开始。
 		/// 算法原理：两个字符串”从前往后“比较，如果所有字符都相等，则返回true，否则返回false。
 		/// </summary>
-		/// <param name="self">当前字符串</param>   
+		/// <param name="self">当前字符串</param>
 		/// <param name="target">目标字符串</param>
 		/// <returns></returns>
 		public static bool StartsWithFast(this string self, string target)
@@ -90,11 +90,11 @@ namespace Hotfix.Framework.Core
 			if (target      == null) return false;
 			if (self.Length < target.Length) return false;
 
-			int aLen = self.Length;
-			int bLen = target.Length;
+			var aLen = self.Length;
+			var bLen = target.Length;
 
-			int ap = 0;
-			int bp = 0;
+			var ap = 0;
+			var bp = 0;
 
 			while (ap < aLen && bp < bLen && self[ap] == target[bp])
 			{
@@ -141,7 +141,7 @@ namespace Hotfix.Framework.Core
 			var hexAsBytes = new byte[hexString.Length / 2];
 			for (int index = 0; index < hexAsBytes.Length; index++)
 			{
-				string byteValue = "";
+				var byteValue = "";
 				byteValue         += hexString[index * 2];
 				byteValue         += hexString[index * 2 + 1];
 				hexAsBytes[index] =  byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
@@ -312,14 +312,14 @@ namespace Hotfix.Framework.Core
 
 			while (offset < length)
 			{
-				char ch = rawString[offset];
+				var ch = rawString[offset];
 				switch (ch)
 				{
 					case '\r':
 					case '\n':
 						if (offset > position)
 						{
-							string line = rawString.Substring(position, offset - position);
+							var line = rawString.Substring(position, offset - position);
 							position = offset + 1;
 							if ((ch == '\r') && (position < length) && (rawString[position] == '\n'))
 							{
@@ -341,7 +341,7 @@ namespace Hotfix.Framework.Core
 
 			if (offset > position)
 			{
-				string line = rawString.Substring(position, offset - position);
+				var line = rawString.Substring(position, offset - position);
 				position = offset;
 				return line;
 			}

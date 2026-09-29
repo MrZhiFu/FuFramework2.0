@@ -47,7 +47,7 @@ namespace Hotfix.Framework.Network
 		public void Reply(IResponseMessage responseMessage)
 		{
 			ResponseMessage = responseMessage;
-			m_Tcs.TrySetResult(responseMessage);
+			m_tcs.TrySetResult(responseMessage);
 		}
 
 		/// <summary>
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Cancel()
 		{
-			m_Tcs.TrySetException(new OperationCanceledException("Rpc call canceled! Message is :" + RequestMessage));
+			m_tcs.TrySetException(new OperationCanceledException("Rpc call canceled! Message is :" + RequestMessage));
 		}
 
 		/// <summary>
@@ -68,7 +68,7 @@ namespace Hotfix.Framework.Network
 		{
 			ElapseTime += time;
 			if (ElapseTime < Timeout) return false;
-			m_Tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
+			m_tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
 			return true;
 		}
 
@@ -90,15 +90,15 @@ namespace Hotfix.Framework.Network
 			RequestMessage = requestMessage;
 			Timeout        = timeout;
 			UniqueId       = ((MessageObject)requestMessage).UniqueId;
-			m_Tcs          = new UniTaskCompletionSource<IResponseMessage>();
+			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
 		}
 
-		private readonly UniTaskCompletionSource<IResponseMessage> m_Tcs;
+		private readonly UniTaskCompletionSource<IResponseMessage> m_tcs;
 
 		/// <summary>
 		/// 等待的返回结果。UniTaskCompletionSource.Task 支持被多个调用方重复 await。
 		/// </summary>
-		public UniTask<IResponseMessage> Task => m_Tcs.Task;
+		public UniTask<IResponseMessage> Task => m_tcs.Task;
 
 		public void Dispose()
 		{

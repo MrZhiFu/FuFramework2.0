@@ -27,27 +27,27 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// <summary>
 		/// 游戏帧率。
 		/// </summary>
-		[SerializeField] private int m_FrameRate = 30;
+		[SerializeField] private int m_frameRate = 30;
 
 		/// <summary>
 		/// 游戏速度。
 		/// </summary>
-		[SerializeField] private float m_GameSpeed = 1f;
+		[SerializeField] private float m_gameSpeed = 1f;
 
 		/// <summary>
 		/// 是否允许后台运行。
 		/// </summary>
-		[SerializeField] private bool m_RunInBackground = true;
+		[SerializeField] private bool m_runInBackground = true;
 
 		/// <summary>
 		/// 是否禁止休眠。
 		/// </summary>
-		[SerializeField] private bool m_NeverSleep = true;
+		[SerializeField] private bool m_neverSleep = true;
 
 		/// <summary>
 		/// 是否开启引导。
 		/// </summary>
-		[SerializeField] private bool m_OpenGuide = true;
+		[SerializeField] private bool m_openGuide = true;
 
 		#endregion
 
@@ -56,32 +56,32 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// <summary>
 		/// 资源运行模式。
 		/// </summary>
-		[SerializeField] private EPlayMode m_PlayMode = EPlayMode.EditorSimulateMode;
+		[SerializeField] private EPlayMode m_playMode = EPlayMode.EditorSimulateMode;
 
 		/// <summary>
 		/// 默认资源包名称。
 		/// </summary>
-		[SerializeField] private string m_DefaultPackageName = "DefaultPackage";
+		[SerializeField] private string m_defaultPackageName = "DefaultPackage";
 
 		/// <summary>
 		/// 资源下载最大并发数量。
 		/// </summary>
-		[SerializeField] private int m_DownloadingMaxNum = 10;
+		[SerializeField] private int m_downloadingMaxNum = 10;
 
 		/// <summary>
 		/// 资源下载失败重试次数。
 		/// </summary>
-		[SerializeField] private int m_FailedTryAgainNum = 3;
+		[SerializeField] private int m_failedTryAgainNum = 3;
 
 		/// <summary>
 		/// YooAsset 异步系统每帧最大时间切片（毫秒）。
 		/// </summary>
-		[SerializeField] private int m_AsyncSystemMaxSlicePerFrame = 30;
+		[SerializeField] private int m_asyncSystemMaxSlicePerFrame = 30;
 
 		/// <summary>
 		/// 资源 CDN 根地址。
 		/// </summary>
-		[SerializeField] private string m_ResCdnRootURL = "http://localhost:8080/CDN/";
+		[SerializeField] private string m_resCdnRootURL = "http://localhost:8080/CDN/";
 
 		#endregion
 
@@ -90,29 +90,29 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// <summary>
 		/// 是否启用自动保存。
 		/// </summary>
-		[SerializeField] private bool m_EnableAutoSave = true;
+		[SerializeField] private bool m_enableAutoSave = true;
 
 		/// <summary>
 		/// 自动保存间隔（秒）。
 		/// </summary>
-		[SerializeField] private float m_AutoSaveInterval = 300f;
+		[SerializeField] private float m_autoSaveInterval = 300f;
 
 		/// <summary>
 		/// 是否启用加密。
 		/// </summary>
-		[SerializeField] private bool m_EnableEncrypt = false;
+		[SerializeField] private bool m_enableEncrypt = false;
 
 		/// <summary>
 		/// 加密密钥。
 		/// </summary>
-		[SerializeField] private string m_EncryptKey = "FuFrameworkStorageKey";
+		[SerializeField] private string m_encryptKey = "FuFrameworkStorageKey";
 
 		#endregion
 
 		/// <summary>
 		/// 游戏暂停之前的速度。
 		/// </summary>
-		private float m_GameSpeedBeforePause = 1f;
+		private float m_gameSpeedBeforePause = 1f;
 
 		#region 游戏基本设置属性
 
@@ -121,8 +121,8 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// </summary>
 		public int FrameRate
 		{
-			get => m_FrameRate;
-			set => Application.targetFrameRate = m_FrameRate = value;
+			get => m_frameRate;
+			set => Application.targetFrameRate = m_frameRate = value;
 		}
 
 		/// <summary>
@@ -130,27 +130,27 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// </summary>
 		public float GameSpeed
 		{
-			get => m_GameSpeed;
-			set => Time.timeScale = m_GameSpeed = value >= 0f ? value : 0f;
+			get => m_gameSpeed;
+			set => Time.timeScale = m_gameSpeed = value >= 0f ? value : 0f;
 		}
 
 		/// <summary>
 		/// 获取游戏是否暂停。
 		/// </summary>
-		public bool IsGamePaused => m_GameSpeed <= 0f;
+		public bool IsGamePaused => m_gameSpeed <= 0f;
 
 		/// <summary>
 		/// 获取是否正常游戏速度。
 		/// </summary>
-		public bool IsNormalGameSpeed => Mathf.Approximately(m_GameSpeed, 1f);
+		public bool IsNormalGameSpeed => Mathf.Approximately(m_gameSpeed, 1f);
 
 		/// <summary>
 		/// 获取或设置是否允许后台运行。
 		/// </summary>
 		public bool RunInBackground
 		{
-			get => m_RunInBackground;
-			set => Application.runInBackground = m_RunInBackground = value;
+			get => m_runInBackground;
+			set => Application.runInBackground = m_runInBackground = value;
 		}
 
 		/// <summary>
@@ -158,10 +158,10 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// </summary>
 		public bool NeverSleep
 		{
-			get => m_NeverSleep;
+			get => m_neverSleep;
 			set
 			{
-				m_NeverSleep        = value;
+				m_neverSleep        = value;
 				Screen.sleepTimeout = value ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
 			}
 		}
@@ -171,8 +171,8 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// </summary>
 		public bool OpenGuide
 		{
-			get => m_OpenGuide;
-			set => m_OpenGuide = value;
+			get => m_openGuide;
+			set => m_openGuide = value;
 		}
 
 		#endregion
@@ -182,32 +182,32 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// <summary>
 		/// 资源运行模式。
 		/// </summary>
-		public EPlayMode PlayMode => m_PlayMode;
+		public EPlayMode PlayMode => m_playMode;
 
 		/// <summary>
 		/// 默认资源包名称。
 		/// </summary>
-		public string DefaultPackageName => m_DefaultPackageName;
+		public string DefaultPackageName => m_defaultPackageName;
 
 		/// <summary>
 		/// 资源下载最大并发数量。
 		/// </summary>
-		public int DownloadingMaxNum => m_DownloadingMaxNum;
+		public int DownloadingMaxNum => m_downloadingMaxNum;
 
 		/// <summary>
 		/// 资源下载失败重试次数。
 		/// </summary>
-		public int FailedTryAgainNum => m_FailedTryAgainNum;
+		public int FailedTryAgainNum => m_failedTryAgainNum;
 
 		/// <summary>
 		/// YooAsset 异步系统每帧最大时间切片（毫秒）。
 		/// </summary>
-		public int AsyncSystemMaxSlicePerFrame => m_AsyncSystemMaxSlicePerFrame;
+		public int AsyncSystemMaxSlicePerFrame => m_asyncSystemMaxSlicePerFrame;
 
 		/// <summary>
 		/// 资源 CDN 根地址。
 		/// </summary>
-		public string ResCdnRootRootURL => m_ResCdnRootURL;
+		public string ResCdnRootRootURL => m_resCdnRootURL;
 
 		#endregion
 
@@ -216,22 +216,22 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		/// <summary>
 		/// 是否启用自动保存。
 		/// </summary>
-		public bool EnableAutoSave => m_EnableAutoSave;
+		public bool EnableAutoSave => m_enableAutoSave;
 
 		/// <summary>
 		/// 自动保存间隔（秒）。
 		/// </summary>
-		public float AutoSaveInterval => m_AutoSaveInterval;
+		public float AutoSaveInterval => m_autoSaveInterval;
 
 		/// <summary>
 		/// 是否启用加密。
 		/// </summary>
-		public bool EnableEncrypt => m_EnableEncrypt;
+		public bool EnableEncrypt => m_enableEncrypt;
 
 		/// <summary>
 		/// 加密密钥。
 		/// </summary>
-		public string EncryptKey => m_EncryptKey;
+		public string EncryptKey => m_encryptKey;
 
 		#endregion
 
@@ -248,10 +248,10 @@ namespace AOT.Framework.ModuleSetting.Runtime
 			Instance = this;
 			DontDestroyOnLoad(gameObject);
 
-			Time.timeScale              = m_GameSpeed;
-			Screen.sleepTimeout         = m_NeverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
-			Application.targetFrameRate = m_FrameRate;
-			Application.runInBackground = m_RunInBackground;
+			Time.timeScale              = m_gameSpeed;
+			Screen.sleepTimeout         = m_neverSleep ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting;
+			Application.targetFrameRate = m_frameRate;
+			Application.runInBackground = m_runInBackground;
 		}
 
 		#endregion
@@ -264,7 +264,7 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		public void PauseGame()
 		{
 			if (IsGamePaused) return;
-			m_GameSpeedBeforePause = GameSpeed;
+			m_gameSpeedBeforePause = GameSpeed;
 			GameSpeed              = 0f;
 		}
 
@@ -274,13 +274,13 @@ namespace AOT.Framework.ModuleSetting.Runtime
 		public void ResumeGame()
 		{
 			if (!IsGamePaused) return;
-			GameSpeed = m_GameSpeedBeforePause;
+			GameSpeed = m_gameSpeedBeforePause;
 		}
 
 		/// <summary>
 		/// 重置为正常游戏速度。
 		/// </summary>
-		public void ResetNormalGameSpeed()
+		public void ResetGameSpeed()
 		{
 			if (IsNormalGameSpeed) return;
 			GameSpeed = 1f;

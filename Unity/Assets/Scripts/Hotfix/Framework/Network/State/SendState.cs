@@ -9,10 +9,10 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	internal sealed class SendState : IDisposable
 	{
-		private const int  DefaultBufferLength = 1024 * 64;
-		private       bool m_Disposed;
+		private const int  DEFAULT_BUFFER_LENGTH = 1024 * 64;
+		private       bool m_disposed;
 
-		public MemoryStream Stream { get; private set; } = new(DefaultBufferLength);
+		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
 
 		public void Reset()
 		{
@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Network
 
 		private void Dispose(bool disposing)
 		{
-			if (m_Disposed) return;
+			if (m_disposed) return;
 
 			if (disposing && Stream != null)
 			{
@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 				Stream = null;
 			}
 
-			m_Disposed = true;
+			m_disposed = true;
 		}
 	}
 }

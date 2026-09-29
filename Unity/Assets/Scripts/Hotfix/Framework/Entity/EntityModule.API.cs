@@ -32,22 +32,22 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_Scope.Token;
+		public CancellationToken Token => m_scope.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_Scope.CancelAsync();
+		public UniTask CancelAsync() => m_scope.CancelAsync();
 
 		/// <summary>
 		/// 获取实体数量。
 		/// </summary>
-		public int EntityCount => m_EntityDict.Count;
+		public int EntityCount => m_entityDict.Count;
 
 		/// <summary>
 		/// 获取实体组数量。
 		/// </summary>
-		public int EntityGroupCount => m_EntityGroupDict.Count;
+		public int EntityGroupCount => m_entityGroupDict.Count;
 
 		#region 实体组相关方法
 
@@ -59,7 +59,7 @@ namespace Hotfix.Framework.Entity
 		public bool HasEntityGroup(string entityGroupName)
 		{
 			if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException("[EntityModule] 实体组名称不能为空.");
-			return m_EntityGroupDict.ContainsKey(entityGroupName);
+			return m_entityGroupDict.ContainsKey(entityGroupName);
 		}
 
 		/// <summary>
@@ -70,7 +70,7 @@ namespace Hotfix.Framework.Entity
 		public EntityGroup GetEntityGroup(string entityGroupName)
 		{
 			if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException("[EntityModule] 实体组名称不能为空.");
-			return m_EntityGroupDict.GetValueOrDefault(entityGroupName);
+			return m_entityGroupDict.GetValueOrDefault(entityGroupName);
 		}
 
 		/// <summary>
@@ -80,8 +80,8 @@ namespace Hotfix.Framework.Entity
 		public EntityGroup[] GetAllEntityGroups()
 		{
 			var index   = 0;
-			var results = new EntityGroup[m_EntityGroupDict.Count];
-			foreach (var (_, entityGroup) in m_EntityGroupDict)
+			var results = new EntityGroup[m_entityGroupDict.Count];
+			foreach (var (_, entityGroup) in m_entityGroupDict)
 			{
 				results[index++] = entityGroup;
 			}
@@ -98,7 +98,7 @@ namespace Hotfix.Framework.Entity
 			if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
 			results.Clear();
-			foreach (var (_, entityGroup) in m_EntityGroupDict)
+			foreach (var (_, entityGroup) in m_entityGroupDict)
 			{
 				results.Add(entityGroup);
 			}
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Entity
 		/// <returns>是否增加实体组成功。</returns>
 		public bool AddEntityGroup(EntityGroupCfg row)
 		{
-			if (m_ObjectPoolModule is null) throw new InvalidOperationException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
+			if (m_objectPoolModule is null) throw new InvalidOperationException("[EntityModule] 增加实体组失败, 请先设置对象池管理模块.");
 
 			var groupName = row.Id.ToString();
 			if (HasEntityGroup(groupName))
@@ -121,10 +121,10 @@ namespace Hotfix.Framework.Entity
 			}
 
 			var entityGroupGo = new GameObject($"Entity Group - {groupName}");
-			entityGroupGo.transform.SetParent(m_EntityRoot);
+			entityGroupGo.transform.SetParent(m_entityRoot);
 			entityGroupGo.transform.localScale = Vector3.one;
-			var entityGroup = new EntityGroup(row, entityGroupGo, m_ObjectPoolModule);
-			m_EntityGroupDict.Add(groupName, entityGroup);
+			var entityGroup = new EntityGroup(row, entityGroupGo, m_objectPoolModule);
+			m_entityGroupDict.Add(groupName, entityGroup);
 
 			return true;
 		}
@@ -140,7 +140,7 @@ namespace Hotfix.Framework.Entity
 		/// <returns>是否存在实体。</returns>
 		public bool HasEntity(int entityId)
 		{
-			return m_EntityDict.ContainsKey(entityId);
+			return m_entityDict.ContainsKey(entityId);
 		}
 
 		/// <summary>
@@ -151,7 +151,7 @@ namespace Hotfix.Framework.Entity
 		public bool HasEntity(string entityAssetName)
 		{
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
-			foreach (var (_, entityInfo) in m_EntityDict)
+			foreach (var (_, entityInfo) in m_entityDict)
 			{
 				if (entityInfo.Entity.EntityAssetName == entityAssetName)
 					return true;
@@ -176,7 +176,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
 
-			foreach (var (_, entityInfo) in m_EntityDict)
+			foreach (var (_, entityInfo) in m_entityDict)
 			{
 				if (entityInfo.Entity.EntityAssetName != entityAssetName) continue;
 				return entityInfo.Entity;
@@ -195,7 +195,7 @@ namespace Hotfix.Framework.Entity
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 实体资源名称不能为空.");
 
 			var results = new List<Entity>();
-			foreach (var entityInfo in m_EntityDict)
+			foreach (var entityInfo in m_entityDict)
 			{
 				if (entityInfo.Value.Entity.EntityAssetName != entityAssetName) continue;
 				results.Add(entityInfo.Value.Entity);
@@ -215,7 +215,7 @@ namespace Hotfix.Framework.Entity
 			if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
 			results.Clear();
-			foreach (var (_, entityInfo) in m_EntityDict)
+			foreach (var (_, entityInfo) in m_entityDict)
 			{
 				if (entityInfo.Entity.EntityAssetName != entityAssetName) continue;
 				results.Add(entityInfo.Entity);
@@ -229,8 +229,8 @@ namespace Hotfix.Framework.Entity
 		public Entity[] GetAllLoadedEntities()
 		{
 			var index   = 0;
-			var results = new Entity[m_EntityDict.Count];
-			foreach (var (_, entityInfo) in m_EntityDict)
+			var results = new Entity[m_entityDict.Count];
+			foreach (var (_, entityInfo) in m_entityDict)
 			{
 				results[index++] = entityInfo.Entity;
 			}
@@ -247,7 +247,7 @@ namespace Hotfix.Framework.Entity
 			if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 
 			results.Clear();
-			foreach (var (_, entityInfo) in m_EntityDict)
+			foreach (var (_, entityInfo) in m_entityDict)
 			{
 				results.Add(entityInfo.Entity);
 			}
@@ -260,8 +260,8 @@ namespace Hotfix.Framework.Entity
 		public int[] GetAllLoadingEntityIds()
 		{
 			var index   = 0;
-			var results = new int[m_LoadingEntityDict.Count];
-			foreach (var (entityId, _) in m_LoadingEntityDict)
+			var results = new int[m_loadingEntityDict.Count];
+			foreach (var (entityId, _) in m_loadingEntityDict)
 			{
 				results[index++] = entityId;
 			}
@@ -277,7 +277,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (results is null) throw new InvalidOperationException("[EntityModule] 结果列表不能为空.");
 			results.Clear();
-			foreach (var (entityId, _) in m_LoadingEntityDict)
+			foreach (var (entityId, _) in m_loadingEntityDict)
 			{
 				results.Add(entityId);
 			}
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		/// <param name="entityId">实体编号。</param>
 		/// <returns>是否正在加载实体。</returns>
-		public bool IsLoadingEntity(int entityId) => m_LoadingEntityDict.ContainsKey(entityId);
+		public bool IsLoadingEntity(int entityId) => m_loadingEntityDict.ContainsKey(entityId);
 
 		/// <summary>
 		/// 是否是合法的实体。
@@ -325,7 +325,7 @@ namespace Hotfix.Framework.Entity
 		/// <param name="userData">用户自定义数据。</param>
 		public async UniTask<Entity> ShowEntityAsync(int entityId, Type entityLogicType, string entityAssetName, string entityGroupName, CancellationToken token, object userData = null)
 		{
-			if (m_EntityHelper is null) throw new InvalidOperationException("[EntityModule] 显示实体失败, 请先设置实体辅助器.");
+			if (m_entityHelper is null) throw new InvalidOperationException("[EntityModule] 显示实体失败, 请先设置实体辅助器.");
 			if (string.IsNullOrEmpty(entityAssetName)) throw new InvalidOperationException("[EntityModule] 显示实体失败, 实体资源名称不能为空.");
 			if (string.IsNullOrEmpty(entityGroupName)) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体组名称不能为空.");
 			if (HasEntity(entityId)) throw new InvalidOperationException($"[EntityModule] 显示实体{entityAssetName}失败, 实体已存在.");
@@ -343,20 +343,20 @@ namespace Hotfix.Framework.Entity
 
 			if (entityObj is null)
 			{
-				var serialId = ++m_Serial;
-				m_LoadingEntityDict.Add(entityId, serialId);
+				var serialId = ++m_serial;
+				m_loadingEntityDict.Add(entityId, serialId);
 
-				var capturedToken = m_Scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝写回新生命周期
+				var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝写回新生命周期
 				// 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
 				AssetHandle assetOperationHandle;
 				try
 				{
-					assetOperationHandle = await m_AssetModule.LoadAssetAsync<Object>(entityAssetName, token);
+					assetOperationHandle = await m_assetModule.LoadAssetAsync<Object>(entityAssetName, token);
 				}
 				catch
 				{
-					m_LoadingEntityDict.Remove(entityId);
-					m_LoadingToReleaseSet.Remove(serialId);
+					m_loadingEntityDict.Remove(entityId);
+					m_loadingToReleaseSet.Remove(serialId);
 					ReferencePool.Recycle(showEntityInfoEx);
 					throw;
 				}
@@ -366,7 +366,7 @@ namespace Hotfix.Framework.Entity
 				assetOperationHandle.Completed += handle =>
 				{
 					// 生命周期变更（重启）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
-					if (capturedToken.IsCancellationRequested || capturedToken != m_Scope.Token)
+					if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token)
 					{
 						try
 						{
@@ -374,7 +374,7 @@ namespace Hotfix.Framework.Entity
 							// 加载成功即已占用 bundle：跨生命周期中止仅 Release 在 AutoUnloadBundleWhenUnused=false 下不卸载，
 							// 配对显式卸载防旧生命周期实体 prefab 的 bundle 常驻（失败句柄未获取 bundle 无需卸载）
 							if (handle.Status == EOperationStatus.Succeeded)
-								m_AssetModule.UnloadAsset(entityAssetName);
+								m_assetModule.UnloadAsset(entityAssetName);
 						}
 						catch (Exception e)
 						{
@@ -455,8 +455,8 @@ namespace Hotfix.Framework.Entity
 		{
 			if (IsLoadingEntity(entityId))
 			{
-				m_LoadingToReleaseSet.Add(m_LoadingEntityDict[entityId]);
-				m_LoadingEntityDict.Remove(entityId);
+				m_loadingToReleaseSet.Add(m_loadingEntityDict[entityId]);
+				m_loadingEntityDict.Remove(entityId);
 				return;
 			}
 
@@ -489,9 +489,9 @@ namespace Hotfix.Framework.Entity
 		/// <param name="userData">用户自定义数据。</param>
 		public void HideAllLoadedEntities(object userData = null)
 		{
-			while (m_EntityDict.Count > 0)
+			while (m_entityDict.Count > 0)
 			{
-				foreach (var (_, entityInfo) in m_EntityDict)
+				foreach (var (_, entityInfo) in m_entityDict)
 				{
 					InternalHideEntity(entityInfo, userData);
 					break;
@@ -504,12 +504,12 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		public void HideAllLoadingEntities()
 		{
-			foreach (var (_, entityId) in m_LoadingEntityDict)
+			foreach (var (_, entityId) in m_loadingEntityDict)
 			{
-				m_LoadingToReleaseSet.Add(entityId);
+				m_loadingToReleaseSet.Add(entityId);
 			}
 
-			m_LoadingEntityDict.Clear();
+			m_loadingEntityDict.Clear();
 		}
 
 		#endregion

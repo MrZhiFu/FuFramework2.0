@@ -11,7 +11,7 @@ namespace Hotfix.Framework.Core
 	public abstract class TaskBase : IReference
 	{
 		/// 任务默认优先级。
-		public const int DefaultPriority = 0;
+		public const int DEFAULT_PRIORITY = 0;
 
 		/// 任务的序列编号。
 		public int SerialId { get; private set; }
@@ -54,7 +54,7 @@ namespace Hotfix.Framework.Core
 		{
 			SerialId = 0;
 			Tag      = null;
-			Priority = DefaultPriority;
+			Priority = DEFAULT_PRIORITY;
 			Done     = false;
 			UserData = null;
 		}

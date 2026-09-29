@@ -71,7 +71,7 @@ namespace FuFramework.Core.Editor
 				// 构建输出路径
 				var outputPath = BuildOutputPath() + Path.DirectorySeparatorChar;
 				var exePath = outputPath + PlayerSettings.productName + ".exe";
-				
+
 				// 执行构建
 				var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, exePath , EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
 				if (buildReport.summary.result != BuildResult.Succeeded) return;
@@ -94,9 +94,9 @@ namespace FuFramework.Core.Editor
 				// 压缩文件
 				// var pathName = Path.GetDirectoryName(resultDirectory);
 				// ZipHelper.CompressDirectory(resultDirectory, pathName + ".zip");
-				
+
 				Debug.Log("构建成功:" + exePath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(exePath);
 			}
@@ -136,7 +136,7 @@ namespace FuFramework.Core.Editor
 				// 构建输出路径
 				var outputPath = BuildOutputPath() + Path.DirectorySeparatorChar;
 				var appPath = outputPath + PlayerSettings.productName + ".app";
-				
+
 				// 执行构建
 				var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, appPath, EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
 				if (buildReport.summary.result != BuildResult.Succeeded) return;
@@ -159,7 +159,7 @@ namespace FuFramework.Core.Editor
 				// var pathName = Path.GetDirectoryName(resultDirectory);
 				// ZipHelper.CompressDirectory(resultDirectory, pathName + ".zip");
 				Debug.Log("构建成功:" + appPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(appPath);
 			}
@@ -190,28 +190,28 @@ namespace FuFramework.Core.Editor
 				Debug.LogError("没有设置签名密钥,取消打包APK");
 				return;
 			}
-			
+
 			try
 			{
 				// 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
-				
+
 				// 更新构建时间
 				UpdateBuildTime();
-				
+
 				// 构建相关设置
 				EditorUserBuildSettings.buildAppBundle = false;
 				EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
 				AssetDatabase.SaveAssets();
-				
+
 				// 构建输出路径
 				_buildPath = BuildOutputPath();
 				var apkPath = $"{_buildPath}.apk";
-				
+
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, apkPath, BuildTarget.Android, BuildOptions.None);
 				Debug.Log("构建成功:" + apkPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(_buildPath);
 			}
@@ -229,13 +229,13 @@ namespace FuFramework.Core.Editor
 		private static void BuildAppBundleForAndroid()
 		{
 			PlayerSettings.SplashScreen.show = false;
-			
+
 			if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
 			{
 				Debug.LogError("当前构建目标平台不是 Android, 请先手动切换到 Android 平台!");
 				return;
 			}
-			
+
 			if (string.IsNullOrEmpty(PlayerSettings.Android.keystoreName)
 				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)
 				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass)
@@ -249,24 +249,24 @@ namespace FuFramework.Core.Editor
 			{
 				// 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
-				
+
 				// 更新构建时间
 				UpdateBuildTime();
-				
+
 				// 构建相关设置
 				EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
 				EditorUserBuildSettings.buildAppBundle = true;
 				EditorUserBuildSettings.androidCreateSymbols = AndroidCreateSymbols.Public; // 开启符号表的输出
 				AssetDatabase.SaveAssets();
-				
+
 				// 构建输出路径
 				_buildPath = BuildOutputPath();
 				var aapPath = $"{_buildPath}.aab";
-				
+
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, aapPath, BuildTarget.Android, BuildOptions.None);
 				Debug.Log("构建成功:" + aapPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(_buildPath);
 			}
@@ -302,11 +302,11 @@ namespace FuFramework.Core.Editor
 
 				// 构建输出路径
 				_buildPath = BuildOutputPath();
-				
+
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.WebGL, BuildOptions.None);
 				Debug.Log("构建成功:" + _buildPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(_buildPath);
 			}
@@ -334,7 +334,7 @@ namespace FuFramework.Core.Editor
 
 			try
 			{
-				// 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用 
+				// 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用
 				HotFixEditorCompilerHelper.AddEditor();
 
 				// 更新构建时间
@@ -343,7 +343,7 @@ namespace FuFramework.Core.Editor
 				AssetDatabase.SaveAssets();
 				WeChatWASM.WXConvertCore.DoExport();
 				Debug.Log("构建成功:" + BuildOutputPath());
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(BuildOutputPath());
 			}
@@ -367,19 +367,19 @@ namespace FuFramework.Core.Editor
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
 				PlayerSettings.SplashScreen.show = false;
 				AssetDatabase.SaveAssets();
-				
+
 				// 更新构建时间
 				UpdateBuildTime();
-				
+
 				// 构建输出路径
 				_buildPath = BuildOutputPath();
 				EditorUserBuildSettings.development = true;
-				
+
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.iOS, BuildOptions.None);
 				Process.Start(_buildPath);
 				Debug.Log("构建成功:" + _buildPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(BuildOutputPath());
 			}
@@ -401,7 +401,7 @@ namespace FuFramework.Core.Editor
 				// 标记HotFix.asmdef程序集仅在非Editor环境(运行时)下使用
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
 				PlayerSettings.SplashScreen.show = false;
-				
+
 				// 构建相关设置
 				EditorUserBuildSettings.development = false;
 				AssetDatabase.SaveAssets();
@@ -411,12 +411,12 @@ namespace FuFramework.Core.Editor
 
 				// 构建输出路径
 				_buildPath = BuildOutputPath();
-				
+
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.iOS, BuildOptions.None);
 				Process.Start(_buildPath);
 				Debug.Log("构建成功:" + _buildPath);
-				
+
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(_buildPath);
 			}

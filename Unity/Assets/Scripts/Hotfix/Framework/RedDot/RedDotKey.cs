@@ -14,22 +14,22 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 非枚举 Key 的默认值标记
 		/// </summary>
-		private const int InvalidEnumValue = -1;
+		private const int INVALID_ENUM_VALUE = -1;
 
 		/// <summary>
 		/// 内部字符串值（枚举名或动态字符串）
 		/// </summary>
-		private readonly string m_Key;
+		private readonly string m_key;
 
 		/// <summary>
 		/// 枚举 int 值（仅由 ERedDotKey 隐式转换时设置，-1 表示非枚举）
 		/// </summary>
-		private readonly int m_EnumValue;
+		private readonly int m_enumValue;
 
 		private RedDotKey(string key, int enumValue)
 		{
-			m_Key       = key ?? "";
-			m_EnumValue = enumValue;
+			m_key       = key ?? "";
+			m_enumValue = enumValue;
 		}
 
 		/// <summary>
@@ -44,7 +44,7 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		/// <param name="key">字符串 Key</param>
 		/// <returns>对应的 RedDotKey</returns>
-		public static implicit operator RedDotKey(string key) => new(key, InvalidEnumValue);
+		public static implicit operator RedDotKey(string key) => new(key, INVALID_ENUM_VALUE);
 
 		/// <summary>
 		/// 尝试获取枚举 int 值
@@ -53,17 +53,17 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>是否为枚举 Key</returns>
 		public bool TryGetEnumValue(out int value)
 		{
-			value = m_EnumValue;
-			return m_EnumValue != InvalidEnumValue;
+			value = m_enumValue;
+			return m_enumValue != INVALID_ENUM_VALUE;
 		}
 
-		public override string ToString() => m_Key ?? "";
+		public override string ToString() => m_key ?? "";
 
-		public bool Equals(RedDotKey other) => string.Equals(m_Key, other.m_Key);
+		public bool Equals(RedDotKey other) => string.Equals(m_key, other.m_key);
 
 		public override bool Equals(object obj) => obj is RedDotKey other && Equals(other);
 
-		public override int GetHashCode() => m_Key?.GetHashCode() ?? 0;
+		public override int GetHashCode() => m_key?.GetHashCode() ?? 0;
 
 		public static bool operator ==(RedDotKey left, RedDotKey right) => left.Equals(right);
 

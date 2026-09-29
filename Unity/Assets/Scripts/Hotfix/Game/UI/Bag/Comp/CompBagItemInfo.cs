@@ -13,7 +13,7 @@ namespace Hotfix.Game.UI
 {
 	public partial class CompBagItemInfo
 	{
-		private BagItem m_SelectBagItem;
+		private BagItem m_selectBagItem;
 
 		/// <summary>
 		/// 初始化
@@ -54,7 +54,7 @@ namespace Hotfix.Game.UI
 		public void SetData(BagItem selectBagItem)
 		{
 			if (selectBagItem.IsNull()) return;
-			m_SelectBagItem = selectBagItem;
+			m_selectBagItem = selectBagItem;
 			var itemConfig = ConfigModule.Instance.GetConfig<TbItem>().Get(selectBagItem.ItemId);
 			txtName.text = itemConfig.Name;
 			txtDesc.text = itemConfig.Desc;
@@ -66,8 +66,8 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnUseClick(EventContext ctx)
 		{
-			if (m_SelectBagItem.IsNull()) return;
-			BagManager.Instance.RequestUseItemAsync(m_SelectBagItem.ItemId, m_SelectBagItem.Count).Forget();
+			if (m_selectBagItem.IsNull()) return;
+			BagManager.Instance.RequestUseItemAsync(m_selectBagItem.ItemId, m_selectBagItem.Count).Forget();
 		}
 
 		private void OnBtnGetClick(EventContext ctx)

@@ -58,7 +58,7 @@ namespace Hotfix.Game.Config
         public bool IsLoaded { private set; get; }
 
         /// <summary> 框架配置模块 </summary>
-        private ConfigModule m_ConfigModule;
+        private ConfigModule m_configModule;
 
 
         /// <summary>
@@ -67,8 +67,8 @@ namespace Hotfix.Game.Config
         /// <param name="configModule">配置管理模块</param>
         public void Init(ConfigModule configModule)
         {
-            m_ConfigModule = configModule;
-            m_ConfigModule.RemoveAllConfigs();
+            m_configModule = configModule;
+            m_configModule.RemoveAllConfigs();
         }
 
         /// <summary>
@@ -82,56 +82,56 @@ namespace Hotfix.Game.Config
             if (IsLoaded) return;
 
             IsLoaded = false;
-            m_ConfigModule.RemoveAllConfigs();
+            m_configModule.RemoveAllConfigs();
             var loadTasks = new List<UniTask>();
 
             TbLocalization = new TbLocalization(() => loader("tblocalization"));
             loadTasks.Add(TbLocalization.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbLocalization), TbLocalization);
+            m_configModule.AddConfig(nameof(TbLocalization), TbLocalization);
 
             TbAchievement = new TbAchievement(() => loader("tbachievement"));
             loadTasks.Add(TbAchievement.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbAchievement), TbAchievement);
+            m_configModule.AddConfig(nameof(TbAchievement), TbAchievement);
 
             TbItem = new TbItem(() => loader("tbitem"));
             loadTasks.Add(TbItem.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbItem), TbItem);
+            m_configModule.AddConfig(nameof(TbItem), TbItem);
 
             TbEntityGroup = new TbEntityGroup(() => loader("tbentitygroup"));
             loadTasks.Add(TbEntityGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbEntityGroup), TbEntityGroup);
+            m_configModule.AddConfig(nameof(TbEntityGroup), TbEntityGroup);
 
             TbGlobalDefine = new TbGlobalDefine(() => loader("tbglobaldefine"));
             loadTasks.Add(TbGlobalDefine.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbGlobalDefine), TbGlobalDefine);
+            m_configModule.AddConfig(nameof(TbGlobalDefine), TbGlobalDefine);
 
             TbGuide = new TbGuide(() => loader("tbguide"));
             loadTasks.Add(TbGuide.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbGuide), TbGuide);
+            m_configModule.AddConfig(nameof(TbGuide), TbGuide);
 
             TbGuideStep = new TbGuideStep(() => loader("tbguidestep"));
             loadTasks.Add(TbGuideStep.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbGuideStep), TbGuideStep);
+            m_configModule.AddConfig(nameof(TbGuideStep), TbGuideStep);
 
             TbLanguageDef = new TbLanguageDef(() => loader("tblanguagedef"));
             loadTasks.Add(TbLanguageDef.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbLanguageDef), TbLanguageDef);
+            m_configModule.AddConfig(nameof(TbLanguageDef), TbLanguageDef);
 
             TbRedDot = new TbRedDot(() => loader("tbreddot"));
             loadTasks.Add(TbRedDot.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbRedDot), TbRedDot);
+            m_configModule.AddConfig(nameof(TbRedDot), TbRedDot);
 
             TbSound = new TbSound(() => loader("tbsound"));
             loadTasks.Add(TbSound.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbSound), TbSound);
+            m_configModule.AddConfig(nameof(TbSound), TbSound);
 
             TbSoundGroup = new TbSoundGroup(() => loader("tbsoundgroup"));
             loadTasks.Add(TbSoundGroup.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbSoundGroup), TbSoundGroup);
+            m_configModule.AddConfig(nameof(TbSoundGroup), TbSoundGroup);
 
             TbUIConfig = new TbUIConfig(() => loader("tbuiconfig"));
             loadTasks.Add(TbUIConfig.LoadAsync());
-            m_ConfigModule.AddConfig(nameof(TbUIConfig), TbUIConfig);
+            m_configModule.AddConfig(nameof(TbUIConfig), TbUIConfig);
 
             await UniTask.WhenAll(loadTasks);
 

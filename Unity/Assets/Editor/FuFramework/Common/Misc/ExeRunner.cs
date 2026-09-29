@@ -21,12 +21,12 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 默认超时时间（毫秒）
 		/// </summary>
-		private const int DefaultTimeout = 60000;
+		private const int DEFAULT_TIMEOUT = 60000;
 
 		/// <summary>
 		/// 0 ~ 0.1 表示模拟执行前的准备时间(视觉效果，不影响功能)
 		/// </summary>
-		private const float ReadyTime = 0.1f;
+		private const float READY_TIME = 0.1f;
 
 		/// <summary>
 		/// 启动 HttpCDN 服务器
@@ -145,9 +145,9 @@ namespace FuFramework.Core.Editor
 		/// <param name="workDir">工作目录</param>
 		/// <param name="timeout">超时时间（毫秒）</param>
 		/// <returns>执行结果</returns>
-		public static ExeRunResult Run(string exePath, string arguments = null, string workDir = null, int timeout = DefaultTimeout)
+		public static ExeRunResult Run(string exePath, string arguments = null, string workDir = null, int timeout = DEFAULT_TIMEOUT)
 		{
-			EditorUtility.DisplayProgressBar("执行程序", "准备执行: " + exePath, ReadyTime);
+			EditorUtility.DisplayProgressBar("执行程序", "准备执行: " + exePath, READY_TIME);
 
 			var result = new ExeRunResult
 			{
@@ -226,7 +226,7 @@ namespace FuFramework.Core.Editor
 		{
 			var outputBuilder = new StringBuilder();
 			var errorBuilder  = new StringBuilder();
-			var fProgress     = ReadyTime;
+			var fProgress     = READY_TIME;
 
 			process.OutputDataReceived += (_, e) =>
 			{

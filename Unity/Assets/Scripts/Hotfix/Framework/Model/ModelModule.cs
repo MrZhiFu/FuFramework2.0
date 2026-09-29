@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Model
 		/// <summary>
 		/// 存储所有的Model字典。Key：Model类型， value：Model实例
 		/// </summary>
-		private readonly Dictionary<Type, BaseModel> m_ModelDict = new();
+		private readonly Dictionary<Type, BaseModel> m_modelDict = new();
 
 		/// <summary>
 		/// 初始化。
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Model
 		public T GetModel<T>() where T : BaseModel, new()
 		{
 			var key = typeof(T);
-			if (m_ModelDict.TryGetValue(key, out var model)) return model as T;
+			if (m_modelDict.TryGetValue(key, out var model)) return model as T;
 			return CreateModel<T>();
 		}
 
@@ -61,7 +61,7 @@ namespace Hotfix.Framework.Model
 			var key = typeof(T);
 
 			// 先摘除字典项并按结果判定：不存在时不可再索引取值（否则键不存在必抛 KeyNotFoundException）
-			if (!m_ModelDict.Remove(key, out var model))
+			if (!m_modelDict.Remove(key, out var model))
 			{
 				FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
 				return;
@@ -75,12 +75,12 @@ namespace Hotfix.Framework.Model
 		/// </summary>
 		private void Clear()
 		{
-			foreach (var (_, model) in m_ModelDict)
+			foreach (var (_, model) in m_modelDict)
 			{
 				model.Dispose();
 			}
 
-			m_ModelDict.Clear();
+			m_modelDict.Clear();
 		}
 
 		/// <summary>
@@ -91,12 +91,12 @@ namespace Hotfix.Framework.Model
 		private T CreateModel<T>() where T : BaseModel, new()
 		{
 			var key = typeof(T);
-			if (m_ModelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
+			if (m_modelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
 
 			var model = new T();
 			model.Init();
 
-			m_ModelDict.Add(key, model);
+			m_modelDict.Add(key, model);
 			return model;
 		}
 	}

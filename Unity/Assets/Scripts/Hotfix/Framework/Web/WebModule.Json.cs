@@ -22,11 +22,11 @@ namespace Hotfix.Framework.Web
 		private void UpdateJsonReq()
 		{
 			// 每帧填满全部空闲并发槽位（而非每帧仅发一个），提升吞吐
-			while (m_SendingJsonList.Count < MaxConnectionPerServer && m_WaitingJsonQueue.Count > 0)
+			while (m_sendingJsonList.Count < MaxConnectionPerServer && m_waitingJsonQueue.Count > 0)
 			{
-				var webJsonData = m_WaitingJsonQueue.Dequeue();
+				var webJsonData = m_waitingJsonQueue.Dequeue();
 				if (SendJsonReq(webJsonData))
-					m_SendingJsonList.Add(webJsonData);
+					m_sendingJsonList.Add(webJsonData);
 			}
 		}
 
@@ -66,7 +66,7 @@ namespace Hotfix.Framework.Web
 			}
 
 			// 构建 + 发送成功后才登记在途：失败路径无在途登记，计数不泄漏
-			return SendRequest(webJsonData, m_SendingJsonList, unityWebRequest, asyncOperation);
+			return SendRequest(webJsonData, m_sendingJsonList, unityWebRequest, asyncOperation);
 		}
 
 		/// <summary>

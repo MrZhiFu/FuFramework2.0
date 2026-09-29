@@ -91,7 +91,7 @@ namespace FuFramework.Core.Editor
 			{
 				GUILayout.Label("查询类型:", EditorStyles.label, GUILayout.Width(100));
 				m_searchText = EditorGUILayout.TextField(m_searchText, EditorStyles.toolbarTextField, GUILayout.Width(400));
-				
+
 				if (GUILayout.Button("查询", EditorStyles.toolbarButton, GUILayout.Width(100)))
 				{
 					SearchTypes();
@@ -139,11 +139,11 @@ namespace FuFramework.Core.Editor
 			GUILayout.BeginHorizontal();
 			{
 				GUILayout.Label("生成选项:", EditorStyles.label, GUILayout.Width(100));
-				
+
 				m_includeNestedTypes = EditorGUILayout.ToggleLeft("包含嵌套类型", m_includeNestedTypes, GUILayout.Width(120));
 				m_includeGenericTypes = EditorGUILayout.ToggleLeft("包含泛型类型", m_includeGenericTypes, GUILayout.Width(120));
 				m_includePrivateTypes = EditorGUILayout.ToggleLeft("包含私有类型", m_includePrivateTypes, GUILayout.Width(120));
-				
+
 				GUILayout.FlexibleSpace();
 			}
 			GUILayout.EndHorizontal();
@@ -159,7 +159,7 @@ namespace FuFramework.Core.Editor
 			GUILayout.BeginVertical(GUI.skin.box);
 			{
 				GUILayout.Label("文件生成选项", EditorStyles.boldLabel);
-				
+
 				GUILayout.BeginHorizontal();
 				{
 					GUILayout.Label("目标类型:", EditorStyles.label, GUILayout.Width(100));
@@ -222,7 +222,7 @@ namespace FuFramework.Core.Editor
 				GUILayout.EndHorizontal();
 			}
 			GUILayout.EndVertical();
-			
+
 			GUILayout.Space(10);
 		}
 
@@ -232,7 +232,7 @@ namespace FuFramework.Core.Editor
 		private void DrawContentArea()
 		{
 			GUILayout.Label("生成的防裁剪代码:", EditorStyles.boldLabel);
-			
+
 			m_scrollPosition = EditorGUILayout.BeginScrollView(m_scrollPosition, GUILayout.ExpandHeight(true));
 			{
 				var textAreaStyle = new GUIStyle(EditorStyles.textArea)
@@ -240,7 +240,7 @@ namespace FuFramework.Core.Editor
 					wordWrap = true,
 					fontSize = 12
 				};
-				
+
 				m_generatedText = EditorGUILayout.TextArea(m_generatedText, textAreaStyle, GUILayout.ExpandHeight(true));
 			}
 			EditorGUILayout.EndScrollView();
@@ -307,7 +307,7 @@ namespace FuFramework.Core.Editor
 				{
 					// 读取脚本文件内容，检查是否包含该类型
 					var scriptContent = File.ReadAllText(scriptPath);
-					if (scriptContent.Contains($"class {typeName}") || 
+					if (scriptContent.Contains($"class {typeName}") ||
 						scriptContent.Contains($"struct {typeName}") ||
 						scriptContent.Contains($"interface {typeName}"))
 					{
@@ -409,14 +409,14 @@ namespace FuFramework.Core.Editor
 		{
 			var defaultPath = GetSaveDirectory();
 			var fullDefaultPath = defaultPath;
-			
+
 			if (defaultPath.StartsWith("Assets"))
 			{
 				fullDefaultPath = Path.Combine(Application.dataPath, defaultPath.Replace("Assets/", "").Replace("Assets", ""));
 			}
 
 			var selectedPath = EditorUtility.SaveFolderPanel("选择保存目录", fullDefaultPath, "");
-			
+
 			if (!string.IsNullOrEmpty(selectedPath))
 			{
 				// 转换为Assets相对路径
@@ -427,7 +427,7 @@ namespace FuFramework.Core.Editor
 				else
 				{
 					// 如果不在Assets目录内，提示用户
-					if (EditorUtility.DisplayDialog("路径警告", 
+					if (EditorUtility.DisplayDialog("路径警告",
 						"选择的路径不在Assets目录内，这可能导致Unity无法识别文件。是否继续？", "继续", "取消"))
 					{
 						m_currentTypeAssetPath = selectedPath;
@@ -443,13 +443,13 @@ namespace FuFramework.Core.Editor
 		{
 			var directory = GetSaveDirectory();
 			var fullPath = directory;
-			
+
 			// 如果是Assets相对路径，转换为完整路径
 			if (directory.StartsWith("Assets"))
 			{
 				fullPath = Path.Combine(Application.dataPath, directory.Replace("Assets/", "").Replace("Assets", ""));
 			}
-			
+
 			if (Directory.Exists(fullPath))
 			{
 				EditorUtility.RevealInFinder(fullPath);
@@ -490,7 +490,7 @@ namespace FuFramework.Core.Editor
 				// 获取所有类型，并过滤掉忽略的类型
 				var types = UtilityAOT.Assembly.GetTypes();
 				var result = new List<string>();
-				
+
 				foreach (var type in types)
 				{
 					if (type.FullName == null) continue;
@@ -514,9 +514,9 @@ namespace FuFramework.Core.Editor
 				result.Sort();
 				m_dropdownOptions = result.ToArray();
 				m_searchCache[cacheKey] = m_dropdownOptions;
-				
+
 				ShowNotification(new GUIContent { text = $"找到 {m_dropdownOptions.Length} 个匹配类型" });
-				
+
 				// 更新类型信息
 				if (m_dropdownOptions.Length > 0)
 				{
@@ -543,7 +543,7 @@ namespace FuFramework.Core.Editor
 			}
 
 			var targetTypeName = m_dropdownOptions[m_selectedDropdownIndex];
-			
+
 			if (string.IsNullOrEmpty(targetTypeName) || targetTypeName == "Empty")
 			{
 				ShowNotification(new GUIContent { text = "请选择有效的类型" });
@@ -582,7 +582,7 @@ namespace FuFramework.Core.Editor
 			}
 
 			var targetTypeName = m_dropdownOptions[m_selectedDropdownIndex];
-			
+
 			if (string.IsNullOrEmpty(targetTypeName) || targetTypeName == "Empty")
 			{
 				ShowNotification(new GUIContent { text = "请选择有效的类型" });
@@ -622,7 +622,7 @@ namespace FuFramework.Core.Editor
 					{
 						fullDirectory = Path.Combine(Application.dataPath, saveDirectory.Replace("Assets/", "").Replace("Assets", ""));
 					}
-					
+
 					if (!Directory.Exists(fullDirectory))
 					{
 						Directory.CreateDirectory(fullDirectory);
@@ -645,7 +645,7 @@ namespace FuFramework.Core.Editor
 				{
 					relativePath = "Assets" + fullPath.Substring(Application.dataPath.Length);
 				}
-				
+
 				var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(relativePath);
 				if (asset != null)
 				{
@@ -668,11 +668,11 @@ namespace FuFramework.Core.Editor
 			// 获取类型所在的程序集的所有类型，并根据全名排序
 			var types = targetType.Assembly.GetTypes();
 			Array.Sort(types, (a, b) => string.CompareOrdinal(a?.FullName, b?.FullName));
-			
+
 			var sb = new StringBuilder();
 			var assemblyName = targetType.Assembly.GetName().Name;
 			var namespaceName = targetType.Namespace ?? "";
-			
+
 			sb.AppendLine("// ===================================================");
 			sb.AppendLine("// 防裁剪代码 - 自动生成");
 			sb.AppendLine("// 程序集: " + assemblyName);
@@ -682,7 +682,7 @@ namespace FuFramework.Core.Editor
 			sb.AppendLine();
 			sb.AppendLine("using UnityEngine;");
 			sb.AppendLine();
-			
+
 			// 添加命名空间（与目标类型保持一致）
 			if (!string.IsNullOrEmpty(namespaceName))
 			{
@@ -690,7 +690,7 @@ namespace FuFramework.Core.Editor
 				sb.AppendLine($"namespace {namespaceName}");
 				sb.AppendLine("{");
 			}
-			
+
 			sb.AppendLine("    /// <summary>");
 			sb.AppendLine("    /// 防裁剪类定义");
 			sb.AppendLine("    /// 防止 IL2CPP 代码裁剪时移除重要类型");
@@ -707,7 +707,7 @@ namespace FuFramework.Core.Editor
 			sb.AppendLine("        {");
 
 			var validTypeCount = 0;
-			
+
 			// 遍历所有类型，写入类型防裁剪代码
 			foreach (var type in types)
 			{
@@ -730,7 +730,7 @@ namespace FuFramework.Core.Editor
 
 			sb.AppendLine("        }");
 			sb.AppendLine("    }");
-			
+
 			// 关闭命名空间
 			if (!string.IsNullOrEmpty(namespaceName))
 			{

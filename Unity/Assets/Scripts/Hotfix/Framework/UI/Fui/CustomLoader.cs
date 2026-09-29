@@ -52,22 +52,22 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_Cancellation = new();
+		private readonly LifecycleCancellationSource m_cancellation = new();
 
 		/// <summary>
 		/// 本加载器是否已被释放。
 		/// LifecycleCancellationSource.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
 		/// 故不能用 Token 判断"本 loader 已销毁"，需显式标记。
 		/// </summary>
-		private bool m_IsDisposed;
+		private bool m_isDisposed;
 
 		/// <summary>
 		/// 释放：取消本加载器在途的纹理加载，并释放底层。
 		/// </summary>
 		public override void Dispose()
 		{
-			m_IsDisposed = true;
-			m_Cancellation.Dispose();
+			m_isDisposed = true;
+			m_cancellation.Dispose();
 			base.Dispose();
 		}
 
@@ -114,12 +114,12 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 资源管理模块
 		/// </summary>
-		private readonly AssetModule m_AssetModule;
+		private readonly AssetModule m_assetModule;
 
 		public CustomLoader()
 		{
-			m_AssetModule = ModuleManager.GetModule<AssetModule>();
-			if (m_AssetModule == null)
+			m_assetModule = ModuleManager.GetModule<AssetModule>();
+			if (m_assetModule == null)
 			{
 				throw new InvalidOperationException("[CustomLoader] 资源管理模块不存在!");
 			}
@@ -172,7 +172,7 @@ namespace Hotfix.Framework.UI
 							// 资源存在但不是Texture2D类型：bundle 已加载，释放句柄并显式卸载避免残留
 							var assetPath = assetHandle.GetAssetInfo().AssetPath;
 							assetHandle.Release();
-							m_AssetModule.UnloadAsset(assetPath);
+							m_assetModule.UnloadAsset(assetPath);
 							assetHandle = null;
 						}
 					}
@@ -247,13 +247,13 @@ namespace Hotfix.Framework.UI
 			{
 				// 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
 				// 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
-				return await existing.Task.AttachExternalCancellation(m_Cancellation.Token);
+				return await existing.Task.AttachExternalCancellation(m_cancellation.Token);
 			}
 			catch (OperationCanceledException)
 			{
 				// 本 loader 自身被移除（Dispose）：预期关停，静默上抛由 LoadExternal 的 catch 处理。
-				// 注意不能用 m_Cancellation.Token 判断——Dispose 后它已退化为 default(None)。
-				if (m_IsDisposed) throw;
+				// 注意不能用 m_cancellation.Token 判断——Dispose 后它已退化为 default(None)。
+				if (m_isDisposed) throw;
 
 				// 否则是共享下载任务随其发起者（第一个 loader）Dispose 被取消：不能静默返回，
 				// 否则本次消费者会无声失去加载结果。为本次等待重新发起一次独立（仍共享）下载。
@@ -274,7 +274,7 @@ namespace Hotfix.Framework.UI
 			LoadingTasks[textureURL] = sharedLoad;
 			try
 			{
-				return await sharedLoad.Task.AttachExternalCancellation(m_Cancellation.Token);
+				return await sharedLoad.Task.AttachExternalCancellation(m_cancellation.Token);
 			}
 			finally
 			{
@@ -305,7 +305,7 @@ namespace Hotfix.Framework.UI
 			if (!Directory.Exists(CachePath))
 				Directory.CreateDirectory(CachePath);
 
-			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_Cancellation.Token);
+			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_cancellation.Token);
 			if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
 			{
 				FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
@@ -333,9 +333,9 @@ namespace Hotfix.Framework.UI
 		/// <returns>加载完成的Texture2D。</returns>
 		private async UniTask<AssetHandle> LoadTextureFromAsset(string textureURL)
 		{
-			var assetInfo = m_AssetModule.GetAssetInfo(textureURL);
+			var assetInfo = m_assetModule.GetAssetInfo(textureURL);
 			if (assetInfo == null) return null;
-			return await m_AssetModule.LoadAssetAsync<Texture2D>(textureURL, m_Cancellation.Token);
+			return await m_assetModule.LoadAssetAsync<Texture2D>(textureURL, m_cancellation.Token);
 		}
 
 		/// <summary>

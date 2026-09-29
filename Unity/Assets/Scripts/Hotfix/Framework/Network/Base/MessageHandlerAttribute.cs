@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 单个方法允许积压的最大未处理消息数量，防止消息队列无界增长。
 		/// </summary>
-		private const int MaxQueuedMessageCount = 256;
+		private const int MAX_QUEUED_MESSAGE_COUNT = 256;
 
 		/// <summary>
 		/// 消息对象
@@ -48,24 +48,24 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 执行的方法名称（仅用于日志与去重比对，不参与任何反射查找）
 		/// </summary>
-		private readonly string m_InvokeMethodName;
+		private readonly string m_invokeMethodName;
 
 		/// <summary>
 		/// 消息处理器
 		/// </summary>
-		private IMessageHandler m_MessageHandler;
+		private IMessageHandler m_messageHandler;
 
 		/// <summary>
 		/// 已绑定的消息处理委托。
 		/// 由生成物直接产出（形如 <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>），
 		/// 注册阶段一次性绑定，收包阶段直接调用，全程无反射。
 		/// </summary>
-		private Action<IMessageHandler, MessageObject> m_InvokeDelegate;
+		private Action<IMessageHandler, MessageObject> m_invokeDelegate;
 
 		/// <summary>
 		/// 消息处理对象队列
 		/// </summary>
-		private readonly Queue<MessageObject> m_MessageObjects = new();
+		private readonly Queue<MessageObject> m_messageObjects = new();
 
 		/// <summary>
 		/// 网络消息处理器
@@ -76,7 +76,7 @@ namespace Hotfix.Framework.Network
 		{
 			message.NotNull(nameof(message));
 			invokeMethodName.NotNullOrEmpty(nameof(invokeMethodName));
-			m_InvokeMethodName = invokeMethodName;
+			m_invokeMethodName = invokeMethodName;
 			if (message.BaseType != typeof(MessageObject))
 				throw new ArgumentException("message必须继承:" + nameof(MessageObject));
 
@@ -89,12 +89,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 注册时的方法名（仅用于日志与去重比对）
 		/// </summary>
-		internal string InvokeMethodName => m_InvokeMethodName;
+		internal string InvokeMethodName => m_invokeMethodName;
 
 		/// <summary>
 		/// 注册的处理对象实例（用于显式比对，避免依赖 Attribute 的引用相等性）
 		/// </summary>
-		internal IMessageHandler TargetHandler => m_MessageHandler;
+		internal IMessageHandler TargetHandler => m_messageHandler;
 
 		/// <summary>
 		/// 绑定处理对象与生成物产出的强类型委托。
@@ -107,8 +107,8 @@ namespace Hotfix.Framework.Network
 			MessageType.NotNull(nameof(MessageType));
 			messageHandler.NotNull(nameof(messageHandler));
 			invokeDelegate.NotNull(nameof(invokeDelegate));
-			m_MessageHandler = messageHandler;
-			m_InvokeDelegate = invokeDelegate;
+			m_messageHandler = messageHandler;
+			m_invokeDelegate = invokeDelegate;
 		}
 
 		/// <summary>
@@ -118,32 +118,32 @@ namespace Hotfix.Framework.Network
 		public void SetMessageObject(MessageObject messageObject)
 		{
 			messageObject.NotNull(nameof(messageObject));
-			if (m_MessageObjects.Count >= MaxQueuedMessageCount)
+			if (m_messageObjects.Count >= MAX_QUEUED_MESSAGE_COUNT)
 			{
 				// 队列无界会导致内存持续增长（例如处理函数持续失败时），
 				// 这里丢弃最旧的一条，保证积压有上限。
-				FuLogger.LogWarning($"消息处理队列已满({MaxQueuedMessageCount})，丢弃最旧消息。方法：{m_InvokeMethodName}");
-				m_MessageObjects.Dequeue();
+				FuLogger.LogWarning($"消息处理队列已满({MAX_QUEUED_MESSAGE_COUNT})，丢弃最旧消息。方法：{m_invokeMethodName}");
+				m_messageObjects.Dequeue();
 			}
 
-			m_MessageObjects.Enqueue(messageObject);
+			m_messageObjects.Enqueue(messageObject);
 		}
 
 		internal void Invoke()
 		{
-			if (m_MessageObjects.Count <= 0)
+			if (m_messageObjects.Count <= 0)
 			{
-				FuLogger.LogWarning($"没有消息对象转发到方法：{m_InvokeMethodName}");
+				FuLogger.LogWarning($"没有消息对象转发到方法：{m_invokeMethodName}");
 				return;
 			}
 
 			// 先出队再处理：处理过程中抛异常时消息不会残留在队列里造成无界堆积。
-			var messageObject = m_MessageObjects.Dequeue();
+			var messageObject = m_messageObjects.Dequeue();
 
-			if (m_InvokeDelegate == null)
-				throw new ArgumentNullException(nameof(m_InvokeDelegate), $"未绑定处理委托：{m_InvokeMethodName}.请确认是否注册成功");
+			if (m_invokeDelegate == null)
+				throw new ArgumentNullException(nameof(m_invokeDelegate), $"未绑定处理委托：{m_invokeMethodName}.请确认是否注册成功");
 
-			m_InvokeDelegate(m_MessageHandler, messageObject);
+			m_invokeDelegate(m_messageHandler, messageObject);
 		}
 	}
 }

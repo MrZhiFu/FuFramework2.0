@@ -28,8 +28,8 @@ namespace Hotfix.Framework.UI
 		private void _OnInit()
 		{
 			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]初始化-OnInit().");
-			m_UIModule.PkgManager?.AddPkgRef(PackageName);
-			m_PkgRefAdded = true; // 置位后 _OnDispose 才允许 SubPkgRef，保证加/减引用严格对称
+			m_uiModule.PkgManager?.AddPkgRef(PackageName);
+			m_pkgRefAdded = true; // 置位后 _OnDispose 才允许 SubPkgRef，保证加/减引用严格对称
 			OnInit();
 		}
 
@@ -39,7 +39,7 @@ namespace Hotfix.Framework.UI
 		internal void _OnOpen()
 		{
 			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]打开-OnOpen().");
-			m_Cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
+			m_cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
 			Visible     = true;
 			WinUI.alpha = 0;
 
@@ -128,7 +128,7 @@ namespace Hotfix.Framework.UI
 		internal void _OnClose()
 		{
 			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]关闭-OnClose().");
-			m_Cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
+			m_cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
 			Visible = false;
 
 			// 关闭动画需要 WinUI；若为空/已销毁（teardown 阶段关闭仍打开的窗口、或半成品实例）
@@ -188,14 +188,14 @@ namespace Hotfix.Framework.UI
 			// 用户的 OnClose() 钩子由 _OnRecycle 的 complete kill 保证触发（销毁前必先经过回收）。
 			if (WinUI != null) GTween.Kill(WinUI);
 
-			m_Cancellation.Dispose(); // 真销毁，永久释放取消源
+			m_cancellation.Dispose(); // 真销毁，永久释放取消源
 
 			// 半成品实例（Init 未走完，UI模块未绑定/未加过包引用）销毁时不得递减引用计数：
 			// 递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。判空 + 标记双重守卫。
-			if (m_PkgRefAdded)
+			if (m_pkgRefAdded)
 			{
-				m_UIModule?.PkgManager?.SubPkgRef(PackageName);
-				m_PkgRefAdded = false;
+				m_uiModule?.PkgManager?.SubPkgRef(PackageName);
+				m_pkgRefAdded = false;
 			}
 
 			// 半成品实例的事件/UI事件/计时器注册器均为 null，Release 前必须判空（否则抛 NRE）

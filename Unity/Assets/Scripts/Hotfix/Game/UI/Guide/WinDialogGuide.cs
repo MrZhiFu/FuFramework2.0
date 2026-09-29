@@ -13,11 +13,11 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 提交按钮点击回调
 		/// </summary>
-		private Action m_OnConfirm;
+		private Action m_onConfirm;
 
 		/// <summary>
 		/// 初始化
-		/// </summary>  
+		/// </summary>
 		protected override void OnInit()
 		{
 			InitUIComp();
@@ -60,7 +60,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		protected override void OnDispose()
 		{
-			m_OnConfirm = null;
+			m_onConfirm = null;
 		}
 
 		/// <summary>
@@ -71,7 +71,7 @@ namespace Hotfix.Game.UI
 		public void ShowDialog(string content, Action onConfirm)
 		{
 			txtContent.text = content;
-			m_OnConfirm = onConfirm;
+			m_onConfirm = onConfirm;
 		}
 
 		/// <summary>
@@ -86,7 +86,7 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnNextClick(EventContext ctx)
 		{
-			m_OnConfirm?.Invoke();
+			m_onConfirm?.Invoke();
 		}
 
 		#endregion

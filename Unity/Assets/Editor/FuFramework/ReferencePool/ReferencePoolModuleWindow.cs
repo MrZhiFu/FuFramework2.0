@@ -55,7 +55,7 @@ namespace FuFramework.ReferencePool.Editor
 		/// <summary>
 		/// 引用池折叠状态缓存。ReferencePoolInfo 是 struct，每次查询返回新副本，须以稳定的 Type 为键。
 		/// </summary>
-		private readonly Dictionary<Type, bool> m_FoldoutStates = new();
+		private readonly Dictionary<Type, bool> m_foldoutStates = new();
 
 		#endregion
 
@@ -64,67 +64,67 @@ namespace FuFramework.ReferencePool.Editor
 		/// <summary>
 		/// ReferencePool 静态类型
 		/// </summary>
-		private Type m_ReferencePoolType;
+		private Type m_referencePoolType;
 
 		/// <summary>
 		/// ReferencePoolInfo 类型
 		/// </summary>
-		private Type m_ReferencePoolInfoType;
+		private Type m_referencePoolInfoType;
 
 		/// <summary>
 		/// ReferencePool.Count 属性（静态）
 		/// </summary>
-		private PropertyInfo m_ModuleCountProperty;
+		private PropertyInfo m_moduleCountProperty;
 
 		/// <summary>
 		/// ReferencePool.GetAllReferencePoolInfos 方法（静态）
 		/// </summary>
-		private MethodInfo m_GetAllReferencePoolInfosMethod;
+		private MethodInfo m_getAllReferencePoolInfosMethod;
 
 		/// <summary>
 		/// ReferencePool.ClearAll 方法（静态）
 		/// </summary>
-		private MethodInfo m_ModuleRemoveAllPoolsMethod;
+		private MethodInfo m_moduleRemoveAllPoolsMethod;
 
 		/// <summary>
 		/// ReferencePool.RemoveAllUnused<T> 泛型方法定义（静态）
 		/// </summary>
-		private MethodInfo m_RemoveAllUnusedGenericMethod;
+		private MethodInfo m_removeAllUnusedGenericMethod;
 
 		/// <summary>
 		/// ReferencePoolInfo.Type 属性
 		/// </summary>
-		private PropertyInfo m_InfoTypeProperty;
+		private PropertyInfo m_infoTypeProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.UnusedReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoUnusedReferenceCountProperty;
+		private PropertyInfo m_infoUnusedReferenceCountProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.UsingReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoUsingReferenceCountProperty;
+		private PropertyInfo m_infoUsingReferenceCountProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.AcquireReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoAcquireReferenceCountProperty;
+		private PropertyInfo m_infoAcquireReferenceCountProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.ReleaseReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoReleaseReferenceCountProperty;
+		private PropertyInfo m_infoReleaseReferenceCountProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.AddReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoAddReferenceCountProperty;
+		private PropertyInfo m_infoAddReferenceCountProperty;
 
 		/// <summary>
 		/// ReferencePoolInfo.RemoveReferenceCount 属性
 		/// </summary>
-		private PropertyInfo m_InfoRemoveReferenceCountProperty;
+		private PropertyInfo m_infoRemoveReferenceCountProperty;
 
 		#endregion
 
@@ -135,7 +135,7 @@ namespace FuFramework.ReferencePool.Editor
 		/// </summary>
 		protected override void DrawOverview()
 		{
-			var count = m_ModuleCountProperty?.GetValue(null) ?? 0;
+			var count = m_moduleCountProperty?.GetValue(null) ?? 0;
 
 			// 文案对齐 ReferencePool.ClearAll 的新语义：ClearAll 只清空闲置引用、保留类型条目与累计计数，
 			// 故此处显示的是「类型条目数」，一键移除后不会归零（旧文案「引用池总个数」易被误解为移除后清零）。
@@ -146,7 +146,7 @@ namespace FuFramework.ReferencePool.Editor
 			{
 				try
 				{
-					m_ModuleRemoveAllPoolsMethod?.Invoke(null, null);
+					m_moduleRemoveAllPoolsMethod?.Invoke(null, null);
 				}
 				catch (Exception e)
 				{
@@ -187,38 +187,38 @@ namespace FuFramework.ReferencePool.Editor
 		{
 			if (info == null) return;
 
-			var poolType = m_InfoTypeProperty?.GetValue(info) as Type;
+			var poolType = m_infoTypeProperty?.GetValue(info) as Type;
 			if (poolType == null) return;
 
 			var typeName = poolType.Name;
 			var fullName = poolType.FullName ?? typeName;
 
 			// 搜索过滤：类型名或全名匹配才展示
-			if (!string.IsNullOrEmpty(m_SearchFilter))
+			if (!string.IsNullOrEmpty(m_searchFilter))
 			{
-				if (!typeName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase)
-					&& !fullName.Contains(m_SearchFilter, StringComparison.OrdinalIgnoreCase))
+				if (!typeName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)
+					&& !fullName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase))
 				{
 					return;
 				}
 			}
 
-			if (!m_FoldoutStates.TryGetValue(poolType, out var isOpen))
+			if (!m_foldoutStates.TryGetValue(poolType, out var isOpen))
 			{
 				isOpen = true;
-				m_FoldoutStates[poolType] = true;
+				m_foldoutStates[poolType] = true;
 			}
 
-			var unusedCount = (int)(m_InfoUnusedReferenceCountProperty?.GetValue(info) ?? 0);
-			var usingCount  = (int)(m_InfoUsingReferenceCountProperty?.GetValue(info)    ?? 0);
+			var unusedCount = (int)(m_infoUnusedReferenceCountProperty?.GetValue(info) ?? 0);
+			var usingCount  = (int)(m_infoUsingReferenceCountProperty?.GetValue(info)    ?? 0);
 			var totalCount  = usingCount + unusedCount;
 
 			// 引用池类型名（Foldout 标题）用青色高亮
 			var foldoutOldColor = GUI.color;
 			GUI.color             = Color.cyan;
-			m_FoldoutStates[poolType] = EditorGUILayout.Foldout(isOpen, $"{typeName} ({usingCount}/{totalCount})", true);
+			m_foldoutStates[poolType] = EditorGUILayout.Foldout(isOpen, $"{typeName} ({usingCount}/{totalCount})", true);
 			GUI.color             = foldoutOldColor;
-			if (!m_FoldoutStates[poolType]) return;
+			if (!m_foldoutStates[poolType]) return;
 
 			EditorGUILayout.BeginVertical("box");
 			{
@@ -237,12 +237,12 @@ namespace FuFramework.ReferencePool.Editor
 		/// <param name="info">引用池信息（ReferencePoolInfo 装箱实例）</param>
 		private void DrawPoolStats(object info)
 		{
-			var unusedCount  = (int)(m_InfoUnusedReferenceCountProperty?.GetValue(info)   ?? 0);
-			var usingCount   = (int)(m_InfoUsingReferenceCountProperty?.GetValue(info)    ?? 0);
-			var acquireCount = (int)(m_InfoAcquireReferenceCountProperty?.GetValue(info)  ?? 0);
-			var releaseCount = (int)(m_InfoReleaseReferenceCountProperty?.GetValue(info)  ?? 0);
-			var addCount     = (int)(m_InfoAddReferenceCountProperty?.GetValue(info)      ?? 0);
-			var removeCount  = (int)(m_InfoRemoveReferenceCountProperty?.GetValue(info)   ?? 0);
+			var unusedCount  = (int)(m_infoUnusedReferenceCountProperty?.GetValue(info)   ?? 0);
+			var usingCount   = (int)(m_infoUsingReferenceCountProperty?.GetValue(info)    ?? 0);
+			var acquireCount = (int)(m_infoAcquireReferenceCountProperty?.GetValue(info)  ?? 0);
+			var releaseCount = (int)(m_infoReleaseReferenceCountProperty?.GetValue(info)  ?? 0);
+			var addCount     = (int)(m_infoAddReferenceCountProperty?.GetValue(info)      ?? 0);
+			var removeCount  = (int)(m_infoRemoveReferenceCountProperty?.GetValue(info)   ?? 0);
 
 			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label($"闲置: {unusedCount}", GUILayout.MinWidth(80));
@@ -270,7 +270,7 @@ namespace FuFramework.ReferencePool.Editor
 			{
 				try
 				{
-					var removeAllUnusedMethod = m_RemoveAllUnusedGenericMethod?.MakeGenericMethod(poolType);
+					var removeAllUnusedMethod = m_removeAllUnusedGenericMethod?.MakeGenericMethod(poolType);
 					removeAllUnusedMethod?.Invoke(null, null);
 				}
 				catch (Exception e)
@@ -294,8 +294,8 @@ namespace FuFramework.ReferencePool.Editor
 			var infos = GetAllReferencePoolInfos();
 			foreach (var info in infos)
 			{
-				var poolType = m_InfoTypeProperty?.GetValue(info) as Type;
-				if (poolType != null) m_FoldoutStates[poolType] = true;
+				var poolType = m_infoTypeProperty?.GetValue(info) as Type;
+				if (poolType != null) m_foldoutStates[poolType] = true;
 			}
 		}
 
@@ -307,8 +307,8 @@ namespace FuFramework.ReferencePool.Editor
 			var infos = GetAllReferencePoolInfos();
 			foreach (var info in infos)
 			{
-				var poolType = m_InfoTypeProperty?.GetValue(info) as Type;
-				if (poolType != null) m_FoldoutStates[poolType] = false;
+				var poolType = m_infoTypeProperty?.GetValue(info) as Type;
+				if (poolType != null) m_foldoutStates[poolType] = false;
 			}
 		}
 
@@ -322,30 +322,30 @@ namespace FuFramework.ReferencePool.Editor
 		/// <returns>初始化成功返回 true</returns>
 		protected override bool EnsureReflection()
 		{
-			if (m_ReferencePoolType != null) return true;
+			if (m_referencePoolType != null) return true;
 
-			m_ReferencePoolType = HotfixReflection.ReferencePool;
-			if (m_ReferencePoolType == null) return false;
+			m_referencePoolType = HotfixReflection.ReferencePool;
+			if (m_referencePoolType == null) return false;
 
-			m_ReferencePoolInfoType = HotfixReflection.ReferencePoolInfo;
-			if (m_ReferencePoolInfoType == null) return false;
+			m_referencePoolInfoType = HotfixReflection.ReferencePoolInfo;
+			if (m_referencePoolInfoType == null) return false;
 
 			// ReferencePool 已剥离为静态基座，成员均为 static，无需再经 ModuleManager 取模块实例
 
 			// ReferencePool 成员（静态）
-			m_ModuleCountProperty              = m_ReferencePoolType.GetProperty("Count", BindingFlags.Public | BindingFlags.Static);
-			m_GetAllReferencePoolInfosMethod   = m_ReferencePoolType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Static);
-			m_ModuleRemoveAllPoolsMethod       = m_ReferencePoolType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Static);
-			m_RemoveAllUnusedGenericMethod     = m_ReferencePoolType.GetMethod("RemoveAllUnused", BindingFlags.Public | BindingFlags.Static);
+			m_moduleCountProperty              = m_referencePoolType.GetProperty("Count", BindingFlags.Public | BindingFlags.Static);
+			m_getAllReferencePoolInfosMethod   = m_referencePoolType.GetMethod("GetAllReferencePoolInfos", BindingFlags.Public | BindingFlags.Static);
+			m_moduleRemoveAllPoolsMethod       = m_referencePoolType.GetMethod("ClearAll", BindingFlags.Public | BindingFlags.Static);
+			m_removeAllUnusedGenericMethod     = m_referencePoolType.GetMethod("RemoveAllUnused", BindingFlags.Public | BindingFlags.Static);
 
 			// ReferencePoolInfo 成员
-			m_InfoTypeProperty                  = m_ReferencePoolInfoType.GetProperty("Type", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoUnusedReferenceCountProperty  = m_ReferencePoolInfoType.GetProperty("UnusedReferenceCount", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoUsingReferenceCountProperty   = m_ReferencePoolInfoType.GetProperty("UsingReferenceCount", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoAcquireReferenceCountProperty = m_ReferencePoolInfoType.GetProperty("AcquireReferenceCount", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoReleaseReferenceCountProperty = m_ReferencePoolInfoType.GetProperty("ReleaseReferenceCount", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoAddReferenceCountProperty     = m_ReferencePoolInfoType.GetProperty("AddReferenceCount", BindingFlags.Public | BindingFlags.Instance);
-			m_InfoRemoveReferenceCountProperty  = m_ReferencePoolInfoType.GetProperty("RemoveReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoTypeProperty                  = m_referencePoolInfoType.GetProperty("Type", BindingFlags.Public | BindingFlags.Instance);
+			m_infoUnusedReferenceCountProperty  = m_referencePoolInfoType.GetProperty("UnusedReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoUsingReferenceCountProperty   = m_referencePoolInfoType.GetProperty("UsingReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoAcquireReferenceCountProperty = m_referencePoolInfoType.GetProperty("AcquireReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoReleaseReferenceCountProperty = m_referencePoolInfoType.GetProperty("ReleaseReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoAddReferenceCountProperty     = m_referencePoolInfoType.GetProperty("AddReferenceCount", BindingFlags.Public | BindingFlags.Instance);
+			m_infoRemoveReferenceCountProperty  = m_referencePoolInfoType.GetProperty("RemoveReferenceCount", BindingFlags.Public | BindingFlags.Instance);
 
 			return true;
 		}
@@ -355,19 +355,19 @@ namespace FuFramework.ReferencePool.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_ReferencePoolType                    = null;
-			m_ReferencePoolInfoType                = null;
-			m_ModuleCountProperty                  = null;
-			m_GetAllReferencePoolInfosMethod       = null;
-			m_ModuleRemoveAllPoolsMethod           = null;
-			m_RemoveAllUnusedGenericMethod         = null;
-			m_InfoTypeProperty                     = null;
-			m_InfoUnusedReferenceCountProperty     = null;
-			m_InfoUsingReferenceCountProperty      = null;
-			m_InfoAcquireReferenceCountProperty    = null;
-			m_InfoReleaseReferenceCountProperty    = null;
-			m_InfoAddReferenceCountProperty        = null;
-			m_InfoRemoveReferenceCountProperty     = null;
+			m_referencePoolType                    = null;
+			m_referencePoolInfoType                = null;
+			m_moduleCountProperty                  = null;
+			m_getAllReferencePoolInfosMethod       = null;
+			m_moduleRemoveAllPoolsMethod           = null;
+			m_removeAllUnusedGenericMethod         = null;
+			m_infoTypeProperty                     = null;
+			m_infoUnusedReferenceCountProperty     = null;
+			m_infoUsingReferenceCountProperty      = null;
+			m_infoAcquireReferenceCountProperty    = null;
+			m_infoReleaseReferenceCountProperty    = null;
+			m_infoAddReferenceCountProperty        = null;
+			m_infoRemoveReferenceCountProperty     = null;
 		}
 
 		/// <summary>
@@ -377,7 +377,7 @@ namespace FuFramework.ReferencePool.Editor
 		private List<object> GetAllReferencePoolInfos()
 		{
 			var list = new List<object>();
-			var result = m_GetAllReferencePoolInfosMethod?.Invoke(null, null) as IEnumerable;
+			var result = m_getAllReferencePoolInfosMethod?.Invoke(null, null) as IEnumerable;
 			if (result == null) return list;
 
 			foreach (var item in result)
@@ -386,8 +386,8 @@ namespace FuFramework.ReferencePool.Editor
 
 				// 过滤「闲置为 0 且无在用」的空集合：ClearAll 只清闲置、保留类型条目与计数，
 				// 这类条目在面板上既无可展示的引用也无操作价值，保留展示会让列表与「一键移除后不归零」的新语义割裂。
-				var unusedCount = (int)(m_InfoUnusedReferenceCountProperty?.GetValue(item) ?? 0);
-				var usingCount  = (int)(m_InfoUsingReferenceCountProperty?.GetValue(item)  ?? 0);
+				var unusedCount = (int)(m_infoUnusedReferenceCountProperty?.GetValue(item) ?? 0);
+				var usingCount  = (int)(m_infoUsingReferenceCountProperty?.GetValue(item)  ?? 0);
 				if (unusedCount == 0 && usingCount == 0) continue;
 
 				list.Add(item);
@@ -396,8 +396,8 @@ namespace FuFramework.ReferencePool.Editor
 			// 按类型全名升序排列（引用池无优先级概念）
 			list.Sort((a, b) =>
 			{
-				var typeA = m_InfoTypeProperty?.GetValue(a) as Type;
-				var typeB = m_InfoTypeProperty?.GetValue(b) as Type;
+				var typeA = m_infoTypeProperty?.GetValue(a) as Type;
+				var typeB = m_infoTypeProperty?.GetValue(b) as Type;
 				return string.CompareOrdinal(typeA?.FullName ?? "", typeB?.FullName ?? "");
 			});
 

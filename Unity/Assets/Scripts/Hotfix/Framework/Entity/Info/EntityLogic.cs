@@ -20,22 +20,22 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 实体是否可见。
 		/// </summary>
-		private bool m_Visible;
+		private bool m_visible;
 
 		/// <summary>
 		/// 实体的原始层级。
 		/// </summary>
-		private int m_OriginalLayer;
+		private int m_originalLayer;
 
 		/// <summary>
 		/// 实体的原始 Transform。
 		/// </summary>
-		private Transform m_OriginalTransform;
+		private Transform m_originalTransform;
 
 		/// <summary>
 		/// 实体的用户自定义数据。
 		/// </summary>
-		private object m_UserData;
+		private object m_userData;
 
 		/// <summary>
 		/// 获取或设置实体。
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		public bool Visible
 		{
-			get => Available && m_Visible;
+			get => Available && m_visible;
 			set
 			{
 				if (!Available)
@@ -76,9 +76,9 @@ namespace Hotfix.Framework.Entity
 					return;
 				}
 
-				if (m_Visible == value) return;
+				if (m_visible == value) return;
 
-				m_Visible = value;
+				m_visible = value;
 				InternalSetVisible(value);
 			}
 		}
@@ -89,14 +89,14 @@ namespace Hotfix.Framework.Entity
 		/// <param name="userData">用户自定义数据。</param>
 		protected internal virtual void OnInit(object userData)
 		{
-			m_UserData = userData;
+			m_userData = userData;
 
 			if (!CachedTransform)
 				CachedTransform = transform;
 
 			Entity              = GetComponent<Entity>();
-			m_OriginalLayer     = gameObject.layer;
-			m_OriginalTransform = CachedTransform.parent;
+			m_originalLayer     = gameObject.layer;
+			m_originalTransform = CachedTransform.parent;
 		}
 
 		/// <summary>
@@ -123,7 +123,7 @@ namespace Hotfix.Framework.Entity
 		/// <param name="userData">用户自定义数据。</param>
 		protected internal virtual void OnHide(bool isShutdown, object userData)
 		{
-			gameObject.SetLayerRecursively(m_OriginalLayer);
+			gameObject.SetLayerRecursively(m_originalLayer);
 			Visible   = false;
 			Available = false;
 		}
@@ -166,7 +166,7 @@ namespace Hotfix.Framework.Entity
 		/// <param name="userData">用户自定义数据。</param>
 		protected internal virtual void OnDetachFrom(EntityLogic parentEntity, object userData)
 		{
-			CachedTransform.SetParent(m_OriginalTransform);
+			CachedTransform.SetParent(m_originalTransform);
 		}
 
 		/// <summary>

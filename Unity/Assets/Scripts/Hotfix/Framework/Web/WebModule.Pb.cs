@@ -23,11 +23,11 @@ namespace Hotfix.Framework.Web
 		private void UpdatePbReq()
 		{
 			// 每帧填满全部空闲并发槽位（而非每帧仅发一个），提升吞吐
-			while (m_SendingPbList.Count < MaxConnectionPerServer && m_WaitingPbQueue.Count > 0)
+			while (m_sendingPbList.Count < MaxConnectionPerServer && m_waitingPbQueue.Count > 0)
 			{
-				var webPbData = m_WaitingPbQueue.Dequeue();
+				var webPbData = m_waitingPbQueue.Dequeue();
 				if (SendPbReq(webPbData))
-					m_SendingPbList.Add(webPbData);
+					m_sendingPbList.Add(webPbData);
 			}
 		}
 
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Web
 			}
 
 			// 构建 + 发送成功后才登记在途：失败路径无在途登记，计数不泄漏
-			return SendRequest(webData, m_SendingPbList, unityWebRequest, asyncOperation);
+			return SendRequest(webData, m_sendingPbList, unityWebRequest, asyncOperation);
 		}
 
 		/// <summary>
@@ -77,7 +77,7 @@ namespace Hotfix.Framework.Web
 			{
 				// 超时秒数向上取整并保底 1 秒：Timeout 为 float，直接截断会让 (0, 1) 秒得到 0，而 0 = 永不超时
 				unityWebRequest.timeout = Math.Max(1, (int)Math.Ceiling(ReqTimeout.TotalSeconds));
-				unityWebRequest.SetRequestHeader("Content-Type", PbContentType);
+				unityWebRequest.SetRequestHeader("Content-Type", PB_CONTENT_TYPE);
 				unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.SendData);
 				return unityWebRequest;
 			}
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Web
 		/// <returns>返回 WebBufferResult 类型的异步任务。</returns>
 		private UniTask<WebBufferResult> PostPbReq(string url, MessageObject message, CancellationToken token, object userData = null)
 		{
-			m_Scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+			m_scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
 			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 			url = NormalizeURL(url, null);

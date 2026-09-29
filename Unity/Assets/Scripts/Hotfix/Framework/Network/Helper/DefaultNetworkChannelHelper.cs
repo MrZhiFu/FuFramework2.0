@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 网络频道
 		/// </summary>
-		private INetworkChannel m_NetworkChannel;
+		private INetworkChannel m_networkChannel;
 
 		/// <summary>
 		/// 获取事件组件。
@@ -30,12 +30,12 @@ namespace Hotfix.Framework.Network
 		{
 			get
 			{
-				if (m_Event == null) m_Event = ModuleManager.GetModule<EventModule>();
-				return m_Event;
+				if (m_event == null) m_event = ModuleManager.GetModule<EventModule>();
+				return m_event;
 			}
 		}
 
-		private static EventModule m_Event;
+		private static EventModule m_event;
 
 		/// <summary>
 		/// 自定义包处理器注册委托集合（显式注册入口）。
@@ -95,7 +95,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected virtual void RegisterDefaultHandlers()
 		{
-			var channel = m_NetworkChannel;
+			var channel = m_networkChannel;
 
 			channel.RegisterHandler(new DefaultPacketReceiveHeaderHandler());
 			channel.RegisterHandler(new DefaultPacketReceiveBodyHandler());
@@ -120,7 +120,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="netChannel"></param>
 		public void Initialize(INetworkChannel netChannel)
 		{
-			m_NetworkChannel = netChannel;
+			m_networkChannel = netChannel;
 
 			// 显式装配包处理器：框架默认 7 个 → 派生类钩子 → 显式注册的自定义委托。
 			// 新增自定义处理器必须显式注册，不再依赖反射扫描程序集。
@@ -131,7 +131,7 @@ namespace Hotfix.Framework.Network
 			{
 				for (var i = 0; i < s_CustomHandlerRegistrars.Count; i++)
 				{
-					s_CustomHandlerRegistrars[i]?.Invoke(m_NetworkChannel);
+					s_CustomHandlerRegistrars[i]?.Invoke(m_networkChannel);
 				}
 			}
 
@@ -147,87 +147,87 @@ namespace Hotfix.Framework.Network
 			Event.Unsubscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);
 			Event.Unsubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
 			Event.Unsubscribe(NetworkErrorEventArgs.EventId, OnNetworkErrorEventArgs);
-			m_NetworkChannel = null;
+			m_networkChannel = null;
 		}
 
 		public void PrepareForConnecting()
 		{
-			m_NetworkChannel.Socket.ReceiveBufferSize = 1024 * 64 - 1;
-			m_NetworkChannel.Socket.SendBufferSize = 1024 * 64 - 1;
+			m_networkChannel.Socket.ReceiveBufferSize = 1024 * 64 - 1;
+			m_networkChannel.Socket.SendBufferSize = 1024 * 64 - 1;
 		}
 
 		public bool SendHeartBeat()
 		{
-			var message = m_NetworkChannel.PacketHeartBeatHandler.Handler();
-			m_NetworkChannel.Send(message);
+			var message = m_networkChannel.PacketHeartBeatHandler.Handler();
+			m_networkChannel.Send(message);
 			return true;
 		}
 
 		public bool SerializePacketHeader<T>(T messageObject, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
 		{
-			m_NetworkChannel.NotNull(nameof(m_NetworkChannel));
-			m_NetworkChannel.PacketSendHeaderHandler.NotNull(nameof(m_NetworkChannel.PacketSendHeaderHandler));
+			m_networkChannel.NotNull(nameof(m_networkChannel));
+			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
 			messageObject.NotNull(nameof(messageObject));
 			destination.NotNull(nameof(destination));
 
-			return m_NetworkChannel.PacketSendHeaderHandler.Handler(messageObject, m_NetworkChannel.MessageCompressHandler, destination,
+			return m_networkChannel.PacketSendHeaderHandler.Handler(messageObject, m_networkChannel.MessageCompressHandler, destination,
 				out messageBodyBuffer);
 		}
 
 		public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
 		{
-			m_NetworkChannel.NotNull(nameof(m_NetworkChannel));
-			m_NetworkChannel.PacketSendHeaderHandler.NotNull(nameof(m_NetworkChannel.PacketSendHeaderHandler));
-			m_NetworkChannel.PacketSendBodyHandler.NotNull(nameof(m_NetworkChannel.PacketSendBodyHandler));
+			m_networkChannel.NotNull(nameof(m_networkChannel));
+			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
+			m_networkChannel.PacketSendBodyHandler.NotNull(nameof(m_networkChannel.PacketSendBodyHandler));
 			messageBodyBuffer.NotNull(nameof(messageBodyBuffer));
 			destination.NotNull(nameof(destination));
 
-			return m_NetworkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
+			return m_networkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
 		}
 
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
 
-			return m_NetworkChannel.PacketReceiveHeaderHandler.Handler(source);
+			return m_networkChannel.PacketReceiveHeaderHandler.Handler(source);
 		}
 
 		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
 		{
 			source.NotNull(nameof(source));
 
-			return m_NetworkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
+			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
 		}
 
 		public void Clear()
 		{
 			// 仅重置字段：本类型始终由 new 直接构造、从不经引用池获取，Clear 不会被引用池调用。
-			// 原实现在此调用 m_NetworkChannel?.Close()（带副作用的“清理”）与引用池 Clear 的纯重置约定不符，故移除；
+			// 原实现在此调用 m_networkChannel?.Close()（带副作用的“清理”）与引用池 Clear 的纯重置约定不符，故移除；
 			// 频道的关闭由 NetworkChannelBase.Shutdown 等频道自身生命周期负责。
-			m_NetworkChannel = null;
+			m_networkChannel = null;
 		}
 
 		private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
 		{
-			if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
+			if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogInfo($"网络连接成功......{ne.NetworkChannel.Name}");
 		}
 
 		private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
 		{
-			if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
+			if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogInfo($"网络连接关闭......{ne.NetworkChannel.Name}");
 		}
 
 		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
 		{
-			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
+			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ ne.MissCount}' times.");
 		}
 
 		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
 		{
-			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_NetworkChannel) return;
+			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogError($"Network channel '{ne.NetworkChannel.Name}' error, error code is '{ne.ErrorCode}', error message is '{ne.ErrorMessage}'.");
 			ne.NetworkChannel.Close();
 		}

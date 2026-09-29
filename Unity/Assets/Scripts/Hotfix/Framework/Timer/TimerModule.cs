@@ -19,17 +19,17 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 计时器字典，key为计时器Id，value为计时器项
 		/// </summary>
-		private readonly Dictionary<int, TimerBase> m_TimerDict = new();
+		private readonly Dictionary<int, TimerBase> m_timerDict = new();
 
 		/// <summary>
 		/// 下一个计时器ID
 		/// </summary>
-		private int m_NextTimerId = 0;
+		private int m_nextTimerId = 0;
 
 		/// <summary>
 		/// 获取当前计时器数量
 		/// </summary>
-		public int Count => m_TimerDict.Count;
+		public int Count => m_timerDict.Count;
 
 		/// <summary>
 		/// 计时器完成/停止时触发的事件
@@ -47,13 +47,13 @@ namespace Hotfix.Framework.Timer
 		protected internal override void OnDispose()
 		{
 			// 先快照容器内容并清空字典，再逐个取消/回收：
-			// Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → 从 m_TimerDict 移除并 ReferencePool.Recycle(timerInfo)。
+			// Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → 从 m_timerDict 移除并 ReferencePool.Recycle(timerInfo)。
 			// 若边遍历边取消，会同时踩到「遍历中修改容器」与「同一 timerInfo 被二次回收」（ReleaseTimer 再 Recycle 一次）；
 			// 先 Clear 后，延续里的 ReleaseTimer 找不到条目会直接返回，回收由本方法唯一负责。
-			if (m_TimerDict.Count == 0) return;
+			if (m_timerDict.Count == 0) return;
 
-			var timerSnapshot = new List<TimerBase>(m_TimerDict.Values);
-			m_TimerDict.Clear();
+			var timerSnapshot = new List<TimerBase>(m_timerDict.Values);
+			m_timerDict.Clear();
 
 			for (var i = 0; i < timerSnapshot.Count; i++)
 			{
@@ -82,7 +82,7 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			return StartTimer(() => CountdownTimer.Create(++m_NextTimerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale), "计时器");
+			return StartTimer(() => CountdownTimer.Create(++m_nextTimerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale), "计时器");
 		}
 
 		/// <summary>
@@ -108,7 +108,7 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			return StartTimer(() => IntervalTimer.Create(++m_NextTimerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale), "间隔计时器");
+			return StartTimer(() => IntervalTimer.Create(++m_nextTimerId, interval, intervalCallback, repeatCount, immediate, ignoreTimeScale), "间隔计时器");
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			return StartTimer(() => FrameTimer.Create(++m_NextTimerId, frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming), "帧间隔计时器");
+			return StartTimer(() => FrameTimer.Create(++m_nextTimerId, frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming), "帧间隔计时器");
 		}
 
 		/// <summary>
@@ -169,7 +169,7 @@ namespace Hotfix.Framework.Timer
 			// 先取 Id 再起链：链的首帧回调（或同步完成路径）可能立刻回收本实例并把 Id 复位为 -1，
 			// 事后读 timerInfo.Id 会拿到被复用/已回收实例的值。
 			var timerId = timerInfo.Id;
-			m_TimerDict[timerId] = timerInfo;
+			m_timerDict[timerId] = timerInfo;
 			ExecuteTimerAsync(timerInfo).Forget();
 
 			return timerId;
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		public void PauseTimer(int timerId)
 		{
-			if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
 				FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}失败，不存在该计时器！");
 				return;
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		public void ResumeTimer(int timerId)
 		{
-			if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
 				FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}失败，不存在该计时器！");
 				return;
@@ -225,7 +225,7 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		public void StopTimer(int timerId)
 		{
-			if (!m_TimerDict.TryGetValue(timerId, out var timerInfo))
+			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
 				FuLogger.LogWarning($"[TimerModule] 停止计时器{timerId}失败，不存在该计时器！");
 				return;
@@ -239,7 +239,7 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		public void PauseAllTimers()
 		{
-			foreach (var (_, timerInfo) in m_TimerDict)
+			foreach (var (_, timerInfo) in m_timerDict)
 			{
 				timerInfo.IsPaused = true;
 			}
@@ -250,7 +250,7 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		public void ResumeAllTimers()
 		{
-			foreach (var (_, timerInfo) in m_TimerDict)
+			foreach (var (_, timerInfo) in m_timerDict)
 			{
 				timerInfo.IsPaused = false;
 			}
@@ -261,12 +261,12 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		public void StopAllTimers()
 		{
-			// 先快照再取消：Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → m_TimerDict.Remove。
-			// 若直接遍历 m_TimerDict.Values 边取消边移除，会触发「遍历中修改容器」抛异常。
+			// 先快照再取消：Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → m_timerDict.Remove。
+			// 若直接遍历 m_timerDict.Values 边取消边移除，会触发「遍历中修改容器」抛异常。
 			// 此处不清字典也不回收（与 OnDispose 不同）：延续里的 ReleaseTimer 仍需负责回收与派发 OnTimerFinished。
-			if (m_TimerDict.Count == 0) return;
+			if (m_timerDict.Count == 0) return;
 
-			var timerSnapshot = new List<TimerBase>(m_TimerDict.Values);
+			var timerSnapshot = new List<TimerBase>(m_timerDict.Values);
 			for (var i = 0; i < timerSnapshot.Count; i++)
 			{
 				timerSnapshot[i].Cts.Cancel();
@@ -278,14 +278,14 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		/// <param name="timerId">计时器ID</param>
 		/// <returns></returns>
-		public bool IsTimerExist(int timerId) => m_TimerDict.ContainsKey(timerId);
+		public bool IsTimerExist(int timerId) => m_timerDict.ContainsKey(timerId);
 
 		/// <summary>
 		/// 检查计时器是否处于暂停状态
 		/// </summary>
 		/// <param name="timerId">计时器ID</param>
 		/// <returns></returns>
-		public bool IsTimerPaused(int timerId) => m_TimerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
+		public bool IsTimerPaused(int timerId) => m_timerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
 
 		/// <summary>
 		/// 获取所有计时器名称
@@ -293,7 +293,7 @@ namespace Hotfix.Framework.Timer
 		/// <returns></returns>
 		public IEnumerable<string> GetAllTimerNames()
 		{
-			foreach (var timerInfo in m_TimerDict.Values)
+			foreach (var timerInfo in m_timerDict.Values)
 			{
 				yield return timerInfo.Name;
 			}
@@ -378,7 +378,7 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		private void ReleaseTimer(int timerId)
 		{
-			if (!m_TimerDict.Remove(timerId, out var timerInfo)) return;
+			if (!m_timerDict.Remove(timerId, out var timerInfo)) return;
 			if (timerInfo == null) return;
 			FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
 			ReferencePool.Recycle(timerInfo);

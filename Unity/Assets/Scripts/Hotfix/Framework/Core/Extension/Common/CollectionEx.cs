@@ -141,10 +141,10 @@ namespace Hotfix.Framework.Core
 		/// <typeparam name="TKey">元素条件类型</typeparam>
 		/// <returns>去重后的集合</returns>
 		/// <example>
-		/// var users = new[] { 
-		///     new { Id = 1, Name = "Alice" }, 
-		///     new { Id = 2, Name = "Bob" }, 
-		///     new { Id = 1, Name = "Charlie" } 
+		/// var users = new[] {
+		///     new { Id = 1, Name = "Alice" },
+		///     new { Id = 2, Name = "Bob" },
+		///     new { Id = 1, Name = "Charlie" }
 		/// };
 		/// var distinct = users.DistinctBy(x => x.Id); // 保留Alice和Bob，Charlie被去重
 		/// </example>

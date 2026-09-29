@@ -25,22 +25,22 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 屏幕每英寸点数 默认为windows dpi
 			/// </summary>
-			private const int DefaultDpi = 96;
+			private const int DEFAULT_DPI = 96;
 
 			/// <summary>
 			/// 英寸到厘米(1英寸 = 2.54厘米)
 			/// </summary>
-			private const float InchesToCentimeters = 2.54f;
+			private const float INCHES_TO_CENTIMETERS = 2.54f;
 
 			/// <summary>
 			/// 厘米到英寸(1厘米 = 0.3937英寸)
 			/// </summary>
-			private const float CentimetersToInches = 1f / InchesToCentimeters;
+			private const float CENTIMETERS_TO_INCHES = 1f / INCHES_TO_CENTIMETERS;
 
 			/// <summary>
 			/// 获取屏幕每英寸点数。
 			/// </summary>
-			public static float ScreenDpi => Screen.dpi <= 0 ? DefaultDpi : Screen.dpi;
+			public static float ScreenDpi => Screen.dpi <= 0 ? DEFAULT_DPI : Screen.dpi;
 
 
 			/// <summary>
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Core
 			public static float Pixel2Centimeter(float pixel)
 			{
 				if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
-				return InchesToCentimeters * pixel / ScreenDpi;
+				return INCHES_TO_CENTIMETERS * pixel / ScreenDpi;
 			}
 
 			/// <summary>
@@ -62,7 +62,7 @@ namespace Hotfix.Framework.Core
 			public static float Centimeter2Pixel(float centimeters)
 			{
 				if (ScreenDpi <= 0) throw new InvalidOperationException("您必须先设置屏幕 DPI.");
-				return CentimetersToInches * centimeters * ScreenDpi;
+				return CENTIMETERS_TO_INCHES * centimeters * ScreenDpi;
 			}
 
 			/// <summary>
@@ -257,7 +257,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>360度角度</returns>
 			public static float Vector3ToAngle360(Vector3 from, Vector3 to)
 			{
-				float   angle = Vector3.Angle(from, to);
+				var angle = Vector3.Angle(from, to);
 				Vector3 cross = Vector3.Cross(from, to);
 				return cross.y > 0 ? angle : 360 - angle;
 			}
@@ -274,11 +274,11 @@ namespace Hotfix.Framework.Core
 				Vector2 startVe2 = IgnoreYAxis(startPoint);
 				Vector2 endVe2   = IgnoreYAxis(endPoint);
 
-				float a = endVe2.y              - startVe2.y;
-				float b = startVe2.x            - endVe2.x;
-				float c = endVe2.x * startVe2.y - startVe2.x * endVe2.y;
+				var a = endVe2.y              - startVe2.y;
+				var b = startVe2.x            - endVe2.x;
+				var c = endVe2.x * startVe2.y - startVe2.x * endVe2.y;
 
-				float   denominator = Mathf.Sqrt(a * a + b * b);
+				var denominator = Mathf.Sqrt(a * a + b * b);
 				Vector2 pointVe2    = IgnoreYAxis(point);
 
 				return Mathf.Abs((a * pointVe2.x + b * pointVe2.y + c) / denominator);
@@ -296,11 +296,11 @@ namespace Hotfix.Framework.Core
 			{
 				dist = 0;
 				Vector3 ma       = center - ray.origin;
-				float   distance = Vector3.Cross(ma, ray.direction).magnitude / ray.direction.magnitude;
+				var distance = Vector3.Cross(ma, ray.direction).magnitude / ray.direction.magnitude;
 				if (distance < redis)
 				{
-					float op = PythagoreanTheorem(Vector3.Distance(center, ray.origin), distance);
-					float rp = PythagoreanTheorem(redis,                                distance);
+					var op = PythagoreanTheorem(Vector3.Distance(center, ray.origin), distance);
+					var rp = PythagoreanTheorem(redis,                                distance);
 					dist = op - rp;
 					return true;
 				}
@@ -330,10 +330,10 @@ namespace Hotfix.Framework.Core
 				Vector2 originVec2  = IgnoreYAxis(originPoint);
 				Vector2 pointVec2   = (IgnoreYAxis(targetPoint) - originVec2).normalized;
 				Vector2 vector2     = IgnoreYAxis(vector3);
-				float   verticalX   = originVec2.x;
-				float   verticalY   = -verticalX * vector2.x / vector2.y;
+				var verticalX   = originVec2.x;
+				var verticalY   = -verticalX * vector2.x / vector2.y;
 				Vector2 norVertical = new Vector2(verticalX, verticalY).normalized;
-				float   dotValue    = Vector2.Dot(norVertical, pointVec2);
+				var dotValue    = Vector2.Dot(norVertical, pointVec2);
 
 				return dotValue < 0f;
 			}

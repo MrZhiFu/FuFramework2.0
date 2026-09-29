@@ -55,10 +55,10 @@ namespace Hotfix.Framework.UI
 			// 铁律5：捕获模块生命周期令牌，并把本次打开登记为在途操作。
 			// 模块销毁（OnDispose → ReleaseBlur）会取消令牌，本方法在每个 await 之后校验它：
 			// 一旦取消立即回收已获取的界面实例对象、返回 null，不再继续创建/登记窗口
-			// （否则续体会继续对已销毁的 m_WinObjPool 做 Register/Recycle，造成泄漏或异常）。
+			// （否则续体会继续对已销毁的 m_winObjPool 做 Register/Recycle，造成泄漏或异常）。
 			// 在途登记（Begin）使框架重启时的 CancelAsync 能等到本次打开清理完毕再返回。
-			var       token    = m_Scope.Token;
-			using var inFlight = m_Scope.Begin();
+			var       token    = m_scope.Token;
+			using var inFlight = m_scope.Begin();
 
 			if (token.IsCancellationRequested)
 			{
@@ -81,16 +81,16 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 分配临时序列号，用于管理加载状态
-			var tempSerialId = ++m_SerialId;
+			var tempSerialId = ++m_serialId;
 
 			// 添加到加载字典
-			m_LoadingDict.TryAdd(tempSerialId, winName);
+			m_loadingDict.TryAdd(tempSerialId, winName);
 
 			WinObject winObj = null;
 			try
 			{
 				// 获取界面实例对象，如果对象池中存在，则直接使用对象池中的对象
-				winObj = m_WinObjPool.Spawn(winName);
+				winObj = m_winObjPool.Spawn(winName);
 				var win = winObj?.Target as T;
 
 				// 池中实例与目标类型不符（同名不同类等）：视为无效实例，销毁后走新建流程，
@@ -129,7 +129,7 @@ namespace Hotfix.Framework.UI
 				{
 					winName = win.WinName;
 
-					var pooledObj = m_WinObjPool.Spawn(winName);
+					var pooledObj = m_winObjPool.Spawn(winName);
 					var pooledWin = pooledObj?.Target as T;
 					if (pooledObj != null && pooledWin == null)
 					{
@@ -158,7 +158,7 @@ namespace Hotfix.Framework.UI
 				}
 
 				winObj = WinObject.Create(win.WinName, win);
-				m_WinObjPool.Register(winObj, true);
+				m_winObjPool.Register(winObj, true);
 
 				// UI包已经加载过，则直接创建Fui界面
 				if (PkgManager.IsLoadedPkg(win.PackageName))
@@ -209,8 +209,8 @@ namespace Hotfix.Framework.UI
 			finally
 			{
 				// 确保从加载字典与在途取消集合中移除（本方法无论走哪条路径/是否被中止都会执行）
-				m_LoadingDict.Remove(tempSerialId);
-				m_CancelLoadingSet.Remove(tempSerialId);
+				m_loadingDict.Remove(tempSerialId);
+				m_cancelLoadingSet.Remove(tempSerialId);
 			}
 		}
 
@@ -219,7 +219,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="tempSerialId">本次加载的临时序列号。</param>
 		/// <returns>是否已被取消。</returns>
-		private bool IsLoadingAborted(int tempSerialId) => m_CancelLoadingSet.Contains(tempSerialId);
+		private bool IsLoadingAborted(int tempSerialId) => m_cancelLoadingSet.Contains(tempSerialId);
 
 		/// <summary>
 		/// 创建FUI界面
@@ -254,7 +254,7 @@ namespace Hotfix.Framework.UI
 				// FUI界面加入界面组
 				var uiGroup = win.UIGroup;
 
-				// AddChild会自动sort++ 
+				// AddChild会自动sort++
 				uiGroup.AddChild(win.WinUI);
 				uiGroup.Add(win);
 
@@ -267,7 +267,7 @@ namespace Hotfix.Framework.UI
 
 				// 广播界面打开成功事件
 				var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(win, userData);
-				m_EventModule.Broadcast(this, openUISuccessEventArgs);
+				m_eventModule.Broadcast(this, openUISuccessEventArgs);
 
 				return win;
 			}
@@ -281,7 +281,7 @@ namespace Hotfix.Framework.UI
 				DestroyWinObject(win);
 
 				var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
-				m_EventModule.Broadcast(this, openUIFailureEventArgs);
+				m_eventModule.Broadcast(this, openUIFailureEventArgs);
 				FuLogger.LogError($"[UIModule] 打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
 				return Get(serialId) as T;
 			}
@@ -324,7 +324,7 @@ namespace Hotfix.Framework.UI
 			// 先回收清除"使用中"计数：DisposeObject 对使用中的对象直接返回 false，只解引用会残留池槽
 			try
 			{
-				m_WinObjPool.TryRecycle(target);
+				m_winObjPool.TryRecycle(target);
 			}
 			catch (Exception e)
 			{
@@ -334,7 +334,7 @@ namespace Hotfix.Framework.UI
 			try
 			{
 				// Dispose 内部经 WinObject.OnDispose 销毁 WinUI 并触发 WinBase._OnDispose（半成品时其内部已判空）
-				if (!m_WinObjPool.DisposeObject(target))
+				if (!m_winObjPool.DisposeObject(target))
 					FuLogger.LogWarning("[UIModule] 销毁池中界面实例未成功（可能已被移除）。");
 			}
 			catch (Exception e)
@@ -348,13 +348,13 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="winUI">要设置是否加锁的界面实例。</param>
 		/// <param name="locked">界面实例是否加锁。</param>
-		public void SetUILocked(object winUI, bool locked) => m_WinObjPool.SetLocked(winUI, locked);
+		public void SetUILocked(object winUI, bool locked) => m_winObjPool.SetLocked(winUI, locked);
 
 		/// <summary>
 		/// 设置界面实例对象的优先级。优先级小的实例会优先被释放。
 		/// </summary>
 		/// <param name="winUI">要设置优先级的界面实例。</param>
 		/// <param name="priority">界面实例优先级。</param>
-		public void SetUIPriority(object winUI, int priority) => m_WinObjPool.SetPriority(winUI, priority);
+		public void SetUIPriority(object winUI, int priority) => m_winObjPool.SetPriority(winUI, priority);
 	}
 }

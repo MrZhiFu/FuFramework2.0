@@ -20,42 +20,42 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 界面是否已初始化。
 		/// </summary>
-		private bool m_IsInit;
+		private bool m_isInit;
 
 		/// <summary>
 		/// 本次初始化是否失败（Init 内部捕获到异常）。
 		/// 失败后窗口可能处于半初始化状态（WinUI 已赋值但事件/数据未就绪），调用方必须据此走失败分支，
 		/// 不能继续把半成品上屏（否则后续访问成员 NRE）。
 		/// </summary>
-		private bool m_InitFailed;
+		private bool m_initFailed;
 
 		/// <summary>
 		/// 本次初始化是否失败（仅框架内部使用）。
 		/// </summary>
-		internal bool InitFailed => m_InitFailed;
+		internal bool InitFailed => m_initFailed;
 
 		/// <summary>
 		/// UI包引用是否已添加（_OnInit 中 AddPkgRef 后置位）。
 		/// 半成品实例（未走到 _OnInit 或其中途失败）为 false，销毁时不得 SubPkgRef：
 		/// 它从未加过引用，递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。
 		/// </summary>
-		private bool m_PkgRefAdded;
+		private bool m_pkgRefAdded;
 
 		/// <summary>
 		/// UI管理模块
 		/// </summary>
-		private UIModule m_UIModule;
+		private UIModule m_uiModule;
 
 		/// <summary>
 		/// 界面生命周期取消源：每次打开（_OnOpen）重建 Token，关闭（_OnClose）取消，销毁（_OnDispose）释放。
 		/// 窗口内发起的异步任务（网络请求/资源加载）应传 Token，随界面关闭自动取消。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_Cancellation = new();
+		private readonly LifecycleCancellationSource m_cancellation = new();
 
 		/// <summary>
 		/// 界面生命周期取消令牌：窗口内 await 统一传参，界面关闭（_OnClose）时触发取消。
 		/// </summary>
-		protected CancellationToken Token => m_Cancellation.Token;
+		protected CancellationToken Token => m_cancellation.Token;
 
 		/// <summary>
 		/// 界面序列编号。
@@ -115,7 +115,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 获取界面所属的界面组。
 		/// </summary>
-		public UIGroup UIGroup => m_UIModule?.GetGroup(Layer);
+		public UIGroup UIGroup => m_uiModule?.GetGroup(Layer);
 
 		/// <summary>
 		/// 获取或设置界面是否可见。
@@ -150,18 +150,18 @@ namespace Hotfix.Framework.UI
 		{
 			SerialId     = serialId;
 			UserData     = userData;
-			m_InitFailed = false; // 每次初始化重置失败标记；失败路径统一在下方 catch 置位
+			m_initFailed = false; // 每次初始化重置失败标记；失败路径统一在下方 catch 置位
 
 			// 已经初始化过且界面对象可用：不再初始化，只保留本次 SerialId/UserData（对象池复用路径）。
 			// winUI 为空说明上次初始化未走完（半成品实例，WinUI 未赋值），此时不能早退：
 			// 早退会让后续 uiGroup.AddChild(win.WinUI) 拿 null 直接抛 NRE，故按新实例重新完整初始化。
-			if (m_IsInit && winUI != null) return;
+			if (m_isInit && winUI != null) return;
 
 			// 半成品重新初始化：先释放上次可能已创建的注册器，避免重复创建导致引用池泄漏
-			if (m_IsInit) ReleaseAllRegisters();
+			if (m_isInit) ReleaseAllRegisters();
 
-			m_UIModule = ModuleManager.GetModule<UIModule>();
-			m_IsInit   = true;
+			m_uiModule = ModuleManager.GetModule<UIModule>();
+			m_isInit   = true;
 
 			// 加载 UI 配置表（通过 Get(string) 方法查表；StrKeyDataDict 为 protected，外部不可直接访问）
 			UIConfig = ConfigModule.Instance?.GetConfig<TbUIConfig>()?.Get(WinName);
@@ -194,7 +194,7 @@ namespace Hotfix.Framework.UI
 			{
 				// 标记失败：调用方（UIModule.CreateFuiWin）据此走失败分支（销毁半成品 + 广播失败事件），
 				// 不能吞掉异常后照常把半初始化窗口上屏（后续访问未就绪成员会 NRE）。
-				m_InitFailed = true;
+				m_initFailed = true;
 				FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
 			}
 		}
@@ -228,8 +228,8 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		protected void CloseSelf()
 		{
-			if (m_UIModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
-			m_UIModule.Close(this);
+			if (m_uiModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
+			m_uiModule.Close(this);
 		}
 	}
 }

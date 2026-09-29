@@ -22,37 +22,37 @@ namespace Hotfix.Framework.Web
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途 Web 请求随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_Scope;
+		private CancellationScope m_scope;
 
 		/// <summary>
 		/// 用于构建 URL 的 StringBuilder。
 		/// </summary>
-		private readonly StringBuilder m_UrlStr = new(256);
+		private readonly StringBuilder m_urlStr = new(256);
 
 		/// <summary>
 		/// 等待发送的 JSON 请求队列。
 		/// </summary>
-		private readonly Queue<WebJsonDataBase> m_WaitingJsonQueue = new(256);
+		private readonly Queue<WebJsonDataBase> m_waitingJsonQueue = new(256);
 
 		/// <summary>
 		/// 发送中的 JSON 请求列表。
 		/// </summary>
-		private readonly List<WebJsonDataBase> m_SendingJsonList = new(16);
+		private readonly List<WebJsonDataBase> m_sendingJsonList = new(16);
 
 		/// <summary>
 		/// 等待发送的 Pb 请求队列。
 		/// </summary>
-		private readonly Queue<WebPbData> m_WaitingPbQueue = new(256);
+		private readonly Queue<WebPbData> m_waitingPbQueue = new(256);
 
 		/// <summary>
 		/// 发送中的 Pb 请求列表。
 		/// </summary>
-		private readonly List<WebPbData> m_SendingPbList = new(16);
+		private readonly List<WebPbData> m_sendingPbList = new(16);
 
 		/// <summary>
 		/// Pb 内容类型常量。
 		/// </summary>
-		private const string PbContentType = "application/x-protobuf";
+		private const string PB_CONTENT_TYPE = "application/x-protobuf";
 
 		#region 请求入队
 
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Web
 														CancellationToken token, object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_Scope.Token.ThrowIfCancellationRequested();
+			m_scope.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
@@ -91,7 +91,7 @@ namespace Hotfix.Framework.Web
 		private UniTask<WebBufferResult> GetToBytesReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_Scope.Token.ThrowIfCancellationRequested();
+			m_scope.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -116,7 +116,7 @@ namespace Hotfix.Framework.Web
 														 object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_Scope.Token.ThrowIfCancellationRequested();
+			m_scope.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
@@ -140,7 +140,7 @@ namespace Hotfix.Framework.Web
 														object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_Scope.Token.ThrowIfCancellationRequested();
+			m_scope.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -158,7 +158,7 @@ namespace Hotfix.Framework.Web
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_Scope  = new CancellationScope();
+			m_scope  = new CancellationScope();
 		}
 
 		/// <summary>
@@ -181,11 +181,11 @@ namespace Hotfix.Framework.Web
 		protected internal override void OnDispose()
 		{
 			// 随模块销毁取消在途 Web 请求
-			m_Scope.Cancel();
+			m_scope.Cancel();
 
 			// 清空 JSON / Pb 请求队列与列表，取消未完成任务
-			ClearReq(m_WaitingJsonQueue, m_SendingJsonList);
-			ClearReq(m_WaitingPbQueue,   m_SendingPbList);
+			ClearReq(m_waitingJsonQueue, m_sendingJsonList);
+			ClearReq(m_waitingPbQueue,   m_sendingPbList);
 
 			Instance = null;
 		}
@@ -198,8 +198,8 @@ namespace Hotfix.Framework.Web
 		/// <returns>标准化后的 URL。</returns>
 		private string NormalizeURL(string url, Dictionary<string, string> queryString)
 		{
-			m_UrlStr.Clear();
-			m_UrlStr.Append(url);
+			m_urlStr.Clear();
+			m_urlStr.Append(url);
 
 			if (queryString is not { Count: > 0 })
 			{
@@ -209,18 +209,18 @@ namespace Hotfix.Framework.Web
 
 			// 拼接分隔符：URL 已含查询串（? 非末尾）时用 & 续接，已以 ? 结尾时直接拼，否则追加 ?
 			if (url.IndexOf('?') < 0)
-				m_UrlStr.Append("?");
+				m_urlStr.Append("?");
 			else if (!url.EndsWithFast("?"))
-				m_UrlStr.Append("&");
+				m_urlStr.Append("&");
 
 			foreach (var kv in queryString)
 			{
 				// 键值做 URL 编码，防止空格/中文/& 等特殊字符破坏查询串；value 可能为 null，EscapeURL 对 null 行为跨版本不确定，先归一
-				m_UrlStr.AppendFormat("{0}={1}&", UnityWebRequest.EscapeURL(kv.Key), UnityWebRequest.EscapeURL(kv.Value ?? string.Empty));
+				m_urlStr.AppendFormat("{0}={1}&", UnityWebRequest.EscapeURL(kv.Key), UnityWebRequest.EscapeURL(kv.Value ?? string.Empty));
 			}
 
-			url = m_UrlStr.ToString(0, m_UrlStr.Length - 1);
-			m_UrlStr.Clear();
+			url = m_urlStr.ToString(0, m_urlStr.Length - 1);
+			m_urlStr.Clear();
 
 			return url;
 		}
@@ -265,8 +265,8 @@ namespace Hotfix.Framework.Web
 									UnityWebRequestAsyncOperation asyncOperation) where T : WebDataBase
 		{
 			// 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
-			var capturedToken = m_Scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
-			var inFlight      = m_Scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+			var capturedToken = m_scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+			var inFlight      = m_scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
 			if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
 
 			// 任一 token 取消即 Abort 中断传输，避免在途请求等到超时才被回收；完成回调中注销。
@@ -297,7 +297,7 @@ namespace Hotfix.Framework.Web
 					sendingList.Remove(webData);
 
 					// 模块销毁/重启（旧 scope 于 OnDispose Cancel，capturedToken 已触发）或调用方取消：按取消处理，不再写回结果。
-					// 注：重启时序 DisposeModules（OnDispose→Cancel）恒先于重新初始化，故无需再比对实时 m_Scope.Token。
+					// 注：重启时序 DisposeModules（OnDispose→Cancel）恒先于重新初始化，故无需再比对实时 m_scope.Token。
 					if (capturedToken.IsCancellationRequested || webData.Token.IsCancellationRequested)
 					{
 						webData.CompleteCanceled();

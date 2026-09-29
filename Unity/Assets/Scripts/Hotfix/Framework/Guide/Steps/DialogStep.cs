@@ -35,11 +35,11 @@ namespace Hotfix.Framework.Guide
 
 		/// <summary>
 		/// 步骤取消。
-		/// 覆写原因：DoDialogGuide 把本步骤的 Complete 作为 onConfirm 存进了 WinDialogGuide.m_OnConfirm，
+		/// 覆写原因：DoDialogGuide 把本步骤的 Complete 作为 onConfirm 存进了 WinDialogGuide.m_onConfirm，
 		/// 而基类 Cancel() 只调 OnCancel()、不经过 Clear()；SkipCurrentStep / JumpToStep / ForceNextStep /
 		/// GoToPreviousStep / InterruptGuide 取消本步骤后，对话框（及其持有的 onConfirm）仍然存活，
 		/// 玩家点确认会驱动「已取消的步骤」调 Complete()（StepInfo 已失效则 NRE，实例被复用则 ABA 跳错步）。
-		/// 故这里与 ClickUIStep.OnCancel 同款：结束对话引导（关闭 WinDialogGuide，随 OnDispose 清空 m_OnConfirm）。
+		/// 故这里与 ClickUIStep.OnCancel 同款：结束对话引导（关闭 WinDialogGuide，随 OnDispose 清空 m_onConfirm）。
 		/// </summary>
 		protected override void OnCancel()
 		{

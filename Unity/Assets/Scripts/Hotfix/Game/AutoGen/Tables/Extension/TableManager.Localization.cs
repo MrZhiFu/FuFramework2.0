@@ -14,15 +14,15 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 事件管理模块
         /// </summary>
-        private EventModule m_EventModule;
+        private EventModule m_eventModule;
 
         /// <summary>
         /// 订阅语言切换事件（表加载完成后由持有者调用）
         /// </summary>
         public void SubscribeLanguageChange()
         {
-            m_EventModule = ModuleManager.GetModule<EventModule>();
-            m_EventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+            m_eventModule = ModuleManager.GetModule<EventModule>();
+            m_eventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Hotfix.Game.Config
         /// </summary>
         public void UnsubscribeLanguageChange()
         {
-            m_EventModule?.Unsubscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+            m_eventModule?.Unsubscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
         }
 
         /// <summary>

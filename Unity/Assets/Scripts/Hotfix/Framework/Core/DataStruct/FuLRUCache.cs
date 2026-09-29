@@ -42,32 +42,32 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 最大容量
 		/// </summary>
-		private readonly int m_Capacity;
+		private readonly int m_capacity;
 
 		/// <summary>
 		/// 缓存字典，Key 为缓存键，Value 为链表节点（实现 O(1) 查找 + O(1) 链表移动）
 		/// </summary>
-		private readonly Dictionary<TKey, LinkedListNode<CacheItem>> m_CacheDict;
+		private readonly Dictionary<TKey, LinkedListNode<CacheItem>> m_cacheDict;
 
 		/// <summary>
 		/// 最近使用列表（链表头为最近使用，链表尾为最少使用）
 		/// </summary>
-		private readonly LinkedList<CacheItem> m_LruList;
+		private readonly LinkedList<CacheItem> m_lruList;
 
 		/// <summary>
 		/// 驱逐回调，参数为（被驱逐的 Key, 被驱逐的 Value）
 		/// </summary>
-		private readonly Action<TKey, TValue> m_OnEvict;
+		private readonly Action<TKey, TValue> m_onEvict;
 
 		/// <summary>
 		/// 当前缓存数量
 		/// </summary>
-		public int Count => m_CacheDict.Count;
+		public int Count => m_cacheDict.Count;
 
 		/// <summary>
 		/// 最大容量
 		/// </summary>
-		public int Capacity => m_Capacity;
+		public int Capacity => m_capacity;
 
 		/// <summary>
 		/// 初始化 LRU 缓存器的新实例。
@@ -80,10 +80,10 @@ namespace Hotfix.Framework.Core
 			if (capacity <= 0)
 				throw new ArgumentOutOfRangeException(nameof(capacity), "最大容量必须大于 0");
 
-			m_Capacity  = capacity;
-			m_CacheDict = new Dictionary<TKey, LinkedListNode<CacheItem>>(capacity);
-			m_LruList   = new LinkedList<CacheItem>();
-			m_OnEvict   = onEvict;
+			m_capacity  = capacity;
+			m_cacheDict = new Dictionary<TKey, LinkedListNode<CacheItem>>(capacity);
+			m_lruList   = new LinkedList<CacheItem>();
+			m_onEvict   = onEvict;
 		}
 
 		/// <summary>
@@ -94,15 +94,15 @@ namespace Hotfix.Framework.Core
 		/// <returns>找到返回 true，否则返回 false</returns>
 		public bool TryGet(TKey key, out TValue value)
 		{
-			if (!m_CacheDict.TryGetValue(key, out var node))
+			if (!m_cacheDict.TryGetValue(key, out var node))
 			{
 				value = default;
 				return false;
 			}
 
 			// 移动到最近使用的位置
-			m_LruList.Remove(node);
-			m_LruList.AddFirst(node);
+			m_lruList.Remove(node);
+			m_lruList.AddFirst(node);
 			value = node.Value.Value;
 			return true;
 		}
@@ -129,31 +129,31 @@ namespace Hotfix.Framework.Core
 		/// <param name="value">缓存值</param>
 		public void Put(TKey key, TValue value)
 		{
-			if (m_CacheDict.TryGetValue(key, out var existingNode))
+			if (m_cacheDict.TryGetValue(key, out var existingNode))
 			{
 				// 替换已有项：先驱逐旧值，再更新
 				var cacheItem = existingNode.Value;
-				m_OnEvict?.Invoke(key, cacheItem.Value);
+				m_onEvict?.Invoke(key, cacheItem.Value);
 				cacheItem.Value = value;
-				m_LruList.Remove(existingNode);
-				m_LruList.AddFirst(existingNode);
+				m_lruList.Remove(existingNode);
+				m_lruList.AddFirst(existingNode);
 			}
 			else
 			{
 				// 如果超过最大数量，则移除最少使用的项
-				if (m_CacheDict.Count >= m_Capacity)
+				if (m_cacheDict.Count >= m_capacity)
 				{
-					var lastNode = m_LruList.Last;
+					var lastNode = m_lruList.Last;
 					var lastItem = lastNode.Value;
-					m_LruList.Remove(lastNode);
-					m_CacheDict.Remove(lastItem.Key);
-					m_OnEvict?.Invoke(lastItem.Key, lastItem.Value);
+					m_lruList.Remove(lastNode);
+					m_cacheDict.Remove(lastItem.Key);
+					m_onEvict?.Invoke(lastItem.Key, lastItem.Value);
 				}
 
 				// 添加新项
 				var newItem = new CacheItem(key, value);
-				var newNode = m_LruList.AddFirst(newItem);
-				m_CacheDict[key] = newNode;
+				var newNode = m_lruList.AddFirst(newItem);
+				m_cacheDict[key] = newNode;
 			}
 		}
 
@@ -164,13 +164,13 @@ namespace Hotfix.Framework.Core
 		/// <returns>成功移除返回 true，Key 不存在返回 false</returns>
 		public bool Remove(TKey key)
 		{
-			if (!m_CacheDict.TryGetValue(key, out var node))
+			if (!m_cacheDict.TryGetValue(key, out var node))
 				return false;
 
 			var cacheItem = node.Value;
-			m_LruList.Remove(node);
-			m_CacheDict.Remove(key);
-			m_OnEvict?.Invoke(cacheItem.Key, cacheItem.Value);
+			m_lruList.Remove(node);
+			m_cacheDict.Remove(key);
+			m_onEvict?.Invoke(cacheItem.Key, cacheItem.Value);
 			return true;
 		}
 
@@ -179,24 +179,24 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public void Clear()
 		{
-			if (m_OnEvict == null || m_LruList.Count == 0)
+			if (m_onEvict == null || m_lruList.Count == 0)
 			{
-				m_CacheDict.Clear();
-				m_LruList.Clear();
+				m_cacheDict.Clear();
+				m_lruList.Clear();
 				return;
 			}
 
 			// 先快照、再清空、最后回调：OnEvict 可能重入（回调里再 Put/Clear），
-			// 原实现边遍历链表边回调，重入即抛 InvalidOperationException 且 m_CacheDict.Clear() 永不执行
-			var snapshot = new CacheItem[m_LruList.Count];
-			m_LruList.CopyTo(snapshot, 0);
+			// 原实现边遍历链表边回调，重入即抛 InvalidOperationException 且 m_cacheDict.Clear() 永不执行
+			var snapshot = new CacheItem[m_lruList.Count];
+			m_lruList.CopyTo(snapshot, 0);
 
-			m_CacheDict.Clear();
-			m_LruList.Clear();
+			m_cacheDict.Clear();
+			m_lruList.Clear();
 
 			for (var i = 0; i < snapshot.Length; i++)
 			{
-				m_OnEvict.Invoke(snapshot[i].Key, snapshot[i].Value);
+				m_onEvict.Invoke(snapshot[i].Key, snapshot[i].Value);
 			}
 		}
 	}

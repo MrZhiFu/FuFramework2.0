@@ -35,19 +35,19 @@ namespace Hotfix.Framework.Sound
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途音频/混音器加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_Scope = new();
+		private CancellationScope m_scope = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_Scope.Token;
+		public CancellationToken Token => m_scope.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
 		public async UniTask CancelAsync()
 		{
-			await m_Scope.CancelAsync(); // 等待在途音频/混音器加载取消清理完毕（含 PlaySound 取消路径上的播放参数回收）
+			await m_scope.CancelAsync(); // 等待在途音频/混音器加载取消清理完毕（含 PlaySound 取消路径上的播放参数回收）
 
 			// 排水完成后才回收仍登记在案的所有权参数：此刻在途 PlaySound 已全部结束、不会再访问这两个集合，
 			// 回收 + 清空安全；否则未回池的播放参数会让 ReferencePool 使用计数每次重启单向累积。
@@ -63,87 +63,87 @@ namespace Hotfix.Framework.Sound
 		{
 			// 逐项回收后再清空：RecycleSoundParams/3D 走的是「先 Remove 再 Recycle」，
 			// 此处回收掉的对象已不在集合内，在途路径的迟到回收会因 Remove 失败而安全跳过，不会二次回收。
-			foreach (var soundParams in m_OwnedSoundParams)
+			foreach (var soundParams in m_ownedSoundParams)
 			{
 				ReferencePool.Recycle(soundParams);
 			}
 
-			m_OwnedSoundParams.Clear();
+			m_ownedSoundParams.Clear();
 
-			foreach (var soundParams3D in m_OwnedSoundParams3D)
+			foreach (var soundParams3D in m_ownedSoundParams3D)
 			{
 				ReferencePool.Recycle(soundParams3D);
 			}
 
-			m_OwnedSoundParams3D.Clear();
+			m_ownedSoundParams3D.Clear();
 		}
 
 		/// <summary>
 		/// 声音组字典，Key为声音组名称，Value为声音组对象
 		/// </summary>
-		private readonly Dictionary<string, SoundGroup> m_SoundGroupDict = new();
+		private readonly Dictionary<string, SoundGroup> m_soundGroupDict = new();
 
 		/// <summary>
 		/// 记录正在加载的声音ID列表
 		/// </summary>
-		private readonly List<int> m_LoadingSoundList = new();
+		private readonly List<int> m_loadingSoundList = new();
 
 		/// <summary>
 		/// 记录在加载中但是需要释放的声音id集合，防止在加载声音过程中被停止播放的情况
 		/// </summary>
-		private readonly HashSet<int> m_LoadingToReleaseSet = new();
+		private readonly HashSet<int> m_loadingToReleaseSet = new();
 
 		/// <summary>
 		/// 由模块内部创建、所有权归模块的 SoundParams 集合。
 		/// 用于区分参数来源：仅模块自身 Acquire 创建的参数由模块负责回收；
 		/// 调用方传入的 SoundParams 所有权归调用方，模块不回收（避免回收调用方仍在复用的对象）。
 		/// </summary>
-		private readonly HashSet<SoundParams> m_OwnedSoundParams = new();
+		private readonly HashSet<SoundParams> m_ownedSoundParams = new();
 
 		/// <summary>
-		/// 由模块内部创建、所有权归模块的 SoundParams3D 集合（用途同 m_OwnedSoundParams）。
+		/// 由模块内部创建、所有权归模块的 SoundParams3D 集合（用途同 m_ownedSoundParams）。
 		/// </summary>
-		private readonly HashSet<SoundParams3D> m_OwnedSoundParams3D = new();
+		private readonly HashSet<SoundParams3D> m_ownedSoundParams3D = new();
 
 		/// <summary>
 		/// 资源管理模块
 		/// </summary>
-		private AssetModule m_AssetModule;
+		private AssetModule m_assetModule;
 
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
-		private EventModule m_EventModule;
+		private EventModule m_eventModule;
 
 		/// <summary>
 		/// 声音自增序列号(如果播放时指定，则使用指定的序列号，否则自动+1分配)
 		/// </summary>
-		private int m_Serial;
+		private int m_serial;
 
 		/// <summary>
 		/// 混音器
 		/// </summary>
-		private AudioMixer m_AudioMixer;
+		private AudioMixer m_audioMixer;
 
 		/// <summary>
 		/// AudioMixer 资源路径，需在 Unity Editor 中确认实际路径后填入
 		/// </summary>
-		private const string AudioMixerAssetPath = "Assets/Bundles/Sound/_MainAudioMixer.mixer";
+		private const string AUDIO_MIXER_ASSET_PATH = "Assets/Bundles/Sound/_MainAudioMixer.mixer";
 
 		/// <summary>
 		/// 声音监听器
 		/// </summary>
-		private AudioListener m_AudioListener;
+		private AudioListener m_audioListener;
 
 		/// <summary>
 		/// 获取声音组数量。
 		/// </summary>
-		public int SoundGroupCount => m_SoundGroupDict.Count;
+		public int SoundGroupCount => m_soundGroupDict.Count;
 
 		/// <summary>
 		/// 获取声音混响器。
 		/// </summary>
-		public AudioMixer AudioMixer => m_AudioMixer;
+		public AudioMixer AudioMixer => m_audioMixer;
 
 		/// <summary>
 		/// 初始化
@@ -151,23 +151,23 @@ namespace Hotfix.Framework.Sound
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_Scope = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope = new CancellationScope(); // 新生命周期 = 新 Token
 
 			// 新生命周期必须从空的所有权登记起步：正常路径下 CancelAsync 排水后已回收并清空，
 			// 这里兜底处理「未经 CancelAllAsync 的销毁路径」遗留的条目，杜绝跨重启隐式累积（ReferencePool 使用计数单向增长）。
 			RecycleAllOwnedSoundParams();
 
-			m_Serial = 0;
+			m_serial = 0;
 
-			m_AssetModule = ModuleManager.GetModule<AssetModule>();
-			if (m_AssetModule == null)
+			m_assetModule = ModuleManager.GetModule<AssetModule>();
+			if (m_assetModule == null)
 			{
 				FuLogger.LogFatal("[SoundModule] 资源管理模块不存在!");
 				return;
 			}
 
-			m_EventModule = ModuleManager.GetModule<EventModule>();
-			if (m_EventModule == null)
+			m_eventModule = ModuleManager.GetModule<EventModule>();
+			if (m_eventModule == null)
 			{
 				FuLogger.LogFatal("[SoundModule] 事件组件不存在!");
 				return;
@@ -177,10 +177,10 @@ namespace Hotfix.Framework.Sound
 			var audioListener = new GameObject($"SoundListener");
 
 			// 监听器由模块持有、跨场景复用：LoadSceneMode.Single 会销毁场景内非常驻对象，
-			// 不标记 DontDestroyOnLoad 则切场景后 m_AudioListener 变成已销毁对象（RefreshAudioListener 抛异常）。
+			// 不标记 DontDestroyOnLoad 则切场景后 m_audioListener 变成已销毁对象（RefreshAudioListener 抛异常）。
 			UnityEngine.Object.DontDestroyOnLoad(audioListener);
 
-			m_AudioListener = audioListener.GetOrAddComponent<AudioListener>();
+			m_audioListener = audioListener.GetOrAddComponent<AudioListener>();
 
 			// 获取声音组配置表
 			var tbSoundGroup = ConfigModule.Instance.GetConfig<TbSoundGroup>();
@@ -210,21 +210,21 @@ namespace Hotfix.Framework.Sound
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_Scope.Cancel(); // 随模块销毁取消在途音频/混音器加载
+			m_scope.Cancel(); // 随模块销毁取消在途音频/混音器加载
 
 			// 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨重启残留）。
 			// Unity 停止 Play 时场景对象（SoundGroup/SoundAgent）可能已被 teardown 先于 ModuleManager.Dispose 销毁，跳过已销毁组。
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				if (soundGroup == null) continue;
 				soundGroup.ResetAllAgents();
 				UnityEngine.Object.Destroy(soundGroup.gameObject);
 			}
 
-			m_SoundGroupDict.Clear();
-			m_LoadingSoundList.Clear();
-			m_LoadingToReleaseSet.Clear();
-			// 此处**不得**清空 m_OwnedSoundParams / m_OwnedSoundParams3D：
+			m_soundGroupDict.Clear();
+			m_loadingSoundList.Clear();
+			m_loadingToReleaseSet.Clear();
+			// 此处**不得**清空 m_ownedSoundParams / m_ownedSoundParams3D：
 			// 在途 PlaySound 被取消后，其 catch 依赖这两个集合判定「参数是否由模块创建」才会回收，
 			// 若在排水（CancelAllAsync → CancelAsync）之前置空，这些播放参数将永不回池，
 			// 而 ReferencePool.ClearAll 保留计数 → 每次重启单向累积。
@@ -234,10 +234,10 @@ namespace Hotfix.Framework.Sound
 			SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
 			// 销毁 AudioListener 挂载的 SoundListener 对象（OnInit 会重建），避免重启后重复对象泄漏
-			if (m_AudioListener != null)
+			if (m_audioListener != null)
 			{
-				UnityEngine.Object.Destroy(m_AudioListener.gameObject);
-				m_AudioListener = null;
+				UnityEngine.Object.Destroy(m_audioListener.gameObject);
+				m_audioListener = null;
 			}
 
 			Instance = null;
@@ -253,7 +253,7 @@ namespace Hotfix.Framework.Sound
 		public bool HasSoundGroup(string groupName)
 		{
 			groupName.NotNullOrEmpty("[SoundModule]声音组名称");
-			return m_SoundGroupDict.ContainsKey(groupName);
+			return m_soundGroupDict.ContainsKey(groupName);
 		}
 
 		/// <summary>
@@ -264,7 +264,7 @@ namespace Hotfix.Framework.Sound
 		public SoundGroup GetSoundGroup(string groupName)
 		{
 			groupName.NotNullOrEmpty("[SoundModule]声音组名称");
-			return m_SoundGroupDict.GetValueOrDefault(groupName);
+			return m_soundGroupDict.GetValueOrDefault(groupName);
 		}
 
 		/// <summary>
@@ -274,8 +274,8 @@ namespace Hotfix.Framework.Sound
 		public SoundGroup[] GetAllSoundGroups()
 		{
 			var index   = 0;
-			var results = new SoundGroup[m_SoundGroupDict.Count];
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			var results = new SoundGroup[m_soundGroupDict.Count];
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				results[index++] = soundGroup;
 			}
@@ -291,7 +291,7 @@ namespace Hotfix.Framework.Sound
 		{
 			results.NotNull(nameof(results));
 			results.Clear();
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				results.Add(soundGroup);
 			}
@@ -321,7 +321,7 @@ namespace Hotfix.Framework.Sound
 
 			var soundGroup = soundGroupGo.GetOrAddComponent<SoundGroup>();
 			soundGroup.Init(row);
-			m_SoundGroupDict.Add(groupName, soundGroup);
+			m_soundGroupDict.Add(groupName, soundGroup);
 			return true;
 		}
 
@@ -333,7 +333,7 @@ namespace Hotfix.Framework.Sound
 		/// 获取所有正在加载声音的序列编号。
 		/// </summary>
 		/// <returns>所有正在加载声音的序列编号。</returns>
-		public int[] GetAllLoadingSoundSerialIds() => m_LoadingSoundList.ToArray();
+		public int[] GetAllLoadingSoundSerialIds() => m_loadingSoundList.ToArray();
 
 		/// <summary>
 		/// 获取所有正在加载声音的序列编号。
@@ -343,7 +343,7 @@ namespace Hotfix.Framework.Sound
 		{
 			results.NotNull(nameof(results));
 			results.Clear();
-			results.AddRange(m_LoadingSoundList);
+			results.AddRange(m_loadingSoundList);
 		}
 
 		/// <summary>
@@ -351,7 +351,7 @@ namespace Hotfix.Framework.Sound
 		/// </summary>
 		/// <param name="serialId">声音序列编号。</param>
 		/// <returns>是否正在加载声音。</returns>
-		public bool IsLoadingSound(int serialId) => m_LoadingSoundList.Contains(serialId);
+		public bool IsLoadingSound(int serialId) => m_loadingSoundList.Contains(serialId);
 
 		#endregion
 
@@ -363,7 +363,7 @@ namespace Hotfix.Framework.Sound
 		private SoundParams3D CreateOwnedSoundParams3D(Entity.Entity bindingEntity, Vector3 worldPosition)
 		{
 			var soundParams3D = SoundParams3D.Create(bindingEntity, worldPosition);
-			m_OwnedSoundParams3D.Add(soundParams3D);
+			m_ownedSoundParams3D.Add(soundParams3D);
 			return soundParams3D;
 		}
 
@@ -373,7 +373,7 @@ namespace Hotfix.Framework.Sound
 		private void RecycleSoundParams(SoundParams soundParams)
 		{
 			if (soundParams is null) return;
-			if (!m_OwnedSoundParams.Remove(soundParams)) return; // 非模块创建：所有权归调用方，不回收
+			if (!m_ownedSoundParams.Remove(soundParams)) return; // 非模块创建：所有权归调用方，不回收
 			ReferencePool.Recycle(soundParams);
 		}
 
@@ -383,7 +383,7 @@ namespace Hotfix.Framework.Sound
 		private void RecycleSoundParams3D(SoundParams3D soundParams3D)
 		{
 			if (soundParams3D is null) return;
-			if (!m_OwnedSoundParams3D.Remove(soundParams3D)) return; // 非模块创建：所有权归调用方，不回收
+			if (!m_ownedSoundParams3D.Remove(soundParams3D)) return; // 非模块创建：所有权归调用方，不回收
 			ReferencePool.Recycle(soundParams3D);
 		}
 
@@ -449,10 +449,10 @@ namespace Hotfix.Framework.Sound
 			// 登记在途（含取消清理）：CancelAllAsync → CancelAsync 会等待本次 PlaySound 完全结束（含 await 恢复后的
 			// catch 分支回收播放参数）才返回，否则 CancelAsync 因在途计数恒为 0 立即返回，下帧恢复的 catch
 			// 会撞上「所有权集合已被 OnDispose 清空」而对 RecycleSoundParams/3D 提前 return，参数永不回池。
-			using (m_Scope.Begin())
+			using (m_scope.Begin())
 			{
 				// 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
-				// GetSoundPath、SoundParams.Create（已登记进 m_OwnedSoundParams）、GetSoundGroup（groupName 为空会抛）
+				// GetSoundPath、SoundParams.Create（已登记进 m_ownedSoundParams）、GetSoundGroup（groupName 为空会抛）
 				// 任一处抛出，若不回收已 Acquire 并登记的参数对象，这些参数将永远不会归还引用池。
 				AssetHandle assetOperationHandle = null;
 				PlaySoundInfo playSoundInfo      = null;
@@ -466,15 +466,15 @@ namespace Hotfix.Framework.Sound
 					if (soundParams is null)
 					{
 						soundParams = SoundParams.Create();
-						m_OwnedSoundParams.Add(soundParams);
+						m_ownedSoundParams.Add(soundParams);
 					}
 
 					if (serialId >= 0)
 						newSerialId = serialId;
 					else
-						newSerialId = ++m_Serial;
+						newSerialId = ++m_serial;
 
-					string               errorMessage = null;
+					object errorMessage = null;
 					EPlaySoundErrorCode? errorCode    = null;
 
 					// 检查声音组是否存在
@@ -494,18 +494,18 @@ namespace Hotfix.Framework.Sound
 					{
 						FuLogger.LogError(errorMessage);
 						var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-						m_EventModule.Broadcast(this, failureEventArgs);
+						m_eventModule.Broadcast(this, failureEventArgs);
 						// 播放未发起，回收模块内部创建的参数对象（调用方传入的不回收），避免泄漏
 						RecycleSoundParams(soundParams);
 						RecycleSoundParams3D(soundParams3D);
 						return newSerialId;
 					}
 
-					m_LoadingSoundList.Add(newSerialId);
+					m_loadingSoundList.Add(newSerialId);
 
 					// 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
-					assetOperationHandle = await m_AssetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_Scope.Token);
-					m_Scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
+					assetOperationHandle = await m_assetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_scope.Token);
+					m_scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
 					var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
 					// 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
 					// 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
@@ -516,8 +516,8 @@ namespace Hotfix.Framework.Sound
 				catch
 				{
 					// 异常（路径/参数创建/声音组校验/包未就绪/自身销毁取消等）：清理 loading/待释放状态，允许重试
-					m_LoadingSoundList.Remove(newSerialId);
-					m_LoadingToReleaseSet.Remove(newSerialId);
+					m_loadingSoundList.Remove(newSerialId);
+					m_loadingToReleaseSet.Remove(newSerialId);
 					// 仅当参数尚未交接给 LoadAssetSuccessCallback（playSoundInfo 为 null）时才在此回收参数并释放句柄；
 					// playSoundInfo 非空即表示已交接给回调，回调内部已保证（含 PlaySound 抛出的交接失败分支）
 					// 自行释放句柄并回收全部池对象，此处再回收会双重回收。
@@ -554,12 +554,12 @@ namespace Hotfix.Framework.Sound
 		{
 			if (IsLoadingSound(serialId))
 			{
-				m_LoadingToReleaseSet.Add(serialId);
-				m_LoadingSoundList.Remove(serialId);
+				m_loadingToReleaseSet.Add(serialId);
+				m_loadingSoundList.Remove(serialId);
 				return true;
 			}
 
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				if (soundGroup.StopSound(serialId, fadeOutSeconds))
 					return true;
@@ -579,7 +579,7 @@ namespace Hotfix.Framework.Sound
 		/// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
 		public void StopAllLoadedSounds(float fadeOutSeconds)
 		{
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				soundGroup.StopAllLoadedSounds(fadeOutSeconds);
 			}
@@ -590,12 +590,12 @@ namespace Hotfix.Framework.Sound
 		/// </summary>
 		public void StopAllLoadingSounds()
 		{
-			foreach (var serialId in m_LoadingSoundList)
+			foreach (var serialId in m_loadingSoundList)
 			{
-				m_LoadingToReleaseSet.Add(serialId);
+				m_loadingToReleaseSet.Add(serialId);
 			}
 
-			m_LoadingSoundList.Clear(); // 与 StopSound 对称：停止后不再占用加载列表，避免 IsLoadingSound 恒 true / serialId 残留
+			m_loadingSoundList.Clear(); // 与 StopSound 对称：停止后不再占用加载列表，避免 IsLoadingSound 恒 true / serialId 残留
 		}
 
 		#endregion
@@ -615,7 +615,7 @@ namespace Hotfix.Framework.Sound
 		/// <param name="fadeOutSeconds">声音淡出时间，以秒为单位。</param>
 		public void PauseSound(int serialId, float fadeOutSeconds)
 		{
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				if (soundGroup.PauseSound(serialId, fadeOutSeconds)) return;
 			}
@@ -636,7 +636,7 @@ namespace Hotfix.Framework.Sound
 		/// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
 		public void ResumeSound(int serialId, float fadeInSeconds)
 		{
-			foreach (var (_, soundGroup) in m_SoundGroupDict)
+			foreach (var (_, soundGroup) in m_soundGroupDict)
 			{
 				if (soundGroup.ResumeSound(serialId, fadeInSeconds)) return;
 			}
@@ -657,20 +657,20 @@ namespace Hotfix.Framework.Sound
 				throw new InvalidOperationException("[SoundModule]要播放的声音信息为空!");
 
 			// 如果正在加载但是又被标记为要释放的声音，则释放资源后和释放播放参数信息对象直接返回
-			if (m_LoadingToReleaseSet.Contains(playSoundInfo.SerialId))
+			if (m_loadingToReleaseSet.Contains(playSoundInfo.SerialId))
 			{
-				m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-				m_LoadingSoundList.Remove(playSoundInfo.SerialId); // 停止加载的声音也从加载列表移除，避免 IsLoadingSound 恒 true
+				m_loadingToReleaseSet.Remove(playSoundInfo.SerialId);
+				m_loadingSoundList.Remove(playSoundInfo.SerialId); // 停止加载的声音也从加载列表移除，避免 IsLoadingSound 恒 true
 				RecycleSoundParams(playSoundInfo.SoundParams);
 				RecycleSoundParams3D(playSoundInfo.SoundParams3D);
 
 				playSoundInfo.SoundAssetHandle?.Release(); // 加载中被丢弃，句柄未上代理，释放之
-				m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
+				m_assetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
 				ReferencePool.Recycle(playSoundInfo);
 				return;
 			}
 
-			m_LoadingSoundList.Remove(playSoundInfo.SerialId);
+			m_loadingSoundList.Remove(playSoundInfo.SerialId);
 
 			// 使用声音播放代理播放声音。
 			// 以「是否真正交接给代理」为唯一所有权标志：PlaySound 正常返回即完成交接
@@ -688,9 +688,9 @@ namespace Hotfix.Framework.Sound
 			catch
 			{
 				// 交接未完成：释放尚未被代理接管的句柄与资源，池对象回收交由 finally 统一处理
-				m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
+				m_loadingToReleaseSet.Remove(playSoundInfo.SerialId);
 				playSoundInfo.SoundAssetHandle?.Release();
-				m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
+				m_assetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
 				throw;
 			}
 			finally
@@ -723,7 +723,7 @@ namespace Hotfix.Framework.Sound
 					}
 
 					var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
-					m_EventModule.Broadcast(this, successEventArgs);
+					m_eventModule.Broadcast(this, successEventArgs);
 				}
 				finally
 				{
@@ -736,8 +736,8 @@ namespace Hotfix.Framework.Sound
 			}
 
 			// 播放声音失败--释放声音资源
-			m_LoadingToReleaseSet.Remove(playSoundInfo.SerialId);
-			m_AssetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
+			m_loadingToReleaseSet.Remove(playSoundInfo.SerialId);
+			m_assetModule.UnloadAsset(playSoundInfo.SoundAssetPath);
 
 			var errorCodeValue = EPlaySoundErrorCode.Unknown;
 			if (errorCode != null)
@@ -762,7 +762,7 @@ namespace Hotfix.Framework.Sound
 			try
 			{
 				var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
-				m_EventModule.Broadcast(this, failureEventArgs);
+				m_eventModule.Broadcast(this, failureEventArgs);
 			}
 			finally
 			{
@@ -792,10 +792,10 @@ namespace Hotfix.Framework.Sound
 		private void RefreshAudioListener()
 		{
 			// Unity 假 null 防护：SoundListener 对象可能已被销毁（场景 teardown / 模块重启先于本回调），
-			// 直接访问 m_AudioListener.enabled 会抛 MissingReferenceException 并逃逸到 SceneManager 回调。
-			if (m_AudioListener == null) return;
+			// 直接访问 m_audioListener.enabled 会抛 MissingReferenceException 并逃逸到 SceneManager 回调。
+			if (m_audioListener == null) return;
 
-			m_AudioListener.enabled = UnityEngine.Object.FindObjectsOfType<AudioListener>().Length <= 1;
+			m_audioListener.enabled = UnityEngine.Object.FindObjectsOfType<AudioListener>().Length <= 1;
 		}
 
 		/// <summary>
@@ -804,27 +804,27 @@ namespace Hotfix.Framework.Sound
 		private async UniTaskVoid LoadAudioMixerAsync()
 		{
 			// 登记在途：CancelAllAsync → CancelAsync 等待混音器加载的取消清理（句柄释放）结束，避免句柄跨生命周期残留
-			using (m_Scope.Begin())
+			using (m_scope.Begin())
 			{
 				try
 				{
-					var handle = await m_AssetModule.LoadAssetAsync<AudioMixer>(AudioMixerAssetPath, m_Scope.Token);
-					if (m_Scope.Token.IsCancellationRequested)
+					var handle = await m_assetModule.LoadAssetAsync<AudioMixer>(AUDIO_MIXER_ASSET_PATH, m_scope.Token);
+					if (m_scope.Token.IsCancellationRequested)
 					{
 						// SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏
 						handle.Release();
 						return;
 					}
 					if (handle.Status == EOperationStatus.Succeeded)
-						m_AudioMixer = handle.GetAssetObject<AudioMixer>();
+						m_audioMixer = handle.GetAssetObject<AudioMixer>();
 					else
-						FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AudioMixerAssetPath} - {handle.Error}");
+						FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AUDIO_MIXER_ASSET_PATH} - {handle.Error}");
 
-					handle.Release(); // 释放句柄，AudioMixer 对象已由 m_AudioMixer 持有
+					handle.Release(); // 释放句柄，AudioMixer 对象已由 m_audioMixer 持有
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AudioMixerAssetPath} - {e.Message}");
+					FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AUDIO_MIXER_ASSET_PATH} - {e.Message}");
 				}
 			}
 		}

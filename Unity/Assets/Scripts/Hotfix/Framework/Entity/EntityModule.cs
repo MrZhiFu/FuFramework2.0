@@ -30,68 +30,68 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 记录所有实体的字典，Key为实体编号，Value为实体信息，便于快速查找
 		/// </summary>
-		private readonly Dictionary<int, EntityInfo> m_EntityDict = new();
+		private readonly Dictionary<int, EntityInfo> m_entityDict = new();
 
 		/// <summary>
 		/// 记录所有实体组的字典，Key为实体组名称，Value为实体组
 		/// </summary>
-		private readonly Dictionary<string, EntityGroup> m_EntityGroupDict = new();
+		private readonly Dictionary<string, EntityGroup> m_entityGroupDict = new();
 
 		/// <summary>
 		/// 正在加载的实体编号字典，Key为实体编号，Value为实体自增编号
 		/// </summary>
-		private readonly Dictionary<int, int> m_LoadingEntityDict = new();
+		private readonly Dictionary<int, int> m_loadingEntityDict = new();
 
 		/// <summary>
 		/// 记录在加载中但是需要释放的实体id集合，防止在加载实体过程中被回收的情况
 		/// </summary>
-		private readonly HashSet<int> m_LoadingToReleaseSet = new();
+		private readonly HashSet<int> m_loadingToReleaseSet = new();
 
 		/// <summary>
 		/// 待回收的实体信息队列
 		/// </summary>
-		private readonly Queue<EntityInfo> m_WaitRecycleQueue = new();
+		private readonly Queue<EntityInfo> m_waitRecycleQueue = new();
 
 		/// <summary>
 		/// 实体辅助器
 		/// </summary>
-		private EntityHelper m_EntityHelper;
+		private EntityHelper m_entityHelper;
 
 		/// <summary>
 		/// 实体自增编号
 		/// </summary>
-		private int m_Serial;
+		private int m_serial;
 
 		/// <summary>
 		/// 是否关闭
 		/// </summary>
-		private bool m_IsShutdown;
+		private bool m_isShutdown;
 
 		/// <summary>
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途实体加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_Scope = new();
+		private CancellationScope m_scope = new();
 
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
-		private EventModule m_EventModule;
+		private EventModule m_eventModule;
 
 		/// <summary>
 		/// 资源管理模块
 		/// </summary>
-		private AssetModule m_AssetModule;
+		private AssetModule m_assetModule;
 
 		/// <summary>
 		/// 对象池管理模块
 		/// </summary>
-		private ObjectPoolModule m_ObjectPoolModule;
+		private ObjectPoolModule m_objectPoolModule;
 
 		/// <summary>
 		/// 实体对象根节点
 		/// </summary>
-		private Transform m_EntityRoot;
+		private Transform m_entityRoot;
 
 		/// <summary>
 		/// 初始化。
@@ -99,40 +99,40 @@ namespace Hotfix.Framework.Entity
 		protected internal override void OnInit()
 		{
 			Instance     = this;
-			m_Scope      = new CancellationScope(); // 新生命周期 = 新 Token
-			m_IsShutdown = false;                   // 重启时重置关闭标记（OnDispose 曾置位）
+			m_scope      = new CancellationScope(); // 新生命周期 = 新 Token
+			m_isShutdown = false;                   // 重启时重置关闭标记（OnDispose 曾置位）
 
-			m_AssetModule      = ModuleManager.GetModule<AssetModule>();
-			m_EventModule      = ModuleManager.GetModule<EventModule>();
-			m_ObjectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
+			m_assetModule      = ModuleManager.GetModule<AssetModule>();
+			m_eventModule      = ModuleManager.GetModule<EventModule>();
+			m_objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
 
-			if (m_AssetModule == null)
+			if (m_assetModule == null)
 			{
 				FuLogger.LogFatal("[EntityModule] 资源管理模块不存在!");
 				return;
 			}
 
-			if (m_EventModule == null)
+			if (m_eventModule == null)
 			{
 				FuLogger.LogFatal("[EntityModule] 事件模块不存在!");
 				return;
 			}
 
-			if (m_ObjectPoolModule == null)
+			if (m_objectPoolModule == null)
 			{
 				FuLogger.LogFatal("[EntityModule] 对象池模块不存在!");
 				return;
 			}
 
 			// 创建实体对象根节点
-			m_EntityRoot            = new GameObject("EntityObject").transform;
-			m_EntityRoot.localScale = Vector3.one;
+			m_entityRoot            = new GameObject("EntityObject").transform;
+			m_entityRoot.localScale = Vector3.one;
 
 			// 创建实体辅助器
 			var entityHelperGo = new GameObject("Entity Helper");
 			entityHelperGo.transform.localScale = Vector3.one;
 			var entityHelper = entityHelperGo.AddComponent<EntityHelper>();
-			m_EntityHelper = entityHelper;
+			m_entityHelper = entityHelper;
 
 			// 获取实体组配置表，并创建添加实体组
 			var tbEntityGroup = ConfigModule.Instance.GetConfig<TbEntityGroup>();
@@ -160,9 +160,9 @@ namespace Hotfix.Framework.Entity
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
 			// 回收待回收的实体
-			while (m_WaitRecycleQueue.Count > 0)
+			while (m_waitRecycleQueue.Count > 0)
 			{
-				EntityInfo entityInfo = m_WaitRecycleQueue.Dequeue();
+				EntityInfo entityInfo = m_waitRecycleQueue.Dequeue();
 
 				// ObjectPoolModule.Recycle 在池中找不到目标时会抛异常；若让其逃逸会中断模块帧循环，
 				// 且 entityInfo 会因跳过回收而泄漏，故逐项 try/catch/finally 兜底。
@@ -189,7 +189,7 @@ namespace Hotfix.Framework.Entity
 			}
 
 			// 遍历每个实体组，驱动每个实体组轮询
-			foreach (var (_, entityGroup) in m_EntityGroupDict)
+			foreach (var (_, entityGroup) in m_entityGroupDict)
 			{
 				entityGroup.Update(deltaTime, unscaledDeltaTime);
 			}
@@ -202,16 +202,16 @@ namespace Hotfix.Framework.Entity
 		{
 			Instance = null;
 
-			m_IsShutdown = true;
-			m_Scope.Cancel(); // 随模块销毁取消在途实体加载
+			m_isShutdown = true;
+			m_scope.Cancel(); // 随模块销毁取消在途实体加载
 			HideAllLoadedEntities();
 
 			// 先排空待回收队列，再销毁各实体组对象池：顺序不可颠倒。
 			// 排空时 RecycleEntity → 对象池 Recycle 要求目标仍登记在池中；若先销毁池，
 			// 这里必定抛“找不到目标对象”并被 catch 降级为告警，回收实际失效（实体未被登记回收）。
-			while (m_WaitRecycleQueue.Count > 0)
+			while (m_waitRecycleQueue.Count > 0)
 			{
-				var entityInfo = m_WaitRecycleQueue.Dequeue();
+				var entityInfo = m_waitRecycleQueue.Dequeue();
 				try
 				{
 					var entity = entityInfo.Entity;
@@ -235,13 +235,13 @@ namespace Hotfix.Framework.Entity
 			// 不依赖 ObjectPoolModule 逆序销毁的隐式顺序（否则单独 Dispose 或注册顺序变化时句柄永久泄漏）
 			// 逐组 try/catch：任一组的 DisposeEntityPool 抛异常不得中断 teardown（否则本组之后的实体组
 			// 对象池永久残留、异常还会逃逸到 ModuleManager 的销毁循环影响后续模块）。
-			foreach (var (_, entityGroup) in m_EntityGroupDict)
+			foreach (var (_, entityGroup) in m_entityGroupDict)
 			{
 				if (entityGroup == null) continue;
 
 				try
 				{
-					entityGroup.DisposeEntityPool(m_ObjectPoolModule);
+					entityGroup.DisposeEntityPool(m_objectPoolModule);
 				}
 				catch (Exception e)
 				{
@@ -249,21 +249,21 @@ namespace Hotfix.Framework.Entity
 				}
 			}
 
-			m_EntityGroupDict.Clear();
-			m_LoadingEntityDict.Clear();
-			m_LoadingToReleaseSet.Clear();
+			m_entityGroupDict.Clear();
+			m_loadingEntityDict.Clear();
+			m_loadingToReleaseSet.Clear();
 
 			// 销毁实体根节点与辅助器（OnInit 会重建），避免重启后重复对象泄漏
-			if (m_EntityRoot != null)
+			if (m_entityRoot != null)
 			{
-				UnityEngine.Object.Destroy(m_EntityRoot.gameObject);
-				m_EntityRoot = null;
+				UnityEngine.Object.Destroy(m_entityRoot.gameObject);
+				m_entityRoot = null;
 			}
 
-			if (m_EntityHelper != null)
+			if (m_entityHelper != null)
 			{
-				UnityEngine.Object.Destroy(m_EntityHelper.gameObject);
-				m_EntityHelper = null;
+				UnityEngine.Object.Destroy(m_entityHelper.gameObject);
+				m_entityHelper = null;
 			}
 		}
 
@@ -288,31 +288,31 @@ namespace Hotfix.Framework.Entity
 			}
 
 			// 如果实体已经在加载中，则释放资源并忽略
-			if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
+			if (m_loadingToReleaseSet.Contains(showEntityInfo.SerialId))
 			{
-				m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
+				m_loadingToReleaseSet.Remove(showEntityInfo.SerialId);
 				ReferencePool.Recycle(showEntityInfo);
-				m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
+				m_entityHelper.ReleaseEntity(entityAssetHandle, null);
 				// 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
 				tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 加载中已被隐藏，取消显示。"));
 				return;
 			}
 
 			// 从正在加载中的实体字典中移除
-			m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
+			m_loadingEntityDict.Remove(showEntityInfo.EntityId);
 
 			// 实例化实体
-			var entityGo = m_EntityHelper.InstantiateEntity(entityAssetHandle);
+			var entityGo = m_entityHelper.InstantiateEntity(entityAssetHandle);
 			if (entityGo == null)
 			{
 				// 资源不是 GameObject 或句柄无效：释放句柄、回收信息、完成 tcs，避免句柄/池对象泄漏与 await 挂起
-				m_EntityHelper.ReleaseEntity(entityAssetHandle, null);
+				m_entityHelper.ReleaseEntity(entityAssetHandle, null);
 				ReferencePool.Recycle(showEntityInfo);
 				tcs.TrySetException(new InvalidOperationException($"[EntityModule]实体 '{entityAssetName}' 资源不是 GameObject，无法实例化。"));
 				return;
 			}
 
-			var entityObject = EntityObject.Create(entityAssetName, entityAssetHandle, entityGo, m_EntityHelper);
+			var entityObject = EntityObject.Create(entityAssetName, entityAssetHandle, entityGo, m_entityHelper);
 
 			// 注册失败时 ObjectPool.Register 会抛异常（目标真实对象已被 Unity 销毁的假 null、目标重复注册等），
 			// 而本回调由 YooAsset 的 Completed 同步调用：异常若逃逸会中断回调，tcs 永不完成（await 永久挂起）、
@@ -370,9 +370,9 @@ namespace Hotfix.Framework.Entity
 				return;
 			}
 
-			if (m_LoadingToReleaseSet.Contains(showEntityInfo.SerialId))
+			if (m_loadingToReleaseSet.Contains(showEntityInfo.SerialId))
 			{
-				m_LoadingToReleaseSet.Remove(showEntityInfo.SerialId);
+				m_loadingToReleaseSet.Remove(showEntityInfo.SerialId);
 				// 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
 				ReferencePool.Recycle(showEntityInfo);
 				// 完成 tcs，避免 ShowEntityAsync 的 await 永久挂起
@@ -380,13 +380,13 @@ namespace Hotfix.Framework.Entity
 				return;
 			}
 
-			m_LoadingEntityDict.Remove(showEntityInfo.EntityId);
+			m_loadingEntityDict.Remove(showEntityInfo.EntityId);
 			exception = new InvalidOperationException($"[EntityModule]加载实体资源失败, 实体资源名称 '{entityAssetName}', 加载状态 '{status}', 错误信息 '{errorMessage}'.");
 
 			// 发送显示实体失败事件（事件参数期望 ShowEntityInfoEx，取 UserData 中的）
 			var showEntityInfoEx           = showEntityInfo.UserData as ShowEntityInfoEx;
 			var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), showEntityInfoEx);
-			m_EventModule.Broadcast(this, showEntityFailureEventArgs);
+			m_eventModule.Broadcast(this, showEntityFailureEventArgs);
 
 			// 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
 			ReferencePool.Recycle(showEntityInfo);
@@ -403,7 +403,7 @@ namespace Hotfix.Framework.Entity
 		/// </summary>
 		/// <param name="entityId">实体编号。</param>
 		/// <returns>实体信息。</returns>
-		private EntityInfo GetEntityInfo(int entityId) => m_EntityDict.GetValueOrDefault(entityId);
+		private EntityInfo GetEntityInfo(int entityId) => m_entityDict.GetValueOrDefault(entityId);
 
 		/// <summary>
 		/// 显示实体(内部使用)
@@ -422,7 +422,7 @@ namespace Hotfix.Framework.Entity
 			try
 			{
 				// 创建实体
-				var entity = m_EntityHelper.CreateEntity(entityGo, entityGroup);
+				var entity = m_entityHelper.CreateEntity(entityGo, entityGroup);
 				if (entity is null)
 				{
 					var exception = new InvalidOperationException("[EntityModule] 创建实体失败，实体帮助器返回的实体为空!");
@@ -432,7 +432,7 @@ namespace Hotfix.Framework.Entity
 
 				// 创建实体信息
 				var entityInfo = EntityInfo.Create(entity);
-				m_EntityDict.Add(entityId, entityInfo);
+				m_entityDict.Add(entityId, entityInfo);
 
 				// 实体初始化
 				entityInfo.Status = EEntityStatus.WillInit;
@@ -456,14 +456,14 @@ namespace Hotfix.Framework.Entity
 
 				// 发送显示实体成功事件
 				var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, progress, showEntityInfoEx);
-				m_EventModule.Broadcast(this, showEntitySuccessEventArgs);
+				m_eventModule.Broadcast(this, showEntitySuccessEventArgs);
 
 				tcs.TrySetResult(entity);
 			}
 			catch (Exception exception)
 			{
 				// 注册后初始化/显示失败：清理已登记的实体（移除字典/实体组并回收实体信息），避免僵尸实体占用对象池槽位
-				if (m_EntityDict.TryGetValue(entityId, out var registeredEntityInfo))
+				if (m_entityDict.TryGetValue(entityId, out var registeredEntityInfo))
 				{
 					var registeredEntity = registeredEntityInfo.Entity;
 					try
@@ -475,13 +475,13 @@ namespace Hotfix.Framework.Entity
 						// 实体可能未成功加入实体组，忽略移除异常
 					}
 
-					m_EntityDict.Remove(entityId);
+					m_entityDict.Remove(entityId);
 					ReferencePool.Recycle(registeredEntityInfo);
 				}
 
 				// 发送显示实体失败事件
 				var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), showEntityInfoEx);
-				m_EventModule.Broadcast(this, showEntityFailureEventArgs);
+				m_eventModule.Broadcast(this, showEntityFailureEventArgs);
 
 				tcs.TrySetException(exception);
 				throw;
@@ -507,18 +507,18 @@ namespace Hotfix.Framework.Entity
 			DetachEntity(entity.Id, userData);
 			entityInfo.Status = EEntityStatus.WillHide;
 
-			entity.OnHide(m_IsShutdown, userData);
+			entity.OnHide(m_isShutdown, userData);
 			entityInfo.Status = EEntityStatus.Hidden;
 
 			entity.EntityGroup.RemoveEntity(entity);
-			if (!m_EntityDict.Remove(entity.Id)) throw new InvalidOperationException("[EntityModule] 隐藏实体失败，实体字典中不存在该实体!");
+			if (!m_entityDict.Remove(entity.Id)) throw new InvalidOperationException("[EntityModule] 隐藏实体失败，实体字典中不存在该实体!");
 
 			// 发送隐藏实体成功事件
 			var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entity.EntityGroup, userData);
-			m_EventModule.Broadcast(this, hideEntityCompleteEventArgs);
+			m_eventModule.Broadcast(this, hideEntityCompleteEventArgs);
 
 			// 加入待回收队列
-			m_WaitRecycleQueue.Enqueue(entityInfo);
+			m_waitRecycleQueue.Enqueue(entityInfo);
 		}
 
 		#endregion

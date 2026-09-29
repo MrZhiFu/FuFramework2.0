@@ -19,16 +19,16 @@ namespace Hotfix.Game.UI
 	public partial class WinPlayerList : WinBase
 	{
 		 private List<PlayerInfo> playerList = new();
-		 private PlayerInfo       m_SelectedPlayerInfo;
+		 private PlayerInfo       m_selectedPlayerInfo;
 
 		 private static INetworkChannel networkChannel; // 网络频道
 
 		 public static string serverIp   = "127.0.0.1"; // 服务器IP
 		 public static int    serverPort = 29100;       // 服务器端口
-		 
+
 		/// <summary>
 		/// 初始化
-		/// </summary>  
+		/// </summary>
 		protected override void OnInit()
 		{
 			InitUIComp();
@@ -55,7 +55,7 @@ namespace Hotfix.Game.UI
 			Subscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
 		}
 
-		
+
 		/// <summary>
 		/// 界面打开
 		/// </summary>
@@ -65,7 +65,7 @@ namespace Hotfix.Game.UI
 	        listPlayer.numItems = playerList.Count;
 			Refresh();
 		}
-		
+
 		/// <summary>
 		/// 界面关闭
 		/// </summary>
@@ -90,7 +90,7 @@ namespace Hotfix.Game.UI
 		private async UniTaskVoid LoginAsync()
 		{
 	        // 请求玩家登录
-	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_SelectedPlayerInfo.Id };
+	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
 	        var respPlayerLogin = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
@@ -100,7 +100,7 @@ namespace Hotfix.Game.UI
 	        // 关闭当前界面
 	        GlobalModule.UIModule.Close(this);
 		}
-		
+
 		/// <summary>
 		/// 网络连接成功事件
 		/// </summary>
@@ -111,7 +111,7 @@ namespace Hotfix.Game.UI
 	        LoginAsync().Forget();
 	        FuLogger.LogInfo(nameof(OnNetworkConnected));
 		}
-		
+
 		/// <summary>
 		/// 网络连接关闭事件
 		/// </summary>
@@ -121,15 +121,15 @@ namespace Hotfix.Game.UI
 		{
 	        FuLogger.LogInfo(nameof(OnNetworkClosed));
 		}
-		
+
 		#region 交互事件与ListItem渲染回调处理
-		
+
 		private void OnClickListPlayerItem(EventContext ctx)
 		{
 			var idx = listPlayer.GetChildIndex((GObject)ctx.data);
 			if (listPlayer.isVirtual) idx = listPlayer.ChildIndexToItemIndex(idx);
 
-			m_SelectedPlayerInfo  = playerList[idx];
+			m_selectedPlayerInfo  = playerList[idx];
 			// var data = xxxModel:GetListDataByIdx(idx);
 			loaderSelectedIcon.icon  = UIPackage.GetItemURL("Common", "wrap_1");
 			txtSelectedName.text  = playerList[idx].Name;

@@ -17,12 +17,12 @@ namespace Hotfix.Framework.RedDot
 		/// 列表类红点高频刷新时复用同一实例，避免每次调用分配 HashSet 造成高频 GC。
 		/// 仅由 SyncDynamicNode 单线程使用，调用前先 Clear。
 		/// </summary>
-		private readonly HashSet<long> m_SyncNewIdSet = new();
+		private readonly HashSet<long> m_syncNewIdSet = new();
 
 		/// <summary>
 		/// SyncDynamicNode 的复用缓存：本次同步待移除的 id 列表（复用避免每次分配 List）。
 		/// </summary>
-		private readonly List<long> m_SyncRemovedIdList = new();
+		private readonly List<long> m_syncRemovedIdList = new();
 
 		#region 注册
 
@@ -64,7 +64,8 @@ namespace Hotfix.Framework.RedDot
 		#region 状态查询
 
 		/// <summary>
-		/// 查询节点状态        /// </summary>
+		/// 查询节点状态
+		/// </summary>
 		/// <param name="key">红点节点 Key</param>
 		/// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
 		public RedDotState GetState(RedDotKey key)
@@ -80,7 +81,8 @@ namespace Hotfix.Framework.RedDot
 		}
 
 		/// <summary>
-		/// 是否存在节点        /// </summary>
+		/// 是否存在节点
+		/// </summary>
 		/// <param name="key">红点节点 Key</param>
 		/// <returns>存在返回 true，否则返回 false</returns>
 		public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
@@ -109,14 +111,14 @@ namespace Hotfix.Framework.RedDot
 				return;
 			}
 
-			if (!m_DynamicIdDict.TryGetValue(parentKey, out var existing))
+			if (!m_dynamicIdDict.TryGetValue(parentKey, out var existing))
 			{
 				existing                   = new HashSet<long>();
-				m_DynamicIdDict[parentKey] = existing;
+				m_dynamicIdDict[parentKey] = existing;
 			}
 
 			// 收集新增 id（复用模块级缓存，避免每次调用分配 2×HashSet + 1×List 引起高频 GC）
-			var newIds = m_SyncNewIdSet;
+			var newIds = m_syncNewIdSet;
 			newIds.Clear();
 			foreach (var id in ids)
 			{
@@ -124,7 +126,7 @@ namespace Hotfix.Framework.RedDot
 			}
 
 			// 找出待移除的 id
-			var removedIds = m_SyncRemovedIdList;
+			var removedIds = m_syncRemovedIdList;
 			removedIds.Clear();
 			foreach (var id in existing)
 			{
@@ -187,7 +189,7 @@ namespace Hotfix.Framework.RedDot
 			// 仅静态枚举键进行持久化(通过 RedDotNode.IsStatic 标记判断)
 			if (node.IsStatic && key.TryGetEnumValue(out var enumValue))
 			{
-				m_ReadSet.Add(enumValue);
+				m_readSet.Add(enumValue);
 				SaveReadState();
 				BroadcastChangedKeys();
 			}
@@ -202,7 +204,7 @@ namespace Hotfix.Framework.RedDot
 		{
 			// 静态键检查持久化集合
 			if (NodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
-				return m_ReadSet.Contains(enumValue);
+				return m_readSet.Contains(enumValue);
 
 			// 动态键检查节点自身标记
 			return NodeDict.TryGetValue(key, out node) && node.IsRead;
