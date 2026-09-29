@@ -386,12 +386,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入布尔值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（false）与写入值相同会被"值相同"早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName">要写入数据项的名称。</param>
 		/// <param name="value">要写入的布尔值。</param>
 		public void SetBool(string dataName, bool value)
 		{
-			var oldValue = Data.GetBool(dataName);
-			if (oldValue == value) return;
+			if (Data.HasData(dataName) && Data.GetBool(dataName) == value) return;
 			Data.SetBool(dataName, value);
 			IsDirty = true;
 		}
@@ -399,12 +401,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入整数值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被"值相同"早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName">要写入数据项的名称。</param>
 		/// <param name="value">要写入的整数值。</param>
 		public void SetInt(string dataName, int value)
 		{
-			var oldValue = Data.GetInt(dataName);
-			if (oldValue == value) return;
+			if (Data.HasData(dataName) && Data.GetInt(dataName) == value) return;
 			Data.SetInt(dataName, value);
 			IsDirty = true;
 		}
@@ -412,12 +416,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入长整数值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被"值相同"早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName"></param>
 		/// <param name="value"></param>
 		public void SetLong(string dataName, long value)
 		{
-			var oldValue = Data.GetLong(dataName);
-			if (oldValue == value) return;
+			if (Data.HasData(dataName) && Data.GetLong(dataName) == value) return;
 			Data.SetLong(dataName, value);
 			IsDirty = true;
 		}
@@ -425,12 +431,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入浮点数值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被近似相等早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName">要写入数据项的名称。</param>
 		/// <param name="value">要写入的浮点数值。</param>
 		public void SetFloat(string dataName, float value)
 		{
-			var oldValue = Data.GetFloat(dataName);
-			if (Math.Abs(oldValue - value) < FLOAT_COMPARE_EPSILON) return;
+			if (Data.HasData(dataName) && Math.Abs(Data.GetFloat(dataName) - value) < FLOAT_COMPARE_EPSILON) return;
 			Data.SetFloat(dataName, value);
 			IsDirty = true;
 		}
@@ -438,12 +446,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入双精度浮点数值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被近似相等早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName"></param>
 		/// <param name="value"></param>
 		public void SetDouble(string dataName, double value)
 		{
-			var oldValue = Data.GetDouble(dataName);
-			if (Math.Abs(oldValue - value) < DOUBLE_COMPARE_EPSILON) return;
+			if (Data.HasData(dataName) && Math.Abs(Data.GetDouble(dataName) - value) < DOUBLE_COMPARE_EPSILON) return;
 			Data.SetDouble(dataName, value);
 			IsDirty = true;
 		}
@@ -451,12 +461,14 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定数据项写入字符串值。
 		/// </summary>
+		/// <remarks>
+		/// 键不存在时必写：缺失键的 Get 默认值（null）与写入值相同会被"值相同"早退吞掉，导致新键永不落盘。
+		/// </remarks>
 		/// <param name="dataName">要写入数据项的名称。</param>
 		/// <param name="value">要写入的字符串值。</param>
 		public void SetString(string dataName, string value)
 		{
-			var oldValue = Data.GetString(dataName);
-			if (oldValue == value) return;
+			if (Data.HasData(dataName) && Data.GetString(dataName) == value) return;
 			Data.SetString(dataName, value);
 			IsDirty = true;
 		}
