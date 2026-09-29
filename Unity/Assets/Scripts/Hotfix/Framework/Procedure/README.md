@@ -44,7 +44,7 @@ ProcedureModule 依赖:
 │                   ProcedureModule                           │
 │                      (ModuleBase)                           │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │                   m_ProcedureFsm                     │   │
+│  │                   m_procedureFsm                     │   │
 │  │                      (Fsm)                           │   │
 │  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │   │
 │  │  │LobbyProcedure│ │BattleProcedure│ │SettlementProc│ │   │
@@ -269,12 +269,12 @@ public class MatchmakingProcedure : ProcedureBase
     public override int Priority => 90;
 #endif
 
-    private float m_Elapsed;
+    private float m_elapsed;
 
     protected internal override void OnEnter()
     {
         base.OnEnter();
-        m_Elapsed = 0f;
+        m_elapsed = 0f;
         FuLogger.LogInfo("[MatchmakingProcedure] 开始匹配");
 
         // 显示匹配界面
@@ -286,10 +286,10 @@ public class MatchmakingProcedure : ProcedureBase
     {
         base.OnUpdate(deltaTime, unscaledDeltaTime);
 
-        m_Elapsed += deltaTime;
+        m_elapsed += deltaTime;
 
         // 匹配成功 → 进入战斗（模拟：3 秒后匹配成功）
-        if (m_Elapsed >= 3f)
+        if (m_elapsed >= 3f)
         {
             FuLogger.LogInfo("[MatchmakingProcedure] 匹配成功，进入战斗");
             ChangeState<BattleProcedure>();
@@ -358,12 +358,12 @@ public class SettlementProcedure : ProcedureBase
     public override int Priority => 70;
 #endif
 
-    private float m_DisplayTime;
+    private float m_displayTime;
 
     protected internal override void OnEnter()
     {
         base.OnEnter();
-        m_DisplayTime = 0f;
+        m_displayTime = 0f;
 
         // 读取战斗结果
         var result = Fsm.GetData<BattleResult>("BattleResult");
@@ -377,10 +377,10 @@ public class SettlementProcedure : ProcedureBase
     {
         base.OnUpdate(deltaTime, unscaledDeltaTime);
 
-        m_DisplayTime += deltaTime;
+        m_displayTime += deltaTime;
 
         // 展示 5 秒后返回大厅
-        if (m_DisplayTime >= 5f || PlayerTappedContinue())
+        if (m_displayTime >= 5f || PlayerTappedContinue())
         {
             ChangeState<LobbyProcedure>();
         }
@@ -412,15 +412,15 @@ using Hotfix.Framework.Procedure;
 
 public class GameLauncher
 {
-    private ProcedureModule m_ProcedureModule;
+    private ProcedureModule m_procedureModule;
 
     public void Init()
     {
         // 获取流程管理模块
-        m_ProcedureModule = ModuleManager.GetModule<ProcedureModule>();
+        m_procedureModule = ModuleManager.GetModule<ProcedureModule>();
 
         // 初始化流程状态机（一次性注册所有流程）
-        m_ProcedureModule.InitProcedures(new ProcedureBase[]
+        m_procedureModule.InitProcedures(new ProcedureBase[]
         {
             new LobbyProcedure(),
             new MatchmakingProcedure(),
@@ -429,7 +429,7 @@ public class GameLauncher
         });
 
         // 启动第一个流程（大厅）
-        m_ProcedureModule.StartProcedure<LobbyProcedure>();
+        m_procedureModule.StartProcedure<LobbyProcedure>();
     }
 }
 ```
@@ -438,14 +438,14 @@ public class GameLauncher
 
 ```csharp
 // 获取当前流程
-var currentProc = m_ProcedureModule.CurrentProcedure;
+var currentProc = m_procedureModule.CurrentProcedure;
 FuLogger.LogInfo($"当前流程: {currentProc.GetType().Name}");
-FuLogger.LogInfo($"已运行: {m_ProcedureModule.CurrentProcedureTime:F2}s");
+FuLogger.LogInfo($"已运行: {m_procedureModule.CurrentProcedureTime:F2}s");
 
 // 检查某个流程是否已注册
-if (m_ProcedureModule.HasProcedure<BattleProcedure>())
+if (m_procedureModule.HasProcedure<BattleProcedure>())
 {
-    var battleProc = m_ProcedureModule.GetProcedure<BattleProcedure>();
+    var battleProc = m_procedureModule.GetProcedure<BattleProcedure>();
     FuLogger.LogInfo("战斗流程已就绪");
 }
 ```
@@ -491,7 +491,7 @@ Procedure/
 
 ```csharp
 // 推荐：在游戏启动时一次性注册所有流程
-m_ProcedureModule.InitProcedures(new ProcedureBase[]
+m_procedureModule.InitProcedures(new ProcedureBase[]
 {
     new LobbyProcedure(),
     new MatchmakingProcedure(),

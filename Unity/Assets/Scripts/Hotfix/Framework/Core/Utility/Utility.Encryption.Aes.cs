@@ -28,29 +28,31 @@ namespace Hotfix.Framework.Core
 				/// - 作用：增加密钥推导的复杂度，防止彩虹表攻击
 				/// - 要求：固定值，长度为16字节(128位)
 				/// </summary>
-				private static readonly byte[] Salt = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
+				private static readonly byte[] sr_salt = { 234, 231, 123, 100, 87, 254, 123, 17, 89, 18, 230, 13, 45, 65, 43, 32 };
 
 				/// <summary>
 				/// 初始化向量(Initialization Vector - IV)
 				/// - 作用：确保即使相同的明文使用相同的密钥加密，也会产生不同的密文
 				/// - 要求：固定值，长度为16字节(128位)，与AES块大小一致
 				/// </summary>
-				private static readonly byte[] BtIv = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
+				private static readonly byte[] sr_btIv = { 224, 131, 122, 101, 37, 254, 33, 17, 19, 28, 212, 130, 45, 65, 43, 32 };
+
 
 				/// <summary>
 				/// 派生密钥缓存锁（Utility 可能被任意线程调用）。
 				/// </summary>
-				private static readonly object           DerivedKeyLock = new();
+				private static readonly object sr_derivedKeyLock = new();
+
 
 				/// <summary>
-				/// 上次派生所用的密钥（单条缓存，与 <see cref="m_cachedDerivedKey"/> 成对使用）。
+				/// 上次派生所用的密钥（单条缓存，与 <see cref="s_cachedDerivedKey"/> 成对使用）。
 				/// </summary>
-				private static          string           m_cachedKey;
+				private static string s_cachedKey;
 
 				/// <summary>
 				/// 上次派生的 32 字节 AES 密钥。
 				/// </summary>
-				private static          byte[]           m_cachedDerivedKey;
+				private static byte[] s_cachedDerivedKey;
 
 				/// <summary>
 				/// 按密钥派生 32 字节 AES Key（单条缓存）。
@@ -60,17 +62,17 @@ namespace Hotfix.Framework.Core
 				/// <returns>32 字节派生的密钥。</returns>
 				private static byte[] GetDerivedKey(string encryptKey)
 				{
-					lock (DerivedKeyLock)
+					lock (sr_derivedKeyLock)
 					{
-						if (m_cachedDerivedKey != null && string.Equals(m_cachedKey, encryptKey, StringComparison.Ordinal))
+						if (s_cachedDerivedKey != null && string.Equals(s_cachedKey, encryptKey, StringComparison.Ordinal))
 						{
-							return m_cachedDerivedKey;
+							return s_cachedDerivedKey;
 						}
 
-						using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, Salt, 10000, HashAlgorithmName.SHA256);
+						using var derivedBytes = new Rfc2898DeriveBytes(encryptKey, sr_salt, 10000, HashAlgorithmName.SHA256);
 						var       key          = derivedBytes.GetBytes(32);
-						m_cachedKey        = encryptKey;
-						m_cachedDerivedKey = key;
+						s_cachedKey        = encryptKey;
+						s_cachedDerivedKey = key;
 						return key;
 					}
 				}
@@ -100,7 +102,7 @@ namespace Hotfix.Framework.Core
 					using var aes = System.Security.Cryptography.Aes.Create();
 
 					aes.Key     = GetDerivedKey(encryptKey);
-					aes.IV      = BtIv;
+					aes.IV      = sr_btIv;
 					aes.Mode    = CipherMode.CBC;
 					aes.Padding = PaddingMode.PKCS7;
 
@@ -135,7 +137,7 @@ namespace Hotfix.Framework.Core
 					using var aes = System.Security.Cryptography.Aes.Create();
 
 					aes.Key     = GetDerivedKey(decryptKey);
-					aes.IV      = BtIv;
+					aes.IV      = sr_btIv;
 					aes.Mode    = CipherMode.CBC;
 					aes.Padding = PaddingMode.PKCS7;
 

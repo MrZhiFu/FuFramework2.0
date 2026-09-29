@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Core
 				/// <summary>
 				/// RSA 实例，用于加密解密操作。
 				/// </summary>
-				private readonly RSACryptoServiceProvider _rsa;
+				private readonly RSACryptoServiceProvider m_rsa;
 
 				/// <summary>
 				/// 使用提供的 RSACryptoServiceProvider 实例初始化 Rsa 类。
@@ -30,7 +30,7 @@ namespace Hotfix.Framework.Core
 				/// <param name="rsa">RSACryptoServiceProvider 实例</param>
 				public Rsa(RSACryptoServiceProvider rsa)
 				{
-					_rsa = rsa;
+					m_rsa = rsa;
 				}
 
 				/// <summary>
@@ -41,7 +41,7 @@ namespace Hotfix.Framework.Core
 				{
 					var rsa = new RSACryptoServiceProvider();
 					rsa.FromXmlString(key);
-					_rsa = rsa;
+					m_rsa = rsa;
 				}
 
 				/// <summary>
@@ -51,6 +51,7 @@ namespace Hotfix.Framework.Core
 				public static Dictionary<string, string> Make()
 				{
 					var dic = new Dictionary<string, string>();
+
 					// RSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
 					using var rsa = new RSACryptoServiceProvider();
 					dic["privateKey"] = rsa.ToXmlString(true);
@@ -102,7 +103,7 @@ namespace Hotfix.Framework.Core
 				/// <returns></returns>
 				public byte[] Encrypt(byte[] content)
 				{
-					var cipherBytes = _rsa.Encrypt(content, false);
+					var cipherBytes = m_rsa.Encrypt(content, false);
 					return cipherBytes;
 				}
 
@@ -150,7 +151,7 @@ namespace Hotfix.Framework.Core
 				/// <returns></returns>
 				public byte[] Decrypt(byte[] content)
 				{
-					var bytes = _rsa.Decrypt(content, false);
+					var bytes = m_rsa.Decrypt(content, false);
 					return bytes;
 				}
 
@@ -197,7 +198,7 @@ namespace Hotfix.Framework.Core
 					try
 					{
 						using var sha1 = new SHA1CryptoServiceProvider();
-						return _rsa.SignData(dataToSign, sha1);
+						return m_rsa.SignData(dataToSign, sha1);
 					}
 					catch
 					{
@@ -261,7 +262,7 @@ namespace Hotfix.Framework.Core
 					try
 					{
 						using var sha1 = new SHA1CryptoServiceProvider();
-						return _rsa.VerifyData(dataToVerify, sha1, signedData);
+						return m_rsa.VerifyData(dataToVerify, sha1, signedData);
 					}
 					catch
 					{
@@ -292,7 +293,7 @@ namespace Hotfix.Framework.Core
 				/// </summary>
 				public void Dispose()
 				{
-					_rsa?.Dispose();
+					m_rsa?.Dispose();
 				}
 			}
 		}

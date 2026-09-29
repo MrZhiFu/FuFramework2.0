@@ -34,8 +34,8 @@ Launcher.Start()
             ├── LaunchAssetHelper.InitPackageAsync() // 初始化 YooAsset 资源包
             ├── RequestVersionAsync()                   // 获取资源版本号（失败重试）
             ├── UpdateManifestAsync()                   // 更新资源清单（失败重试）
-            ├── CreateAndDownload()                     // 联机模式：下载资源（失败重试）
-            └── LoadHotfixAndHandoff()                  // 加载 AOT 元数据 + Hotfix.dll → 反射进入热更
+            ├── CreateAndDownloadAsync()                     // 联机模式：下载资源（失败重试）
+            └── LoadHotfixAndHandoffAsync()                  // 加载 AOT 元数据 + Hotfix.dll → 反射进入热更
                     │
                     └── 进入热更逻辑...
 ```
@@ -50,8 +50,8 @@ Launcher.Start()
 |------|------|
 | `RunAsync(ILaunchView)` | 总入口，按顺序执行全部启动步骤 |
 | `ReqRemoteUpdateConfigWithRetry()` | 向 CDN 获取 `RemoteUpdateConfig.json`，失败自动重试 |
-| `CreateAndDownload(updateConfig)` | 创建 YooAsset 下载器并下载，失败自动重试 |
-| `LoadHotfixAndHandoff()` | 加载 AOT 元数据 + Hotfix.dll，完成后反射调用 HotfixLauncher |
+| `CreateAndDownloadAsync(updateConfig)` | 创建 YooAsset 下载器并下载，失败自动重试 |
+| `LoadHotfixAndHandoffAsync()` | 加载 AOT 元数据 + Hotfix.dll，完成后反射调用 HotfixLauncher |
 | `EnterHotfixAsync()` | 反射查找 Hotfix 程序集并调用 `HotfixLauncher.MainAsync()` |
 
 强更判断逻辑在 `RunAsync` 中：若 `RemoteUpdateConfig.ForceUpdate == true`，弹出更新对话框并中止后续流程。

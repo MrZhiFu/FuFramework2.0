@@ -1,6 +1,7 @@
 using UnityEngine;
 using Hotfix.Framework.Core;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Sound
 {
 	/// <summary>

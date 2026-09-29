@@ -127,7 +127,7 @@ void Release()                          // 归还引用池
 
 - 事件队列  ：使用 `Queue<Event>` 存储待处理事件，仅主线程访问
 - 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
-- 延迟取消订阅  ：使用 `m_WaitRemoveHandlerList` 把退订延迟到下一帧生效（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
+- 延迟取消订阅  ：使用 `m_waitRemoveHandlerList` 把退订延迟到下一帧生效（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
 - 引用计数订阅  ：同一 `(id, handler)` 被多个订阅者（多个 `EventRegister`、多个模块）共享时按份计数，`Subscribe` 计 +1、`Unsubscribe` 计 -1，归零才真正移除条目；单个订阅者退订不影响其他订阅者
 - 退订契约  ：各订阅者只能退订自己登记的那一份；超额退订（次数超过自身订阅数）会继续消耗其他订阅者的计数，导致他人订阅被静默移除且无告警
 - 主线程契约  ：无锁设计，公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）断言拦截跨线程误用
@@ -175,16 +175,16 @@ using Hotfix.Framework.Core;
 
 public sealed class EmptyEventArgs : GameEventArgs
 {
-    public override string Id => m_EventId;
+    public override string Id => m_eventId;
     // 实例字段：事件下一帧才分发，若用静态字段会被同帧抛出的其它事件编号覆盖
-    private string m_EventId = typeof(EmptyEventArgs).FullName;
+    private string m_eventId = typeof(EmptyEventArgs).FullName;
 
-    public override void Clear() => m_EventId = typeof(EmptyEventArgs).FullName;
+    public override void Clear() => m_eventId = typeof(EmptyEventArgs).FullName;
 
     public static EmptyEventArgs Create(string eventId)
     {
         var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
-        eventArgs.m_EventId = eventId;
+        eventArgs.m_eventId = eventId;
         return eventArgs;
     }
 }
@@ -266,19 +266,19 @@ using Hotfix.Framework.Event;
 
 public class PlayerController : MonoBehaviour
 {
-    private EventModule m_EventModule;
+    private EventModule m_eventModule;
     
     private void Start()
     {
         // 获取事件模块
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
         
         // 订阅自定义事件
-        m_EventModule.Subscribe(EventIds.PlayerDamage, OnPlayerDamage);
-        m_EventModule.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
+        m_eventModule.Subscribe(EventIds.PlayerDamage, OnPlayerDamage);
+        m_eventModule.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
         
         // 订阅空事件（无数据事件）
-        m_EventModule.Subscribe(EventIds.GameStart, OnGameStart);
+        m_eventModule.Subscribe(EventIds.GameStart, OnGameStart);
     }
     
     private void OnPlayerDamage(object sender, GameEventArgs e)
@@ -312,11 +312,11 @@ public class PlayerController : MonoBehaviour
     private void OnDestroy()
     {
         // 取消订阅（重要！避免内存泄漏）
-        if (m_EventModule != null)
+        if (m_eventModule != null)
         {
-            m_EventModule.Unsubscribe(EventIds.PlayerDamage, OnPlayerDamage);
-            m_EventModule.Unsubscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
-            m_EventModule.Unsubscribe(EventIds.GameStart, OnGameStart);
+            m_eventModule.Unsubscribe(EventIds.PlayerDamage, OnPlayerDamage);
+            m_eventModule.Unsubscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
+            m_eventModule.Unsubscribe(EventIds.GameStart, OnGameStart);
         }
     }
 }
@@ -327,11 +327,11 @@ public class PlayerController : MonoBehaviour
 ```csharp
 public class EnemyController : MonoBehaviour
 {
-    private EventModule m_EventModule;
+    private EventModule m_eventModule;
     
     private void Start()
     {
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
     }
     
     private void AttackPlayer(PlayerController player, int damage)
@@ -343,40 +343,40 @@ public class EnemyController : MonoBehaviour
             hitPosition: player.transform.position
         );
         
-        m_EventModule.Broadcast(this, damageArgs);
+        m_eventModule.Broadcast(this, damageArgs);
         // 注意：事件参数会在处理完成后自动归还引用池，无需手动释放
     }
 }
 
 public class ExperienceSystem : MonoBehaviour
 {
-    private EventModule m_EventModule;
-    private int m_CurrentLevel = 1;
+    private EventModule m_eventModule;
+    private int m_currentLevel = 1;
     
     private void Start()
     {
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
     }
     
     public void AddExperience(int exp)
     {
-        int oldLevel = m_CurrentLevel;
+        int oldLevel = m_currentLevel;
         
         // 计算新等级...
-        m_CurrentLevel = CalculateNewLevel(exp);
+        m_currentLevel = CalculateNewLevel(exp);
         
-        if (m_CurrentLevel > oldLevel)
+        if (m_currentLevel > oldLevel)
         {
             // 发布升级事件
-            var levelArgs = PlayerLevelUpEventArgs.Create(m_CurrentLevel, oldLevel);
-            m_EventModule.Broadcast(this, levelArgs);
+            var levelArgs = PlayerLevelUpEventArgs.Create(m_currentLevel, oldLevel);
+            m_eventModule.Broadcast(this, levelArgs);
         }
     }
     
     public void StartGame()
     {
         // 发布空事件（无数据）
-        m_EventModule.Broadcast(this, EventIds.GameStart);
+        m_eventModule.Broadcast(this, EventIds.GameStart);
     }
 }
 ```
@@ -386,18 +386,18 @@ public class ExperienceSystem : MonoBehaviour
 ```csharp
 public class UIModule : MonoBehaviour
 {
-    private EventRegister m_EventRegister;
+    private EventRegister m_eventRegister;
     
     private void Start()
     {
         // 创建事件注册器
-        m_EventRegister = EventRegister.Create();
+        m_eventRegister = EventRegister.Create();
         
         // 使用 EventRegister 订阅事件
-        m_EventRegister.Subscribe(EventIds.PlayerDamage, OnPlayerDamageUI);
-        m_EventRegister.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUpUI);
-        m_EventRegister.Subscribe(EventIds.GameStart, OnGameStartUI);
-        m_EventRegister.Subscribe(EventIds.GameOver, OnGameOverUI);
+        m_eventRegister.Subscribe(EventIds.PlayerDamage, OnPlayerDamageUI);
+        m_eventRegister.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUpUI);
+        m_eventRegister.Subscribe(EventIds.GameStart, OnGameStartUI);
+        m_eventRegister.Subscribe(EventIds.GameOver, OnGameOverUI);
     }
     
     private void OnPlayerDamageUI(object sender, GameEventArgs e)
@@ -435,11 +435,11 @@ public class UIModule : MonoBehaviour
     private void OnDestroy()
     {
         // 一键取消所有订阅
-        if (m_EventRegister != null)
+        if (m_eventRegister != null)
         {
-            m_EventRegister.UnSubscribeAll();
-            m_EventRegister.Release();  // 归还引用池
-            m_EventRegister = null;
+            m_eventRegister.UnSubscribeAll();
+            m_eventRegister.Release();  // 归还引用池
+            m_eventRegister = null;
         }
     }
 }
@@ -450,14 +450,14 @@ public class UIModule : MonoBehaviour
 ```csharp
 public class EventDebugger : MonoBehaviour
 {
-    private EventModule m_EventModule;
+    private EventModule m_eventModule;
     
     private void Start()
     {
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
         
         // 设置默认事件处理器（处理未被订阅的事件）
-        m_EventModule.SetDefaultHandler(OnDefaultEvent);
+        m_eventModule.SetDefaultHandler(OnDefaultEvent);
     }
     
     private void OnDefaultEvent(object sender, GameEventArgs e)
@@ -467,7 +467,7 @@ public class EventDebugger : MonoBehaviour
     
     private void OnDestroy()
     {
-        m_EventModule?.SetDefaultHandler(null);
+        m_eventModule?.SetDefaultHandler(null);
     }
 }
 ```
@@ -477,11 +477,11 @@ public class EventDebugger : MonoBehaviour
 ```csharp
 public class CriticalSystem : MonoBehaviour
 {
-    private EventModule m_EventModule;
+    private EventModule m_eventModule;
     
     private void Start()
     {
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
     }
     
     public void HandleCriticalError(string errorMessage)
@@ -490,7 +490,7 @@ public class CriticalSystem : MonoBehaviour
         
         // 使用 BroadcastNow 立即处理（同步执行）
         // 注意：此方法同步执行，仅限主线程调用
-        m_EventModule.BroadcastNow(this, errorArgs);
+        m_eventModule.BroadcastNow(this, errorArgs);
         
         // 事件处理完成后才会执行到这里
         Debug.Log("错误事件已处理完成");
@@ -506,16 +506,16 @@ public class CriticalSystem : MonoBehaviour
 
 ```
 1. 订阅阶段
-   Subscribe(id, handler) -> 添加到 m_EventHandlerMultiDict
+   Subscribe(id, handler) -> 添加到 m_eventHandlerMultiDict
 
 2. 取消订阅阶段
-   Unsubscribe(id, handler) -> 引用计数递减，归零才登记到 m_WaitRemoveHandlerList
+   Unsubscribe(id, handler) -> 引用计数递减，归零才登记到 m_waitRemoveHandlerList
 
 3. 发布阶段
-   Broadcast(sender, args) -> 创建 Event 节点 -> 加入 m_EventQueue
+   Broadcast(sender, args) -> 创建 Event 节点 -> 加入 m_eventQueue
 
 4. 处理阶段（Update）
-   从 m_EventQueue 取出事件
+   从 m_eventQueue 取出事件
    -> ProcessWaitRemoveHandlers() 处理待删除列表
    -> 调用所有匹配的 handler
    -> ReferencePool.Recycle(args) 释放事件参数
@@ -611,7 +611,7 @@ public enum GameEvents
 }
 
 // 使用枚举发布事件
-m_EventModule.Broadcast(this, GameEvents.GameStart.ToString());
+m_eventModule.Broadcast(this, GameEvents.GameStart.ToString());
 ```
 
 ### 10.2 事件参数对象池
@@ -657,19 +657,19 @@ public class MyEventArgs : GameEventArgs
 ```csharp
 public class GamePanel : MonoBehaviour
 {
-    private EventRegister m_EventRegister;
+    private EventRegister m_eventRegister;
     
     private void OnEnable()
     {
-        m_EventRegister = EventRegister.Create();
-        m_EventRegister.Subscribe(EventIds.UpdateUI, OnUpdateUI);
+        m_eventRegister = EventRegister.Create();
+        m_eventRegister.Subscribe(EventIds.UpdateUI, OnUpdateUI);
     }
     
     private void OnDisable()
     {
-        m_EventRegister?.UnSubscribeAll();
-        m_EventRegister?.Release();
-        m_EventRegister = null;
+        m_eventRegister?.UnSubscribeAll();
+        m_eventRegister?.Release();
+        m_eventRegister = null;
     }
 }
 ```
@@ -682,7 +682,7 @@ public class Example : MonoBehaviour
     private void Start()
     {
         // 错误：使用匿名方法订阅，无法取消订阅
-        m_EventModule.Subscribe(EventIds.SomeEvent, (s, e) => { /* ... */ });
+        m_eventModule.Subscribe(EventIds.SomeEvent, (s, e) => { /* ... */ });
     }
 }
 
@@ -691,7 +691,7 @@ public class Example : MonoBehaviour
 {
     private void Start()
     {
-        m_EventModule.Subscribe(EventIds.SomeEvent, OnSomeEvent);
+        m_eventModule.Subscribe(EventIds.SomeEvent, OnSomeEvent);
     }
     
     private void OnSomeEvent(object sender, GameEventArgs e)
@@ -701,7 +701,7 @@ public class Example : MonoBehaviour
     
     private void OnDestroy()
     {
-        m_EventModule.Unsubscribe(EventIds.SomeEvent, OnSomeEvent);
+        m_eventModule.Unsubscribe(EventIds.SomeEvent, OnSomeEvent);
     }
 }
 ```
@@ -716,16 +716,16 @@ private void OnPlayerDamage(object sender, GameEventArgs e)
     // var result = HeavyCalculation();
     
     // 正确：只记录状态，耗时操作延后处理
-    m_DamageQueue.Enqueue(e);
+    m_damageQueue.Enqueue(e);
 }
 
 // 在 Update 中处理耗时操作
 private void Update()
 {
-    while (m_DamageQueue.Count > 0 && m_ProcessedCount < MaxPerFrame)
+    while (m_damageQueue.Count > 0 && m_processedCount < MaxPerFrame)
     {
-        ProcessDamage(m_DamageQueue.Dequeue());
-        m_ProcessedCount++;
+        ProcessDamage(m_damageQueue.Dequeue());
+        m_processedCount++;
     }
 }
 ```

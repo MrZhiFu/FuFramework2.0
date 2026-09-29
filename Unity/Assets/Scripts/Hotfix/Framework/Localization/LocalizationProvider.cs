@@ -1,8 +1,6 @@
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
-using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-using Hotfix.Game.Proto;
 using Hotfix.Framework.Config;
 
 // ReSharper disable once CheckNamespace

@@ -43,17 +43,17 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 缓存目标数据的字节数组。
 		/// </summary>
-		internal readonly byte[] m_cachedBytes = new byte[CACHED_BYTES_LENGTH];
+		internal readonly byte[] m_CachedBytes = new byte[CACHED_BYTES_LENGTH];
 
 		/// <summary>
 		/// 记录是否已销毁。
 		/// </summary>
-		internal bool m_disposed;
+		internal bool m_Disposed;
 
 		/// <summary>
 		/// Unity WebRequest。
 		/// </summary>
-		internal UnityWebRequest m_unityWebRequest;
+		internal UnityWebRequest m_UnityWebRequest;
 
 		/// <summary>
 		/// 事件管理模块。
@@ -65,18 +65,18 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void OnUpdate()
 		{
-			if (m_unityWebRequest == null) return;
-			if (!m_unityWebRequest.isDone) return;
+			if (m_UnityWebRequest == null) return;
+			if (!m_UnityWebRequest.isDone) return;
 
-			var isError = m_unityWebRequest.result != UnityWebRequest.Result.Success;
+			var isError = m_UnityWebRequest.result != UnityWebRequest.Result.Success;
 			if (isError)
 			{
-				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(m_unityWebRequest.responseCode == RANGE_NOT_SATISFIABLE_ERROR_CODE, m_unityWebRequest.error);
+				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(m_UnityWebRequest.responseCode == RANGE_NOT_SATISFIABLE_ERROR_CODE, m_UnityWebRequest.error);
 				m_eventModule.Broadcast(this, downloadAgentHelperErrorEventArgs);
 			}
 			else
 			{
-				var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create((long)m_unityWebRequest.downloadedBytes);
+				var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create((long)m_UnityWebRequest.downloadedBytes);
 				m_eventModule.Broadcast(this, downloadAgentHelperCompleteEventArgs);
 			}
 		}
@@ -87,10 +87,10 @@ namespace Hotfix.Framework.Download
 		/// <param name="downloadUri">下载地址。</param>
 		public void Download(string downloadUri)
 		{
-			m_unityWebRequest                    = new UnityWebRequest(downloadUri);
-			m_unityWebRequest.certificateHandler = new DownloadCertificateHandler();
-			m_unityWebRequest.downloadHandler    = new DownloadHandler(this);
-			m_unityWebRequest.SendWebRequest();
+			m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
+			m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
+			m_UnityWebRequest.downloadHandler    = new DownloadHandler(this);
+			m_UnityWebRequest.SendWebRequest();
 		}
 
 		/// <summary>
@@ -100,11 +100,11 @@ namespace Hotfix.Framework.Download
 		/// <param name="fromPosition">下载数据起始位置。</param>
 		public void Download(string downloadUri, long fromPosition)
 		{
-			m_unityWebRequest                    = new UnityWebRequest(downloadUri);
-			m_unityWebRequest.certificateHandler = new DownloadCertificateHandler();
-			m_unityWebRequest.downloadHandler    = new DownloadHandler(this);
-			m_unityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}");
-			m_unityWebRequest.SendWebRequest();
+			m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
+			m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
+			m_UnityWebRequest.downloadHandler    = new DownloadHandler(this);
+			m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}");
+			m_UnityWebRequest.SendWebRequest();
 		}
 
 		/// <summary>
@@ -115,11 +115,11 @@ namespace Hotfix.Framework.Download
 		/// <param name="toPosition">下载数据结束位置。</param>
 		public void Download(string downloadUri, long fromPosition, long toPosition)
 		{
-			m_unityWebRequest                    = new UnityWebRequest(downloadUri);
-			m_unityWebRequest.certificateHandler = new DownloadCertificateHandler();
-			m_unityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}-{toPosition}");
-			m_unityWebRequest.downloadHandler = new DownloadHandler(this);
-			m_unityWebRequest.SendWebRequest();
+			m_UnityWebRequest                    = new UnityWebRequest(downloadUri);
+			m_UnityWebRequest.certificateHandler = new DownloadCertificateHandler();
+			m_UnityWebRequest.SetRequestHeader("Range", $"bytes={fromPosition}-{toPosition}");
+			m_UnityWebRequest.downloadHandler = new DownloadHandler(this);
+			m_UnityWebRequest.SendWebRequest();
 		}
 
 		/// <summary>
@@ -127,14 +127,14 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void Reset()
 		{
-			if (m_unityWebRequest != null)
+			if (m_UnityWebRequest != null)
 			{
-				m_unityWebRequest.Abort();
-				m_unityWebRequest.Dispose();
-				m_unityWebRequest = null;
+				m_UnityWebRequest.Abort();
+				m_UnityWebRequest.Dispose();
+				m_UnityWebRequest = null;
 			}
 
-			Array.Clear(m_cachedBytes, 0, CACHED_BYTES_LENGTH);
+			Array.Clear(m_CachedBytes, 0, CACHED_BYTES_LENGTH);
 		}
 
 		/// <summary>
@@ -148,15 +148,15 @@ namespace Hotfix.Framework.Download
 		/// <param name="disposing">释放资源标记。</param>
 		private void Dispose(bool disposing)
 		{
-			if (m_disposed) return;
+			if (m_Disposed) return;
 
-			if (disposing && m_unityWebRequest != null)
+			if (disposing && m_UnityWebRequest != null)
 			{
-				m_unityWebRequest.Dispose();
-				m_unityWebRequest = null;
+				m_UnityWebRequest.Dispose();
+				m_UnityWebRequest = null;
 			}
 
-			m_disposed = true;
+			m_Disposed = true;
 		}
 	}
 }

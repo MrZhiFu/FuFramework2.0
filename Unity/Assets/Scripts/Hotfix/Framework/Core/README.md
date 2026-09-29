@@ -64,7 +64,7 @@ public interface ICancelAsync
 - **框架集成**：重启 `RestartGameAsync` 在 Dispose 与 重新初始化 之间 `await ModuleManager.CancelAllAsync()` 逐个等待取消清理，根除旧生命周期任务写回新生命周期。
 - **已接入模块**：Asset/Scene/Entity/UI/Sound/Web 六个模块及 `AssetLoadRegister`；接入要点（组合 `CancellationScope`、`OnInit` 重建、`OnDispose` Cancel）见各模块 README。
 
-> **为什么不用裸 `CancellationTokenSource`？** `m_Cts.Cancel()` 是**同步 fire-and-forget**——返回后框架无法得知在途操作是否已清理完毕。
+> **为什么不用裸 `CancellationTokenSource`？** `m_cts.Cancel()` 是**同步 fire-and-forget**——返回后框架无法得知在途操作是否已清理完毕。
 > 重启 `RestartGameAsync` 在 Dispose 之后必须**等待**旧生命周期所有在途操作完成清理（释放句柄/卸载资源）才允许重新初始化，
 > 否则旧清理与新初始化竞争：旧任务收尾可能误卸新生命周期同路径资源、误删新去重条目（即「旧任务写回新生命周期」）。
 > `ICancelAsync.CancelAsync()` 的可等待性（经 `CancellationScope` 在途计数 + 「全部完成」信号实现）正是这一结构性保证的来源；
@@ -74,7 +74,7 @@ public interface ICancelAsync
 > （如 UI 窗口）用 `LifecycleCancellationSource`（`Recreate` 重建生命周期令牌）+ token 传参即可。
 >
 > **铁律（编译期强制）**：网络/资源类异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数**必传**（无默认值）——
-> 窗口传 `WinBase.Token`、模块内部传自身 `m_Scope.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
+> 窗口传 `WinBase.Token`、模块内部传自身 `m_scope.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
 
 ## 4. 核心类说明
 

@@ -81,7 +81,8 @@ namespace Hotfix.Framework.Web
 		/// <param name="recvBytes">接收字节数。</param>
 		/// <param name="error">失败/取消原因。</param>
 		/// <param name="requestBody">请求体文本（JSON POST 序列化文本）。</param>
-		public WebLogEntry(DateTime completeTimeUtc, EWebRequestResult result, bool isPb, bool isGet, string url, int waitMs, int totalMs, int sendBytes, int recvBytes, string error, string requestBody)
+		public WebLogEntry(DateTime completeTimeUtc, EWebRequestResult result, bool isPb, bool isGet, string url, int waitMs, int totalMs, int sendBytes, int recvBytes, string error,
+		                   string requestBody)
 		{
 			CompleteTimeUtc = completeTimeUtc;
 			Result          = result;

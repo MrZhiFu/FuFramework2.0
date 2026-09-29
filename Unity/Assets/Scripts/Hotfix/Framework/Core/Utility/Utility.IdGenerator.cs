@@ -22,11 +22,11 @@ namespace Hotfix.Framework.Core
 			/// 全局UTC起始时间，用作计数器的基准时间点
 			/// 设置为2020年1月1日0时0分0秒(UTC)
 			/// </summary>
-			private static readonly DateTime UtcTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+			private static readonly DateTime sr_utcTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
 			// 共享计数器
-			private static long m_counter    = (long)(DateTime.UtcNow - UtcTime).TotalSeconds;
-			private static int  m_counterInt = (int)(DateTime.UtcNow  - UtcTime).TotalSeconds;
+			private static long s_counter    = (long)(DateTime.UtcNow - sr_utcTime).TotalSeconds;
+			private static int  s_counterInt = (int)(DateTime.UtcNow  - sr_utcTime).TotalSeconds;
 
 			/// <summary>
 			/// 使用Interlocked.Increment生成唯一ID的方法
@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Core
 			public static long GetNextUniqueId()
 			{
 				// 原子性地递增值，确保即使多个线程同时尝试递增同一个变量
-				return Interlocked.Increment(ref m_counter);
+				return Interlocked.Increment(ref s_counter);
 			}
 
 			/// <summary>
@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Core
 			public static int GetNextUniqueIntId()
 			{
 				// 原子性地递增值，确保即使多个线程同时尝试递增同一个变量
-				return Interlocked.Increment(ref m_counterInt);
+				return Interlocked.Increment(ref s_counterInt);
 			}
 		}
 	}

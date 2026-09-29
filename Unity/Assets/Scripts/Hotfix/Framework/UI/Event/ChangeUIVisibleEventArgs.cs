@@ -40,7 +40,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public ChangeUIVisibleEventArgs()
 		{
-			Win   = null;
+			Win      = null;
 			Visible  = false;
 			UserData = null;
 		}
@@ -55,7 +55,7 @@ namespace Hotfix.Framework.UI
 		public static ChangeUIVisibleEventArgs Create(WinBase win, bool visible, object userData)
 		{
 			var uiSuccessEventArgs = ReferencePool.Acquire<ChangeUIVisibleEventArgs>();
-			uiSuccessEventArgs.Win   = win;
+			uiSuccessEventArgs.Win      = win;
 			uiSuccessEventArgs.Visible  = visible;
 			uiSuccessEventArgs.UserData = userData;
 			return uiSuccessEventArgs;
@@ -66,7 +66,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public override void Clear()
 		{
-			Win   = null;
+			Win      = null;
 			Visible  = false;
 			UserData = null;
 		}

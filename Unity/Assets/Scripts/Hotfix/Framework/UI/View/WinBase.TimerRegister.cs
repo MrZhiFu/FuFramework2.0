@@ -29,7 +29,7 @@ namespace Hotfix.Framework.UI
 		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
 		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update,
-										bool ignoreTimeScale = false)
+		                                bool ignoreTimeScale = false)
 		{
 			TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
 		}

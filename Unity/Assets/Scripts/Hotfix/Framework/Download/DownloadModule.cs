@@ -189,10 +189,10 @@ namespace Hotfix.Framework.Download
 			var downloadAgentHelper = new UnityWebRequestDownloadAgentHelper();
 			var downloadAgent       = new DownloadAgent(downloadAgentHelper);
 
-			downloadAgent.DownloadAgentStart   += OnDownloadAgentStart;
-			downloadAgent.DownloadAgentUpdate  += OnDownloadAgentUpdate;
-			downloadAgent.DownloadAgentSuccess += OnDownloadAgentSuccess;
-			downloadAgent.DownloadAgentFailure += OnDownloadAgentFailure;
+			downloadAgent.m_DownloadAgentStart   += OnDownloadAgentStart;
+			downloadAgent.m_DownloadAgentUpdate  += OnDownloadAgentUpdate;
+			downloadAgent.m_DownloadAgentSuccess += OnDownloadAgentSuccess;
+			downloadAgent.m_DownloadAgentFailure += OnDownloadAgentFailure;
 
 			// 向任务池中加入下载任务执行代理
 			m_taskPool.AddAgent(downloadAgent);

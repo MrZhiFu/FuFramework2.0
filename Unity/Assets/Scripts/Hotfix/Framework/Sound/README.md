@@ -21,7 +21,7 @@ FuFramework Sound 模块是游戏框架的声音管理系统，基于 Unity Audi
 ┌─────────────────────────────────────────────────────────────┐
 │                     SoundModule                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_SoundGroupDict (Dictionary<string, SoundGroup>)  │   │
+│  │  m_soundGroupDict (Dictionary<string, SoundGroup>)  │   │
 │  │  - 按名称管理所有声音组                              │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -176,12 +176,12 @@ using Hotfix.Framework.Config;
 
 public class SoundExample
 {
-    private SoundModule m_SoundModule;
+    private SoundModule m_soundModule;
 
     public void Init()
     {
         // SoundModule 在 OnInit 中自动从配置表加载声音组，无需手动添加
-        m_SoundModule = ModuleManager.GetModule<SoundModule>();
+        m_soundModule = ModuleManager.GetModule<SoundModule>();
     }
 }
 ```
@@ -194,7 +194,7 @@ var soundParams = SoundParams.Create();
 soundParams.Volume = 0.8f;
 soundParams.Loop = true;
 soundParams.FadeInSeconds = 2f;
-int bgmSerialId = await m_SoundModule.PlaySound(
+int bgmSerialId = await m_soundModule.PlaySound(
     soundAssetName: "MainTheme.ogg",
     groupName: "BGM",
     soundParams: soundParams
@@ -203,7 +203,7 @@ int bgmSerialId = await m_SoundModule.PlaySound(
 // 播放 UI 按钮音效
 var sfxParams = SoundParams.Create();
 sfxParams.Volume = 1f;
-int sfxSerialId = await m_SoundModule.PlaySound(
+int sfxSerialId = await m_soundModule.PlaySound(
     soundAssetName: "UI_Click.wav",
     groupName: "SFX",
     soundParams: sfxParams
@@ -218,7 +218,7 @@ var footstepParams = SoundParams.Create();
 footstepParams.Volume = 1f;
 footstepParams.SpatialBlend = 1f;
 footstepParams.MaxDistance = 50f;
-int footstepSerialId = await m_SoundModule.PlaySoundToEntity(
+int footstepSerialId = await m_soundModule.PlaySoundToEntity(
     soundAssetName: "Footstep.ogg",
     groupName: "3D",
     bindingEntity: playerEntity,
@@ -230,7 +230,7 @@ var explosionParams = SoundParams.Create();
 explosionParams.Volume = 1f;
 explosionParams.SpatialBlend = 1f;
 explosionParams.MaxDistance = 100f;
-int explosionSerialId = await m_SoundModule.PlaySound3DPos(
+int explosionSerialId = await m_soundModule.PlaySound3DPos(
     soundAssetName: "Explosion.ogg",
     groupName: "3D",
     worldPosition: new Vector3(10, 0, 5),
@@ -242,20 +242,20 @@ int explosionSerialId = await m_SoundModule.PlaySound3DPos(
 
 ```csharp
 // 暂停指定声音
-m_SoundModule.PauseSound(serialId);
-m_SoundModule.PauseSound(serialId, fadeOutSeconds: 0.5f);
+m_soundModule.PauseSound(serialId);
+m_soundModule.PauseSound(serialId, fadeOutSeconds: 0.5f);
 
 // 恢复指定声音
-m_SoundModule.ResumeSound(serialId);
-m_SoundModule.ResumeSound(serialId, fadeInSeconds: 0.5f);
+m_soundModule.ResumeSound(serialId);
+m_soundModule.ResumeSound(serialId, fadeInSeconds: 0.5f);
 
 // 停止指定声音
-m_SoundModule.StopSound(serialId);
-m_SoundModule.StopSound(serialId, fadeOutSeconds: 0.5f);
+m_soundModule.StopSound(serialId);
+m_soundModule.StopSound(serialId, fadeOutSeconds: 0.5f);
 
 // 停止所有已加载的声音
-m_SoundModule.StopAllLoadedSounds();
-m_SoundModule.StopAllLoadedSounds(fadeOutSeconds: 1f);
+m_soundModule.StopAllLoadedSounds();
+m_soundModule.StopAllLoadedSounds(fadeOutSeconds: 1f);
 ```
 
 ### 5.5 监听播放事件

@@ -2,11 +2,7 @@ using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using UnityEngine;
 
-// ReSharper disable NotAccessedField.Local
-
 // ReSharper disable once CheckNamespace
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>

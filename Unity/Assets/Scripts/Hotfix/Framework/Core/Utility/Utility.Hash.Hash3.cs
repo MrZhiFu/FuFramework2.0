@@ -1,6 +1,5 @@
-using System;
-
 // ReSharper disable once CheckNamespace
+
 namespace Hotfix.Framework.Core
 {
 	public static partial class Utility

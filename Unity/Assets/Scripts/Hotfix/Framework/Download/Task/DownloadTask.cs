@@ -1,5 +1,6 @@
 using Hotfix.Framework.Core;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
@@ -11,7 +12,7 @@ namespace Hotfix.Framework.Download
 	internal sealed class DownloadTask : TaskBase
 	{
 		/// 下载任务的序列编号
-		private static int m_serial;
+		private static int s_serial;
 
 		/// <summary>
 		/// 获取或设置下载任务的状态。
@@ -71,7 +72,7 @@ namespace Hotfix.Framework.Download
 		public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
 		{
 			var downloadTask = ReferencePool.Acquire<DownloadTask>();
-			downloadTask.Initialize(++m_serial, tag, priority, userData);
+			downloadTask.Initialize(++s_serial, tag, priority, userData);
 			downloadTask.DownloadedFullPath = downloadedFullPath;
 			downloadTask.DownloadUri        = downloadUri;
 			downloadTask.FlushSize          = flushSize;

@@ -110,9 +110,7 @@ namespace Hotfix.Framework.Network
 		/// 自定义处理器装配钩子。派生类可重写以补充或替换包处理器。
 		/// 在框架默认处理器装配之后调用。
 		/// </summary>
-		protected virtual void RegisterCustomHandlers()
-		{
-		}
+		protected virtual void RegisterCustomHandlers() { }
 
 		/// <summary>
 		/// 初始化网络频道帮助器。
@@ -135,25 +133,25 @@ namespace Hotfix.Framework.Network
 				}
 			}
 
-			Event.Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
-			Event.Subscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);
+			Event.Subscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
+			Event.Subscribe(NetworkClosedEventArgs.EventId,        OnNetworkClosedEventArgs);
 			Event.Subscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
-			Event.Subscribe(NetworkErrorEventArgs.EventId, OnNetworkErrorEventArgs);
+			Event.Subscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 		}
 
 		public void Shutdown()
 		{
-			Event.Unsubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnectedEventArgs);
-			Event.Unsubscribe(NetworkClosedEventArgs.EventId, OnNetworkClosedEventArgs);
+			Event.Unsubscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
+			Event.Unsubscribe(NetworkClosedEventArgs.EventId,        OnNetworkClosedEventArgs);
 			Event.Unsubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
-			Event.Unsubscribe(NetworkErrorEventArgs.EventId, OnNetworkErrorEventArgs);
+			Event.Unsubscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 			m_networkChannel = null;
 		}
 
 		public void PrepareForConnecting()
 		{
 			m_networkChannel.Socket.ReceiveBufferSize = 1024 * 64 - 1;
-			m_networkChannel.Socket.SendBufferSize = 1024 * 64 - 1;
+			m_networkChannel.Socket.SendBufferSize    = 1024 * 64 - 1;
 		}
 
 		public bool SendHeartBeat()
@@ -171,7 +169,7 @@ namespace Hotfix.Framework.Network
 			destination.NotNull(nameof(destination));
 
 			return m_networkChannel.PacketSendHeaderHandler.Handler(messageObject, m_networkChannel.MessageCompressHandler, destination,
-				out messageBodyBuffer);
+			                                                        out messageBodyBuffer);
 		}
 
 		public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
@@ -222,7 +220,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ ne.MissCount}' times.");
+			FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ne.MissCount}' times.");
 		}
 
 		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)

@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using FairyGUI;
+using System.Collections.Generic;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Core
 {
 	public static partial class Utility

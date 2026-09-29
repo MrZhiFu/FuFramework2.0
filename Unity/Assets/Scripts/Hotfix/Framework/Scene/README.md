@@ -104,18 +104,18 @@ using UnityEngine.SceneManagement;
 
 public class SceneExample
 {
-    private SceneModule m_SceneModule;
+    private SceneModule m_sceneModule;
 
     public void Init()
     {
-        m_SceneModule = ModuleManager.GetModule<SceneModule>();
+        m_sceneModule = ModuleManager.GetModule<SceneModule>();
     }
 
     public async UniTask LoadGameSceneAsync()
     {
         var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；窗口传 WinBase.Token
         // 异步加载场景
-        SceneHandle handle = await m_SceneModule.LoadScene(
+        SceneHandle handle = await m_sceneModule.LoadScene(
             "Assets/Game/Scenes/GameScene.unity",
             token,
             LoadSceneMode.Single
@@ -127,7 +127,7 @@ public class SceneExample
     public async UniTask LoadAdditiveSceneAsync()
     {
         // 叠加加载场景（不卸载当前场景，Additive 是默认值）
-        SceneHandle handle = await m_SceneModule.LoadScene(
+        SceneHandle handle = await m_sceneModule.LoadScene(
             sceneAssetPath: "Assets/Game/Scenes/Dungeon_01.unity"
         );
     }
@@ -138,7 +138,7 @@ public class SceneExample
 
 ```csharp
 // 卸载叠加场景
-m_SceneModule.UnloadScene("Assets/Game/Scenes/Dungeon_01.unity");
+m_sceneModule.UnloadScene("Assets/Game/Scenes/Dungeon_01.unity");
 ```
 
 ### 5.3 监听场景事件

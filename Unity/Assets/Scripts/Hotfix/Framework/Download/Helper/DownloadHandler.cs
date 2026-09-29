@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Download
 		/// 构造一个下载处理器
 		/// </summary>
 		/// <param name="owner">传递一个固定大小的Buffer作为下载的缓冲区</param>
-		public DownloadHandler(UnityWebRequestDownloadAgentHelper owner) : base(owner.m_cachedBytes)
+		public DownloadHandler(UnityWebRequestDownloadAgentHelper owner) : base(owner.m_CachedBytes)
 		{
 			m_owner = owner;
 		}
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.Download
 		/// <returns></returns>
 		protected override bool ReceiveData(byte[] datas, int dataLength)
 		{
-			if (m_owner == null || m_owner.m_disposed || m_owner.m_unityWebRequest == null || dataLength <= 0)
+			if (m_owner == null || m_owner.m_Disposed || m_owner.m_UnityWebRequest == null || dataLength <= 0)
 				return base.ReceiveData(datas, dataLength);
 
 			// 发送更新数据流事件

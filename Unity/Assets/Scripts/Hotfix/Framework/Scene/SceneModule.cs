@@ -36,17 +36,17 @@ namespace Hotfix.Framework.Scene
 			/// <summary>
 			/// 场景加载句柄
 			/// </summary>
-			public readonly SceneHandle SceneHandle;
+			public readonly SceneHandle m_SceneHandle;
 
 			/// <summary>
 			/// 用户自定义数据
 			/// </summary>
-			public readonly object UserData;
+			public readonly object m_UserData;
 
 			public SceneHandleData(SceneHandle sceneHandle, object userData)
 			{
-				SceneHandle = sceneHandle;
-				UserData    = userData;
+				m_SceneHandle = sceneHandle;
+				m_UserData    = userData;
 			}
 		}
 
@@ -101,8 +101,8 @@ namespace Hotfix.Framework.Scene
 		/// </summary>
 		protected internal override void OnInit()
 		{
-			Instance = this;
-			m_scope = new CancellationScope(); // 新生命周期 = 新 Token
+			Instance      = this;
+			m_scope       = new CancellationScope(); // 新生命周期 = 新 Token
 			EventRegister = EventRegister.Create();
 			m_assetModule = ModuleManager.GetModule<AssetModule>();
 		}
@@ -131,7 +131,7 @@ namespace Hotfix.Framework.Scene
 
 			EventRegister.Release();
 			EventRegister = null;
-			Instance = null;
+			Instance      = null;
 		}
 
 		#region Get
@@ -353,7 +353,7 @@ namespace Hotfix.Framework.Scene
 			var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
 			try
 			{
-				var sceneName = GetSceneName(sceneAssetPath);
+				var sceneName            = GetSceneName(sceneAssetPath);
 				var sceneOperationHandle = await m_assetModule.LoadSceneAsync(sceneAssetPath, sceneMode, token, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
 				// 模块已销毁/生命周期变更/调用方取消（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
 				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token || token.IsCancellationRequested)
@@ -364,6 +364,7 @@ namespace Hotfix.Framework.Scene
 					sceneOperationHandle.UnloadSceneAsync().Completed += _ => sceneOperationHandle.Release();
 					throw new OperationCanceledException(capturedToken);
 				}
+
 				m_loadingSceneDict.Add(sceneAssetPath, new SceneHandleData(sceneOperationHandle, userData));
 				sceneOperationHandle.Completed += OnLoadSceneCompleted;
 				return sceneOperationHandle;
@@ -483,7 +484,7 @@ namespace Hotfix.Framework.Scene
 				// 加载成功：登记已加载字典（失败不登记，否则 IsLoaded 恒 true 导致无法重试）
 				m_loadedSceneDict.Add(assetPath, sceneHandle);
 				FuLogger.LogInfo($"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 成功！");
-				var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.UserData);
+				var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.m_UserData);
 				EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
 			}
 			else
@@ -494,7 +495,7 @@ namespace Hotfix.Framework.Scene
 				var errorMessage = $"[SceneModule] 加载场景 '{sceneName}' 失败!, 加载状态 '{status}', 错误信息 '{sceneHandle.Error}'.";
 				FuLogger.LogError(errorMessage);
 				sceneHandle.Release();
-				var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneName, status, errorMessage, sceneHandleData.UserData);
+				var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneName, status, errorMessage, sceneHandleData.m_UserData);
 				EventRegister.Broadcast(this, loadSceneFailureEventArgs);
 			}
 		}

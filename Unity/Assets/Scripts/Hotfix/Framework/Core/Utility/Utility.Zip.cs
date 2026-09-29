@@ -4,9 +4,9 @@ using System.Buffers;
 using ICSharpCode.SharpZipLib.Checksum;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.Zip.Compression;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Core
 {
 	public static partial class Utility
@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public static class Zip
 		{
-			private static readonly Crc32 CRC = new();
+			private static readonly Crc32 sr_crc = new();
 
 			/// <summary>
 			/// 用于压缩和解压缩内存数据的缓冲区大小（以字节为单位）
@@ -41,13 +41,13 @@ namespace Hotfix.Framework.Core
 			/// <returns>是否成功</returns>
 			public static bool CompressFile(string fileToZip, string zippedPath, string password = null)
 			{
-				if (!System.IO.File.Exists(fileToZip))
+				if (!File.Exists(fileToZip))
 				{
 					FuLogger.LogFatal($"要压缩的文件不存在: {fileToZip}");
 					return false;
 				}
 
-				using (var readStream = System.IO.File.OpenRead(fileToZip))
+				using (var readStream = File.OpenRead(fileToZip))
 				{
 					byte[] buffer = new byte[readStream.Length];
 
@@ -60,16 +60,17 @@ namespace Hotfix.Framework.Core
 						totalRead += read;
 					}
 
-					using var writeStream = System.IO.File.Create(zippedPath);
-					var entry = new ZipEntry(System.IO.Path.GetFileName(fileToZip))
+					using var writeStream = File.Create(zippedPath);
+					var entry = new ZipEntry(Path.GetFileName(fileToZip))
 					{
 						DateTime = DateTime.Now,
 						Size     = totalRead
 					};
-					CRC.Reset();
+					sr_crc.Reset();
+
 					// SharpZipLib 1.x 的 Crc32 已移除 (buffer, offset, count) 重载，改用 ArraySegment
-					CRC.Update(new ArraySegment<byte>(buffer, 0, totalRead));
-					entry.Crc = CRC.Value;
+					sr_crc.Update(new ArraySegment<byte>(buffer, 0, totalRead));
+					entry.Crc = sr_crc.Value;
 
 					using var zipStream = new ZipOutputStream(writeStream);
 					if (!string.IsNullOrEmpty(password))
@@ -95,7 +96,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>是否成功</returns>
 			public static bool CompressDirectory(string folderToZip, string zippedPath, string password = null)
 			{
-				if (folderToZip.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWith("/"))
+				if (folderToZip.EndsWith(Path.DirectorySeparatorChar.ToString()) || folderToZip.EndsWith("/"))
 				{
 					folderToZip = folderToZip.Substring(0, folderToZip.Length - 1);
 				}
@@ -147,7 +148,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>是否成功</returns>
 			public static bool DecompressFile(string fileToUnZip, string zippedPath, string password = null)
 			{
-				if (!System.IO.File.Exists(fileToUnZip)) return false;
+				if (!File.Exists(fileToUnZip)) return false;
 				if (!Directory.Exists(zippedPath)) Directory.CreateDirectory(zippedPath);
 
 				if (!zippedPath.EndsWith("\\"))
@@ -155,7 +156,7 @@ namespace Hotfix.Framework.Core
 					zippedPath += "\\";
 				}
 
-				using (var zipStream = new ZipInputStream(System.IO.File.OpenRead(fileToUnZip)))
+				using (var zipStream = new ZipInputStream(File.OpenRead(fileToUnZip)))
 				{
 					if (!string.IsNullOrEmpty(password))
 					{
@@ -168,8 +169,8 @@ namespace Hotfix.Framework.Core
 						if (zipEntry.IsDirectory) continue;
 						if (string.IsNullOrEmpty(zipEntry.Name)) continue;
 
-						var fileName = Path.Combine(zippedPath, zipEntry.Name.Replace('/', System.IO.Path.DirectorySeparatorChar));
-						var    index    = zipEntry.Name.LastIndexOf('/');
+						var fileName = Path.Combine(zippedPath, zipEntry.Name.Replace('/', Path.DirectorySeparatorChar));
+						var index    = zipEntry.Name.LastIndexOf('/');
 						if (index != -1)
 						{
 							var path = zippedPath + zipEntry.Name.Substring(0, index).Replace('/', '\\');
@@ -178,7 +179,7 @@ namespace Hotfix.Framework.Core
 
 						// 按实际读到的字节数流式落盘：单次 Read 的返回值会被丢弃导致解压静默截断，
 						// 且 zipEntry.Size 不可信（可能为 -1/超大），不应据此一次性分配
-						using (var output = System.IO.File.Create(fileName))
+						using (var output = File.Create(fileName))
 						{
 							var buffer = new byte[BUFFER_SIZE];
 							int read;
@@ -202,7 +203,7 @@ namespace Hotfix.Framework.Core
 			/// <exception cref="ArgumentNullException">当输入参数content为null时抛出。</exception>
 			public static byte[] Compress(byte[] content)
 			{
-				if (content == null) throw new ArgumentNullException(nameof(content));
+				if (content        == null) throw new ArgumentNullException(nameof(content));
 				if (content.Length == 0) return content;
 
 				var compressor = new Deflater();
@@ -248,7 +249,7 @@ namespace Hotfix.Framework.Core
 			/// <exception cref="InvalidDataException">当压缩数据格式无效或已损坏时抛出。</exception>
 			public static byte[] Decompress(byte[] content)
 			{
-				if (content == null) throw new ArgumentNullException(nameof(content));
+				if (content        == null) throw new ArgumentNullException(nameof(content));
 				if (content.Length == 0) return content;
 
 				var decompressor = new Inflater();
@@ -305,24 +306,24 @@ namespace Hotfix.Framework.Core
 				var files = Directory.GetFiles(folderToZip);
 				foreach (string file in files)
 				{
-					byte[] buffer = System.IO.File.ReadAllBytes(file);
-					var    path   = System.IO.Path.GetFileName(file);
+					byte[] buffer = File.ReadAllBytes(file);
+					var    path   = Path.GetFileName(file);
 					if (!string.IsNullOrWhiteSpace(parentFolderName))
 					{
-						path = parentFolderName + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(file);
+						path = parentFolderName + Path.DirectorySeparatorChar + Path.GetFileName(file);
 					}
 
 					var ent = new ZipEntry(path)
 					{
-						//ent.DateTime = System.IO.File.GetLastWriteTime(file);//设置文件最后修改时间
+						//ent.DateTime = File.GetLastWriteTime(file);//设置文件最后修改时间
 						DateTime = DateTime.Now,
 						Size     = buffer.Length,
 					};
 
-					CRC.Reset();
-					CRC.Update(buffer);
+					sr_crc.Reset();
+					sr_crc.Update(buffer);
 
-					ent.Crc = CRC.Value;
+					ent.Crc = sr_crc.Value;
 					zipStream.PutNextEntry(ent);
 					zipStream.Write(buffer, 0, buffer.Length);
 				}

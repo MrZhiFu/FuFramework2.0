@@ -54,14 +54,14 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息处理器字典, Key为消息类型, Value为消息处理器列表
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> MessageHandlerDictionary = new();
+		private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> sr_messageHandlerDictionary = new();
 
 		/// <summary>
 		/// 「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」静态表（由生成物写入）。
 		/// 说明：仅在启动期 ProtoMessageIdHandler.Init 内写入一次，之后只读；
 		/// 仍使用 ConcurrentDictionary 以容忍 Add/Remove 与初始化并发的极端情况。
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, ProtoMessageHandlerMethod[]> HandlerMethodRegistry = new();
+		private static readonly ConcurrentDictionary<Type, ProtoMessageHandlerMethod[]> sr_handlerMethodRegistry = new();
 
 		/// <summary>
 		/// 登记某个消息处理对象类型的 [MessageHandler] 方法清单。由生成物调用。
@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Network
 		internal static void RegisterHandlerType(Type handlerType, ProtoMessageHandlerMethod[] methods)
 		{
 			handlerType.NotNull(nameof(handlerType));
-			HandlerMethodRegistry[handlerType] = methods ?? Array.Empty<ProtoMessageHandlerMethod>();
+			sr_handlerMethodRegistry[handlerType] = methods ?? Array.Empty<ProtoMessageHandlerMethod>();
 		}
 
 		/// <summary>
@@ -85,10 +85,10 @@ namespace Hotfix.Framework.Network
 			messageHandler.NotNull(nameof(messageHandler));
 			var type = messageHandler.GetType();
 
-			if (!HandlerMethodRegistry.TryGetValue(type, out var registeredMethods))
+			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
 			{
 				FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-								  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
+				                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
 				return;
 			}
 
@@ -99,11 +99,11 @@ namespace Hotfix.Framework.Network
 				if (entry.Invoke == null)
 				{
 					FuLogger.LogError("生成注册表中的处理委托为空：" + type.FullName + "->" + entry.MethodName +
-									  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
+					                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
 					continue;
 				}
 
-				var list = MessageHandlerDictionary.GetOrAdd(entry.MessageType, static _ => new List<MessageHandlerAttribute>(8));
+				var list = sr_messageHandlerDictionary.GetOrAdd(entry.MessageType, static _ => new List<MessageHandlerAttribute>(8));
 
 				if (ContainsHandler(list, messageHandler, entry.MethodName))
 				{
@@ -127,10 +127,10 @@ namespace Hotfix.Framework.Network
 			messageHandler.NotNull(nameof(messageHandler));
 			var type = messageHandler.GetType();
 
-			if (!HandlerMethodRegistry.TryGetValue(type, out var registeredMethods))
+			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
 			{
 				FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-								  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
+				                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
 				return;
 			}
 
@@ -138,7 +138,7 @@ namespace Hotfix.Framework.Network
 			{
 				var entry = registeredMethods[i];
 
-				if (!MessageHandlerDictionary.TryGetValue(entry.MessageType, out var list) || list == null)
+				if (!sr_messageHandlerDictionary.TryGetValue(entry.MessageType, out var list) || list == null)
 				{
 					FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + entry.MethodName);
 					continue;
@@ -165,7 +165,7 @@ namespace Hotfix.Framework.Network
 
 				if (list.Count <= 0)
 				{
-					MessageHandlerDictionary.TryRemove(entry.MessageType, out _);
+					sr_messageHandlerDictionary.TryRemove(entry.MessageType, out _);
 				}
 			}
 		}
@@ -194,7 +194,7 @@ namespace Hotfix.Framework.Network
 		internal static void GetHandlers(Type messageType, List<MessageHandlerAttribute> destination)
 		{
 			destination.Clear();
-			if (MessageHandlerDictionary.TryGetValue(messageType, out var list) && list != null)
+			if (sr_messageHandlerDictionary.TryGetValue(messageType, out var list) && list != null)
 			{
 				// 复制到调用方缓冲区：派发期间用户代码可能注册/注销处理器，
 				// 直接遍历内部列表会抛 InvalidOperationException。

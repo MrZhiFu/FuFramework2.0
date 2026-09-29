@@ -112,7 +112,7 @@ namespace Hotfix.Framework.Localization
 		{
 			Instance = this;
 
-			m_eventModule  = ModuleManager.GetModule<EventModule>();
+			m_eventModule   = ModuleManager.GetModule<EventModule>();
 			m_storageModule = StorageModule.Instance;
 
 			// 数据保存模块缺失（模块注册顺序调整/初始化失败）时退化为系统语言，不能直接解引用（否则 NRE 中断本模块初始化）

@@ -78,7 +78,7 @@ namespace Hotfix.Framework.Web
 				// 超时秒数向上取整并保底 1 秒：Timeout 为 float，直接截断会让 (0, 1) 秒得到 0，而 0 = 永不超时
 				unityWebRequest.timeout = Math.Max(1, (int)Math.Ceiling(ReqTimeout.TotalSeconds));
 				unityWebRequest.SetRequestHeader("Content-Type", PB_CONTENT_TYPE);
-				unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.SendData);
+				unityWebRequest.uploadHandler = new UploadHandlerRaw(webData.m_SendData);
 				return unityWebRequest;
 			}
 			catch

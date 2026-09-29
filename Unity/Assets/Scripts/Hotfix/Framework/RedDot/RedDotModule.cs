@@ -141,7 +141,7 @@ namespace Hotfix.Framework.RedDot
 			// 注入变更追踪回调
 			foreach (var node in NodeDict.Values)
 			{
-				node.OnTotalCountChanged = OnNodeTotalCountChanged;
+				node.m_OnTotalCountChanged = OnNodeTotalCountChanged;
 			}
 
 			// 检测循环依赖，发现时切断错误关系防止运行时栈溢出
@@ -341,7 +341,7 @@ namespace Hotfix.Framework.RedDot
 				return existingNode;
 
 			var node = RedDotNode.CreateDynamic(childKey, parentNode);
-			node.OnTotalCountChanged = OnNodeTotalCountChanged;
+			node.m_OnTotalCountChanged = OnNodeTotalCountChanged;
 			parentNode.AddChild(node);
 			NodeDict.Add(childKey, node);
 			FuLogger.LogInfo($"[RedDotModule] 创建动态节点: {childKey}，父节点: {parentKey}");
@@ -434,7 +434,7 @@ namespace Hotfix.Framework.RedDot
 			var args = RedDotChangedEventArgs.Create();
 			foreach (var key in m_changedKeySet)
 			{
-				args.ChangedKeys.Add(key);
+				args.m_ChangedKeys.Add(key);
 			}
 
 			GlobalModule.EventModule.Broadcast(this, args);

@@ -14,12 +14,12 @@ namespace Hotfix.Framework.Asset
 		/// <summary>
 		/// 资源句柄，持有 YooAsset 的资源引用。
 		/// </summary>
-		public AssetHandle Handle;
+		public AssetHandle m_AssetHandle;
 
 		/// <summary>
 		/// 引用计数，即该路径当前活跃的实例化对象数。
 		/// </summary>
-		public int RefCount;
+		public int m_RefCount;
 	}
 
 	/// <summary>

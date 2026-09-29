@@ -175,8 +175,10 @@ namespace Hotfix.Framework.UI
 
 			try
 			{
-				WinUI               = winUI;
-				WinUI.fairyBatching = true;
+				WinUI = winUI;
+				
+				if (WinUI != null)
+					WinUI.fairyBatching = true;
 
 				// 初始化时，设置一次UI对象全屏和安全区适配
 				_OnSafeAreaChanged();

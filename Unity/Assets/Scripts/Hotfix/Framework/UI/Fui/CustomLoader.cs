@@ -36,7 +36,7 @@ namespace Hotfix.Framework.UI
 		/// 值为 SharedLoad 包装而非裸 UniTask：便于按引用判断字典中登记的仍是本次任务——
 		/// 发起者被取消后其它消费者会重新登记新任务，无条件 Remove 会把新任务摘掉。
 		/// </summary>
-		private static readonly Dictionary<string, SharedLoad> LoadingTasks = new();
+		private static readonly Dictionary<string, SharedLoad> sr_loadingTasks = new();
 
 		/// <summary>
 		/// 共享下载任务包装。
@@ -46,7 +46,7 @@ namespace Hotfix.Framework.UI
 			/// <summary>
 			/// 共享的网络纹理加载任务。
 			/// </summary>
-			public UniTask<Texture2D> Task;
+			public UniTask<Texture2D> m_Task;
 		}
 
 		/// <summary>
@@ -79,12 +79,12 @@ namespace Hotfix.Framework.UI
 			/// <summary>
 			/// FairyGUI 纹理
 			/// </summary>
-			public NTexture Texture;
+			public NTexture m_Texture;
 
 			/// <summary>
 			/// YooAsset 资源句柄（非 YooAsset 资源时为 null）
 			/// </summary>
-			public AssetHandle AssetHandle;
+			public AssetHandle m_AssetHandle;
 		}
 
 		/// <summary>
@@ -97,11 +97,11 @@ namespace Hotfix.Framework.UI
 			if (entry == null) return;
 
 			// NTexture.Dispose() 内部已调用 DestroyImmediate 销毁 native 纹理
-			entry.Texture?.Dispose();
-			if (entry.AssetHandle != null)
+			entry.m_Texture?.Dispose();
+			if (entry.m_AssetHandle != null)
 			{
-				var assetPath = entry.AssetHandle.GetAssetInfo().AssetPath; // 释放前取路径
-				entry.AssetHandle.Release();
+				var assetPath = entry.m_AssetHandle.GetAssetInfo().AssetPath; // 释放前取路径
+				entry.m_AssetHandle.Release();
 				ModuleManager.GetModule<AssetModule>()?.UnloadAsset(assetPath); // 淘汰后显式卸载，避免 bundle 残留
 			}
 		}
@@ -109,7 +109,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 缓存路径--"Application.persistentDataPath}/FUICache/images/"
 		/// </summary>
-		private static readonly string CachePath = UtilityAOT.Path.AppHotfixResPath + "/FUICache/images/";
+		private static readonly string sr_cachePath = UtilityAOT.Path.AppHotfixResPath + "/FUICache/images/";
 
 		/// <summary>
 		/// 资源管理模块
@@ -149,7 +149,7 @@ namespace Hotfix.Framework.UI
 				// 2.看缓存中是否有，如果有则直接使用缓存的纹理
 				if (Cache.TryGet(url, out var cachedEntry))
 				{
-					onExternalLoadSuccess(cachedEntry.Texture);
+					onExternalLoadSuccess(cachedEntry.m_Texture);
 					return;
 				}
 
@@ -192,7 +192,7 @@ namespace Hotfix.Framework.UI
 					if (assetHandle != null && Cache.TryGet(url, out var existingEntry))
 					{
 						assetHandle.Release();
-						onExternalLoadSuccess(existingEntry.Texture);
+						onExternalLoadSuccess(existingEntry.m_Texture);
 						return;
 					}
 
@@ -205,7 +205,7 @@ namespace Hotfix.Framework.UI
 					//    否则原生 Texture2D 永久泄漏（DestroyMethod.None 只解引用、不销毁 native 纹理）。
 					var destroyMethod = assetHandle != null ? DestroyMethod.None : DestroyMethod.Destroy;
 					var targetTexture = new NTexture(texture2D) { destroyMethod = destroyMethod };
-					Cache.Put(url, new TextureCacheEntry { Texture = targetTexture, AssetHandle = assetHandle });
+					Cache.Put(url, new TextureCacheEntry { m_Texture = targetTexture, m_AssetHandle = assetHandle });
 					assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
 					onExternalLoadSuccess(targetTexture);
 				}
@@ -240,14 +240,14 @@ namespace Hotfix.Framework.UI
 		/// <returns>加载完成的Texture2D。</returns>
 		private async UniTask<Texture2D> LoadOrGetLoadingTask(string textureURL)
 		{
-			if (!LoadingTasks.TryGetValue(textureURL, out var existing))
+			if (!sr_loadingTasks.TryGetValue(textureURL, out var existing))
 				return await StartSharedLoad(textureURL);
 
 			try
 			{
 				// 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
 				// 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
-				return await existing.Task.AttachExternalCancellation(m_cancellation.Token);
+				return await existing.m_Task.AttachExternalCancellation(m_cancellation.Token);
 			}
 			catch (OperationCanceledException)
 			{
@@ -270,18 +270,18 @@ namespace Hotfix.Framework.UI
 		/// <returns>加载完成的Texture2D。</returns>
 		private async UniTask<Texture2D> StartSharedLoad(string textureURL)
 		{
-			var sharedLoad = new SharedLoad { Task = LoadTextureFromNetwork(textureURL) };
-			LoadingTasks[textureURL] = sharedLoad;
+			var sharedLoad = new SharedLoad { m_Task = LoadTextureFromNetwork(textureURL) };
+			sr_loadingTasks[textureURL] = sharedLoad;
 			try
 			{
-				return await sharedLoad.Task.AttachExternalCancellation(m_cancellation.Token);
+				return await sharedLoad.m_Task.AttachExternalCancellation(m_cancellation.Token);
 			}
 			finally
 			{
 				// 仅当字典中登记的仍是本次任务时才移除：发起者被取消期间，其它消费者可能已重新登记新任务，
 				// 无条件 Remove 会把新任务摘掉，使后续消费者重复下载。
-				if (LoadingTasks.TryGetValue(textureURL, out var current) && current == sharedLoad)
-					LoadingTasks.Remove(textureURL);
+				if (sr_loadingTasks.TryGetValue(textureURL, out var current) && current == sharedLoad)
+					sr_loadingTasks.Remove(textureURL);
 			}
 		}
 
@@ -293,7 +293,7 @@ namespace Hotfix.Framework.UI
 		private async UniTask<Texture2D> LoadTextureFromNetwork(string textureURL)
 		{
 			var textureHashName = Utility.Hash.MD5.Hash(textureURL);
-			var texturePath     = $"{CachePath}{textureHashName}.png";
+			var texturePath     = $"{sr_cachePath}{textureHashName}.png";
 
 			// 本地文件存在，直接读取(从StreamingAssets或persistentDataPath下)
 			if (UtilityAOT.File.IsExists(texturePath))
@@ -302,8 +302,8 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 从网络下载并保存到本地缓存(persistentDataPath)
-			if (!Directory.Exists(CachePath))
-				Directory.CreateDirectory(CachePath);
+			if (!Directory.Exists(sr_cachePath))
+				Directory.CreateDirectory(sr_cachePath);
 
 			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_cancellation.Token);
 			if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)

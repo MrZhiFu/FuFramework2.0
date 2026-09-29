@@ -253,23 +253,23 @@ public class PlayerMoveState : FsmStateBase
 // 攻击状态
 public class PlayerAttackState : FsmStateBase
 {
-    private float m_AttackDuration = 0.5f;
-    private float m_Timer = 0f;
+    private float m_attackDuration = 0.5f;
+    private float m_timer = 0f;
 
     protected internal override void OnEnter()
     {
         FuLogger.LogInfo("进入攻击状态");
-        m_Timer = 0f;
+        m_timer = 0f;
         // 播放攻击动画
         // 执行攻击逻辑...
     }
 
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
-        m_Timer += deltaTime;
+        m_timer += deltaTime;
 
         // 攻击结束，返回空闲状态
-        if (m_Timer >= m_AttackDuration)
+        if (m_timer >= m_attackDuration)
         {
             ChangeState<PlayerIdleState>();
         }
@@ -312,16 +312,16 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private FsmModule m_FsmModule;
-    private Fsm m_PlayerFsm;
+    private FsmModule m_fsmModule;
+    private Fsm m_playerFsm;
 
     private void Start()
     {
         // 获取 FSM 模块
-        m_FsmModule = ModuleManager.GetModule<FsmModule>();
+        m_fsmModule = ModuleManager.GetModule<FsmModule>();
 
         // 创建状态机
-        m_PlayerFsm = m_FsmModule.CreateFsm<PlayerController>(
+        m_playerFsm = m_fsmModule.CreateFsm<PlayerController>(
             "PlayerFSM",                                    // 状态机名称
             this,                                           // 持有者
             new PlayerIdleState(),                          // 状态集合
@@ -331,7 +331,7 @@ public class PlayerController : MonoBehaviour
         );
 
         // 启动状态机，进入空闲状态
-        m_PlayerFsm.Start<PlayerIdleState>();
+        m_playerFsm.Start<PlayerIdleState>();
     }
 
     private void Update()
@@ -342,25 +342,25 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float damage)
     {
         // 获取当前血量
-        float health = m_PlayerFsm.GetData<float>("Health");
+        float health = m_playerFsm.GetData<float>("Health");
         health -= damage;
 
         // 更新血量
-        m_PlayerFsm.SetData("Health", health);
+        m_playerFsm.SetData("Health", health);
 
         // 血量归零，切换到死亡状态
         if (health <= 0)
         {
-            m_PlayerFsm.ChangeState<PlayerDeathState>();
+            m_playerFsm.ChangeState<PlayerDeathState>();
         }
     }
 
     private void OnDestroy()
     {
         // 销毁状态机
-        if (m_FsmModule != null && m_PlayerFsm != null)
+        if (m_fsmModule != null && m_playerFsm != null)
         {
-            m_FsmModule.DestroyFsm(m_PlayerFsm);
+            m_fsmModule.DestroyFsm(m_playerFsm);
         }
     }
 }
@@ -413,13 +413,13 @@ public class EnemyAIState : FsmStateBase
 // 使用示例
 public class EnemyController : MonoBehaviour
 {
-    private Fsm m_EnemyFsm;
+    private Fsm m_enemyFsm;
 
     private void Start()
     {
         var fsmModule = ModuleManager.GetModule<FsmModule>();
 
-        m_EnemyFsm = fsmModule.CreateFsm<EnemyController>(
+        m_enemyFsm = fsmModule.CreateFsm<EnemyController>(
             "EnemyFSM",
             this,
             new EnemyIdleState(),
@@ -429,10 +429,10 @@ public class EnemyController : MonoBehaviour
         );
 
         // 设置初始数据（通用存储）
-        m_EnemyFsm.SetData("Health", 100f);
-        m_EnemyFsm.SetData("Speed", 5f);
+        m_enemyFsm.SetData("Health", 100f);
+        m_enemyFsm.SetData("Speed", 5f);
 
-        m_EnemyFsm.Start<EnemyIdleState>();
+        m_enemyFsm.Start<EnemyIdleState>();
     }
 }
 ```
@@ -524,15 +524,15 @@ public class GameVictoryState : FsmStateBase
 // 游戏管理器
 public class GameManager : MonoBehaviour
 {
-    private FsmModule m_FsmModule;
-    private Fsm m_GameFsm;
+    private FsmModule m_fsmModule;
+    private Fsm m_gameFsm;
 
     private void Start()
     {
-        m_FsmModule = ModuleManager.GetModule<FsmModule>();
+        m_fsmModule = ModuleManager.GetModule<FsmModule>();
 
         // 创建游戏流程状态机
-        m_GameFsm = m_FsmModule.CreateFsm<GameManager>(
+        m_gameFsm = m_fsmModule.CreateFsm<GameManager>(
             "GameFSM",
             this,
             new GameStartState(),
@@ -542,7 +542,7 @@ public class GameManager : MonoBehaviour
             new GameVictoryState()
         );
 
-        m_GameFsm.Start<GameStartState>();
+        m_gameFsm.Start<GameStartState>();
     }
 
     private void Update()
@@ -550,25 +550,25 @@ public class GameManager : MonoBehaviour
         // 处理暂停输入
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (m_GameFsm.CurrentStateBase is GamePlayState)
+            if (m_gameFsm.CurrentStateBase is GamePlayState)
             {
-                m_GameFsm.ChangeState<GamePauseState>();
+                m_gameFsm.ChangeState<GamePauseState>();
             }
-            else if (m_GameFsm.CurrentStateBase is GamePauseState)
+            else if (m_gameFsm.CurrentStateBase is GamePauseState)
             {
-                m_GameFsm.ChangeState<GamePlayState>();
+                m_gameFsm.ChangeState<GamePlayState>();
             }
         }
     }
 
     public void SetPlayerDead()
     {
-        m_GameFsm.SetData("IsPlayerDead", true);
+        m_gameFsm.SetData("IsPlayerDead", true);
     }
 
     public void SetLevelComplete()
     {
-        m_GameFsm.SetData("IsLevelComplete", true);
+        m_gameFsm.SetData("IsLevelComplete", true);
     }
 }
 ```
@@ -578,16 +578,16 @@ public class GameManager : MonoBehaviour
 ```csharp
 public class ComplexEnemyController : MonoBehaviour
 {
-    private FsmModule m_FsmModule;
-    private Fsm m_MovementFsm;      // 移动状态机
-    private Fsm m_CombatFsm;        // 战斗状态机
+    private FsmModule m_fsmModule;
+    private Fsm m_movementFsm;      // 移动状态机
+    private Fsm m_combatFsm;        // 战斗状态机
 
     private void Start()
     {
-        m_FsmModule = ModuleManager.GetModule<FsmModule>();
+        m_fsmModule = ModuleManager.GetModule<FsmModule>();
 
         // 创建移动状态机
-        m_MovementFsm = m_FsmModule.CreateFsm<ComplexEnemyController>(
+        m_movementFsm = m_fsmModule.CreateFsm<ComplexEnemyController>(
             "MovementFSM",          // 名称区分
             this,
             new IdleState(),
@@ -596,7 +596,7 @@ public class ComplexEnemyController : MonoBehaviour
         );
 
         // 创建战斗状态机
-        m_CombatFsm = m_FsmModule.CreateFsm<ComplexEnemyController>(
+        m_combatFsm = m_fsmModule.CreateFsm<ComplexEnemyController>(
             "CombatFSM",            // 名称区分
             this,
             new ReadyState(),
@@ -606,8 +606,8 @@ public class ComplexEnemyController : MonoBehaviour
         );
 
         // 启动两个状态机
-        m_MovementFsm.Start<IdleState>();
-        m_CombatFsm.Start<ReadyState>();
+        m_movementFsm.Start<IdleState>();
+        m_combatFsm.Start<ReadyState>();
     }
 
     private void Update()
@@ -620,8 +620,8 @@ public class ComplexEnemyController : MonoBehaviour
     private void OnDestroy()
     {
         // 销毁所有状态机
-        m_FsmModule.DestroyFsm<ComplexEnemyController>("MovementFSM");
-        m_FsmModule.DestroyFsm<ComplexEnemyController>("CombatFSM");
+        m_fsmModule.DestroyFsm<ComplexEnemyController>("MovementFSM");
+        m_fsmModule.DestroyFsm<ComplexEnemyController>("CombatFSM");
     }
 }
 ```
@@ -741,21 +741,21 @@ public class AIStateBase : FsmStateBase
 ```csharp
 public class CharacterController : MonoBehaviour
 {
-    private Fsm m_Fsm;
+    private Fsm m_fsm;
 
     private void OnEnable()
     {
         // 启用时恢复状态机
-        if (m_Fsm != null && !m_Fsm.IsRunning)
+        if (m_fsm != null && !m_fsm.IsRunning)
         {
-            m_Fsm.Start<IdleState>();
+            m_fsm.Start<IdleState>();
         }
     }
 
     private void OnDisable()
     {
         // 禁用时清理状态
-        if (m_Fsm != null && m_Fsm.IsRunning)
+        if (m_fsm != null && m_fsm.IsRunning)
         {
             // 可以选择暂停或保持当前状态
         }
@@ -765,7 +765,7 @@ public class CharacterController : MonoBehaviour
     {
         // 销毁时清理状态机
         var fsmModule = ModuleManager.GetModule<FsmModule>();
-        fsmModule?.DestroyFsm(m_Fsm);
+        fsmModule?.DestroyFsm(m_fsm);
     }
 }
 ```

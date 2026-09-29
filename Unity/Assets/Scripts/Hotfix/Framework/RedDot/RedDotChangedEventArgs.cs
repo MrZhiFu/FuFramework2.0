@@ -24,12 +24,12 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 本帧发生变化的红点节点 Key 列表
 		/// </summary>
-		public readonly List<RedDotKey> ChangedKeys = new();
+		public readonly List<RedDotKey> m_ChangedKeys = new();
 
 		/// <summary>
 		/// 清空事件参数数据，用于重用
 		/// </summary>
-		public override void Clear() => ChangedKeys.Clear();
+		public override void Clear() => m_ChangedKeys.Clear();
 
 		/// <summary>
 		/// 创建事件参数实例

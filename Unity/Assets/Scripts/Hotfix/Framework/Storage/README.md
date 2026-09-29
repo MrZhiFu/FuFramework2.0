@@ -21,7 +21,7 @@ FuFramework Storage 模块是游戏框架的本地数据持久化系统，提供
 ┌─────────────────────────────────────────────────────────────┐
 │                     StorageModule                            │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_StorageHelperDict (Dictionary<string, StorageHelper>)│  │
+│  │  m_storageHelperDict (Dictionary<string, StorageHelper>)│  │
 │  │  - 按名称管理所有存储实例                             │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -160,32 +160,32 @@ using Hotfix.Framework.Storage;
 
 public class StorageExample
 {
-    private StorageModule m_StorageModule;
+    private StorageModule m_storageModule;
 
     public void Init()
     {
-        m_StorageModule = ModuleManager.GetModule<StorageModule>();
+        m_storageModule = ModuleManager.GetModule<StorageModule>();
     }
 
     public void SaveAndLoad()
     {
         // 使用快捷方法读写（dataName在前，fileName是最后一个参数）
-        m_StorageModule.SetString("Language", "zh-CN", "Settings");
-        m_StorageModule.SetInt("Volume", 80, "Settings");
-        m_StorageModule.SetFloat("Sensitivity", 1.5f, "Settings");
-        m_StorageModule.SetBool("FullScreen", true, "Settings");
+        m_storageModule.SetString("Language", "zh-CN", "Settings");
+        m_storageModule.SetInt("Volume", 80, "Settings");
+        m_storageModule.SetFloat("Sensitivity", 1.5f, "Settings");
+        m_storageModule.SetBool("FullScreen", true, "Settings");
 
         // 数据会自动定期保存（默认5分钟）
         // 也可以立即保存
-        m_StorageModule.Save("Settings");
+        m_storageModule.Save("Settings");
     }
 
     public void LoadSettings()
     {
-        string language = m_StorageModule.GetString("Language", "Settings", "en");
-        int volume = m_StorageModule.GetInt("Volume", "Settings", 100);
-        float sensitivity = m_StorageModule.GetFloat("Sensitivity", "Settings", 1f);
-        bool fullScreen = m_StorageModule.GetBool("FullScreen", "Settings", true);
+        string language = m_storageModule.GetString("Language", "Settings", "en");
+        int volume = m_storageModule.GetInt("Volume", "Settings", 100);
+        float sensitivity = m_storageModule.GetFloat("Sensitivity", "Settings", 1f);
+        bool fullScreen = m_storageModule.GetBool("FullScreen", "Settings", true);
 
         Debug.Log($"语言: {language}, 音量: {volume}");
     }
@@ -196,7 +196,7 @@ public class StorageExample
 
 ```csharp
 // 获取或创建存储实例
-var playerStorage = m_StorageModule.GetOrCreateHelper("PlayerData");
+var playerStorage = m_storageModule.GetOrCreateHelper("PlayerData");
 
 // 写入数据
 playerStorage.SetString("PlayerName", "Hero");
@@ -221,16 +221,16 @@ playerStorage.Save();
 
 ```csharp
 // 不同用途使用不同文件
-m_StorageModule.GetOrCreateHelper("Settings");      // 设置数据
-m_StorageModule.GetOrCreateHelper("PlayerData");    // 玩家存档
-m_StorageModule.GetOrCreateHelper("GuideCache");    // 引导缓存
-m_StorageModule.GetOrCreateHelper("ServerList");    // 服务器列表
+m_storageModule.GetOrCreateHelper("Settings");      // 设置数据
+m_storageModule.GetOrCreateHelper("PlayerData");    // 玩家存档
+m_storageModule.GetOrCreateHelper("GuideCache");    // 引导缓存
+m_storageModule.GetOrCreateHelper("ServerList");    // 服务器列表
 
 // 删除不需要的存储文件
-m_StorageModule.RemoveHelper("OldData");
+m_storageModule.RemoveHelper("OldData");
 
 // 保存所有文件
-m_StorageModule.SaveAll();
+m_storageModule.SaveAll();
 ```
 
 ## 6. 目录结构

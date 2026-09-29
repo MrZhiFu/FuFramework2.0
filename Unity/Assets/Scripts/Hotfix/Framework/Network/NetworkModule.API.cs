@@ -95,10 +95,10 @@ namespace Hotfix.Framework.Network
 #else
 			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(channelName, networkChannelHelper, rpcTimeout);
 #endif
-			networkChannel.NetworkChannelConnected     += OnNetworkChannelConnected;
-			networkChannel.NetworkChannelClosed        += OnNetworkChannelClosed;
-			networkChannel.NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
-			networkChannel.NetworkChannelError         += OnNetworkChannelError;
+			networkChannel.m_NetworkChannelConnected     += OnNetworkChannelConnected;
+			networkChannel.m_NetworkChannelClosed        += OnNetworkChannelClosed;
+			networkChannel.m_NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
+			networkChannel.m_NetworkChannelError         += OnNetworkChannelError;
 			m_networkChannelDict.Add(channelName, networkChannel);
 			return networkChannel;
 		}
@@ -116,10 +116,10 @@ namespace Hotfix.Framework.Network
 		{
 			channelName.NotNullOrEmpty(nameof(channelName));
 			if (!m_networkChannelDict.TryGetValue(channelName ?? string.Empty, out var networkChannel)) return false;
-			networkChannel.NetworkChannelConnected     -= OnNetworkChannelConnected;
-			networkChannel.NetworkChannelClosed        -= OnNetworkChannelClosed;
-			networkChannel.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
-			networkChannel.NetworkChannelError         -= OnNetworkChannelError;
+			networkChannel.m_NetworkChannelConnected     -= OnNetworkChannelConnected;
+			networkChannel.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
+			networkChannel.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
+			networkChannel.m_NetworkChannelError         -= OnNetworkChannelError;
 			networkChannel.Shutdown();
 			return channelName != null && m_networkChannelDict.Remove(channelName);
 		}

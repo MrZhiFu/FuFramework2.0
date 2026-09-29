@@ -17,7 +17,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public static class ProtoMessageIdHandler
 	{
-		private static bool IsInitialized;
+		private static bool s_isInitialized;
 
 		/// <summary>
 		/// 根据消息ID获取请求的类型
@@ -97,7 +97,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static void Init()
 		{
-			if (IsInitialized) return;
+			if (s_isInitialized) return;
 
 			// 与原实现一致：先清空，使「注册失败后重试」不会残留半成品状态。
 			MessageIdRegistry.Reset();
@@ -106,7 +106,7 @@ namespace Hotfix.Framework.Network
 			ProtoMessageRegistry.RegisterAll();
 
 			// 扫描全部成功后才标记初始化完成，避免注册抛出重复ID异常后残留半成品状态。
-			IsInitialized = true;
+			s_isInitialized = true;
 		}
 	}
 }

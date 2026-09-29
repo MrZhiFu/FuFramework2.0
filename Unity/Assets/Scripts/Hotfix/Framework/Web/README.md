@@ -23,15 +23,15 @@ FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `Unity
 ┌─────────────────────────────────────────────────────────────┐
 │                       WebModule                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WaitingJsonQueue (Queue<WebJsonDataBase>)        │   │
+│  │  m_waitingJsonQueue (Queue<WebJsonDataBase>)        │   │
 │  │  - JSON 请求等待队列                                 │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_SendingJsonList (List<WebJsonDataBase>)          │   │
+│  │  m_sendingJsonList (List<WebJsonDataBase>)          │   │
 │  │  - JSON 正在处理的请求列表                           │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WaitingPbQueue / m_SendingPbList                 │   │
+│  │  m_waitingPbQueue / m_sendingPbList                 │   │
 │  │  - Pb 请求队列                                      │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -102,7 +102,7 @@ UniTask<WebBufferResult> PostToBytes(string url, Dictionary<string, object> from
 UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
 ```
 
-> **`CancellationToken` 必传（无默认值）**：所有请求方法要求调用方提供取消令牌——窗口等生命周期所有者传 `Token`，模块内部传模块自身 `m_Scope.Token`。
+> **`CancellationToken` 必传（无默认值）**：所有请求方法要求调用方提供取消令牌——窗口等生命周期所有者传 `Token`，模块内部传模块自身 `m_scope.Token`。
 > 调用方取消（如界面关闭）或模块销毁时，在途请求随之中止（抛 `OperationCanceledException`，调用方按需捕获）。
 
 ### 4.2 WebDataBase（基类）
@@ -501,4 +501,4 @@ Web/
 9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
 10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒
 11. **`Post<T>` 协议契约**：`Post<T>` 不做静默失败——响应消息头解析失败（`MessageHttpObject` 为空/Id 无效）、响应类型与 `T` 不匹配、反序列化失败时均抛 `InvalidOperationException`（含 URL 与期望/实际类型），返回的 `T` 恒非 null；调用方应 try-catch 或交由上层统一处理
-12. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_Scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）
+12. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）

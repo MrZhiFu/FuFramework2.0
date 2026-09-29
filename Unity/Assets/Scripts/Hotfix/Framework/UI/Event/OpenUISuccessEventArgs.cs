@@ -35,7 +35,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public OpenUISuccessEventArgs()
 		{
-			Win = null;
+			Win      = null;
 			UserData = null;
 		}
 
@@ -48,7 +48,7 @@ namespace Hotfix.Framework.UI
 		public static OpenUISuccessEventArgs Create(WinBase win, object userData)
 		{
 			var openUISuccessEventArgs = ReferencePool.Acquire<OpenUISuccessEventArgs>();
-			openUISuccessEventArgs.Win = win;
+			openUISuccessEventArgs.Win      = win;
 			openUISuccessEventArgs.UserData = userData;
 			return openUISuccessEventArgs;
 		}
@@ -58,7 +58,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public override void Clear()
 		{
-			Win = null;
+			Win      = null;
 			UserData = null;
 		}
 	}

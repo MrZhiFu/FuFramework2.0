@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 每秒更新
 		/// </summary>
-		protected internal virtual void OnPerSecondUpdate() { }
+		protected internal virtual void OnSecondUpdate() { }
 
 		/// <summary>
 		/// 释放

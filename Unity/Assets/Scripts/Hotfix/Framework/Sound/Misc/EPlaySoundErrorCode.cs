@@ -1,3 +1,5 @@
+// ReSharper disable once CheckNamespace
+
 namespace Hotfix.Framework.Sound
 {
 	/// <summary>

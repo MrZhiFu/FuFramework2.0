@@ -221,7 +221,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 匹配中文正则表达式
 		/// </summary>
-		private static readonly Regex CnReg = new(@"[\u4e00-\u9fa5]");
+		private static readonly Regex sr_cnReg = new(@"[\u4e00-\u9fa5]");
 
 		/// <summary>
 		/// 替换中文为空字符串
@@ -230,7 +230,7 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		public static string TrimZhCn(this string self)
 		{
-			self = CnReg.Replace(self, string.Empty);
+			self = sr_cnReg.Replace(self, string.Empty);
 			return self;
 		}
 
@@ -272,9 +272,9 @@ namespace Hotfix.Framework.Core
 			if (arr.Length <= 0)
 				return Array.Empty<int[]>();
 
-			int[][] ret = new int[arr.Length][];
+			var ret = new int[arr.Length][];
 
-			for (int i = 0; i < arr.Length; ++i)
+			for (var i = 0; i < arr.Length; ++i)
 				ret[i] = arr[i].SplitToIntArray(sep2);
 			return ret;
 		}

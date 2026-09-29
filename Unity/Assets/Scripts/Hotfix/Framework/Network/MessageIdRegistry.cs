@@ -55,39 +55,39 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 请求消息：消息ID &lt;-&gt; 类型
 		/// </summary>
-		private static readonly FuBidirectionalDictionary<int, Type> ReqDictionary = new();
+		private static readonly FuBidirectionalDictionary<int, Type> sr_reqDictionary = new();
 
 		/// <summary>
 		/// 响应/推送消息：消息ID &lt;-&gt; 类型
 		/// （原实现把 IResponseMessage 与 INotifyMessage 一并放入同一张表，这里保持一致）
 		/// </summary>
-		private static readonly FuBidirectionalDictionary<int, Type> RespDictionary = new();
+		private static readonly FuBidirectionalDictionary<int, Type> sr_respDictionary = new();
 
 		/// <summary>
 		/// 心跳消息类型集合。
 		/// 说明：IsHeartbeat 在每发一个包时都会被调用（默认包头处理器），
 		/// 使用 HashSet 避免线性查找开销。
 		/// </summary>
-		private static readonly HashSet<Type> HeartBeatTypes = new();
+		private static readonly HashSet<Type> sr_heartBeatTypes = new();
 
 		/// <summary>
 		/// 请求消息数量。
 		/// </summary>
-		public static int ReqCount => ReqDictionary.Count;
+		public static int ReqCount => sr_reqDictionary.Count;
 
 		/// <summary>
 		/// 响应/推送消息数量。
 		/// </summary>
-		public static int RespCount => RespDictionary.Count;
+		public static int RespCount => sr_respDictionary.Count;
 
 		/// <summary>
 		/// 清空全部注册数据（供初始化重试使用）。
 		/// </summary>
 		public static void Reset()
 		{
-			ReqDictionary.Clear();
-			RespDictionary.Clear();
-			HeartBeatTypes.Clear();
+			sr_reqDictionary.Clear();
+			sr_respDictionary.Clear();
+			sr_heartBeatTypes.Clear();
 		}
 
 		/// <summary>
@@ -103,22 +103,22 @@ namespace Hotfix.Framework.Network
 
 			if ((kind & EMessageKind.HeartBeat) != 0)
 			{
-				if (!HeartBeatTypes.Add(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
+				if (!sr_heartBeatTypes.Add(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
 			}
 
 			if ((kind & EMessageKind.Request) != 0)
 			{
 				// 请求
-				if (ReqDictionary.TryAdd(messageId, type)) return;
-				ReqDictionary.TryGetValueByKey(messageId, out var exist);
+				if (sr_reqDictionary.TryAdd(messageId, type)) return;
+				sr_reqDictionary.TryGetValueByKey(messageId, out var exist);
 				throw new InvalidOperationException($"请求Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? type.FullName}");
 			}
 
 			if ((kind & (EMessageKind.Response | EMessageKind.Notify)) != 0)
 			{
 				// 返回
-				if (RespDictionary.TryAdd(messageId, type)) return;
-				RespDictionary.TryGetValueByKey(messageId, out var exist);
+				if (sr_respDictionary.TryAdd(messageId, type)) return;
+				sr_respDictionary.TryGetValueByKey(messageId, out var exist);
 				throw new InvalidOperationException($"返回Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? type.FullName}");
 			}
 		}
@@ -128,7 +128,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static Type GetReqTypeById(int messageId)
 		{
-			ReqDictionary.TryGetValueByKey(messageId, out var value);
+			sr_reqDictionary.TryGetValueByKey(messageId, out var value);
 			return value;
 		}
 
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static int GetReqMessageIdByType(Type type)
 		{
-			ReqDictionary.TryGetKeyByValue(type, out var value);
+			sr_reqDictionary.TryGetKeyByValue(type, out var value);
 			return value;
 		}
 
@@ -146,7 +146,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static Type GetRespTypeById(int messageId)
 		{
-			RespDictionary.TryGetValueByKey(messageId, out var value);
+			sr_respDictionary.TryGetValueByKey(messageId, out var value);
 			return value;
 		}
 
@@ -155,13 +155,13 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static int GetRespMessageIdByType(Type type)
 		{
-			RespDictionary.TryGetKeyByValue(type, out var value);
+			sr_respDictionary.TryGetKeyByValue(type, out var value);
 			return value;
 		}
 
 		/// <summary>
 		/// 获取消息类型是否是心跳类型。
 		/// </summary>
-		public static bool IsHeartbeat(Type type) => type != null && HeartBeatTypes.Contains(type);
+		public static bool IsHeartbeat(Type type) => type != null && sr_heartBeatTypes.Contains(type);
 	}
 }

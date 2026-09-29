@@ -1,6 +1,7 @@
 using System;
 using FairyGUI;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>

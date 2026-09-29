@@ -120,7 +120,7 @@ namespace Hotfix.Framework.UI
 				}
 
 				// 创建界面实例对象
-				win    = new T();
+				win = new T();
 
 				// 键统一：对象池的登记键（WinObject.Create 用 win.WinName）与查询键必须一致。
 				// 上面的 Spawn 只能用类型名（生成器保证与 WinName 相同）；一旦二者不一致，

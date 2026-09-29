@@ -580,7 +580,7 @@ namespace Hotfix.Framework.Core
 			/// byte[] buffer = new byte[10];
 			/// Utility.BitConverter.Float2Bytes(3.14f, buffer);
 			/// </example>
-			public static unsafe void Float2Bytes(float value, byte[] buffer) => Float2Bytes(value, buffer, 0);
+			public static void Float2Bytes(float value, byte[] buffer) => Float2Bytes(value, buffer, 0);
 
 			/// <summary>
 			/// 以字节数组的形式获取指定的单精度浮点值。
@@ -649,7 +649,7 @@ namespace Hotfix.Framework.Core
 			/// byte[] buffer = new byte[16];
 			/// Utility.BitConverter.Double2Bytes(3.14159, buffer);
 			/// </example>
-			public static unsafe void Double2Bytes(double value, byte[] buffer) => Double2Bytes(value, buffer, 0);
+			public static void Double2Bytes(double value, byte[] buffer) => Double2Bytes(value, buffer, 0);
 
 			/// <summary>
 			/// 以字节数组的形式获取指定的双精度浮点值。

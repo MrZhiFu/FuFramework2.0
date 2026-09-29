@@ -269,7 +269,7 @@ namespace Hotfix.Framework.Asset
 			List<LoadKey> matchedKeys = null;
 			foreach (var key in m_handleDict.Keys)
 			{
-				if (key.Path == path)
+				if (key.m_Path == path)
 				{
 					matchedKeys ??= new List<LoadKey>();
 					matchedKeys.Add(key);
@@ -311,10 +311,10 @@ namespace Hotfix.Framework.Asset
 				handle.Release();
 
 				// 尝试卸载资源，即引用计数为零时，才会真正卸载资源
-				m_assetModule.UnloadAsset(key.Path);
+				m_assetModule.UnloadAsset(key.m_Path);
 
 				m_handleDict.Remove(key);
-				FuLogger.LogInfo($"[AssetLoadRegister]释放{key.Path}资源完成.");
+				FuLogger.LogInfo($"[AssetLoadRegister]释放{key.m_Path}资源完成.");
 			}
 		}
 

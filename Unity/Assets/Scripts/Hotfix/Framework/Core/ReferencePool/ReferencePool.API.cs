@@ -15,8 +15,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 获取引用池的数量。
 		/// </summary>
-		// ReSharper disable once InconsistentlySynchronizedField
-		public static int Count => m_referenceCollectionDict.Count;
+		public static int Count => sr_referenceCollectionDict.Count;
 
 		/// <summary>
 		/// 从引用池获取引用。
@@ -91,9 +90,9 @@ namespace Hotfix.Framework.Core
 			if (refType == null) throw new InvalidOperationException("[ReferencePool] 引用类型为空.");
 
 			// 与 ReferencePool.cs 中的 m_referenceCollectionDict 同属一个 partial 类，可直接访问其私有字段
-			lock (m_referenceCollectionDict)
+			lock (sr_referenceCollectionDict)
 			{
-				return m_referenceCollectionDict.TryGetValue(refType, out referenceCollection);
+				return sr_referenceCollectionDict.TryGetValue(refType, out referenceCollection);
 			}
 		}
 
@@ -107,10 +106,10 @@ namespace Hotfix.Framework.Core
 
 			ReferencePoolInfo[] results;
 
-			lock (m_referenceCollectionDict)
+			lock (sr_referenceCollectionDict)
 			{
-				results = new ReferencePoolInfo[m_referenceCollectionDict.Count];
-				foreach (var (type, refCollection) in m_referenceCollectionDict)
+				results = new ReferencePoolInfo[sr_referenceCollectionDict.Count];
+				foreach (var (type, refCollection) in sr_referenceCollectionDict)
 				{
 					results[index++] = new ReferencePoolInfo(type, refCollection.UnusedReferenceCount, refCollection.UsingReferenceCount,
 						refCollection.AcquireReferenceCount, refCollection.ReleaseReferenceCount,

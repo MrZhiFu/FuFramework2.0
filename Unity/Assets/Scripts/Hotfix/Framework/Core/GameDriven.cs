@@ -19,28 +19,28 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 框架模块帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.Update。
 		/// </summary>
-		public Action<float, float> OnUpdate;
+		public Action<float, float> m_OnUpdate;
 
 		/// <summary>
 		/// 框架模块延迟帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.LateUpdate。
 		/// </summary>
-		public Action<float, float> OnLateUpdate;
+		public Action<float, float> m_OnLateUpdate;
 
 		/// <summary>
 		/// 框架模块固定帧更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.FixedUpdate。
 		/// </summary>
-		public Action OnFixedUpdate;
+		public Action m_OnFixedUpdate;
 
 		/// <summary>
 		/// 框架模块每秒更新委托。启动完成后由 Hotfix 侧挂接，指向 ModuleManager.PerSecondUpdate。
 		/// </summary>
-		public Action OnPerSecondUpdate;
+		public Action m_OnPerSecondUpdate;
 
 		/// <summary>
 		/// 释放全部模块委托。由 Hotfix 侧挂接，指向 ModuleManager.Dispose。
 		/// 仅负责模块自身的同步清理，不包含 ReferencePool.ClearAll（后者在排水之后调用，仅释放闲置引用）。
 		/// </summary>
-		public Action DisposeModules;
+		public Action m_DisposeModules;
 
 		/// <summary>
 		/// 每秒更新累计时间
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void Update()
 		{
-			OnUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
+			m_OnUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
 
 			// 每秒驱动用无缩放时间：暂停（timeScale = 0）时仍需触发（心跳/超时类逻辑），
 			// 且用 while 补齐卡顿跨过的整数秒，避免漏触发。
@@ -75,7 +75,7 @@ namespace Hotfix.Framework.Core
 			while (m_perSecondUpdateTimer >= 1f)
 			{
 				m_perSecondUpdateTimer -= 1f;
-				OnPerSecondUpdate?.Invoke();
+				m_OnPerSecondUpdate?.Invoke();
 			}
 		}
 
@@ -84,7 +84,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void LateUpdate()
 		{
-			OnLateUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
+			m_OnLateUpdate?.Invoke(Time.deltaTime, Time.unscaledDeltaTime);
 		}
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void FixedUpdate()
 		{
-			OnFixedUpdate?.Invoke();
+			m_OnFixedUpdate?.Invoke();
 		}
 
 		/// <summary>
@@ -105,8 +105,8 @@ namespace Hotfix.Framework.Core
 
 			m_isDisposed = true;
 
-			var disposeModules = DisposeModules;
-			DisposeModules = null;
+			var disposeModules = m_DisposeModules;
+			m_DisposeModules = null;
 			disposeModules?.Invoke();
 		}
 
@@ -121,11 +121,11 @@ namespace Hotfix.Framework.Core
 
 			DisposeModulesOnce();
 
-			DisposeModules    = null;
-			OnUpdate          = null;
-			OnLateUpdate      = null;
-			OnFixedUpdate     = null;
-			OnPerSecondUpdate = null;
+			m_DisposeModules    = null;
+			m_OnUpdate          = null;
+			m_OnLateUpdate      = null;
+			m_OnFixedUpdate     = null;
+			m_OnPerSecondUpdate = null;
 
 			base.OnDispose();
 		}

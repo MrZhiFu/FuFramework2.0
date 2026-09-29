@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 无符号整型的大小
 		/// </summary>
-		public const int UIntSize = sizeof(uint);
+		public const int U_INT_SIZE = sizeof(uint);
 
 		/// <summary>
 		/// 短整型的大小
@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 无符号短整型的大小
 		/// </summary>
-		public const int UShortSize = sizeof(ushort);
+		public const int U_SHORT_SIZE = sizeof(ushort);
 
 		/// <summary>
 		/// 长整型的大小
@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Core
 
 			var     span  = buffer.AsSpan();
 			ref var local = ref span;
-			var start = offset;
+			var     start = offset;
 			BinaryPrimitives.WriteUInt32BigEndian(local.Slice(start, local.Length - start), value);
 			offset += INT_SIZE;
 		}
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.Core
 			{
 				Span<byte>     span  = buffer.AsSpan();
 				ref Span<byte> local = ref span;
-				var start = offset;
+				var            start = offset;
 				BinaryPrimitives.WriteUInt16BigEndian(local.Slice(start, local.Length - start), value);
 				offset += 2;
 			}
@@ -400,16 +400,16 @@ namespace Hotfix.Framework.Core
 		/// <exception cref="Exception"></exception>
 		public static uint ReadUInt(this byte[] buffer, ref int offset)
 		{
-			if (offset < 0 || offset + UIntSize > buffer.Length)
+			if (offset < 0 || offset + U_INT_SIZE > buffer.Length)
 			{
 				throw new Exception("buffer read out of index");
 			}
 
 			Span<byte>     span  = buffer.AsSpan();
 			ref Span<byte> local = ref span;
-			var start = offset;
-			var num   = (int)BinaryPrimitives.ReadUInt32BigEndian(local.Slice(start, local.Length - start));
-			offset += UIntSize;
+			var            start = offset;
+			var            num   = (int)BinaryPrimitives.ReadUInt32BigEndian(local.Slice(start, local.Length - start));
+			offset += U_INT_SIZE;
 			return (uint)num;
 		}
 
@@ -442,17 +442,17 @@ namespace Hotfix.Framework.Core
 		/// <returns>返回读取的16位无符号整数。</returns>
 		public static ushort ReadUShort(this byte[] buffer, ref int offset)
 		{
-			if (offset < 0 || offset + UShortSize > buffer.Length)
+			if (offset < 0 || offset + U_SHORT_SIZE > buffer.Length)
 			{
 				throw new Exception("buffer read out of index");
 			}
 
 			Span<byte>     span  = buffer.AsSpan();
 			ref Span<byte> local = ref span;
-			var start = offset;
-			var num   = BinaryPrimitives.ReadUInt16BigEndian(local.Slice(start, local.Length - start));
-			offset += UShortSize;
-			return (ushort)num;
+			var            start = offset;
+			var            num   = BinaryPrimitives.ReadUInt16BigEndian(local.Slice(start, local.Length - start));
+			offset += U_SHORT_SIZE;
+			return num;
 		}
 
 		/// <summary>
@@ -682,16 +682,19 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		public static string ToArrayString(this byte[] bytes)
 		{
-			StringBuilder.Clear();
-			foreach (byte b in bytes)
+			sr_stringBuilder.Clear();
+			foreach (var b in bytes)
 			{
-				StringBuilder.Append(b + " ");
+				sr_stringBuilder.Append(b + " ");
 			}
 
-			return StringBuilder.ToString();
+			return sr_stringBuilder.ToString();
 		}
 
-		private static readonly StringBuilder StringBuilder = new StringBuilder();
+		/// <summary>
+		/// 缓存字符串构建器实例
+		/// </summary>
+		private static readonly StringBuilder sr_stringBuilder = new();
 
 		/// <summary>
 		/// 将字节转换为十六进制字符串。
@@ -710,13 +713,13 @@ namespace Hotfix.Framework.Core
 		/// <returns>表示字节数组的十六进制字符串。</returns>
 		public static string ToHex(this byte[] bytes)
 		{
-			StringBuilder.Clear();
+			sr_stringBuilder.Clear();
 			foreach (byte b in bytes)
 			{
-				StringBuilder.Append(b.ToString("X2"));
+				sr_stringBuilder.Append(b.ToString("X2"));
 			}
 
-			return StringBuilder.ToString();
+			return sr_stringBuilder.ToString();
 		}
 
 		/// <summary>
@@ -727,13 +730,13 @@ namespace Hotfix.Framework.Core
 		/// <returns>表示字节数组的十六进制字符串。</returns>
 		public static string ToHex(this byte[] bytes, string format)
 		{
-			StringBuilder.Clear();
+			sr_stringBuilder.Clear();
 			foreach (byte b in bytes)
 			{
-				StringBuilder.Append(b.ToString(format));
+				sr_stringBuilder.Append(b.ToString(format));
 			}
 
-			return StringBuilder.ToString();
+			return sr_stringBuilder.ToString();
 		}
 
 		/// <summary>
@@ -745,13 +748,13 @@ namespace Hotfix.Framework.Core
 		/// <returns>表示指定范围内字节的十六进制字符串。</returns>
 		public static string ToHex(this byte[] bytes, int offset, int count)
 		{
-			StringBuilder.Clear();
+			sr_stringBuilder.Clear();
 			for (int i = offset; i < offset + count; ++i)
 			{
-				StringBuilder.Append(bytes[i].ToString("X2"));
+				sr_stringBuilder.Append(bytes[i].ToString("X2"));
 			}
 
-			return StringBuilder.ToString();
+			return sr_stringBuilder.ToString();
 		}
 
 		/// <summary>

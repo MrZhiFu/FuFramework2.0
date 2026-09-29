@@ -46,7 +46,7 @@ namespace Hotfix
 		/// <summary>
 		/// 表管理器实例（语言切换刷新用，每次启动/热重启由 LoadConfigAsync 覆盖）
 		/// </summary>
-		private static TableManager m_tableManager;
+		private static TableManager s_tableManager;
 
 		/// <summary>
 		/// 启动入口
@@ -100,11 +100,11 @@ namespace Hotfix
 		/// </summary>
 		private static void HookGameDriven()
 		{
-			GameDriven.Instance.OnUpdate          = ModuleManager.Update;
-			GameDriven.Instance.OnLateUpdate      = ModuleManager.LateUpdate;
-			GameDriven.Instance.OnFixedUpdate     = ModuleManager.FixedUpdate;
-			GameDriven.Instance.OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
-			GameDriven.Instance.DisposeModules    = ModuleManager.Dispose;
+			GameDriven.Instance.m_OnUpdate          = ModuleManager.Update;
+			GameDriven.Instance.m_OnLateUpdate      = ModuleManager.LateUpdate;
+			GameDriven.Instance.m_OnFixedUpdate     = ModuleManager.FixedUpdate;
+			GameDriven.Instance.m_OnPerSecondUpdate = ModuleManager.PerSecondUpdate;
+			GameDriven.Instance.m_DisposeModules    = ModuleManager.Dispose;
 		}
 
 		/// <summary>
@@ -191,7 +191,7 @@ namespace Hotfix
 		private static async UniTask<TableManager> LoadConfigAsync()
 		{
 			// 热重启：退订旧实例的语言切换事件，避免重复刷新与委托引用导致旧实例无法回收
-			m_tableManager?.UnsubscribeLanguageChange();
+			s_tableManager?.UnsubscribeLanguageChange();
 
 			var tableManager = new TableManager();
 			tableManager.Init(ConfigModule.Instance);
@@ -206,7 +206,7 @@ namespace Hotfix
 
 			// 订阅语言切换事件并登记实例（退订/覆盖次序固定，勿在别处重复登记）
 			tableManager.SubscribeLanguageChange();
-			m_tableManager = tableManager;
+			s_tableManager = tableManager;
 			return tableManager;
 		}
 

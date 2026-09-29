@@ -133,7 +133,7 @@ loader.Dispose();
 ```
 
 > **实例化释放契约**：`AssetLoadRegister.InstantiateAsync` 返回的实例销毁时**不会自动释放**资源——
-> 句柄缓存在 loader 的 `m_HandleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
+> 句柄缓存在 loader 的 `m_handleDict` 中，释放依赖业务调用 `loader.Unload(path)` 或整体 `loader.UnloadAll()`/`loader.Dispose()`（loader 生命周期管理）。
 > 与 `AssetModule.InstantiateAsync` 不同（后者实例销毁时须调用 `ReleaseInstantiate(result)`，按引用计数释放，且自动防跨代际误释放）。
 
 > **可取消异步**：`AssetLoadRegister` 与 `AssetModule` 遵循同一套 `ICancelAsync` 契约（`Token` + `CancelAsync`）——
@@ -275,13 +275,13 @@ Asset/
 ### 通用注意事项
 
 1. **句柄释放契约**：`LoadAssetAsync` 系列返回的句柄必须在使用完毕后 `Release()`，否则 provider 引用计数不归零、资源永不卸载。`AssetModule.InstantiateAsync` 返回的实例对象销毁时必须调用 `ReleaseInstantiate(result)`（`result` 携带生命周期 `Token`，重启后旧实例释放会被 Token 校验识别并忽略，不会误伤新生命周期同路径引用）；`AssetLoadRegister.UnloadAll()`/`Dispose()` 会释放其加载的所有句柄。
-2. **并发去重与句柄归属**：`AssetLoadRegister` 同一路径+类型并发加载共享 `UniTaskCompletionSource`（其 `Task` 可被多个调用方 await），失败会传播给所有等待者；切勿把 `m_LoadingTasks` 中存储的完成源直接替换为 async 方法的返回值（async 方法返回的 `UniTask` 只能 await 一次）。
-   `AssetModule.InstantiateAsync` **不做模块级共享**——每个调用方各自 `LoadAssetAsync` 并持有自己的句柄，由 YooAsset 的 provider 去重保证不重复 IO；`m_InstantiateRefDict` 的引用计数是句柄释放权的**唯一**归属者。早期实现用共享句柄 + `m_InstantiateLoadingTasks` 去重，但共享一个句柄会让「谁有权释放」失去归属者：首个恢复的等待者会先释放，后恢复的等待者此时尚未登记，于是拿到已失效句柄而假失败，故已移除。
+2. **并发去重与句柄归属**：`AssetLoadRegister` 同一路径+类型并发加载共享 `UniTaskCompletionSource`（其 `Task` 可被多个调用方 await），失败会传播给所有等待者；切勿把 `m_loadingTasks` 中存储的完成源直接替换为 async 方法的返回值（async 方法返回的 `UniTask` 只能 await 一次）。
+   `AssetModule.InstantiateAsync` **不做模块级共享**——每个调用方各自 `LoadAssetAsync` 并持有自己的句柄，由 YooAsset 的 provider 去重保证不重复 IO；`m_instantiateRefDict` 的引用计数是句柄释放权的**唯一**归属者。早期实现用共享句柄 + `m_instantiateLoadingTasks` 去重，但共享一个句柄会让「谁有权释放」失去归属者：首个恢复的等待者会先释放，后恢复的等待者此时尚未登记，于是拿到已失效句柄而假失败，故已移除。
 3. **失败句柄透传**：加载失败时（路径无效、类型不匹配等）包装方法返回失败的句柄而非抛异常（与 YooAsset `OperationAwaiter` "业务失败不视为异常" 契约一致），调用方须检查 `handle.Status == EOperationStatus.Succeeded` 后再取资源。
 4. **取消与重启**：异步加载方法 **`CancellationToken` 参数必传**（调用方生命周期令牌），内部与模块自身 Token **linked 竞速**——调用方取消（如界面关闭）或模块销毁（`OnDispose`）任一触发即中止（释放句柄 + 卸载资源，抛 `OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用。取消的底层语义边界（在途下载是否中止、bundle 何时卸载）详见 §3「取消语义边界」。
 5. **`AutoUnloadBundleWhenUnused` 为 false**（项目默认）：句柄释放不会自动卸载 bundle，需配合 `UnloadAsset` 显式卸载。
 6. **YooAssets 未初始化防御**：`YooAssets.Destroy()` 后调用卸载方法（`UnloadAsset`）及查询方法（`GetAssetInfo`/`HasAssetPath`）时**不抛异常**（返回默认值/直接返回）。
-7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_Disposed`/`m_Unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。
+7. **`AssetLoadRegister` 废弃/卸载防护**：`Dispose()`/`UnloadAll()` 后在途加载任务完成时检测到 `m_disposed`/`m_unloaded`，会释放句柄并抛 `ObjectDisposedException`，不再写回缓存（防止句柄无人释放，或 ref→0 后资源被重新缓存）。
 8. **不要假设裸 `await handle` 是安全/免异常的**：`await handle`（不写 `ToUniTask`）会绑定到 YooAsset 的**实例方法** `HandleBase.GetAwaiter()`，而它在句柄无效时会先经 `CheckValidWithWarning()` 判定失败并 **抛 `InvalidOperationException`**，并非"安全完成"。
    `HandleBaseExtensions` 上游版本里的 `GetAwaiter` 扩展曾试图在 `!handle.IsValid` 时返回 `CompletedTask`，但它被实例方法遮蔽（C# 中实例方法优先于扩展方法），**从来没有生效过**，故已移除。
    需要取消能力、或需要"句柄无效时安全完成"时，一律显式调用 `handle.ToUniTask(cancellationToken: token, cancelImmediately: true)`。

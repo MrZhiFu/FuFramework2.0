@@ -15,12 +15,12 @@ namespace Hotfix.Framework.Web
 		/// <summary>
 		/// 请求任务的完成源，用于异步操作的控制和结果返回。
 		/// </summary>
-		public readonly UniTaskCompletionSource<WebBufferResult> CompletionSource;
+		public readonly UniTaskCompletionSource<WebBufferResult> m_CompletionSource;
 
 		/// <summary>
 		/// 要发送的 Protocol Buffer 序列化后的字节数组数据。
 		/// </summary>
-		public readonly byte[] SendData;
+		public readonly byte[] m_SendData;
 
 		/// <summary>
 		/// 初始化 Web Pb 请求数据。
@@ -34,8 +34,8 @@ namespace Hotfix.Framework.Web
 			: base(false, url, token, userData)
 		{
 			source.CheckNull(nameof(source));
-			SendData         = sendData;
-			CompletionSource = source;
+			m_SendData         = sendData;
+			m_CompletionSource = source;
 		}
 
 		/// <summary>
@@ -44,26 +44,26 @@ namespace Hotfix.Framework.Web
 		/// <param name="request">已完成的请求。</param>
 		public override void Complete(UnityWebRequest request)
 		{
-			CompletionSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
+			m_CompletionSource.TrySetResult(new WebBufferResult(UserData, request.downloadHandler.data));
 		}
 
 		/// <summary>
 		/// 请求取消：取消未完成的任务。
 		/// </summary>
-		public override void CompleteCanceled() => CompletionSource.TrySetCanceled();
+		public override void CompleteCanceled() => m_CompletionSource.TrySetCanceled();
 
 		/// <summary>
 		/// 请求失败：向任务完成源写入异常。
 		/// </summary>
 		/// <param name="exception">异常。</param>
-		public override void CompleteError(Exception exception) => CompletionSource.TrySetException(exception);
+		public override void CompleteError(Exception exception) => m_CompletionSource.TrySetException(exception);
 
 		/// <summary>
 		/// 释放资源，取消未完成的任务。
 		/// </summary>
 		public override void Dispose()
 		{
-			CompletionSource?.TrySetCanceled();
+			m_CompletionSource?.TrySetCanceled();
 			base.Dispose();
 		}
 	}

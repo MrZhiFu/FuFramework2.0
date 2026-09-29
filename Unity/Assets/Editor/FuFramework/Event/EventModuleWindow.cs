@@ -69,27 +69,27 @@ namespace FuFramework.Event.Editor
 			/// <summary>
 			/// handler 方法元数据（跳转源码用；仅 Play 会话内有效，快照重建时刷新）
 			/// </summary>
-			public MethodInfo Method;
+			public MethodInfo m_Method;
 
 			/// <summary>
 			/// handler 方法名（含泛型反引号时保持原样）
 			/// </summary>
-			public string MethodName;
+			public string m_MethodName;
 
 			/// <summary>
 			/// 方法所属类型全名
 			/// </summary>
-			public string DeclaringTypeFullName;
+			public string m_DeclaringTypeFullName;
 
 			/// <summary>
 			/// 是否静态方法（无目标对象）
 			/// </summary>
-			public bool IsStatic;
+			public bool m_IsStatic;
 
 			/// <summary>
 			/// 实例 handler 的目标对象类型名（静态为空串）
 			/// </summary>
-			public string TargetTypeName;
+			public string m_TargetTypeName;
 		}
 
 		/// <summary>
@@ -100,7 +100,7 @@ namespace FuFramework.Event.Editor
 			/// <summary>
 			/// 事件 ID
 			/// </summary>
-			public string EventId;
+			public string m_EventId;
 
 			/// <summary>
 			/// 该 ID 下的 handler 行
@@ -116,22 +116,22 @@ namespace FuFramework.Event.Editor
 			/// <summary>
 			/// 队列序号（从 1 开始）
 			/// </summary>
-			public int Index;
+			public int m_Index;
 
 			/// <summary>
 			/// 事件 ID
 			/// </summary>
-			public string EventId;
+			public string m_EventId;
 
 			/// <summary>
 			/// 发送者类型名（null sender 显示为空串）
 			/// </summary>
-			public string SenderTypeName;
+			public string m_SenderTypeName;
 
 			/// <summary>
 			/// 事件参数类型名
 			/// </summary>
-			public string ArgsTypeName;
+			public string m_ArgsTypeName;
 		}
 
 		#endregion
@@ -262,7 +262,7 @@ namespace FuFramework.Event.Editor
 			m_buildingGroup = null;
 
 			// 订阅组按事件 ID 升序，保证展示顺序稳定
-			m_handlerGroups.Sort((a, b) => string.CompareOrdinal(a.EventId, b.EventId));
+			m_handlerGroups.Sort((a, b) => string.CompareOrdinal(a.m_EventId, b.m_EventId));
 		}
 
 		/// <summary>
@@ -303,7 +303,7 @@ namespace FuFramework.Event.Editor
 		{
 			foreach (var group in m_handlerGroups)
 			{
-				m_groupFoldoutStates[group.EventId] = true;
+				m_groupFoldoutStates[group.m_EventId] = true;
 			}
 		}
 
@@ -314,7 +314,7 @@ namespace FuFramework.Event.Editor
 		{
 			foreach (var group in m_handlerGroups)
 			{
-				m_groupFoldoutStates[group.EventId] = false;
+				m_groupFoldoutStates[group.m_EventId] = false;
 			}
 		}
 
@@ -355,14 +355,14 @@ namespace FuFramework.Event.Editor
 			// 搜索过滤：事件 ID 或组内任一 handler 匹配才展示
 			if (!MatchSearch(group)) return;
 
-			if (!m_groupFoldoutStates.TryGetValue(group.EventId, out var isOpen))
+			if (!m_groupFoldoutStates.TryGetValue(group.m_EventId, out var isOpen))
 			{
 				isOpen = true;
-				m_groupFoldoutStates[group.EventId] = true;
+				m_groupFoldoutStates[group.m_EventId] = true;
 			}
 
-			m_groupFoldoutStates[group.EventId] = EditorGUILayout.Foldout(isOpen, $"{group.EventId}  ({group.Rows.Count} 个 handler)", true);
-			if (!m_groupFoldoutStates[group.EventId]) return;
+			m_groupFoldoutStates[group.m_EventId] = EditorGUILayout.Foldout(isOpen, $"{group.m_EventId}  ({group.Rows.Count} 个 handler)", true);
+			if (!m_groupFoldoutStates[group.m_EventId]) return;
 
 			EditorGUILayout.BeginVertical("box");
 			foreach (var row in group.Rows)
@@ -381,16 +381,16 @@ namespace FuFramework.Event.Editor
 		{
 			EditorGUILayout.BeginHorizontal();
 
-			GUILayout.Label(row.MethodName, GUILayout.MinWidth(180));
+			GUILayout.Label(row.m_MethodName, GUILayout.MinWidth(180));
 			DrawColumnSeparator();
-			GUILayout.Label(row.DeclaringTypeFullName, GUILayout.MinWidth(200));
+			GUILayout.Label(row.m_DeclaringTypeFullName, GUILayout.MinWidth(200));
 			DrawColumnSeparator();
-			GUILayout.Label(row.IsStatic ? "静态" : $"实例({row.TargetTypeName})", GUILayout.MinWidth(120));
+			GUILayout.Label(row.m_IsStatic ? "静态" : $"实例({row.m_TargetTypeName})", GUILayout.MinWidth(120));
 			GUILayout.FlexibleSpace();
 
 			if (GUILayout.Button("跳转", GUILayout.Width(44)))
 			{
-				OpenHandlerSource(row.Method);
+				OpenHandlerSource(row.m_Method);
 			}
 
 			EditorGUILayout.EndHorizontal();
@@ -403,12 +403,12 @@ namespace FuFramework.Event.Editor
 		{
 			if (string.IsNullOrEmpty(m_searchFilter)) return true;
 
-			if (group.EventId.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
+			if (group.m_EventId.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
 
 			foreach (var row in group.Rows)
 			{
-				if (row.MethodName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
-				if (row.DeclaringTypeFullName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
+				if (row.m_MethodName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
+				if (row.m_DeclaringTypeFullName.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase)) return true;
 			}
 
 			return false;
@@ -437,7 +437,7 @@ namespace FuFramework.Event.Editor
 				return;
 			}
 
-			// 声明行正则：方法名同行前方需存在访问/函数修饰符，天然排除调用点（xxx.MethodName(、var a = MethodName( 等）
+			// 声明行正则：方法名同行前方需存在访问/函数修饰符，天然排除调用点（xxx.m_MethodName(、var a = m_MethodName( 等）
 			var declarationPattern = new Regex(
 				@"\b(public|private|protected|internal|static|async|override|virtual|sealed|new)\b[^;{=]*\b" + Regex.Escape(method.Name) + @"\s*\(",
 				RegexOptions.Compiled);
@@ -600,10 +600,10 @@ namespace FuFramework.Event.Editor
 				foreach (var row in m_eventRows)
 				{
 					EditorGUILayout.BeginHorizontal();
-					GUILayout.Label(row.Index.ToString(), GUILayout.Width(40));
-					GUILayout.Label(row.EventId, GUILayout.MinWidth(220));
-					GUILayout.Label(string.IsNullOrEmpty(row.SenderTypeName) ? "(null)" : row.SenderTypeName, GUILayout.MinWidth(160));
-					GUILayout.Label(row.ArgsTypeName, GUILayout.MinWidth(200));
+					GUILayout.Label(row.m_Index.ToString(), GUILayout.Width(40));
+					GUILayout.Label(row.m_EventId, GUILayout.MinWidth(220));
+					GUILayout.Label(string.IsNullOrEmpty(row.m_SenderTypeName) ? "(null)" : row.m_SenderTypeName, GUILayout.MinWidth(160));
+					GUILayout.Label(row.m_ArgsTypeName, GUILayout.MinWidth(200));
 					EditorGUILayout.EndHorizontal();
 				}
 			}
@@ -647,7 +647,7 @@ namespace FuFramework.Event.Editor
 		private void HandlerEntry<T>(string id, EventHandler<T> handler) where T : EventArgs
 		{
 			// 事件 ID 变化时切换当前分组（ForEachHandler 按 id 连续枚举同一事件的多 handler，但不依赖该前提：显式查重）
-			if (m_buildingGroup == null || m_buildingGroup.EventId != id)
+			if (m_buildingGroup == null || m_buildingGroup.m_EventId != id)
 			{
 				m_buildingGroup = FindOrAddGroup(id);
 			}
@@ -655,11 +655,11 @@ namespace FuFramework.Event.Editor
 			var method = handler.Method;
 			m_buildingGroup.Rows.Add(new HandlerRow
 			{
-				Method                = method,
-				MethodName            = method.Name,
-				DeclaringTypeFullName = method.DeclaringType?.FullName ?? "(unknown)",
-				IsStatic              = handler.Target == null,
-				TargetTypeName        = handler.Target?.GetType().Name ?? string.Empty,
+				m_Method                = method,
+				m_MethodName            = method.Name,
+				m_DeclaringTypeFullName = method.DeclaringType?.FullName ?? "(unknown)",
+				m_IsStatic              = handler.Target == null,
+				m_TargetTypeName        = handler.Target?.GetType().Name ?? string.Empty,
 			});
 		}
 
@@ -671,10 +671,10 @@ namespace FuFramework.Event.Editor
 		{
 			m_eventRows.Add(new EventRow
 			{
-				Index          = m_eventRows.Count + 1,
-				EventId        = m_eventIdProperty?.GetValue(eArgs) as string ?? "(unknown)",
-				SenderTypeName = sender?.GetType().Name ?? string.Empty,
-				ArgsTypeName   = eArgs?.GetType().Name ?? "(null)",
+				m_Index          = m_eventRows.Count + 1,
+				m_EventId        = m_eventIdProperty?.GetValue(eArgs) as string ?? "(unknown)",
+				m_SenderTypeName = sender?.GetType().Name ?? string.Empty,
+				m_ArgsTypeName   = eArgs?.GetType().Name ?? "(null)",
 			});
 		}
 
@@ -685,10 +685,10 @@ namespace FuFramework.Event.Editor
 		{
 			for (var i = 0; i < m_handlerGroups.Count; i++)
 			{
-				if (m_handlerGroups[i].EventId == id) return m_handlerGroups[i];
+				if (m_handlerGroups[i].m_EventId == id) return m_handlerGroups[i];
 			}
 
-			var group = new HandlerGroup { EventId = id };
+			var group = new HandlerGroup { m_EventId = id };
 			m_handlerGroups.Add(group);
 			return group;
 		}

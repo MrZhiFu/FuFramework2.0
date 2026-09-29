@@ -22,12 +22,12 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 缓存字节数组。
 			/// </summary>
-			private static readonly byte[] CachedBytes = new byte[CACHED_BYTES_LENGTH];
+			private static readonly byte[] sr_cachedBytes = new byte[CACHED_BYTES_LENGTH];
 
 			/// <summary>
 			/// Crc32算法对象。
 			/// </summary>
-			private static readonly Crc32 CRC32 = new();
+			private static readonly Crc32 sr_crc32 = new();
 
 			/// <summary>
 			/// 获取二进制流的使用CRC32算法后的哈希值
@@ -53,11 +53,11 @@ namespace Hotfix.Framework.Core
 					throw new ArgumentNullException(nameof(bytes));
 
 				if (offset < 0 || length < 0 || offset + length > bytes.Length)
-					throw new ArgumentOutOfRangeException("二进制流的偏移或长度不正确.");
+					throw new ArgumentOutOfRangeException();
 
-				CRC32.HashCore(bytes, offset, length);
-				var result = (int)CRC32.HashFinal();
-				CRC32.Initialize();
+				sr_crc32.HashCore(bytes, offset, length);
+				var result = (int)sr_crc32.HashFinal();
+				sr_crc32.Initialize();
 				return result;
 			}
 
@@ -72,16 +72,16 @@ namespace Hotfix.Framework.Core
 
 				while (true)
 				{
-					var bytesRead = stream.Read(CachedBytes, 0, CACHED_BYTES_LENGTH);
+					var bytesRead = stream.Read(sr_cachedBytes, 0, CACHED_BYTES_LENGTH);
 					if (bytesRead > 0)
-						CRC32.HashCore(CachedBytes, 0, bytesRead);
+						sr_crc32.HashCore(sr_cachedBytes, 0, bytesRead);
 					else
 						break;
 				}
 
-				var result = (int)CRC32.HashFinal();
-				CRC32.Initialize();
-				Array.Clear(CachedBytes, 0, CACHED_BYTES_LENGTH);
+				var result = (int)sr_crc32.HashFinal();
+				sr_crc32.Initialize();
+				Array.Clear(sr_cachedBytes, 0, CACHED_BYTES_LENGTH);
 				return result;
 			}
 
@@ -140,29 +140,29 @@ namespace Hotfix.Framework.Core
 				var codeIndex = 0;
 				while (true)
 				{
-					var bytesRead = stream.Read(CachedBytes, 0, CACHED_BYTES_LENGTH);
+					var bytesRead = stream.Read(sr_cachedBytes, 0, CACHED_BYTES_LENGTH);
 					if (bytesRead > 0)
 					{
 						if (length > 0)
 						{
 							for (var i = 0; i < bytesRead && i < length; i++)
 							{
-								CachedBytes[i] ^= code[codeIndex++];
-								codeIndex      %= codeLength;
+								sr_cachedBytes[i] ^= code[codeIndex++];
+								codeIndex         %= codeLength;
 							}
 
 							length -= bytesRead;
 						}
 
-						CRC32.HashCore(CachedBytes, 0, bytesRead);
+						sr_crc32.HashCore(sr_cachedBytes, 0, bytesRead);
 					}
 					else
 						break;
 				}
 
-				var result = (int)CRC32.HashFinal();
-				CRC32.Initialize();
-				Array.Clear(CachedBytes, 0, CACHED_BYTES_LENGTH);
+				var result = (int)sr_crc32.HashFinal();
+				sr_crc32.Initialize();
+				Array.Clear(sr_cachedBytes, 0, CACHED_BYTES_LENGTH);
 				return result;
 			}
 		}

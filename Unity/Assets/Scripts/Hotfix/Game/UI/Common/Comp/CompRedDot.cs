@@ -72,7 +72,7 @@ namespace Hotfix.Game.UI
 			if (e is not RedDotChangedEventArgs args) return;
 			if (!m_hasKey) return;
 
-			foreach (var key in args.ChangedKeys)
+			foreach (var key in args.m_ChangedKeys)
 			{
 				if (key != m_key) continue;
 				RefreshCurrentState();
@@ -125,7 +125,7 @@ namespace Hotfix.Game.UI
 		private void RefreshCurrentState()
 		{
 			var state = RedDotModule.Instance.GetState(m_key);
-			RefreshUI(state.Count, state.DisplayMode);
+			RefreshUI(state.m_Count, state.m_DisplayMode);
 		}
 
 		/// <summary>

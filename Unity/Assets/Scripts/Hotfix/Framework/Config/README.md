@@ -32,7 +32,7 @@ IDataTable (配置表基础接口)
 ┌─────────────────────────────────────────────────────────────┐
 │                     ConfigModule                             │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_CfgDataDict (Dictionary<string, IDataTable>)     │   │
+│  │  m_cfgDataDict (Dictionary<string, IDataTable>)     │   │
 │  │  - 按名称索引所有配置表                              │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -147,24 +147,24 @@ using Hotfix.Framework.Core;
 
 public class ConfigExample
 {
-    private ConfigModule m_ConfigModule;
+    private ConfigModule m_configModule;
 
     public void Init()
     {
-        m_ConfigModule = ConfigModule.Instance;
+        m_configModule = ConfigModule.Instance;
 
         // 注册配置表
         var itemTable = new TbItem();
-        m_ConfigModule.AddConfig("TbItem", itemTable);
+        m_configModule.AddConfig("TbItem", itemTable);
 
         // 获取配置表（泛型方式）
-        var tbItem = m_ConfigModule.GetConfig<TbItem>();
+        var tbItem = m_configModule.GetConfig<TbItem>();
 
         // 获取配置表（名称方式）
-        var tbItem2 = m_ConfigModule.GetConfig("TbItem");
+        var tbItem2 = m_configModule.GetConfig("TbItem");
 
         // 检查配置表是否存在
-        if (m_ConfigModule.HasConfig<TbItem>())
+        if (m_configModule.HasConfig<TbItem>())
         {
             // 使用配置...
         }

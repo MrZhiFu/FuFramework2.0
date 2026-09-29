@@ -49,8 +49,8 @@ namespace Hotfix.Framework.Web
 			}
 
 			// 前置构建 + 发送请求：非法 URL/Header 或发送异常在此抛，回写异常并返回，不登记在途、不注册回调
-			UnityWebRequest unityWebRequest = null;
-			UnityWebRequestAsyncOperation asyncOperation = null;
+			UnityWebRequest               unityWebRequest = null;
+			UnityWebRequestAsyncOperation asyncOperation  = null;
 			try
 			{
 				unityWebRequest = BuildJsonRequest(webJsonData);

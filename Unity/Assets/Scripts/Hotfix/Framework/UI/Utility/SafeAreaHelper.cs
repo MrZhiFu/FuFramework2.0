@@ -39,7 +39,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 上一次安全区数据。供 OnUpdate 检测变化时使用。
 		/// </summary>
-		private static Rect m_lastSafeArea;
+		private static Rect s_lastSafeArea;
 
 		/// <summary>
 		/// 安全区变化事件（方向切换、折叠屏等）。
@@ -65,7 +65,7 @@ namespace Hotfix.Framework.UI
 			// FairyGUI 坐标系下的宽度和高度，需要除以FGUI的缩放因子，从Unity的物理像素转换为FairyGUI的物理像素。
 			SafeWidth      = Mathf.Ceil(safeArea.width  / scaleFactor);
 			SafeHeight     = Mathf.Ceil(safeArea.height / scaleFactor);
-			m_lastSafeArea = safeArea;
+			s_lastSafeArea = safeArea;
 		}
 
 		/// <summary>
@@ -74,14 +74,14 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		public static void OnUpdate()
 		{
-			if (Screen.safeArea == m_lastSafeArea) return;
+			if (Screen.safeArea == s_lastSafeArea) return;
 
 			FuLogger.LogInfo("[SafeAreaHelper]屏幕安全区刷新, "           +
-							 $"旧安全区:{m_lastSafeArea}, "            +
-							 $"新安全区:{Screen.safeArea}, "           +
-							 $"安全区偏移量:({OffsetX}, {OffsetY}), "    +
-							 $"安全区大小:({SafeWidth}, {SafeHeight})," +
-							 $" UI缩放因子:{UIContentScaler.scaleFactor}");
+			                 $"旧安全区:{s_lastSafeArea}, "            +
+			                 $"新安全区:{Screen.safeArea}, "           +
+			                 $"安全区偏移量:({OffsetX}, {OffsetY}), "    +
+			                 $"安全区大小:({SafeWidth}, {SafeHeight})," +
+			                 $" UI缩放因子:{UIContentScaler.scaleFactor}");
 			Refresh();
 			OnSafeAreaChanged?.Invoke();
 		}

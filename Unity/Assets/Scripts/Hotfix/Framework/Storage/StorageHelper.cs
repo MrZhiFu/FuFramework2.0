@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using UnityEngine;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Utility;
 using AOT.Framework.Core.Log;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using System.Collections.Generic;

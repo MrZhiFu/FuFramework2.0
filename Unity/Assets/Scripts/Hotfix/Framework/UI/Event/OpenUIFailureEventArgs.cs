@@ -41,7 +41,7 @@ namespace Hotfix.Framework.UI
 		public OpenUIFailureEventArgs()
 		{
 			SerialId = 0;
-			WinName   = null;
+			WinName  = null;
 			UserData = null;
 		}
 
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.UI
 		{
 			var openUIFailureEventArgs = ReferencePool.Acquire<OpenUIFailureEventArgs>();
 			openUIFailureEventArgs.SerialId = serialId;
-			openUIFailureEventArgs.WinName   = winName;
+			openUIFailureEventArgs.WinName  = winName;
 			openUIFailureEventArgs.UserData = userData;
 			return openUIFailureEventArgs;
 		}
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.UI
 		public override void Clear()
 		{
 			SerialId = 0;
-			WinName   = null;
+			WinName  = null;
 			UserData = null;
 		}
 	}

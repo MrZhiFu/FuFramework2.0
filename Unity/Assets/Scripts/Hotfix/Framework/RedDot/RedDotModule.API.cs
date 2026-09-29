@@ -70,13 +70,13 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
 		public RedDotState GetState(RedDotKey key)
 		{
-			if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.Empty;
+			if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.sr_Empty;
 
 			return new RedDotState
 			{
-				Count       = node.GetFinalCount(),
-				IsActive    = node.IsActive,
-				DisplayMode = node.DisplayMode
+				m_Count       = node.GetFinalCount(),
+				m_IsActive    = node.IsActive,
+				m_DisplayMode = node.DisplayMode
 			};
 		}
 

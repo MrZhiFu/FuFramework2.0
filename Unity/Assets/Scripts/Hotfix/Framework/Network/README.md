@@ -219,16 +219,16 @@ using Hotfix.Framework.Network;
 
 public class NetworkExample
 {
-    private NetworkModule m_NetworkModule;
-    private INetworkChannel m_Channel;
+    private NetworkModule m_networkModule;
+    private INetworkChannel m_channel;
 
     public void Init()
     {
-        m_NetworkModule = ModuleManager.GetModule<NetworkModule>();
+        m_networkModule = ModuleManager.GetModule<NetworkModule>();
 
         // 创建网络频道（TCP）
         var helper = new DefaultNetworkChannelHelper();
-        m_Channel = m_NetworkModule.CreateNetworkChannel(
+        m_channel = m_networkModule.CreateNetworkChannel(
             "GameChannel",
             helper,
             rpcTimeout: 5000
@@ -242,10 +242,10 @@ public class NetworkExample
     public void Connect()
     {
         // TCP 连接
-        m_Channel.Connect(new Uri("tcp://127.0.0.1:8888"));
+        m_channel.Connect(new Uri("tcp://127.0.0.1:8888"));
 
         // WebSocket 连接
-        // m_Channel.Connect(new Uri("ws://127.0.0.1:8888/ws"));
+        // m_channel.Connect(new Uri("ws://127.0.0.1:8888/ws"));
     }
 }
 ```
@@ -260,7 +260,7 @@ var moveNotify = new PlayerMoveNotify
     Y = 0f,
     Z = 3.2f
 };
-m_Channel.Send(moveNotify);
+m_channel.Send(moveNotify);
 
 // RPC 调用（请求-响应模式）
 public async Task<LoginResponse> LoginAsync(string username, string password)
@@ -273,7 +273,7 @@ public async Task<LoginResponse> LoginAsync(string username, string password)
 
     try
     {
-        var response = await m_Channel.Call<LoginResponse>(request);
+        var response = await m_channel.Call<LoginResponse>(request);
         return response;
     }
     catch (TimeoutException)

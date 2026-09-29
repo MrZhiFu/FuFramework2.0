@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Core
 			foreach (var module in ModuleList)
 			{
 				if (!module.IsAlive) continue;
-				module.OnPerSecondUpdate();
+				module.OnSecondUpdate();
 			}
 		}
 

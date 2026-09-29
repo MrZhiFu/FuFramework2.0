@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download
 {
 	/// <summary>

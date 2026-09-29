@@ -1,8 +1,8 @@
 using UnityEngine;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable StaticMemberInGenericType
-using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Core
 {
 	/// <summary>
@@ -14,12 +14,12 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 单例对象
 		/// </summary>
-		private static T m_instance;
+		private static T s_instance;
 
 		/// <summary>
 		/// 是否已初始化--防止重复初始化
 		/// </summary>
-		private static bool m_isInitialized;
+		private static bool s_isInitialized;
 
 		/// <summary>
 		/// 单例对象
@@ -28,31 +28,32 @@ namespace Hotfix.Framework.Core
 		{
 			get
 			{
-				if (m_instance != null)
+				if (s_instance != null)
 				{
-					return m_instance;
+					return s_instance;
 				}
 
-				m_instance = FindFirstObjectByType<T>();
-				if (m_instance != null)
+				s_instance = FindFirstObjectByType<T>();
+				if (s_instance != null)
 				{
 					// 确保手动放置在场景中的实例也被正确初始化
-					if (!m_isInitialized)
+					if (!s_isInitialized)
 					{
-						m_instance.Init();
+						s_instance.Init();
 					}
-					return m_instance;
+
+					return s_instance;
 				}
 
 				// 创建新实例
 				var singletonObject = new GameObject();
-				m_instance           = singletonObject.AddComponent<T>();
+				s_instance           = singletonObject.AddComponent<T>();
 				singletonObject.name = $"[Singleton] {typeof(T).Name}";
 
 				DontDestroyOnLoad(singletonObject);
-				m_instance.Init();
+				s_instance.Init();
 
-				return m_instance;
+				return s_instance;
 			}
 		}
 
@@ -65,7 +66,7 @@ namespace Hotfix.Framework.Core
 			if (!Application.isPlaying) return;
 
 			// 防止在场景中手动放置了多个单例组件而导致创建重复实例
-			if (m_instance && m_instance != this)
+			if (s_instance && s_instance != this)
 			{
 				FuLogger.LogWarning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
 				DestroyImmediate(gameObject);
@@ -73,12 +74,12 @@ namespace Hotfix.Framework.Core
 			}
 
 			// 确保场景中手动放置的单例组件也被正确初始化
-			if (!m_instance)
+			if (!s_instance)
 			{
-				m_instance = this as T;
+				s_instance = this as T;
 				DontDestroyOnLoad(gameObject);
 
-				if (!m_isInitialized)
+				if (!s_isInitialized)
 					Init();
 			}
 		}
@@ -88,10 +89,10 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void OnDestroy()
 		{
-			if (m_instance != this) return;
+			if (s_instance != this) return;
 			OnDispose();
-			m_instance      = null;
-			m_isInitialized = false;
+			s_instance      = null;
+			s_isInitialized = false;
 		}
 
 		/// <summary>
@@ -99,8 +100,8 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private void Init()
 		{
-			if (m_isInitialized) return;
-			m_isInitialized = true;
+			if (s_isInitialized) return;
+			s_isInitialized = true;
 			OnInit();
 		}
 

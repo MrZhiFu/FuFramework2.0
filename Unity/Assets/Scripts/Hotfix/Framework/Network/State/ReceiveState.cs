@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -12,7 +11,7 @@ namespace Hotfix.Framework.Network
 	{
 		public const int  DEFAULT_BUFFER_LENGTH = 1024 * 64;
 		public const int  PACKET_HEADER_LENGTH  = 14;
-		private      bool m_disposed          = false;
+		private      bool m_disposed            = false;
 
 		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
 

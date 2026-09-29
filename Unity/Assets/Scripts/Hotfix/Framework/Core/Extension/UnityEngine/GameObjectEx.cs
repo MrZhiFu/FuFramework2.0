@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Core
 		/// 缓存查找时的 Transform 列表（静态共享的临时缓冲区）。
 		/// 注意：非重入安全，使用处必须以 try/finally 保证遍历后清空（异常路径亦不得残留脏数据）。
 		/// </summary>
-		private static readonly List<Transform> CachedTransforms = new();
+		private static readonly List<Transform> sr_cachedTransforms = new();
 
 		/// <summary>
 		/// 销毁物体下的所有子物体
@@ -124,15 +124,15 @@ namespace Hotfix.Framework.Core
 			// try/finally：静态共享缓冲区必须无条件清空，否则中途异常会导致脏数据残留、后续调用读到过期 Transform
 			try
 			{
-				gameObject.GetComponentsInChildren(true, CachedTransforms);
-				foreach (var tf in CachedTransforms)
+				gameObject.GetComponentsInChildren(true, sr_cachedTransforms);
+				foreach (var tf in sr_cachedTransforms)
 				{
 					tf.gameObject.layer = layer;
 				}
 			}
 			finally
 			{
-				CachedTransforms.Clear();
+				sr_cachedTransforms.Clear();
 			}
 		}
 

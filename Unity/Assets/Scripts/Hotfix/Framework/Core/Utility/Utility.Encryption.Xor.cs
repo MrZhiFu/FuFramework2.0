@@ -95,9 +95,10 @@ namespace Hotfix.Framework.Core
 						throw new ArgumentException("传入的 code密钥 长度不正确.", nameof(code));
 
 					if (startIndex < 0 || length < 0 || startIndex + length > bytes.Length)
-						throw new ArgumentOutOfRangeException("传入的开始位置或长度不正确.");
+						throw new ArgumentOutOfRangeException();
 
 					var codeIndex = startIndex % codeLength;
+
 					// 第二个参数是「长度」而非结束下标：结束位置 = startIndex + length
 					for (var i = startIndex; i < startIndex + length; i++)
 					{

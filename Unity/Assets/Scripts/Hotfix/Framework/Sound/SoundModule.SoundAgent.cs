@@ -7,7 +7,6 @@ using Hotfix.Framework.Asset;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Entity;
-using Entity = Hotfix.Framework.Entity.Entity;
 
 namespace Hotfix.Framework.Sound
 {

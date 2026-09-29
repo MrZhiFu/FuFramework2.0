@@ -3,6 +3,7 @@ using System.IO;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
@@ -30,16 +31,16 @@ namespace Hotfix.Framework.Download
 
 
 		/// 下载开始委托
-		public Action<DownloadAgent> DownloadAgentStart;
+		public Action<DownloadAgent> m_DownloadAgentStart;
 
 		/// 下载更新委托
-		public Action<DownloadAgent, int> DownloadAgentUpdate;
+		public Action<DownloadAgent, int> m_DownloadAgentUpdate;
 
 		/// 下载成功委托
-		public Action<DownloadAgent, long> DownloadAgentSuccess;
+		public Action<DownloadAgent, long> m_DownloadAgentSuccess;
 
 		/// 下载失败委托
-		public Action<DownloadAgent, string> DownloadAgentFailure;
+		public Action<DownloadAgent, string> m_DownloadAgentFailure;
 
 
 		/// <summary>
@@ -59,10 +60,10 @@ namespace Hotfix.Framework.Download
 			SavedLength      = 0L;
 			m_disposed       = false;
 
-			DownloadAgentStart   = null;
-			DownloadAgentUpdate  = null;
-			DownloadAgentSuccess = null;
-			DownloadAgentFailure = null;
+			m_DownloadAgentStart   = null;
+			m_DownloadAgentUpdate  = null;
+			m_DownloadAgentSuccess = null;
+			m_DownloadAgentFailure = null;
 		}
 
 		/// <summary>
@@ -180,7 +181,7 @@ namespace Hotfix.Framework.Download
 					StartLength  = SavedLength = DownloadedLength = 0L;
 				}
 
-				DownloadAgentStart?.Invoke(this);
+				m_DownloadAgentStart?.Invoke(this);
 
 				// 使用帮助类开始下载
 				if (StartLength > 0L)
@@ -321,7 +322,7 @@ namespace Hotfix.Framework.Download
 
 			WaitTime         =  0f;
 			DownloadedLength += e.DeltaLength;
-			DownloadAgentUpdate?.Invoke(this, e.DeltaLength);
+			m_DownloadAgentUpdate?.Invoke(this, e.DeltaLength);
 		}
 
 		/// <summary>
@@ -354,7 +355,7 @@ namespace Hotfix.Framework.Download
 			Task.Done   = true;
 
 			// 只在Task不为null时触发成功事件
-			DownloadAgentSuccess?.Invoke(this, e.Length);
+			m_DownloadAgentSuccess?.Invoke(this, e.Length);
 		}
 
 		/// <summary>
@@ -382,7 +383,7 @@ namespace Hotfix.Framework.Download
 				Task.Done   = true;
 
 				// 只在Task不为null时触发失败事件
-				DownloadAgentFailure?.Invoke(this, e.ErrorMessage);
+				m_DownloadAgentFailure?.Invoke(this, e.ErrorMessage);
 			}
 		}
 	}

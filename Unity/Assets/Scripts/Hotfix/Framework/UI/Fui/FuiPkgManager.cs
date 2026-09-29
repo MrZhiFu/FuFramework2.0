@@ -162,7 +162,7 @@ namespace Hotfix.Framework.UI
 				if (UIPackage.GetByName(pkgName) != null)
 					UIPackage.RemovePackage(pkgName);
 				if (m_loadingCts.TryGetValue(pkgName, out var currentCts) && ReferenceEquals(currentCts, cts)
-																		  && m_pkgAssetLoaderDict.Remove(pkgName, out var loader))
+				                                                          && m_pkgAssetLoaderDict.Remove(pkgName, out var loader))
 				{
 					loader.Dispose();
 				}

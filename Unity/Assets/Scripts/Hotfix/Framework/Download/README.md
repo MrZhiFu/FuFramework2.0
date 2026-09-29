@@ -21,17 +21,17 @@ FuFramework Download 模块是游戏框架的下载管理系统，基于任务�
 ┌─────────────────────────────────────────────────────────────┐
 │                     DownloadModule                           │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_TaskPool (TaskPool<DownloadTask>)                │   │
+│  │  m_taskPool (TaskPool<DownloadTask>)                │   │
 │  │  任务调度与并发控制，内嵌 N 个 DownloadAgent：        │   │
 │  │    DownloadAgent → UnityWebRequestDownloadAgentHelper │   │
 │  │                → DownloadHandler（接收数据流）        │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_DownloadingTaskDict (serialId → DownloadData)    │   │
+│  │  m_downloadingTaskDict (serialId → DownloadData)    │   │
 │  │  下载中任务登记，并持有异步完成信号(Tcs)              │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_DownloadCounter (DownloadCounter + CounterNode)  │   │
+│  │  m_downloadCounter (DownloadCounter + CounterNode)  │   │
 │  │  实时下载速度计算                                    │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -140,17 +140,17 @@ using Hotfix.Framework.Core;
 
 public class DownloadExample
 {
-    private DownloadModule m_DownloadModule;
+    private DownloadModule m_downloadModule;
 
     public void Init()
     {
-        m_DownloadModule = ModuleManager.GetModule<DownloadModule>();
+        m_downloadModule = ModuleManager.GetModule<DownloadModule>();
     }
 
     public async UniTask DownloadFileAsync()
     {
         // 异步下载文件
-        bool success = await m_DownloadModule.AddDownloadAsync(
+        bool success = await m_downloadModule.AddDownloadAsync(
             downloadPath: Application.persistentDataPath + "/config.json",
             downloadUri: "https://cdn.example.com/config.json"
         );
@@ -174,11 +174,11 @@ public async UniTask DownloadMultipleFilesAsync()
 {
     var downloads = new List<UniTask<bool>>();
 
-    downloads.Add(m_DownloadModule.AddDownloadAsync(
+    downloads.Add(m_downloadModule.AddDownloadAsync(
         "path/file1.bundle", "https://cdn.example.com/file1.bundle"));
-    downloads.Add(m_DownloadModule.AddDownloadAsync(
+    downloads.Add(m_downloadModule.AddDownloadAsync(
         "path/file2.bundle", "https://cdn.example.com/file2.bundle"));
-    downloads.Add(m_DownloadModule.AddDownloadAsync(
+    downloads.Add(m_downloadModule.AddDownloadAsync(
         "path/file3.bundle", "https://cdn.example.com/file3.bundle"));
 
     // 等待所有下载完成
@@ -201,7 +201,7 @@ eventModule.Subscribe(DownloadUpdateEventArgs.EventId, (sender, e) =>
 {
     var args = e as DownloadUpdateEventArgs;
     // 更新事件仅携带当前已下载字节数（CurrentLength），不含总大小；进度请由业务侧自行比对期望文件长度
-    Debug.Log($"已下载: {args.CurrentLength} 字节，速度: {m_DownloadModule.CurrentSpeed / 1024}KB/s");
+    Debug.Log($"已下载: {args.CurrentLength} 字节，速度: {m_downloadModule.CurrentSpeed / 1024}KB/s");
 });
 
 // 监听下载完成
@@ -216,10 +216,10 @@ eventModule.Subscribe(DownloadSuccessEventArgs.EventId, (sender, e) =>
 
 ```csharp
 // 暂停所有下载
-m_DownloadModule.Paused = true;
+m_downloadModule.Paused = true;
 
 // 恢复所有下载
-m_DownloadModule.Paused = false;
+m_downloadModule.Paused = false;
 ```
 
 ## 6. 目录结构

@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Storage;
 
@@ -45,7 +44,7 @@ namespace Hotfix.Framework.Model
 		/// <summary>
 		/// 本地存储管理器。
 		/// </summary>
-		private StorageModule _storageModule;
+		private StorageModule m_storageModule;
 
 		/// <summary>
 		/// 加载是否失败。失败（存档损坏/反序列化异常）后禁止回写：
@@ -64,10 +63,10 @@ namespace Hotfix.Framework.Model
 		protected sealed override void OnInitData()
 		{
 			base.OnInitData();
-			m_fileName    = GetFileName();
-			_storageModule = StorageModule.Instance;
+			m_fileName     = GetFileName();
+			m_storageModule = StorageModule.Instance;
 
-			if (_storageModule == null)
+			if (m_storageModule == null)
 			{
 				FuLogger.LogError($"初始化Model-{m_fileName}时，数据保存管理器未找到!");
 				return;
@@ -92,7 +91,7 @@ namespace Hotfix.Framework.Model
 		{
 			try
 			{
-				var dataJson = _storageModule.GetString(m_fileName, m_fileName);
+				var dataJson = m_storageModule.GetString(m_fileName, m_fileName);
 				if (string.IsNullOrEmpty(dataJson))
 				{
 					OnFirstInitDate();
@@ -116,7 +115,7 @@ namespace Hotfix.Framework.Model
 		/// </summary>
 		private void Save()
 		{
-			if (_storageModule == null)
+			if (m_storageModule == null)
 			{
 				FuLogger.LogWarning($"无法保存{m_fileName}，数据保存管理器未找到!");
 				return;
@@ -132,8 +131,8 @@ namespace Hotfix.Framework.Model
 			try
 			{
 				var dataJson = JsonConvert.SerializeObject(this, Formatting.None);
-				_storageModule.SetString(m_fileName, dataJson, m_fileName);
-				_storageModule.Save(m_fileName);
+				m_storageModule.SetString(m_fileName, dataJson, m_fileName);
+				m_storageModule.Save(m_fileName);
 				FuLogger.LogInfo($"Model数据保存成功: {m_fileName}");
 			}
 			catch (System.Exception ex)

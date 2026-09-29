@@ -88,10 +88,10 @@ namespace Hotfix.Framework.Network
 
 			foreach (var networkChannelBase in m_networkChannelSnapshot)
 			{
-				networkChannelBase.NetworkChannelConnected     -= OnNetworkChannelConnected;
-				networkChannelBase.NetworkChannelClosed        -= OnNetworkChannelClosed;
-				networkChannelBase.NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
-				networkChannelBase.NetworkChannelError         -= OnNetworkChannelError;
+				networkChannelBase.m_NetworkChannelConnected     -= OnNetworkChannelConnected;
+				networkChannelBase.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
+				networkChannelBase.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
+				networkChannelBase.m_NetworkChannelError         -= OnNetworkChannelError;
 				networkChannelBase.Shutdown();
 			}
 

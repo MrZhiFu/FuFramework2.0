@@ -41,7 +41,7 @@ namespace Hotfix.Framework.UI
 		public CloseUICompleteEventArgs()
 		{
 			SerialId = 0;
-			WinName   = null;
+			WinName  = null;
 			UIGroup  = null;
 		}
 
@@ -56,7 +56,7 @@ namespace Hotfix.Framework.UI
 		{
 			var closeUICompleteEventArgs = ReferencePool.Acquire<CloseUICompleteEventArgs>();
 			closeUICompleteEventArgs.SerialId = serialId;
-			closeUICompleteEventArgs.WinName   = winName;
+			closeUICompleteEventArgs.WinName  = winName;
 			closeUICompleteEventArgs.UIGroup  = uiGroup;
 			return closeUICompleteEventArgs;
 		}
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.UI
 		public override void Clear()
 		{
 			SerialId = 0;
-			WinName   = null;
+			WinName  = null;
 			UIGroup  = null;
 		}
 	}

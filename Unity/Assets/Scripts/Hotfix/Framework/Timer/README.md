@@ -22,7 +22,7 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 ModuleBase (抽象基类)
     ↑
 TimerModule (计时器管理模块)
-    ├── m_TimerDict (计时器字典)
+    ├── m_timerDict (计时器字典)
     └── ExecuteTimerAsync (异步执行)
 
 TimerBase (抽象基类)
@@ -41,7 +41,7 @@ TimerRegister (计时器注册器)
 ┌─────────────────────────────────────────────────────────────┐
 │                     TimerModule                             │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_TimerDict (Dictionary<int, TimerBase>)           │   │
+│  │  m_timerDict (Dictionary<int, TimerBase>)           │   │
 │  │  - 存储所有活跃计时器                                │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -73,8 +73,8 @@ TimerRegister (计时器注册器)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_TimerDict | Dictionary<int, TimerBase> | 计时器字典，Key为计时器ID |
-| m_NextTimerId | int | 下一个计时器ID（自增） |
+| m_timerDict | Dictionary<int, TimerBase> | 计时器字典，Key为计时器ID |
+| m_nextTimerId | int | 下一个计时器ID（自增） |
 
 **核心属性：**
 
@@ -267,8 +267,8 @@ public static FrameTimer Create(int timerId, int frameInterval, Action intervalC
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_TimerModule | TimerModule | 计时器管理模块（静态） |
-| m_TimerList | List<int> | 记录所有计时器ID的列表 |
+| m_timerModule | TimerModule | 计时器管理模块（静态） |
+| m_timerList | List<int> | 记录所有计时器ID的列表 |
 
 **核心方法：**
 
@@ -320,22 +320,22 @@ using UnityEngine;
 
 public class TimerExample : MonoBehaviour
 {
-    private TimerModule m_TimerModule;
+    private TimerModule m_timerModule;
 
     private void Start()
     {
         // 获取计时器管理器
-        m_TimerModule = ModuleManager.GetModule<TimerModule>();
+        m_timerModule = ModuleManager.GetModule<TimerModule>();
         
         // 启动倒计时计时器
-        int countdownId = m_TimerModule.StartCountdownTimer(
+        int countdownId = m_timerModule.StartCountdownTimer(
             duration: 3f,
             finishCallBack: () => Debug.Log("倒计时完成！"),
             ignoreTimeScale: false
         );
         
         // 启动时间间隔计时器
-        int intervalId = m_TimerModule.StartIntervalTimer(
+        int intervalId = m_timerModule.StartIntervalTimer(
             interval: 1f,
             intervalCallback: () => Debug.Log("每秒执行一次"),
             repeatCount: 5,
@@ -343,7 +343,7 @@ public class TimerExample : MonoBehaviour
         );
         
         // 启动帧间隔计时器
-        int frameId = m_TimerModule.StartFrameTimer(
+        int frameId = m_timerModule.StartFrameTimer(
             frameInterval: 30,
             intervalCallback: () => Debug.Log("每30帧执行一次"),
             repeatCount: -1  // 无限循环
@@ -356,18 +356,18 @@ public class TimerExample : MonoBehaviour
 
 ```csharp
 // 暂停计时器
-m_TimerModule.PauseTimer(timerId);
+m_timerModule.PauseTimer(timerId);
 
 // 恢复计时器
-m_TimerModule.ResumeTimer(timerId);
+m_timerModule.ResumeTimer(timerId);
 
 // 停止计时器
-m_TimerModule.StopTimer(timerId);
+m_timerModule.StopTimer(timerId);
 
 // 批量操作
-m_TimerModule.PauseAllTimers();
-m_TimerModule.ResumeAllTimers();
-m_TimerModule.StopAllTimers();
+m_timerModule.PauseAllTimers();
+m_timerModule.ResumeAllTimers();
+m_timerModule.StopAllTimers();
 ```
 
 ### 4.3 使用 TimerRegister 进行分组管理
@@ -375,22 +375,22 @@ m_TimerModule.StopAllTimers();
 ```csharp
 public class GameManager
 {
-    private TimerRegister m_GameTimerRegister;
+    private TimerRegister m_gameTimerRegister;
     
     public void Initialize()
     {
         // 创建计时器注册器
-        m_GameTimerRegister = TimerRegister.Create();
+        m_gameTimerRegister = TimerRegister.Create();
         
         // 使用注册器启动计时器
-        m_GameTimerRegister.StartCountdownTimer(10f, () => Debug.Log("游戏倒计时结束"));
-        m_GameTimerRegister.StartIntervalTimer(5f, () => Debug.Log("每5秒自动保存"));
+        m_gameTimerRegister.StartCountdownTimer(10f, () => Debug.Log("游戏倒计时结束"));
+        m_gameTimerRegister.StartIntervalTimer(5f, () => Debug.Log("每5秒自动保存"));
     }
     
     public void Cleanup()
     {
         // 清理注册器中的所有计时器
-        m_GameTimerRegister.Release();
+        m_gameTimerRegister.Release();
     }
 }
 ```
@@ -403,7 +403,7 @@ public void StartProgressTimer()
     float totalDuration = 10f;
     float elapsedTime = 0f;
     
-    int timerId = m_TimerModule.StartCountdownTimer(
+    int timerId = m_timerModule.StartCountdownTimer(
         duration: totalDuration,
         finishCallBack: () => 
         {

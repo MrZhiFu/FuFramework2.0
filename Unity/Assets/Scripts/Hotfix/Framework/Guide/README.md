@@ -22,16 +22,16 @@ FuFramework Guide 模块是游戏框架的新手引导系统，采用配置表�
 ┌─────────────────────────────────────────────────────────────┐
 │                     GuideModule                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_GuideDict (Dictionary<int, GuideData>)           │   │
+│  │  m_guideDict (Dictionary<int, GuideData>)           │   │
 │  │  - 引导数据字典                                     │   │
 │  ├─────────────────────────────────────────────────────┤   │
-│  │  m_AllStepDict (Dictionary<int, BaseStep>)          │   │
+│  │  m_allStepDict (Dictionary<int, BaseStep>)          │   │
 │  │  - 当前引导的所有步骤                                │   │
 │  ├─────────────────────────────────────────────────────┤   │
-│  │  m_StepHistoryStack (Stack<int>)                    │   │
+│  │  m_stepHistoryStack (Stack<int>)                    │   │
 │  │  - 步骤历史记录栈                                   │   │
 │  ├─────────────────────────────────────────────────────┤   │
-│  │  m_GuideCompletionCacheDict (Dictionary<int, bool>) │   │
+│  │  m_guideCompletionCacheDict (Dictionary<int, bool>) │   │
 │  │  - 已完成的引导缓存                                  │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -208,32 +208,32 @@ using Hotfix.Framework.Guide;
 
 public class GuideExample
 {
-    private GuideModule m_GuideModule;
+    private GuideModule m_guideModule;
 
     public void Init()
     {
-        m_GuideModule = GuideModule.Instance;
+        m_guideModule = GuideModule.Instance;
     }
 
     // 在需要触发引导的地方调用
     public void TriggerGuide(int guideId)
     {
         // 检查引导是否已完成（自动检查 PlayerPrefs 缓存）
-        if (m_GuideModule.IsGuideCompleted(guideId))
+        if (m_guideModule.IsGuideCompleted(guideId))
         {
             Debug.Log("引导已执行过，跳过");
             return;
         }
 
         // 检查是否有引导正在进行
-        if (m_GuideModule.IsGuiding)
+        if (m_guideModule.IsGuiding)
         {
             Debug.Log("已有引导在进行中");
             return;
         }
 
         // 启动引导（forceRestart = false 时会跳过已完成的引导）
-        var success = m_GuideModule.StartGuide(guideId);
+        var success = m_guideModule.StartGuide(guideId);
         if (success)
             Debug.Log($"引导 {guideId} 启动成功");
     }
@@ -241,13 +241,13 @@ public class GuideExample
     // 强制重新开始引导（忽略已完成的缓存）
     public void ForceRestartGuide(int guideId)
     {
-        m_GuideModule.StartGuide(guideId, forceRestart: true);
+        m_guideModule.StartGuide(guideId, forceRestart: true);
     }
 
     // 开始第一个引导
     public void StartFirstGuide()
     {
-        m_GuideModule.StartFirstGuide();
+        m_guideModule.StartFirstGuide();
     }
 }
 ```
@@ -256,50 +256,50 @@ public class GuideExample
 
 ```csharp
 // 完成当前步骤（自动推入下一步）
-m_GuideModule.CompleteCurrentStep();
+m_guideModule.CompleteCurrentStep();
 
 // 跳过当前步骤（仅当步骤配置了 CanJump 时生效）
-m_GuideModule.SkipCurrentStep();
+m_guideModule.SkipCurrentStep();
 
 // 返回到上一步
-m_GuideModule.GoToPreviousStep();
+m_guideModule.GoToPreviousStep();
 
 // 跳转到指定步骤
-m_GuideModule.JumpToStep(1002);
+m_guideModule.JumpToStep(1002);
 
 // 强制进入下一步（跳过条件检查）
-m_GuideModule.ForceNextStep();
+m_guideModule.ForceNextStep();
 ```
 
 ### 5.3 引导控制
 
 ```csharp
 // 中断引导（不标记完成）
-m_GuideModule.InterruptGuide();
+m_guideModule.InterruptGuide();
 
 // 中断引导并标记为已完成
-m_GuideModule.InterruptGuide(markAsCompleted: true);
+m_guideModule.InterruptGuide(markAsCompleted: true);
 ```
 
 ### 5.4 引导状态管理
 
 ```csharp
 // 检查引导是否已完成
-bool isCompleted = m_GuideModule.IsGuideCompleted(guideId);
+bool isCompleted = m_guideModule.IsGuideCompleted(guideId);
 
 // 手动标记引导为已完成
-m_GuideModule.MarkGuideAsCompleted(guideId);
+m_guideModule.MarkGuideAsCompleted(guideId);
 
 // 重置引导状态（用于测试或重新触发）
-m_GuideModule.ResetGuide(guideId);
+m_guideModule.ResetGuide(guideId);
 
 // 获取当前引导信息
-var guideInfo = m_GuideModule.GetCurrentGuideInfo();
+var guideInfo = m_guideModule.GetCurrentGuideInfo();
 if (guideInfo != null)
     Debug.Log($"当前引导: {guideInfo.Name} ({guideInfo.Id})");
 
 // 获取指定步骤实例
-var step = m_GuideModule.GetStep(1001);
+var step = m_guideModule.GetStep(1001);
 if (step != null)
     Debug.Log($"步骤状态: {step.State}");
 ```
@@ -307,27 +307,27 @@ if (step != null)
 ### 5.5 监听引导事件
 
 ```csharp
-m_GuideModule.OnGuideStarted += (guideId) =>
+m_guideModule.OnGuideStarted += (guideId) =>
 {
     Debug.Log($"引导开始: {guideId}");
 };
 
-m_GuideModule.OnGuideFinished += (guideId) =>
+m_guideModule.OnGuideFinished += (guideId) =>
 {
     Debug.Log($"引导完成: {guideId}");
 };
 
-m_GuideModule.OnStepChanged += (guideId, stepId) =>
+m_guideModule.OnStepChanged += (guideId, stepId) =>
 {
     Debug.Log($"步骤变更: Guide={guideId}, Step={stepId}");
 };
 
-m_GuideModule.OnStepCompleted += (step) =>
+m_guideModule.OnStepCompleted += (step) =>
 {
     Debug.Log($"步骤完成: {step.StepInfo.Id}");
 };
 
-m_GuideModule.OnGuideInterrupted += (guideId, markAsCompleted) =>
+m_guideModule.OnGuideInterrupted += (guideId, markAsCompleted) =>
 {
     Debug.Log($"引导中断: {guideId}, 标记完成={markAsCompleted}");
 };
@@ -372,10 +372,10 @@ Guide/
 
 ## 9. 注意事项
 
-1. 引导过程中通过 `m_CurrentStep.Update(deltaTime)` 驱动步骤帧更新，不会阻塞主循环
+1. 引导过程中通过 `m_currentStep.Update(deltaTime)` 驱动步骤帧更新，不会阻塞主循环
 2. `ClickUIStep` 需要目标 UI 已加载到场景中（通过 `UIModule.GetUI` 查找）
 3. 引导完成状态通过 `PlayerPrefs` 持久化（key 格式：`Guide_Completed_{guideId}`）
-4. `GoToPreviousStep` 依赖 `m_StepHistoryStack`（存 stepId），在构建新引导时会清空历史栈
+4. `GoToPreviousStep` 依赖 `m_stepHistoryStack`（存 stepId），在构建新引导时会清空历史栈
 5. 调用 `InterruptGuide()` 会取消当前步骤并清空引导数据
 6. `ForceNextStep` 在下一步不存在时自动调用 `FinishGuide` 完成引导
-7. 步骤实例在整条引导生命周期内常驻 `m_AllStepDict`，仅在 `ClearGuideData`（完成/中断/模块销毁）统一回收到引用池；回退与跳转取回的是**同一实例**，状态不丢失，且不存在重复归还
+7. 步骤实例在整条引导生命周期内常驻 `m_allStepDict`，仅在 `ClearGuideData`（完成/中断/模块销毁）统一回收到引用池；回退与跳转取回的是**同一实例**，状态不丢失，且不存在重复归还

@@ -11,26 +11,26 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 红点数量（TotalCount）
 		/// </summary>
-		public int Count;
+		public int m_Count;
 
 		/// <summary>
 		/// 节点是否激活
 		/// </summary>
-		public bool IsActive;
+		public bool m_IsActive;
 
 		/// <summary>
 		/// 显示模式
 		/// </summary>
-		public ERedDotDisplayMode DisplayMode;
+		public ERedDotDisplayMode m_DisplayMode;
 
 		/// <summary>
 		/// 静态空状态
 		/// </summary>
-		public static readonly RedDotState Empty = new()
+		public static readonly RedDotState sr_Empty = new()
 		{
-			Count       = 0,
-			IsActive    = false,
-			DisplayMode = ERedDotDisplayMode.DotOnly
+			m_Count       = 0,
+			m_IsActive    = false,
+			m_DisplayMode = ERedDotDisplayMode.DotOnly
 		};
 	}
 }

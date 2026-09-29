@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Web
 		/// <param name="waitingPbCount">当前等待发送的 Pb 请求数。</param>
 		/// <param name="sendingPbCount">当前发送中的 Pb 请求数。</param>
 		public WebModuleDebugInfo(int submitCount, int jsonSubmitCount, int pbSubmitCount, int successCount, int failedCount, int timeoutCount, int canceledCount,
-								  long sentBytes, long recvBytes, int waitingJsonCount, int sendingJsonCount, int waitingPbCount, int sendingPbCount)
+		                          long sentBytes, long recvBytes, int waitingJsonCount, int sendingJsonCount, int waitingPbCount, int sendingPbCount)
 		{
 			SubmitCount      = submitCount;
 			JsonSubmitCount  = jsonSubmitCount;

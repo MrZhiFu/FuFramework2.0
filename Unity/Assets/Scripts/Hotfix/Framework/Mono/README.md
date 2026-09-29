@@ -79,18 +79,18 @@ public class MonoModule : ModuleBase
 
 ```csharp
 // 双缓冲队列
-private readonly List<Action> m_WaitUpdateList = new();      // 等待执行的 Update 回调
-private readonly List<Action> m_DoingUpdateList = new();     // 正在执行的 Update 回调
-private readonly List<Action> m_WaitFixedUpdateList = new(); // 等待执行的 FixedUpdate 回调
-private readonly List<Action> m_DoingFixedUpdateList = new();// 正在执行的 FixedUpdate 回调
-private readonly List<Action> m_WaitLateUpdateList = new();  // 等待执行的 LateUpdate 回调
-private readonly List<Action> m_DoingLateUpdateList = new(); // 正在执行的 LateUpdate 回调
-private readonly List<Action> m_WaitDestroyList = new();     // 等待执行的 Destroy 回调
-private readonly List<Action> m_DoingDestroyList = new();    // 正在执行的 Destroy 回调
-private List<Action<bool>> m_WaitOnApplicationPauseList = new();  // 等待执行的暂停回调
-private List<Action<bool>> m_DoOnApplicationPauseList = new();    // 正在执行的暂停回调
-private List<Action<bool>> m_WaitOnApplicationFocusList = new();  // 等待执行的焦点回调
-private List<Action<bool>> m_DoOnApplicationFocusList = new();    // 正在执行的焦点回调
+private readonly List<Action> m_waitUpdateList = new();      // 等待执行的 Update 回调
+private readonly List<Action> m_doingUpdateList = new();     // 正在执行的 Update 回调
+private readonly List<Action> m_waitFixedUpdateList = new(); // 等待执行的 FixedUpdate 回调
+private readonly List<Action> m_doingFixedUpdateList = new();// 正在执行的 FixedUpdate 回调
+private readonly List<Action> m_waitLateUpdateList = new();  // 等待执行的 LateUpdate 回调
+private readonly List<Action> m_doingLateUpdateList = new(); // 正在执行的 LateUpdate 回调
+private readonly List<Action> m_waitDestroyList = new();     // 等待执行的 Destroy 回调
+private readonly List<Action> m_doingDestroyList = new();    // 正在执行的 Destroy 回调
+private List<Action<bool>> m_waitOnApplicationPauseList = new();  // 等待执行的暂停回调
+private List<Action<bool>> m_doOnApplicationPauseList = new();    // 正在执行的暂停回调
+private List<Action<bool>> m_waitOnApplicationFocusList = new();  // 等待执行的焦点回调
+private List<Action<bool>> m_doOnApplicationFocusList = new();    // 正在执行的焦点回调
 ```
 
 **队列执行机制**：
@@ -471,30 +471,30 @@ Hotfix.Framework/Mono/
 ```csharp
 public class BestPracticeExample : MonoBehaviour
 {
-    private Action m_UpdateAction;
-    private Action m_FixedUpdateAction;
+    private Action m_updateAction;
+    private Action m_fixedUpdateAction;
     
     private void Awake()
     {
         // 预先创建委托实例，避免重复分配
-        m_UpdateAction = OnUpdate;
-        m_FixedUpdateAction = OnFixedUpdate;
+        m_updateAction = OnUpdate;
+        m_fixedUpdateAction = OnFixedUpdate;
     }
     
     private void OnEnable()
     {
         // 在启用时添加监听器
         var monoModule = GlobalModule.MonoModule;
-        monoModule.AddUpdateListener(m_UpdateAction);
-        monoModule.AddFixedUpdateListener(m_FixedUpdateAction);
+        monoModule.AddUpdateListener(m_updateAction);
+        monoModule.AddFixedUpdateListener(m_fixedUpdateAction);
     }
     
     private void OnDisable()
     {
         // 在禁用时移除监听器
         var monoModule = GlobalModule.MonoModule;
-        monoModule.RemoveUpdateListener(m_UpdateAction);
-        monoModule.RemoveFixedUpdateListener(m_FixedUpdateAction);
+        monoModule.RemoveUpdateListener(m_updateAction);
+        monoModule.RemoveFixedUpdateListener(m_fixedUpdateAction);
     }
     
     private void OnUpdate()
@@ -514,7 +514,7 @@ public class BestPracticeExample : MonoBehaviour
 ```csharp
 public class ConditionalExecution : MonoBehaviour
 {
-    private bool m_IsActive = true;
+    private bool m_isActive = true;
     
     private void Start()
     {
@@ -524,14 +524,14 @@ public class ConditionalExecution : MonoBehaviour
     private void OnUpdate()
     {
         // 快速返回，减少不必要的计算
-        if (!m_IsActive) return;
+        if (!m_isActive) return;
         
         // 执行逻辑
     }
     
     public void SetActive(bool active)
     {
-        m_IsActive = active;
+        m_isActive = active;
     }
 }
 ```
@@ -541,7 +541,7 @@ public class ConditionalExecution : MonoBehaviour
 ```csharp
 public class BatchOperationExample : MonoBehaviour
 {
-    private List<System.Action> m_PendingActions = new List<System.Action>();
+    private List<System.Action> m_pendingActions = new List<System.Action>();
     
     private void Start()
     {
@@ -551,16 +551,16 @@ public class BatchOperationExample : MonoBehaviour
     private void ProcessPendingActions()
     {
         // 批量处理待执行的操作
-        foreach (var action in m_PendingActions)
+        foreach (var action in m_pendingActions)
         {
             action?.Invoke();
         }
-        m_PendingActions.Clear();
+        m_pendingActions.Clear();
     }
     
     public void QueueAction(System.Action action)
     {
-        m_PendingActions.Add(action);
+        m_pendingActions.Add(action);
     }
 }
 ```

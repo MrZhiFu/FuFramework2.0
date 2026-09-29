@@ -175,13 +175,13 @@ using Hotfix.Framework.Localization;
 
 public class UITextUpdater
 {
-    private EventModule m_EventModule;
+    private EventModule m_eventModule;
 
     public void Init()
     {
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
 
-        m_EventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+        m_eventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
     }
 
     private void OnLanguageChanged(object sender, GameEventArgs e)

@@ -2,6 +2,7 @@ using System;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
+
 namespace Hotfix.Framework.Core
 {
 	public static partial class Utility
@@ -28,24 +29,24 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// Unix纪元起点 1970-01-01 00:00:00 UTC 格林威治时间。主动声明，避免new DateTime(1970, 1, 1) 每次都会在堆上创建新对象
 			/// </summary>
-			public static readonly DateTime UtcEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+			public static readonly DateTime sr_UtcEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
 			/// <summary>
 			/// Unix纪元起点时间戳(刻度)
 			/// 621355968000000000。0001-01-01 00:00:00 ~ 1970.1.1  00:00:00  之间的时间差刻度数
 			/// </summary>
-			public static readonly long EpochTicks = UtcEpoch.Ticks;
+			public static readonly long sr_EpochTicks = sr_UtcEpoch.Ticks;
 
 			/// <summary>
 			/// 是否是秒级
 			/// </summary>
-			private static bool m_isSecLevel = true;
+			private static bool s_isSecLevel = true;
 
 			/// <summary>
 			/// 服务器与客户端的时间差。
 			/// 单位：_isSecLevel为true时为秒，为false时为毫秒。
 			/// </summary>
-			private static long m_diffTime;
+			private static long s_diffTime;
 
 
 			#region 服务器/客户端时间相关
@@ -72,17 +73,17 @@ namespace Hotfix.Framework.Core
 				var diffMilliseconds = System.Math.Abs(serverTimestamp - currentMilliseconds);
 
 				// 选择差值更小的精度
-				m_isSecLevel = diffSeconds < diffMilliseconds;
+				s_isSecLevel = diffSeconds < diffMilliseconds;
 
-				if (m_isSecLevel)
+				if (s_isSecLevel)
 				{
-					m_diffTime = serverTimestamp - currentSeconds;
-					FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {m_diffTime}秒");
+					s_diffTime = serverTimestamp - currentSeconds;
+					FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {s_diffTime}秒");
 				}
 				else
 				{
-					m_diffTime = serverTimestamp - currentMilliseconds;
-					FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {m_diffTime}毫秒");
+					s_diffTime = serverTimestamp - currentMilliseconds;
+					FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {s_diffTime}毫秒");
 				}
 			}
 
@@ -93,8 +94,8 @@ namespace Hotfix.Framework.Core
 			/// <returns></returns>
 			public static long ServerNow()
 			{
-				if (m_isSecLevel) return m_diffTime + ClientNow();
-				return (m_diffTime + ClientNowMs()) / 1000;
+				if (s_isSecLevel) return s_diffTime + ClientNow();
+				return (s_diffTime + ClientNowMs()) / 1000;
 			}
 
 			/// <summary>
@@ -104,8 +105,8 @@ namespace Hotfix.Framework.Core
 			/// <returns></returns>
 			public static long ServerToday()
 			{
-				if (m_isSecLevel) return m_diffTime + ClientToday();
-				return (m_diffTime + ClientTodayMs()) / 1000;
+				if (s_isSecLevel) return s_diffTime + ClientToday();
+				return (s_diffTime + ClientTodayMs()) / 1000;
 			}
 
 			/// <summary>
@@ -122,25 +123,25 @@ namespace Hotfix.Framework.Core
 			/// 客户端当前时间戳(秒)
 			/// </summary>
 			/// <returns></returns>
-			public static long ClientNow() => (GetUtcNow().Ticks - EpochTicks) / TimeSpan.TicksPerSecond;
+			public static long ClientNow() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
 
 			/// <summary>
 			/// 客户端当前时间戳(毫秒)
 			/// </summary>
 			/// <returns></returns>
-			public static long ClientNowMs() => (GetUtcNow().Ticks - EpochTicks) / TimeSpan.TicksPerMillisecond;
+			public static long ClientNowMs() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
 
 			/// <summary>
 			/// 客户端今天开始时间戳(秒)，如：2021-01-01 00:00:00的秒级时间戳
 			/// </summary>
 			/// <returns></returns>
-			public static long ClientToday() => (GetUtcNow().Date.Ticks - EpochTicks) / TimeSpan.TicksPerSecond;
+			public static long ClientToday() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
 
 			/// <summary>
 			/// 客户端今天开始时间戳(毫秒)，如：2021-01-01 00:00:00的毫秒级时间戳
 			/// </summary>
 			/// <returns></returns>
-			public static long ClientTodayMs() => (GetUtcNow().Date.Ticks - EpochTicks) / TimeSpan.TicksPerMillisecond;
+			public static long ClientTodayMs() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
 
 			#endregion
 
@@ -154,8 +155,8 @@ namespace Hotfix.Framework.Core
 			/// <returns>距离纪元时间的秒数。</returns>
 			public static long TimeToTimestamp(DateTime timeDate, bool utc = false)
 			{
-				if (utc) return (long)(timeDate - UtcEpoch).TotalSeconds;
-				return (long)(timeDate - UtcEpoch.ToLocalTime()).TotalSeconds;
+				if (utc) return (long)(timeDate - sr_UtcEpoch).TotalSeconds;
+				return (long)(timeDate - sr_UtcEpoch.ToLocalTime()).TotalSeconds;
 			}
 
 			/// <summary>
@@ -166,8 +167,8 @@ namespace Hotfix.Framework.Core
 			/// <returns>距离纪元时间的毫秒数。</returns>
 			public static long TimeToTimestampMs(DateTime timeDate, bool utc = false)
 			{
-				if (utc) return (long)(timeDate - UtcEpoch).TotalMilliseconds;
-				return (long)(timeDate - UtcEpoch.ToLocalTime()).TotalMilliseconds;
+				if (utc) return (long)(timeDate - sr_UtcEpoch).TotalMilliseconds;
+				return (long)(timeDate - sr_UtcEpoch.ToLocalTime()).TotalMilliseconds;
 			}
 
 			/// <summary>
@@ -178,7 +179,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>转换后的时间。</returns>
 			public static DateTime TimestampMsToTime(long timestampMs, bool utc = false)
 			{
-				return utc ? UtcEpoch.AddMilliseconds(timestampMs) : UtcEpoch.ToLocalTime().AddMilliseconds(timestampMs);
+				return utc ? sr_UtcEpoch.AddMilliseconds(timestampMs) : sr_UtcEpoch.ToLocalTime().AddMilliseconds(timestampMs);
 			}
 
 			/// <summary>
@@ -189,7 +190,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>转换后的时间。</returns>
 			public static DateTime TimestampToTime(long timestamp, bool utc = false)
 			{
-				return utc ? UtcEpoch.AddSeconds(timestamp) : UtcEpoch.ToLocalTime().AddSeconds(timestamp);
+				return utc ? sr_UtcEpoch.AddSeconds(timestamp) : sr_UtcEpoch.ToLocalTime().AddSeconds(timestamp);
 			}
 
 			/// <summary>

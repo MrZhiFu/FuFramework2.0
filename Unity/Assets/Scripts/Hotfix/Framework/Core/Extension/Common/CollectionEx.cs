@@ -210,7 +210,10 @@ namespace Hotfix.Framework.Core
 			}
 		}
 
-		private static readonly StringBuilder ListToStringBuilder = new();
+		/// <summary>
+		/// 缓存StringBuilder实例，用于ListToString方法
+		/// </summary>
+		private static readonly StringBuilder sr_listToStringBuilder = new();
 
 		/// <summary>
 		/// 将列表转换为以指定字符串分割的字符串
@@ -227,14 +230,14 @@ namespace Hotfix.Framework.Core
 		/// </example>
 		public static string ListToString<T>(this List<T> list, string separator = ",")
 		{
-			ListToStringBuilder.Clear();
+			sr_listToStringBuilder.Clear();
 			foreach (var t in list)
 			{
-				ListToStringBuilder.Append(t);
-				ListToStringBuilder.Append(separator);
+				sr_listToStringBuilder.Append(t);
+				sr_listToStringBuilder.Append(separator);
 			}
 
-			return ListToStringBuilder.ToString();
+			return sr_listToStringBuilder.ToString();
 		}
 
 		#endregion

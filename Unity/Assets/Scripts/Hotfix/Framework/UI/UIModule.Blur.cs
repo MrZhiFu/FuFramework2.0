@@ -103,6 +103,26 @@ namespace Hotfix.Framework.UI
 		private CancellationScope m_scope = new();
 
 		/// <summary>
+		/// Shader 属性 ID - 模糊背景纹理。
+		/// </summary>
+		private static readonly int sr_blurBgTex = Shader.PropertyToID("_BlurBGTex");
+
+		/// <summary>
+		/// Shader 属性 ID - 模糊采样步长。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// </summary>
+		private static readonly int sr_blurSize = Shader.PropertyToID("_BlurSize");
+
+		/// <summary>
+		/// Shader 属性 ID - 压暗强度。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// </summary>
+		private static readonly int sr_maskPower = Shader.PropertyToID("_MaskPower");
+
+		/// <summary>
+		/// Shader 属性 ID - 渐变进度。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// </summary>
+		private static readonly int sr_blurProgress = Shader.PropertyToID("_BlurProgress");
+
+		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
 		public CancellationToken Token => m_scope.Token;
@@ -149,8 +169,8 @@ namespace Hotfix.Framework.UI
 			if (loadTaskSource == null) return;
 
 			// 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
-			AssetHandle handle = null;
-			var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
+			AssetHandle handle        = null;
+			var         capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
 			try
 			{
 				var assetModule = ModuleManager.GetModule<AssetModule>();
@@ -262,9 +282,9 @@ namespace Hotfix.Framework.UI
 			m_blurOverlay.sortingOrder = MaxActiveBlurLayer() - 1;
 
 			// 注入冻结帧与参数
-			m_blurMaterial.SetTexture("_BlurBGTex", m_blurRT);
-			m_blurMaterial.SetFloat("_BlurSize",  BLUR_SIZE);
-			m_blurMaterial.SetFloat("_MaskPower", MASK_POWER);
+			m_blurMaterial.SetTexture(sr_blurBgTex, m_blurRT);
+			m_blurMaterial.SetFloat(sr_blurSize,  BLUR_SIZE);
+			m_blurMaterial.SetFloat(sr_maskPower, MASK_POWER);
 
 			m_blurOverlay.visible = true;
 
@@ -416,12 +436,12 @@ namespace Hotfix.Framework.UI
 		/// <param name="ct">取消令牌，动画被取消时终止。</param>
 		private async UniTask RunBlurAnimAsync(float duration, CancellationToken ct)
 		{
-			m_blurMaterial.SetFloat("_BlurProgress", 0f);
+			m_blurMaterial.SetFloat(sr_blurProgress, 0f);
 			await UniTask.NextFrame(); // 确保 progress=0 先渲染一帧，避免首帧闪现
 
 			if (duration <= 0f)
 			{
-				m_blurMaterial.SetFloat("_BlurProgress", 1f);
+				m_blurMaterial.SetFloat(sr_blurProgress, 1f);
 				return;
 			}
 
@@ -429,11 +449,11 @@ namespace Hotfix.Framework.UI
 			while (elapsed < duration)
 			{
 				elapsed += Time.deltaTime;
-				m_blurMaterial.SetFloat("_BlurProgress", Mathf.Clamp01(elapsed / duration));
+				m_blurMaterial.SetFloat(sr_blurProgress, Mathf.Clamp01(elapsed / duration));
 				await UniTask.NextFrame(PlayerLoopTiming.Update, ct);
 			}
 
-			m_blurMaterial.SetFloat("_BlurProgress", 1f);
+			m_blurMaterial.SetFloat(sr_blurProgress, 1f);
 		}
 
 		/// <summary>

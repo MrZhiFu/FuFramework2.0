@@ -52,7 +52,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 加解密字符串的字节缓存数组。byte.MaxValue + 1 = 256，足够缓存 256 个字节。
 		/// </summary>
-		private static readonly byte[] CachedBytes = new byte[byte.MaxValue + 1];
+		private static readonly byte[] sr_cachedBytes = new byte[byte.MaxValue + 1];
 
 		/// <summary>
 		/// 从二进制流读取被编码过的 32 位有符号整数(解码)。
@@ -68,8 +68,8 @@ namespace Hotfix.Framework.Core
 		/// </example>
 		public static int Read7BitEncodedInt32(this BinaryReader binaryReader)
 		{
-			int  rltValue = 0; // 初始化结果变量，用于存储解码过的整数值
-			int  offset   = 0; // 初始化位移变量，用于记录当前处理的位的位置
+			var  rltValue = 0; // 初始化结果变量，用于存储解码过的整数值
+			var  offset   = 0; // 初始化位移变量，用于记录当前处理的位的位置
 			byte b;            // 声明一个字节变量，用于存储从二进制流中读取的字节
 
 			do
@@ -163,8 +163,8 @@ namespace Hotfix.Framework.Core
 		/// </example>
 		public static long Read7BitEncodedInt64(this BinaryReader binaryReader)
 		{
-			var rltValue = 0L;
-			var offset   = 0;
+			var  rltValue = 0L;
+			var  offset   = 0;
 			byte b;
 			do
 			{
@@ -273,12 +273,12 @@ namespace Hotfix.Framework.Core
 
 			for (byte i = 0; i < length; i++)
 			{
-				CachedBytes[i] = binaryReader.ReadByte();
+				sr_cachedBytes[i] = binaryReader.ReadByte();
 			}
 
-			Utility.Encryption.Xor.GetSelfXorBytes(CachedBytes, 0, length, encryptBytes);
-			var value = Utility.BitConverter.Bytes2String(CachedBytes, 0, length);
-			Array.Clear(CachedBytes, 0, length);
+			Utility.Encryption.Xor.GetSelfXorBytes(sr_cachedBytes, 0, length, encryptBytes);
+			var value = Utility.BitConverter.Bytes2String(sr_cachedBytes, 0, length);
+			Array.Clear(sr_cachedBytes, 0, length);
 			return value;
 		}
 
@@ -313,11 +313,11 @@ namespace Hotfix.Framework.Core
 				throw new ArgumentException($"字符串 '{value}' 太长，无法加密（UTF-8 字节数 {length}，上限 {byte.MaxValue}）。", nameof(value));
 			}
 
-			Utility.BitConverter.String2Bytes(value, CachedBytes);
+			Utility.BitConverter.String2Bytes(value, sr_cachedBytes);
 
-			Utility.Encryption.Xor.GetSelfXorBytes(CachedBytes, encryptBytes);
+			Utility.Encryption.Xor.GetSelfXorBytes(sr_cachedBytes, encryptBytes);
 			binaryWriter.Write((byte)length);
-			binaryWriter.Write(CachedBytes, 0, length);
+			binaryWriter.Write(sr_cachedBytes, 0, length);
 		}
 	}
 }

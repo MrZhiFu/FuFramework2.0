@@ -19,7 +19,7 @@ namespace Hotfix.Framework.Core
 				/// <summary>
 				/// DSA 实例，用于加密解密操作。
 				/// </summary>
-				private readonly DSACryptoServiceProvider _dsa;
+				private readonly DSACryptoServiceProvider m_dsa;
 
 				/// <summary>
 				/// Dsa 构造函数，使用提供的 DSACryptoServiceProvider 实例初始化。
@@ -27,7 +27,7 @@ namespace Hotfix.Framework.Core
 				/// <param name="dsa">DSACryptoServiceProvider 实例</param>
 				public Dsa(DSACryptoServiceProvider dsa)
 				{
-					_dsa = dsa;
+					m_dsa = dsa;
 				}
 
 				/// <summary>
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Core
 				{
 					var rsa = new DSACryptoServiceProvider();
 					rsa.FromXmlString(key);
-					_dsa = rsa;
+					m_dsa = rsa;
 				}
 
 				/// <summary>
@@ -48,6 +48,7 @@ namespace Hotfix.Framework.Core
 				public static Dictionary<string, string> Make()
 				{
 					var dic = new Dictionary<string, string>();
+
 					// DSACryptoServiceProvider 持有非托管 CSP 句柄，必须 Dispose
 					using var dsa = new DSACryptoServiceProvider();
 					dic["privatekey"] = dsa.ToXmlString(true);
@@ -96,7 +97,7 @@ namespace Hotfix.Framework.Core
 				{
 					try
 					{
-						return _dsa.SignData(dataToSign);
+						return m_dsa.SignData(dataToSign);
 					}
 					catch
 					{
@@ -158,7 +159,7 @@ namespace Hotfix.Framework.Core
 				{
 					try
 					{
-						return _dsa.VerifyData(dataToVerify, signedData);
+						return m_dsa.VerifyData(dataToVerify, signedData);
 					}
 					catch
 					{
@@ -189,7 +190,7 @@ namespace Hotfix.Framework.Core
 				/// </summary>
 				public void Dispose()
 				{
-					_dsa?.Dispose();
+					m_dsa?.Dispose();
 				}
 			}
 		}

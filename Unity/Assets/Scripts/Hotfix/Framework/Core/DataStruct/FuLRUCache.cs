@@ -25,17 +25,17 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 缓存的 Key
 			/// </summary>
-			public readonly TKey Key;
+			public readonly TKey m_Key;
 
 			/// <summary>
 			/// 缓存的 Value
 			/// </summary>
-			public TValue Value;
+			public TValue m_Value;
 
 			public CacheItem(TKey key, TValue value)
 			{
-				Key   = key;
-				Value = value;
+				m_Key   = key;
+				m_Value = value;
 			}
 		}
 
@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Core
 			// 移动到最近使用的位置
 			m_lruList.Remove(node);
 			m_lruList.AddFirst(node);
-			value = node.Value.Value;
+			value = node.Value.m_Value;
 			return true;
 		}
 
@@ -133,8 +133,8 @@ namespace Hotfix.Framework.Core
 			{
 				// 替换已有项：先驱逐旧值，再更新
 				var cacheItem = existingNode.Value;
-				m_onEvict?.Invoke(key, cacheItem.Value);
-				cacheItem.Value = value;
+				m_onEvict?.Invoke(key, cacheItem.m_Value);
+				cacheItem.m_Value = value;
 				m_lruList.Remove(existingNode);
 				m_lruList.AddFirst(existingNode);
 			}
@@ -146,8 +146,8 @@ namespace Hotfix.Framework.Core
 					var lastNode = m_lruList.Last;
 					var lastItem = lastNode.Value;
 					m_lruList.Remove(lastNode);
-					m_cacheDict.Remove(lastItem.Key);
-					m_onEvict?.Invoke(lastItem.Key, lastItem.Value);
+					m_cacheDict.Remove(lastItem.m_Key);
+					m_onEvict?.Invoke(lastItem.m_Key, lastItem.m_Value);
 				}
 
 				// 添加新项
@@ -170,7 +170,7 @@ namespace Hotfix.Framework.Core
 			var cacheItem = node.Value;
 			m_lruList.Remove(node);
 			m_cacheDict.Remove(key);
-			m_onEvict?.Invoke(cacheItem.Key, cacheItem.Value);
+			m_onEvict?.Invoke(cacheItem.m_Key, cacheItem.m_Value);
 			return true;
 		}
 
@@ -196,7 +196,7 @@ namespace Hotfix.Framework.Core
 
 			for (var i = 0; i < snapshot.Length; i++)
 			{
-				m_onEvict.Invoke(snapshot[i].Key, snapshot[i].Value);
+				m_onEvict.Invoke(snapshot[i].m_Key, snapshot[i].m_Value);
 			}
 		}
 	}

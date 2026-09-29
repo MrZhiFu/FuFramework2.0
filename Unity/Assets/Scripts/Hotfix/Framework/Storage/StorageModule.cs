@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
-using AOT.Framework.Core.Utility;
 using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 namespace Hotfix.Framework.Storage

@@ -22,11 +22,11 @@ FuFramework Entity 模块是游戏框架的实体管理系统，提供实体的�
 ┌─────────────────────────────────────────────────────────────┐
 │                     EntityModule                             │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_EntityGroupDict (Dictionary<string, EntityGroup>)│   │
+│  │  m_entityGroupDict (Dictionary<string, EntityGroup>)│   │
 │  │  - 按名称管理所有实体组                              │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_EntityDict (Dictionary<int, EntityInfo>)         │   │
+│  │  m_entityDict (Dictionary<int, EntityInfo>)         │   │
 │  │  - 按编号管理所有实体信息                            │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -376,8 +376,8 @@ using UnityEngine;
 
 public class BulletLogic : EntityLogic
 {
-    private float m_Speed = 10f;
-    private Vector3 m_Direction;
+    private float m_speed = 10f;
+    private Vector3 m_direction;
 
     protected internal override void OnInit(object userData)
     {
@@ -389,14 +389,14 @@ public class BulletLogic : EntityLogic
         base.OnShow(userData);
         if (userData is Vector3 direction)
         {
-            m_Direction = direction.normalized;
+            m_direction = direction.normalized;
         }
     }
 
     protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
     {
         base.OnUpdate(deltaTime, unscaledDeltaTime);
-        CachedTransform.position += m_Direction * m_Speed * deltaTime;
+        CachedTransform.position += m_direction * m_speed * deltaTime;
 
         if (Vector3.Distance(CachedTransform.position, Vector3.zero) > 50f)
         {
@@ -419,18 +419,18 @@ using Hotfix.Framework.Entity;
 
 public class BulletManager
 {
-    private EntityModule m_EntityModule;
+    private EntityModule m_entityModule;
 
     public void Init()
     {
-        m_EntityModule = EntityModule.Instance;
+        m_entityModule = EntityModule.Instance;
     }
 
     public async UniTask<Entity> FireBullet(int entityId, Vector3 direction)
     {
         var token = CancellationToken.None; // 调用方生命周期取消令牌（必传）；窗口传 WinBase.Token
         // 显示实体
-        var entity = await m_EntityModule.ShowEntityAsync<BulletLogic>(
+        var entity = await m_entityModule.ShowEntityAsync<BulletLogic>(
             entityId,
             "Assets/Prefabs/Bullet.prefab",
             "BulletGroup",
@@ -442,7 +442,7 @@ public class BulletManager
 
     public void DestroyBullet(int entityId)
     {
-        m_EntityModule.HideEntity(entityId);
+        m_entityModule.HideEntity(entityId);
     }
 }
 ```
@@ -451,31 +451,31 @@ public class BulletManager
 
 ```csharp
 // 将特效依附到角色上
-var playerEntity = m_EntityModule.GetEntity(playerEntityId);
-var effectEntity = await m_EntityModule.ShowEntityAsync<EffectLogic>(
+var playerEntity = m_entityModule.GetEntity(playerEntityId);
+var effectEntity = await m_entityModule.ShowEntityAsync<EffectLogic>(
     effectEntityId,
     "Assets/Prefabs/Effect.prefab",
     "EffectGroup"
 );
 
 // 按照 Transform 路径依附
-m_EntityModule.AttachEntity(effectEntity, playerEntity, null, "Bip001/Head");
+m_entityModule.AttachEntity(effectEntity, playerEntity, null, "Bip001/Head");
 
 // 按照 Transform 引用依附
 Transform boneTransform = playerEntity.Logic.CachedTransform.Find("Bip001/Head");
-m_EntityModule.AttachEntity(effectEntity, playerEntity, null, boneTransform);
+m_entityModule.AttachEntity(effectEntity, playerEntity, null, boneTransform);
 
 // 解除依附
-m_EntityModule.DetachEntity(effectEntity);
+m_entityModule.DetachEntity(effectEntity);
 ```
 
 ### 5.4 实体组管理
 
 ```csharp
 // 检查实体组
-if (m_EntityModule.HasEntityGroup("BulletGroup"))
+if (m_entityModule.HasEntityGroup("BulletGroup"))
 {
-    var group = m_EntityModule.GetEntityGroup("BulletGroup");
+    var group = m_entityModule.GetEntityGroup("BulletGroup");
 
     // 配置对象池参数
     group.PoolCapacity = 50;

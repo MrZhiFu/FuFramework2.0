@@ -38,10 +38,8 @@ namespace Hotfix.Framework.ObjectPool
 			var toDisposeObjects = BeginTodoSnapshot(m_cachedCanDisposeObjectList.Count);
 			try
 			{
-				for (var i = 0; i < m_cachedCanDisposeObjectList.Count; i++)
+				foreach (var obj in m_cachedCanDisposeObjectList)
 				{
-					var obj = m_cachedCanDisposeObjectList[i];
-
 					// 防御性 null 检查（在解引用前）
 					if (obj == null) continue;
 

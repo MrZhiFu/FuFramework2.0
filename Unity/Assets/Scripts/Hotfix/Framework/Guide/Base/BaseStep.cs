@@ -1,7 +1,8 @@
 using Hotfix.Framework.Core;
 using UnityEngine;
-
 using Hotfix.Game.Config;
+
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>

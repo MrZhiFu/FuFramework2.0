@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using YooAsset;
+using System.Threading;
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.ModuleSetting.Runtime;
 using AOT.Framework.Core.Log;
@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Asset
 			// （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。
 			foreach (var kvp in m_instantiateRefDict)
 			{
-				kvp.Value.Handle.Release();
+				kvp.Value.m_AssetHandle.Release();
 				UnloadAsset(kvp.Key);
 			}
 
@@ -127,10 +127,10 @@ namespace Hotfix.Framework.Asset
 		private void ReleaseInstantiateInternal(string path)
 		{
 			if (!m_instantiateRefDict.TryGetValue(path, out var entry)) return;
-			if (entry.RefCount   <= 0) return;
-			if (--entry.RefCount > 0) return;
+			if (entry.m_RefCount   <= 0) return;
+			if (--entry.m_RefCount > 0) return;
 
-			entry.Handle.Release();
+			entry.m_AssetHandle.Release();
 			m_instantiateRefDict.Remove(path);
 
 			// 引用归零后显式卸载：句柄 Release 在 AutoUnloadBundleWhenUnused=false 下不会卸载 bundle，

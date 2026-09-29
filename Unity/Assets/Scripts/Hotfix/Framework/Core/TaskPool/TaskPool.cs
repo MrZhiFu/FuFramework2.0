@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
@@ -153,7 +152,7 @@ namespace Hotfix.Framework.Core
 				var workingTask = workingAgent.Task;
 				if (workingTask.SerialId != serialId) continue;
 				return new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority, workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing,
-									workingTask.Description);
+				                    workingTask.Description);
 			}
 
 			foreach (var waitingTask in m_waitingTaskList)
@@ -193,14 +192,14 @@ namespace Hotfix.Framework.Core
 				var workingTask = workingAgent.Task;
 				if (workingTask.Tag != tag) continue;
 				results.Add(new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-										 workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
+				                         workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
 			}
 
 			foreach (var waitingTask in m_waitingTaskList)
 			{
 				if (waitingTask.Tag != tag) continue;
 				results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-										 waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
+				                         waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
 			}
 		}
 
@@ -216,13 +215,13 @@ namespace Hotfix.Framework.Core
 			{
 				var workingTask = workingAgent.Task;
 				results[index++] = new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-												workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
+				                                workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description);
 			}
 
 			foreach (var waitingTask in m_waitingTaskList)
 			{
 				results[index++] = new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-												waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
+				                                waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description);
 			}
 
 			return results;
@@ -242,13 +241,13 @@ namespace Hotfix.Framework.Core
 			{
 				var workingTask = workingAgent.Task;
 				results.Add(new TaskInfo(workingTask.SerialId, workingTask.Tag, workingTask.Priority,
-										 workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
+				                         workingTask.UserData, workingTask.Done ? ETaskStatus.Done : ETaskStatus.Doing, workingTask.Description));
 			}
 
 			foreach (var waitingTask in m_waitingTaskList)
 			{
 				results.Add(new TaskInfo(waitingTask.SerialId, waitingTask.Tag, waitingTask.Priority,
-										 waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
+				                         waitingTask.UserData, ETaskStatus.Todo, waitingTask.Description));
 			}
 		}
 

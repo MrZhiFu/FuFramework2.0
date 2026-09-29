@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 记录指定类型下的引用对象集合的字典, key:指定类型--Value:该类型下的引用对象信息集合
 		/// </summary>
-		private static readonly Dictionary<Type, ReferenceCollection> m_referenceCollectionDict = new();
+		private static readonly Dictionary<Type, ReferenceCollection> sr_referenceCollectionDict = new();
 
 		/// <summary>
 		/// 移除所有引用池中的闲置引用（保留类型条目与计数，使用中的引用不受影响）。
@@ -28,9 +28,9 @@ namespace Hotfix.Framework.Core
 		/// </remarks>
 		public static void ClearAll()
 		{
-			lock (m_referenceCollectionDict)
+			lock (sr_referenceCollectionDict)
 			{
-				foreach (var (_, refCollection) in m_referenceCollectionDict)
+				foreach (var (_, refCollection) in sr_referenceCollectionDict)
 				{
 					refCollection.RemoveAll();
 				}
@@ -47,11 +47,11 @@ namespace Hotfix.Framework.Core
 			if (refType == null) throw new InvalidOperationException("[ReferencePool] 引用类型为空.");
 
 			ReferenceCollection referenceCollection;
-			lock (m_referenceCollectionDict)
+			lock (sr_referenceCollectionDict)
 			{
-				if (m_referenceCollectionDict.TryGetValue(refType, out referenceCollection)) return referenceCollection;
+				if (sr_referenceCollectionDict.TryGetValue(refType, out referenceCollection)) return referenceCollection;
 				referenceCollection = new ReferenceCollection(refType);
-				m_referenceCollectionDict.Add(refType, referenceCollection);
+				sr_referenceCollectionDict.Add(refType, referenceCollection);
 			}
 
 			return referenceCollection;

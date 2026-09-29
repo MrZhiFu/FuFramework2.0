@@ -2,18 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using AOT.Framework.Core.Log;
 
 #if UNITY_IOS
 using System.Runtime.InteropServices;
 #endif
 
+
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Core
 {
 	/// <summary>
@@ -55,21 +55,21 @@ namespace Hotfix.Framework.Core
 	{
 		#region 常量
 
-		private const string LAST_TICK_TIME_KEY    = "LastTickTime"; // 最后一次存储的系统启动时间记录key
-		private const string LAST_UTC_TIME_KEY     = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
+		private const string LAST_TICK_TIME_KEY   = "LastTickTime"; // 最后一次存储的系统启动时间记录key
+		private const string LAST_UTC_TIME_KEY    = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
 		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 重查网络时间的最大尝试次数
 
 		#endregion
 
 		#region 静态字段
 
-		private static bool     m_forbidCheck;         // 禁止检测（方便测试）
-		private static DateTime m_cachedTime;          // 缓存的时间结果
-		private static long     m_lastTickCount;       // 上次计算时的系统启动时间（秒）
-		private static bool     m_gotNetTime;          // 是否得到了在线时间
-		private static DateTime m_nowOnlineDateTime;   // 当前在线时间
-		private static float    m_lastRecheckTime;     // 上次重查网络时间时的时间
-		private static int      m_recheckAttemptCount; // 重查网络时间的尝试次数
+		private static bool     s_forbidCheck;         // 禁止检测（方便测试）
+		private static DateTime s_cachedTime;          // 缓存的时间结果
+		private static long     s_lastTickCount;       // 上次计算时的系统启动时间（秒）
+		private static bool     s_gotNetTime;          // 是否得到了在线时间
+		private static DateTime s_nowOnlineDateTime;   // 当前在线时间
+		private static float    s_lastRecheckTime;     // 上次重查网络时间时的时间
+		private static int      s_recheckAttemptCount; // 重查网络时间的尝试次数
 
 		#endregion
 
@@ -84,14 +84,12 @@ namespace Hotfix.Framework.Core
 		{
 			get
 			{
-#if NET_CORE
-			return Environment.TickCount64;
-#elif UNITY_EDITOR
+#if UNITY_EDITOR
 				return GetTickCount();
 #elif UNITY_IOS
-			return GetTickCount();
+				return GetTickCount();
 #else
-			return GetAndroidTickCount();
+				return GetAndroidTickCount();
 #endif
 			}
 		}
@@ -106,17 +104,12 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 是否需要在未获得网络时间时重新查找网络时间(用于在未获取到在线时间时判断是否需要重新获取)
 		/// </summary>
-		public static bool NeedRecheckNetTime = true;
+		public static bool s_NeedRecheckNetTime = true;
 
 		/// <summary>
 		/// 网络时间重查间隔(秒), 默认5分钟
 		/// </summary>
-		public static float NetTimeRecheckInterval = 300f;
-
-		/// <summary>
-		/// 是否处于禁止检测状态
-		/// </summary>
-		public static bool IsForbidCheck => m_forbidCheck;
+		public static float s_NetTimeRecheckInterval = 300f;
 
 		#endregion
 
@@ -139,14 +132,14 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		public static DateTime GetUtcNow()
 		{
-			if (m_forbidCheck) return DateTime.UtcNow;
+			if (s_forbidCheck) return DateTime.UtcNow;
 
 			// 使用缓存优化，1秒内避免重复计算
 			var currentTick = TickCount;
-			if (Math.Abs(currentTick - m_lastTickCount) < 1) // 1秒内使用缓存
+			if (Math.Abs(currentTick - s_lastTickCount) < 1) // 1秒内使用缓存
 			{
-				Log($"使用缓存时间，当前Utc时间：{m_cachedTime}");
-				return m_cachedTime;
+				Log($"使用缓存时间，当前Utc时间：{s_cachedTime}");
+				return s_cachedTime;
 			}
 
 			DateTime result;
@@ -163,13 +156,13 @@ namespace Hotfix.Framework.Core
 				lastTickTime = tickTime;
 			}
 
-			if (m_gotNetTime)
+			if (s_gotNetTime)
 			{
 				// 已经获得过网络时间：结果 = 网络时间 + 系统启动时间差
-				m_nowOnlineDateTime = m_nowOnlineDateTime.AddSeconds(tickTime - lastTickTime);
-				SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(m_nowOnlineDateTime));
+				s_nowOnlineDateTime = s_nowOnlineDateTime.AddSeconds(tickTime - lastTickTime);
+				SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(s_nowOnlineDateTime));
 				SaveTime(LAST_TICK_TIME_KEY, tickTime);
-				result = m_nowOnlineDateTime;
+				result = s_nowOnlineDateTime;
 				Log($"使用网络时间刷新时间记录点，时间可靠，当前Utc时间：{result}");
 			}
 			else
@@ -215,8 +208,8 @@ namespace Hotfix.Framework.Core
 			}
 
 			// 更新缓存
-			m_lastTickCount = currentTick;
-			m_cachedTime    = result;
+			s_lastTickCount = currentTick;
+			s_cachedTime    = result;
 
 			return result;
 		}
@@ -227,7 +220,7 @@ namespace Hotfix.Framework.Core
 		public static void OnApplicationQuit()
 		{
 			// 取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
-			m_ntpCancellation.Dispose();
+			sr_ntpCancellation.Dispose();
 
 			var now          = GetUtcNow();
 			var nowTimestamp = Time2Timestamp(now);
@@ -242,7 +235,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="forbid"></param>
 		public static void ForbidCheck(bool forbid)
 		{
-			m_forbidCheck = forbid;
+			s_forbidCheck = forbid;
 		}
 
 		#endregion
@@ -254,26 +247,26 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private static void TryRecheckNetTime()
 		{
-			if (!NeedRecheckNetTime || m_gotNetTime) return;
+			if (!s_NeedRecheckNetTime || s_gotNetTime) return;
 
 			// 检查重查频率限制
 			var currentTime = Time.realtimeSinceStartup;
-			if (currentTime - m_lastRecheckTime < NetTimeRecheckInterval) return;
+			if (currentTime - s_lastRecheckTime < s_NetTimeRecheckInterval) return;
 
 			// 检查重试次数限制
-			if (m_recheckAttemptCount >= MAX_RECHECK_ATTEMPTS)
+			if (s_recheckAttemptCount >= MAX_RECHECK_ATTEMPTS)
 			{
 				Log("已达到最大网络时间重试次数，停止重试");
 				return;
 			}
 
-			m_lastRecheckTime = currentTime;
-			m_recheckAttemptCount++;
+			s_lastRecheckTime = currentTime;
+			s_recheckAttemptCount++;
 
-			Log($"第{m_recheckAttemptCount}次尝试重新获取网络时间");
+			Log($"第{s_recheckAttemptCount}次尝试重新获取网络时间");
 
 			// 异步链的生命周期由 m_ntpCancellation 持有：Token 透传给所有在途请求，OnApplicationQuit 取消释放
-			MultipleNptGetTimeAsync(m_ntpCancellation.Token).Forget();
+			MultipleNptGetTimeAsync(sr_ntpCancellation.Token).Forget();
 		}
 
 		/// <summary>
@@ -281,8 +274,8 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private static void ResetRecheckState()
 		{
-			m_recheckAttemptCount = 0;
-			m_lastRecheckTime     = 0f;
+			s_recheckAttemptCount = 0;
+			s_lastRecheckTime     = 0f;
 		}
 
 		#region 多npt服务器地址获取全球时间方法
@@ -291,7 +284,7 @@ namespace Hotfix.Framework.Core
 		/// NTP 异步请求的生命周期取消源（静态类自持）。
 		/// 发起请求时透传其 Token；OnApplicationQuit 取消并释放，避免脱离生命周期的裸异步链。
 		/// </summary>
-		private static readonly LifecycleCancellationSource m_ntpCancellation = new();
+		private static readonly LifecycleCancellationSource sr_ntpCancellation = new();
 
 		/// <summary>
 		/// 多地址获取网络时间方法（fire-and-forget）。
@@ -436,12 +429,12 @@ namespace Hotfix.Framework.Core
 		/// <param name="offTime"></param>
 		private static void SetOnlineTime(DateTimeOffset offTime)
 		{
-			if (m_gotNetTime) return;
+			if (s_gotNetTime) return;
 
-			m_nowOnlineDateTime = offTime.UtcDateTime;
-			m_gotNetTime        = true;
+			s_nowOnlineDateTime = offTime.UtcDateTime;
+			s_gotNetTime        = true;
 
-			SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(m_nowOnlineDateTime));
+			SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(s_nowOnlineDateTime));
 			SaveTime(LAST_TICK_TIME_KEY, TickCount);
 
 			// 重置重查状态
@@ -461,10 +454,11 @@ namespace Hotfix.Framework.Core
 #if UNITY_IOS && !UNITY_EDITOR
 			//此方法获取的时间有时候不准确，需要确定。不可用时就需要通过原生端来获取。
 			tickCount = _GetUpTime() * 1000;
+
 			//这里是单独实现ios的方法，一般需要通过xcode来获取。具体实现方式
 			// var data = UnitySDK.UnityAgent.CallNativeReturn<DoubleNativeData>(SystemDefine.IOSGetSystemOpenTime);
 			// tickCount = (long)data.Data * 1000;
-			ShowDebug("获取IOS端系统启动时间(毫秒):" + tickCount);
+			FuLogger.LogInfo("获取IOS端系统启动时间(毫秒):" + tickCount);
 #else
 			//由于 TickCount 属性值的值是32位有符号整数，因此，如果系统连续运行，TickCount 将从零递增到 Int32.MaxValue 大约24.9 天，
 			//然后跳转到 Int32.MinValue，这是一个负数，然后在下一个24.9 天内递增为零
@@ -551,7 +545,7 @@ namespace Hotfix.Framework.Core
 		/// <returns></returns>
 		private static long Time2Timestamp(DateTime tarTime)
 		{
-			var ts = tarTime - Utility.Time.UtcEpoch;
+			var ts = tarTime - Utility.Time.sr_UtcEpoch;
 			return Convert.ToInt64(ts.TotalSeconds);
 		}
 

@@ -2,6 +2,7 @@ using System;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Download
 {
 	/// <summary>

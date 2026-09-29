@@ -32,7 +32,7 @@ ModuleBase (框架模块基类)
 ┌─────────────────────────────────────────────────────────────┐
 │                     ModelModule                              │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_ModelDict (Dictionary<Type, BaseModel>)          │   │
+│  │  m_modelDict (Dictionary<Type, BaseModel>)          │   │
 │  │  - 按类型管理所有 Model 实例                         │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -189,19 +189,19 @@ using Hotfix.Framework.Model;
 
 public class ModelExample
 {
-    private ModelModule m_ModelModule;
+    private ModelModule m_modelModule;
 
     public void Init()
     {
-        m_ModelModule = ModuleManager.GetModule<ModelModule>();
+        m_modelModule = ModuleManager.GetModule<ModelModule>();
 
         // 创建并获取 PlayerModel
-        var playerModel = m_ModelModule.CreateModel<PlayerModel>();
+        var playerModel = m_modelModule.CreateModel<PlayerModel>();
         playerModel.PlayerName = "Player1";
         playerModel.Level = 10;
 
         // 创建并获取 SettingModel
-        var settingModel = m_ModelModule.CreateModel<SettingModel>();
+        var settingModel = m_modelModule.CreateModel<SettingModel>();
         settingModel.MusicVolume = 0.8f;
         settingModel.SaveSettings();
     }
@@ -209,9 +209,9 @@ public class ModelExample
     public void AccessModel()
     {
         // 获取已存在的 Model
-        if (m_ModelModule.HasModel<PlayerModel>())
+        if (m_modelModule.HasModel<PlayerModel>())
         {
-            var playerModel = m_ModelModule.GetModel<PlayerModel>();
+            var playerModel = m_modelModule.GetModel<PlayerModel>();
             Debug.Log($"玩家等级: {playerModel.Level}");
         }
     }

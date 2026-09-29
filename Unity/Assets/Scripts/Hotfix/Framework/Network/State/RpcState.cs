@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 		/// 说明：原实现每收一包都调用 Type.IsImplWithInterface（内部会分配 GetInterfaces 数组），
 		/// 这里按类型缓存结果，热路径上不再重复做接口扫描。
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, bool> s_ResponseMessageTypeCache = new();
+		private static readonly ConcurrentDictionary<Type, bool> sr_responseMessageTypeCache = new();
 
 		public RpcState(int timeout)
 		{
@@ -70,7 +70,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
 		public bool TryReply(MessageObject message)
 		{
-			if (!s_ResponseMessageTypeCache.GetOrAdd(message.GetType(), static type => type.IsImplWithInterface(typeof(IResponseMessage)))) return false;
+			if (!sr_responseMessageTypeCache.GetOrAdd(message.GetType(), static type => type.IsImplWithInterface(typeof(IResponseMessage)))) return false;
 			if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
 
 			try

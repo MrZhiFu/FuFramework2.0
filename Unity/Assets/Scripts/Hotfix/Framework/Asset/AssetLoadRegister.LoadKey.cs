@@ -12,12 +12,12 @@ namespace Hotfix.Framework.Asset
 		/// <summary>
 		/// 资源路径。
 		/// </summary>
-		public readonly string Path;
+		public readonly string m_Path;
 
 		/// <summary>
 		/// 加载类型（null 表示不指定类型）。
 		/// </summary>
-		public readonly Type Type;
+		public readonly Type m_Type;
 
 		/// <summary>
 		/// 构造缓存键。
@@ -26,8 +26,8 @@ namespace Hotfix.Framework.Asset
 		/// <param name="type">加载类型。</param>
 		public LoadKey(string path, Type type)
 		{
-			Path = path;
-			Type = type;
+			m_Path = path;
+			m_Type = type;
 		}
 
 		/// <summary>
@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Asset
 		/// </summary>
 		/// <param name="other">另一缓存键。</param>
 		/// <returns>是否相等。</returns>
-		public bool Equals(LoadKey other) => Path == other.Path && Type == other.Type;
+		public bool Equals(LoadKey other) => m_Path == other.m_Path && m_Type == other.m_Type;
 
 		/// <summary>
 		/// 判断与对象是否相等。
@@ -52,8 +52,8 @@ namespace Hotfix.Framework.Asset
 		{
 			unchecked
 			{
-				var hash = Path             != null ? Path.GetHashCode() : 0;
-				hash = (hash * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+				var hash = m_Path             != null ? m_Path.GetHashCode() : 0;
+				hash = (hash * 397) ^ (m_Type != null ? m_Type.GetHashCode() : 0);
 				return hash;
 			}
 		}

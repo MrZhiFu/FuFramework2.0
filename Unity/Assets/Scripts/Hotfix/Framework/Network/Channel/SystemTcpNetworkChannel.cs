@@ -32,7 +32,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="userData">用户自定义数据。</param>
 		public override void Connect(Uri address, object userData = null)
 		{
-			if (PIsConnecting) return;
+			if (m_IsConnecting) return;
 
 			base.Connect(address, userData);
 		}
@@ -43,16 +43,16 @@ namespace Hotfix.Framework.Network
 		/// <param name="userData">用户自定义数据</param>
 		protected override void OnConnectEndPointReady(object userData)
 		{
-			if (IsVerifyAddress)
+			if (m_IsVerifyAddress)
 			{
-				m_systemNetSocket = new SystemNetSocket(ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				PSocket = m_systemNetSocket;
+				m_systemNetSocket = new SystemNetSocket(m_ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+				m_Socket = m_systemNetSocket;
 			}
 
-			if (PSocket == null)
+			if (m_Socket == null)
 			{
 				const string errorMessage = "Initialize network channel failure.";
-				if (NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
+				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.SocketError,
 					socketError: SocketError.Success,
@@ -60,7 +60,7 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			PNetworkChannelHelper.PrepareForConnecting();
+			m_NetworkChannelHelper.PrepareForConnecting();
 
 			ConnectAsync(userData);
 		}
@@ -79,14 +79,14 @@ namespace Hotfix.Framework.Network
 		{
 			try
 			{
-				var position = (int)PReceiveState.Stream.Position;
-				var length = (int)(PReceiveState.Stream.Length - PReceiveState.Stream.Position);
-				m_systemNetSocket.BeginReceive(PReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_systemNetSocket);
+				var position = (int)m_ReceiveState.Stream.Position;
+				var length = (int)(m_ReceiveState.Stream.Length - m_ReceiveState.Stream.Position);
+				m_systemNetSocket.BeginReceive(m_ReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
 				PActive = false;
-				if (NetworkChannelError == null) throw;
+				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.ReceiveError,
@@ -108,7 +108,7 @@ namespace Hotfix.Framework.Network
 			catch (Exception exception)
 			{
 				PActive = false;
-				if (NetworkChannelError == null) throw;
+				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.ReceiveError,
@@ -123,9 +123,9 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			lock (PHeartBeatLock)
+			lock (m_HeartBeatLock)
 			{
-				PHeartBeatState.Reset(PResetHeartBeatElapseSecondsWhenReceivePacket);
+				m_HeartBeatState.Reset(m_ResetHeartBeatElapseSecondsWhenReceivePacket);
 			}
 
 			try
@@ -146,7 +146,7 @@ namespace Hotfix.Framework.Network
 			finally
 			{
 				// 无论成功、解析失败还是异常，都必须续接接收，避免连接静默卡死。
-				if (PActive && PSocket != null)
+				if (PActive && m_Socket != null)
 				{
 					ReceiveAsync();
 				}
@@ -159,22 +159,22 @@ namespace Hotfix.Framework.Network
 		/// <param name="bytesReceived">本次收到的字节数</param>
 		private void ProcessReceivedBytes(int bytesReceived)
 		{
-			PReceiveState.Stream.Position += bytesReceived;
-			if (PReceiveState.Stream.Position < PReceiveState.Stream.Length)
+			m_ReceiveState.Stream.Position += bytesReceived;
+			if (m_ReceiveState.Stream.Position < m_ReceiveState.Stream.Length)
 			{
 				return;
 			}
 
-			PReceiveState.Stream.Position = 0L;
+			m_ReceiveState.Stream.Position = 0L;
 			bool processSuccess;
-			if (PReceiveState.PacketHeader != null)
+			if (m_ReceiveState.PacketHeader != null)
 			{
 				processSuccess = ProcessPackBody();
 			}
 			else
 			{
 				processSuccess = ProcessPackHeader();
-				if (PReceiveState.IsEmptyBody)
+				if (m_ReceiveState.IsEmptyBody)
 				{
 					// 如果是空消息,直接返回
 					ProcessPackBody();
@@ -197,17 +197,17 @@ namespace Hotfix.Framework.Network
 		{
 			var headerLength = PacketReceiveHeaderHandler.PacketHeaderLength;
 			var buffer = new byte[headerLength];
-			_ = PReceiveState.Stream.Read(buffer, 0, headerLength);
-			var processSuccess = PNetworkChannelHelper.DeserializePacketHeader(buffer);
+			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
+			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
 			if (!processSuccess)
 			{
 				// 包头解析失败：恢复为“等待包头”的状态，避免流状态与网络数据错位。
-				PReceiveState.PrepareForPacketHeader();
+				m_ReceiveState.PrepareForPacketHeader();
 				return false;
 			}
 
 			var bodyLength = ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler);
-			PReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
+			m_ReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
 			return true;
 		}
 
@@ -217,18 +217,18 @@ namespace Hotfix.Framework.Network
 		/// <returns></returns>
 		private bool ProcessPackBody()
 		{
-			var bodyLength = ValidateAndGetPacketBodyLength(PReceiveState.PacketHeader);
+			var bodyLength = ValidateAndGetPacketBodyLength(m_ReceiveState.PacketHeader);
 			var buffer = new byte[bodyLength];
-			_ = PReceiveState.Stream.Read(buffer, 0, bodyLength);
+			_ = m_ReceiveState.Stream.Read(buffer, 0, bodyLength);
 
-			if (PReceiveState.PacketHeader.ZipFlag != 0)
+			if (m_ReceiveState.PacketHeader.ZipFlag != 0)
 			{
 				// 解压
 				MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
 				buffer = MessageDecompressHandler.Handler(buffer);
 			}
 
-			var processSuccess = PNetworkChannelHelper.DeserializePacketBody(buffer, PacketReceiveHeaderHandler.Id, out var messageObject);
+			var processSuccess = m_NetworkChannelHelper.DeserializePacketBody(buffer, PacketReceiveHeaderHandler.Id, out var messageObject);
 			if (processSuccess)
 			{
 				messageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
@@ -237,13 +237,13 @@ namespace Hotfix.Framework.Network
 			DebugReceiveLog(messageObject);
 
 			// 将收到的消息加入到链表最后（接收回调在线程池线程，需与主线程消费互斥）
-			lock (PExecutionMessageLock)
+			lock (m_ExecutionMessageLock)
 			{
 				m_executionMessageLinkedList.AddLast(messageObject);
 			}
 
-			PReceivedPacketCount++;
-			PReceiveState.PrepareForPacketHeader();
+			m_ReceivedPacketCount++;
+			m_ReceiveState.PrepareForPacketHeader();
 			return processSuccess;
 		}
 
@@ -277,13 +277,13 @@ namespace Hotfix.Framework.Network
 		{
 			try
 			{
-				m_systemNetSocket.BeginSend(PSendState.Stream.GetBuffer(), (int)PSendState.Stream.Position,
-					(int)(PSendState.Stream.Length - PSendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
+				m_systemNetSocket.BeginSend(m_SendState.Stream.GetBuffer(), (int)m_SendState.Stream.Position,
+					(int)(m_SendState.Stream.Length - m_SendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
 				PActive = false;
-				if (NetworkChannelError == null) throw;
+				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.SendError,
@@ -305,7 +305,7 @@ namespace Hotfix.Framework.Network
 			catch (Exception exception)
 			{
 				PActive = false;
-				if (NetworkChannelError == null) return;
+				if (m_NetworkChannelError == null) return;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.SendError,
@@ -314,15 +314,15 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			PSendState.Stream.Position += bytesSent;
-			if (PSendState.Stream.Position < PSendState.Stream.Length)
+			m_SendState.Stream.Position += bytesSent;
+			if (m_SendState.Stream.Position < m_SendState.Stream.Length)
 			{
 				SendAsync();
 				return;
 			}
 
-			PSentPacketCount++;
-			PSendState.Reset();
+			m_SentPacketCount++;
+			m_SendState.Reset();
 		}
 
 		#endregion
@@ -333,13 +333,13 @@ namespace Hotfix.Framework.Network
 		{
 			try
 			{
-				PIsConnecting = true;
+				m_IsConnecting = true;
 				m_connectState = new ConnectState(m_systemNetSocket, userData);
-				((SystemNetSocket)PSocket).BeginConnect(ConnectEndPoint.Address, ConnectEndPoint.Port, ConnectCallback, m_connectState);
+				((SystemNetSocket)m_Socket).BeginConnect(m_ConnectEndPoint.Address, m_ConnectEndPoint.Port, ConnectCallback, m_connectState);
 			}
 			catch (Exception exception)
 			{
-				if (NetworkChannelError == null) throw;
+				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					errorCode: ENetworkErrorCode.ConnectError,
@@ -350,7 +350,7 @@ namespace Hotfix.Framework.Network
 
 		private void ConnectCallback(IAsyncResult asyncResult)
 		{
-			PIsConnecting = false;
+			m_IsConnecting = false;
 			var connectState = (ConnectState)asyncResult.AsyncState;
 			var systemNetSocket = (SystemNetSocket)connectState.Socket;
 			try
@@ -372,11 +372,11 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			PSentPacketCount = 0;
-			PReceivedPacketCount = 0;
+			m_SentPacketCount = 0;
+			m_ReceivedPacketCount = 0;
 
-			lock (PSendPacketPool) PSendPacketPool.Clear();
-			lock (PHeartBeatLock) PHeartBeatState.Reset(true);
+			lock (m_SendPacketPool) m_SendPacketPool.Clear();
+			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
 
 			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, m_connectState.UserData);
 			PActive = true;

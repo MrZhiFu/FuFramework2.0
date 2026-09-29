@@ -65,60 +65,60 @@ namespace Cysharp.Threading.Tasks
 			/// <summary>
 			/// 本类型实例的对象池。
 			/// </summary>
-			static TaskPool<HandleBaseConfiguredSource> pool;
+			private static TaskPool<HandleBaseConfiguredSource> s_pool;
 
 			/// <summary>
 			/// 对象池侵入式单链表的下一节点。
 			/// </summary>
-			HandleBaseConfiguredSource nextNode;
+			private HandleBaseConfiguredSource m_nextNode;
 
 			/// <summary>
 			/// 对象池侵入式单链表的下一节点（ITaskPoolNode 契约）。
 			/// </summary>
-			public ref HandleBaseConfiguredSource NextNode => ref nextNode;
+			public ref HandleBaseConfiguredSource NextNode => ref m_nextNode;
 
 			/// <summary>
 			/// 向 UniTask 诊断面板注册本类型对象池的容量查询器。
 			/// </summary>
 			static HandleBaseConfiguredSource()
 			{
-				TaskPool.RegisterSizeGetter(typeof(HandleBaseConfiguredSource), () => pool.Size);
+				TaskPool.RegisterSizeGetter(typeof(HandleBaseConfiguredSource), () => s_pool.Size);
 			}
 
 			/// <summary>
 			/// 被等待的资源句柄。
 			/// </summary>
-			HandleBase handle;
+			private HandleBase m_handle;
 
 			/// <summary>
 			/// 调用方生命周期取消令牌。
 			/// </summary>
-			CancellationToken cancellationToken;
+			private CancellationToken m_cancellationToken;
 
 			/// <summary>
 			/// 令牌取消回调的注册句柄，归还池时释放。
 			/// </summary>
-			CancellationTokenRegistration cancellationTokenRegistration;
+			private CancellationTokenRegistration m_cancellationTokenRegistration;
 
 			/// <summary>
 			/// 加载进度回调；为 null 表示不关心进度。
 			/// </summary>
-			IProgress<float> progress;
+			private IProgress<float> m_progress;
 
 			/// <summary>
 			/// 本等待是否已结束（完成或取消），防止重复置位结果。
 			/// </summary>
-			bool completed;
+			private bool m_completed;
 
 			/// <summary>
 			/// UniTask 源的核心状态与结果容器。
 			/// </summary>
-			UniTaskCompletionSourceCore<AsyncUnit> core;
+			private UniTaskCompletionSourceCore<AsyncUnit> m_core;
 
 			/// <summary>
 			/// 由对象池创建实例；各字段在 <see cref="Create"/> 中完成赋值，构造时不持有任何状态。
 			/// </summary>
-			HandleBaseConfiguredSource() { }
+			private HandleBaseConfiguredSource() { }
 
 			/// <summary>
 			/// 从对象池取出或新建一个等待源并完成初始化。
@@ -137,22 +137,22 @@ namespace Cysharp.Threading.Tasks
 					return AutoResetUniTaskCompletionSource.CreateFromCanceled(cancellationToken, out token);
 				}
 
-				if (!pool.TryPop(out var result))
+				if (!s_pool.TryPop(out var result))
 				{
 					result = new HandleBaseConfiguredSource();
 				}
 
-				result.handle            = handle;
-				result.progress          = progress;
-				result.cancellationToken = cancellationToken;
-				result.completed         = false;
+				result.m_handle            = handle;
+				result.m_progress          = progress;
+				result.m_cancellationToken = cancellationToken;
+				result.m_completed         = false;
 
 				if (cancelImmediately && cancellationToken.CanBeCanceled)
 				{
-					result.cancellationTokenRegistration = cancellationToken.RegisterWithoutCaptureExecutionContext(state =>
+					result.m_cancellationTokenRegistration = cancellationToken.RegisterWithoutCaptureExecutionContext(state =>
 					{
 						var source = (HandleBaseConfiguredSource)state;
-						source.core.TrySetCanceled(source.cancellationToken);
+						source.m_core.TrySetCanceled(source.m_cancellationToken);
 					}, result);
 				}
 
@@ -162,24 +162,24 @@ namespace Cysharp.Threading.Tasks
 				// 注意：统一用强类型回调订阅 Handle.Completed，修复 IL2CPP 逆变委托崩溃
 				switch (handle)
 				{
-					case AssetHandle asset_handle:
-						asset_handle.Completed += result.AssetContinuation;
+					case AssetHandle assetHandle:
+						assetHandle.Completed += result.AssetContinuation;
 						break;
-					case SceneHandle scene_handle:
-						scene_handle.Completed += result.SceneContinuation;
+					case SceneHandle sceneHandle:
+						sceneHandle.Completed += result.SceneContinuation;
 						break;
-					case SubAssetsHandle sub_asset_handle:
-						sub_asset_handle.Completed += result.SubContinuation;
+					case SubAssetsHandle subAssetHandle:
+						subAssetHandle.Completed += result.SubContinuation;
 						break;
-					case BundleFileHandle bundle_file_handle:
-						bundle_file_handle.Completed += result.BundleFileContinuation;
+					case BundleFileHandle bundleFileHandle:
+						bundleFileHandle.Completed += result.BundleFileContinuation;
 						break;
-					case AllAssetsHandle all_assets_handle:
-						all_assets_handle.Completed += result.AllAssetsContinuation;
+					case AllAssetsHandle allAssetsHandle:
+						allAssetsHandle.Completed += result.AllAssetsContinuation;
 						break;
 				}
 
-				token = result.core.Version;
+				token = result.m_core.Version;
 				return result;
 			}
 
@@ -216,16 +216,16 @@ namespace Cysharp.Threading.Tasks
 			{
 				RemoveCompleted();
 
-				if (completed) return;
+				if (m_completed) return;
 
-				completed = true;
-				if (cancellationToken.IsCancellationRequested)
+				m_completed = true;
+				if (m_cancellationToken.IsCancellationRequested)
 				{
-					core.TrySetCanceled(cancellationToken);
+					m_core.TrySetCanceled(m_cancellationToken);
 				}
 				else
 				{
-					core.TrySetResult(AsyncUnit.Default);
+					m_core.TrySetResult(AsyncUnit.Default);
 				}
 			}
 
@@ -234,24 +234,24 @@ namespace Cysharp.Threading.Tasks
 			/// </summary>
 			private void RemoveCompleted()
 			{
-				if (handle == null || !handle.IsValid) return;
+				if (m_handle == null || !m_handle.IsValid) return;
 
-				switch (handle)
+				switch (m_handle)
 				{
-					case AssetHandle asset_handle:
-						asset_handle.Completed -= AssetContinuation;
+					case AssetHandle assetHandle:
+						assetHandle.Completed -= AssetContinuation;
 						break;
-					case SceneHandle scene_handle:
-						scene_handle.Completed -= SceneContinuation;
+					case SceneHandle sceneHandle:
+						sceneHandle.Completed -= SceneContinuation;
 						break;
-					case SubAssetsHandle sub_asset_handle:
-						sub_asset_handle.Completed -= SubContinuation;
+					case SubAssetsHandle subAssetHandle:
+						subAssetHandle.Completed -= SubContinuation;
 						break;
-					case BundleFileHandle bundle_file_handle:
-						bundle_file_handle.Completed -= BundleFileContinuation;
+					case BundleFileHandle bundleFileHandle:
+						bundleFileHandle.Completed -= BundleFileContinuation;
 						break;
-					case AllAssetsHandle all_assets_handle:
-						all_assets_handle.Completed -= AllAssetsContinuation;
+					case AllAssetsHandle allAssetsHandle:
+						allAssetsHandle.Completed -= AllAssetsContinuation;
 						break;
 				}
 			}
@@ -264,7 +264,7 @@ namespace Cysharp.Threading.Tasks
 			{
 				try
 				{
-					core.GetResult(token);
+					m_core.GetResult(token);
 				}
 				finally
 				{
@@ -277,13 +277,13 @@ namespace Cysharp.Threading.Tasks
 			/// </summary>
 			/// <param name="token">等待源的核心版本号。</param>
 			/// <returns>当前等待状态。</returns>
-			public UniTaskStatus GetStatus(short token) => core.GetStatus(token);
+			public UniTaskStatus GetStatus(short token) => m_core.GetStatus(token);
 
 			/// <summary>
 			/// 不校验版本号地获取当前等待状态（仅供 UniTask 内部快速判定）。
 			/// </summary>
 			/// <returns>当前等待状态。</returns>
-			public UniTaskStatus UnsafeGetStatus() => core.UnsafeGetStatus();
+			public UniTaskStatus UnsafeGetStatus() => m_core.UnsafeGetStatus();
 
 			/// <summary>
 			/// 注册 await 的后续回调。
@@ -291,7 +291,7 @@ namespace Cysharp.Threading.Tasks
 			/// <param name="continuation">后续执行的回调。</param>
 			/// <param name="state">回调状态对象。</param>
 			/// <param name="token">等待源的核心版本号。</param>
-			public void OnCompleted(Action<object> continuation, object state, short token) => core.OnCompleted(continuation, state, token);
+			public void OnCompleted(Action<object> continuation, object state, short token) => m_core.OnCompleted(continuation, state, token);
 
 			/// <summary>
 			/// PlayerLoop 每帧驱动：检测取消与句柄完成状态，并上报加载进度。
@@ -299,25 +299,25 @@ namespace Cysharp.Threading.Tasks
 			/// <returns>仍需继续驱动返回 true；本帧已结束等待返回 false。</returns>
 			public bool MoveNext()
 			{
-				if (completed) return false;
+				if (m_completed) return false;
 
-				if (cancellationToken.IsCancellationRequested)
+				if (m_cancellationToken.IsCancellationRequested)
 				{
-					completed = true;
-					core.TrySetCanceled(cancellationToken);
+					m_completed = true;
+					m_core.TrySetCanceled(m_cancellationToken);
 					return false;
 				}
 
-				if (handle == null || !handle.IsValid || handle.IsDone)
+				if (m_handle == null || !m_handle.IsValid || m_handle.IsDone)
 				{
-					completed = true;
-					core.TrySetResult(AsyncUnit.Default);
+					m_completed = true;
+					m_core.TrySetResult(AsyncUnit.Default);
 					return false;
 				}
 
-				if (progress != null && handle.IsValid)
+				if (m_progress != null && m_handle.IsValid)
 				{
-					progress.Report(handle.Progress);
+					m_progress.Report(m_handle.Progress);
 				}
 
 				return true;
@@ -335,18 +335,18 @@ namespace Cysharp.Threading.Tasks
 				RemoveCompleted();
 
 				TaskTracker.RemoveTracking(this);
-				core.Reset();
-				handle            = default;
-				progress          = default;
-				cancellationToken = default;
-				cancellationTokenRegistration.Dispose();
+				m_core.Reset();
+				m_handle            = default;
+				m_progress          = default;
+				m_cancellationToken = default;
+				m_cancellationTokenRegistration.Dispose();
 
 				// 归还池前标记已结束：入池后若陈旧 PlayerLoop 槽位（MoveNext 首句）或残留完成回调
 				// （HandleCompleted 首句）触发，会各自在 completed 判定处直接返回，不再触碰 core。
 				// 否则池中实例的 core 会被置为已完成，导致下次复用「出生即完成」——await 不等且取消失效。
-				completed = true;
+				m_completed = true;
 
-				return pool.TryPush(this);
+				return s_pool.TryPush(this);
 			}
 		}
 	}

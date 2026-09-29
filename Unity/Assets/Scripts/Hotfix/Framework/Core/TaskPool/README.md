@@ -42,15 +42,15 @@ TaskPool<T> (泛型任务池)
 ┌─────────────────────────────────────────────────────────────┐
 │                      TaskPool<T>                            │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_FreeAgentStack (Stack<ITaskAgent<T>>)            │   │
+│  │  m_freeAgentStack (Stack<ITaskAgent<T>>)            │   │
 │  │  - 空闲任务代理栈，后进先出                          │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WaitingTaskList (FuLinkedList<T>)                │   │
+│  │  m_waitingTaskList (FuLinkedList<T>)                │   │
 │  │  - 等待任务链表，按优先级排序                        │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  m_WorkingAgentList (FuLinkedList<ITaskAgent<T>>)   │   │
+│  │  m_workingAgentList (FuLinkedList<ITaskAgent<T>>)   │   │
 │  │  - 工作中代理链表                                   │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -77,9 +77,9 @@ TaskPool<T> (泛型任务池)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_FreeAgentStack | Stack<ITaskAgent<T>> | 空闲任务代理栈 |
-| m_WaitingTaskList | FuLinkedList<T> | 等待任务链表 |
-| m_WorkingAgentList | FuLinkedList<ITaskAgent<T>> | 工作中代理链表 |
+| m_freeAgentStack | Stack<ITaskAgent<T>> | 空闲任务代理栈 |
+| m_waitingTaskList | FuLinkedList<T> | 等待任务链表 |
+| m_workingAgentList | FuLinkedList<ITaskAgent<T>> | 工作中代理链表 |
 
 **核心属性：**
 
@@ -305,18 +305,18 @@ using Hotfix.Framework.ReferencePool;
 
 public class TaskPoolExample : MonoBehaviour
 {
-    private TaskPool<DownloadTask> m_DownloadPool;
-    private int m_SerialId = 0;
+    private TaskPool<DownloadTask> m_downloadPool;
+    private int m_serialId = 0;
 
     private void Start()
     {
         // 创建任务池
-        m_DownloadPool = new TaskPool<DownloadTask>();
+        m_downloadPool = new TaskPool<DownloadTask>();
         
         // 添加任务代理
         for (int i = 0; i < 3; i++)
         {
-            m_DownloadPool.AddAgent(new DownloadAgent());
+            m_downloadPool.AddAgent(new DownloadAgent());
         }
 
         // 添加下载任务
@@ -327,19 +327,19 @@ public class TaskPoolExample : MonoBehaviour
     private void Update()
     {
         // 更新任务池
-        m_DownloadPool.Update(Time.deltaTime, Time.unscaledDeltaTime);
+        m_downloadPool.Update(Time.deltaTime, Time.unscaledDeltaTime);
     }
 
     private void AddDownloadTask(string url, string savePath)
     {
         var task = ReferencePool.Acquire<DownloadTask>();
-        task.Initialize(++m_SerialId, url, savePath);
-        m_DownloadPool.AddTask(task);
+        task.Initialize(++m_serialId, url, savePath);
+        m_downloadPool.AddTask(task);
     }
 
     private void OnDestroy()
     {
-        m_DownloadPool?.Shutdown();
+        m_downloadPool?.Shutdown();
     }
 }
 ```

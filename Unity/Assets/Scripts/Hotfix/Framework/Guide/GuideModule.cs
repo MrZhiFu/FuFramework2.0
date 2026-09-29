@@ -112,13 +112,10 @@ namespace Hotfix.Framework.Guide
 			m_stepDataDict = new Dictionary<int, GuideStepData>();
 			foreach (var step in tbGuideStep.All)
 			{
-				if (m_stepDataDict.ContainsKey(step.Id))
+				if (!m_stepDataDict.TryAdd(step.Id, step))
 				{
 					FuLogger.LogError($"[GuideModule] 重复的步骤 ID: {step.Id}");
-					continue;
 				}
-
-				m_stepDataDict[step.Id] = step;
 			}
 
 			FuLogger.LogInfo($"[GuideModule] 引导管理模块初始化完成. 引导数量: {m_guideDict.Count}, 步骤总数量: {m_stepDataDict.Count}");
@@ -152,7 +149,7 @@ namespace Hotfix.Framework.Guide
 		/// <summary>
 		/// 每秒更新：把引导存档的脏位合并落盘（见 MarkGuideAsCompleted）。
 		/// </summary>
-		protected internal override void OnPerSecondUpdate()
+		protected internal override void OnSecondUpdate()
 		{
 			FlushGuideData();
 		}

@@ -89,7 +89,7 @@ namespace Hotfix.Framework.RedDot
 		/// TotalCount 变化回调（内部使用，由 RedDotModule 设置）
 		/// 用于收集本帧变更节点以批量广播
 		/// </summary>
-		internal Action<RedDotNode> OnTotalCountChanged;
+		internal Action<RedDotNode> m_OnTotalCountChanged;
 
 		/// <summary>
 		/// 节点的子节点列表
@@ -202,7 +202,7 @@ namespace Hotfix.Framework.RedDot
 
 			RawCount   = count;
 			TotalCount = count;
-			OnTotalCountChanged?.Invoke(this);
+			m_OnTotalCountChanged?.Invoke(this);
 		}
 
 		/// <summary>
@@ -215,7 +215,7 @@ namespace Hotfix.Framework.RedDot
 			{
 				if (TotalCount == 0) return;
 				TotalCount = 0;
-				OnTotalCountChanged?.Invoke(this);
+				m_OnTotalCountChanged?.Invoke(this);
 				return;
 			}
 
@@ -225,7 +225,7 @@ namespace Hotfix.Framework.RedDot
 			if (TotalCount == total) return;
 
 			TotalCount = total;
-			OnTotalCountChanged?.Invoke(this);
+			m_OnTotalCountChanged?.Invoke(this);
 			Parent?.UpdateTotalCount();
 		}
 
@@ -293,7 +293,7 @@ namespace Hotfix.Framework.RedDot
 			IsDirty             = false;
 			Calculator          = null;
 			TriggerEvents       = null;
-			OnTotalCountChanged = null;
+			m_OnTotalCountChanged = null;
 			m_children.Clear();
 			m_childrenReadOnlyCache = null;
 		}

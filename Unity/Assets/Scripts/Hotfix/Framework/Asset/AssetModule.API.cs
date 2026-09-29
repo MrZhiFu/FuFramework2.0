@@ -219,8 +219,8 @@ namespace Hotfix.Framework.Asset
 			if (m_instantiateRefDict.TryGetValue(path, out var entry))
 			{
 				// 快路径：已登记则直接复用，不触碰 YooAsset
-				entry.RefCount++;
-				assetHandle = entry.Handle;
+				entry.m_RefCount++;
+				assetHandle = entry.m_AssetHandle;
 			}
 			else
 			{
@@ -245,17 +245,17 @@ namespace Hotfix.Framework.Asset
 				// 加载期间可能已被并发请求登记：复用其句柄，并释放本次多加载出来的那一份，使引用计数归位
 				if (m_instantiateRefDict.TryGetValue(path, out var existing))
 				{
-					existing.RefCount++;
-					if (!ReferenceEquals(existing.Handle, loadedHandle))
+					existing.m_RefCount++;
+					if (!ReferenceEquals(existing.m_AssetHandle, loadedHandle))
 					{
 						loadedHandle.Release();
 					}
 
-					assetHandle = existing.Handle;
+					assetHandle = existing.m_AssetHandle;
 				}
 				else
 				{
-					m_instantiateRefDict[path] = new InstantiateRef { Handle = loadedHandle, RefCount = 1 };
+					m_instantiateRefDict[path] = new InstantiateRef { m_AssetHandle = loadedHandle, m_RefCount = 1 };
 					assetHandle = loadedHandle;
 				}
 			}

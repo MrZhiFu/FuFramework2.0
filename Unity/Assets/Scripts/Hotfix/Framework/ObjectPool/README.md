@@ -273,14 +273,14 @@ public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 ```csharp
 // 预加载（inUse = false）：造好放池里当库存
 for (int i = 0; i < 10; i++)
-    m_BulletPool.Register(BulletObject.Create($"Bullet_{i}", prefab), false);
+    m_bulletPool.Register(BulletObject.Create($"Bullet_{i}", prefab), false);
 
 // 现造现用（inUse = true）：Spawn 取不到 → 新建并标记为在用
-var bullet = m_BulletPool.Spawn("Bullet");
+var bullet = m_bulletPool.Spawn("Bullet");
 if (bullet == null)
 {
     bullet = BulletObject.Create($"Bullet_{Time.time}", prefab);
-    m_BulletPool.Register(bullet, true);
+    m_bulletPool.Register(bullet, true);
 }
 ```
 
@@ -371,8 +371,8 @@ using UnityEngine;
 // 定义子弹对象类
 public class BulletObject : ObjectBase
 {
-    private GameObject m_BulletGameObject;
-    private Rigidbody m_Rigidbody;
+    private GameObject m_bulletGameObject;
+    private Rigidbody m_rigidbody;
 
     /// <summary>
     /// 创建子弹对象
@@ -384,8 +384,8 @@ public class BulletObject : ObjectBase
         bulletInstance.name = name;
 
         bulletObject.Initialize(name, bulletInstance);
-        bulletObject.m_BulletGameObject = bulletInstance;
-        bulletObject.m_Rigidbody = bulletInstance.GetComponent<Rigidbody>();
+        bulletObject.m_bulletGameObject = bulletInstance;
+        bulletObject.m_rigidbody = bulletInstance.GetComponent<Rigidbody>();
 
         return bulletObject;
     }
@@ -402,7 +402,7 @@ public class BulletObject : ObjectBase
         }
 
         // 重置子弹状态
-        m_Rigidbody?.Sleep();
+        m_rigidbody?.Sleep();
     }
 
     /// <summary>
@@ -426,8 +426,8 @@ public class BulletObject : ObjectBase
         {
             Object.Destroy(gameObject);
         }
-        m_BulletGameObject = null;
-        m_Rigidbody = null;
+        m_bulletGameObject = null;
+        m_rigidbody = null;
     }
 
     /// <summary>
@@ -436,8 +436,8 @@ public class BulletObject : ObjectBase
     public override void Clear()
     {
         base.Clear();
-        m_BulletGameObject = null;
-        m_Rigidbody = null;
+        m_bulletGameObject = null;
+        m_rigidbody = null;
     }
 
     /// <summary>
@@ -445,12 +445,12 @@ public class BulletObject : ObjectBase
     /// </summary>
     public void Fire(Vector3 position, Vector3 direction, float speed)
     {
-        if (m_BulletGameObject != null)
+        if (m_bulletGameObject != null)
         {
-            m_BulletGameObject.transform.position = position;
-            m_BulletGameObject.transform.rotation = Quaternion.LookRotation(direction);
-            m_Rigidbody?.WakeUp();
-            m_Rigidbody?.AddForce(direction * speed, ForceMode.Impulse);
+            m_bulletGameObject.transform.position = position;
+            m_bulletGameObject.transform.rotation = Quaternion.LookRotation(direction);
+            m_rigidbody?.WakeUp();
+            m_rigidbody?.AddForce(direction * speed, ForceMode.Impulse);
         }
     }
 }
@@ -464,8 +464,8 @@ using Hotfix.Framework.ObjectPool;
 
 public class BulletManager
 {
-    private ObjectPool<BulletObject> m_BulletPool;
-    private GameObject m_BulletPrefab;
+    private ObjectPool<BulletObject> m_bulletPool;
+    private GameObject m_bulletPrefab;
 
     public void Init()
     {
@@ -473,7 +473,7 @@ public class BulletManager
         var objectPoolModule = GlobalModule.ObjectPoolModule;
 
         // 创建子弹对象池
-        m_BulletPool = objectPoolModule.CreateObjectPool<BulletObject>(
+        m_bulletPool = objectPoolModule.CreateObjectPool<BulletObject>(
             poolName: "BulletPool",
             autoDisposeCheckInterval: 10f,         // 每10秒检查一次自动销毁
             capacity: 50,                     // 最大容量50个
@@ -485,8 +485,8 @@ public class BulletManager
         // 预创建一些子弹对象
         for (int i = 0; i < 10; i++)
         {
-            var bullet = BulletObject.Create($"Bullet_{i}", m_BulletPrefab);
-            m_BulletPool.Register(bullet, false);  // 注册到池，不允许在使用中再次获取
+            var bullet = BulletObject.Create($"Bullet_{i}", m_bulletPrefab);
+            m_bulletPool.Register(bullet, false);  // 注册到池，不允许在使用中再次获取
         }
     }
 
@@ -496,13 +496,13 @@ public class BulletManager
     public void FireBullet(Vector3 position, Vector3 direction)
     {
         // 尝试从池中获取子弹
-        var bullet = m_BulletPool.Spawn("Bullet");
+        var bullet = m_bulletPool.Spawn("Bullet");
 
         if (bullet == null)
         {
             // 池中没有可用子弹，创建新的
-            bullet = BulletObject.Create($"Bullet_{Time.time}", m_BulletPrefab);
-            m_BulletPool.Register(bullet, true);  // 注册并标记为已生成
+            bullet = BulletObject.Create($"Bullet_{Time.time}", m_bulletPrefab);
+            m_bulletPool.Register(bullet, true);  // 注册并标记为已生成
         }
 
         // 发射子弹
@@ -514,7 +514,7 @@ public class BulletManager
     /// </summary>
     public void RecycleBullet(BulletObject bullet)
     {
-        m_BulletPool.Recycle(bullet);
+        m_bulletPool.Recycle(bullet);
     }
 
     /// <summary>
@@ -522,7 +522,7 @@ public class BulletManager
     /// </summary>
     public void ClearAllBullets()
     {
-        m_BulletPool.DisposeAllUnused();
+        m_bulletPool.DisposeAllUnused();
     }
 }
 ```
@@ -572,37 +572,37 @@ DisposeObjectFilterCallback<BulletObject> customFilter = (candidates, count, exp
 };
 
 // 使用自定义策略销毁对象
-m_BulletPool.Dispose(customFilter);
+m_bulletPool.Dispose(customFilter);
 ```
 
 ### 5.5 对象池监控和管理
 
 ```csharp
 // 获取对象池统计信息
-Debug.Log($"对象池数量: {m_BulletPool.Count}");
-Debug.Log($"可销毁数量: {m_BulletPool.CanDisposeCount}");
-Debug.Log($"容量: {m_BulletPool.Capacity}");
+Debug.Log($"对象池数量: {m_bulletPool.Count}");
+Debug.Log($"可销毁数量: {m_bulletPool.CanDisposeCount}");
+Debug.Log($"容量: {m_bulletPool.Capacity}");
 
 // 获取所有对象信息
-ObjectInfo[] infos = m_BulletPool.GetAllObjectInfos();
+ObjectInfo[] infos = m_bulletPool.GetAllObjectInfos();
 foreach (var info in infos)
 {
     Debug.Log($"对象: {info.Name}, 使用中: {info.IsInUse}, 锁定: {info.Locked}");
 }
 
 // 锁定重要对象（防止被销毁）
-var importantBullet = m_BulletPool.Spawn("ImportantBullet");
-m_BulletPool.SetLocked(importantBullet, true);
+var importantBullet = m_bulletPool.Spawn("ImportantBullet");
+m_bulletPool.SetLocked(importantBullet, true);
 
 // 设置对象优先级
-m_BulletPool.SetPriority(importantBullet, 100);
+m_bulletPool.SetPriority(importantBullet, 100);
 
 // 手动触发销毁
-m_BulletPool.DisposeOverCapacity();  // 销毁超过容量的对象
-m_BulletPool.DisposeAllUnused();  // 销毁所有未使用对象
+m_bulletPool.DisposeOverCapacity();  // 销毁超过容量的对象
+m_bulletPool.DisposeAllUnused();  // 销毁所有未使用对象
 
 // 尝试销毁指定数量（需提供筛选函数，这里简单取前 N 个）
-m_BulletPool.Dispose(5, (candidates, count, expireThreshold) =>
+m_bulletPool.Dispose(5, (candidates, count, expireThreshold) =>
     candidates.GetRange(0, Mathf.Min(count, candidates.Count)));
 ```
 
@@ -654,7 +654,7 @@ protected internal override void OnDispose()
 public override void Clear()
 {
     base.Clear();
-    m_Component = null;  // 清理引用
+    m_component = null;  // 清理引用
 }
 
 // 3. 在 OnSpawn/OnRecycle 中控制 GameObject 显隐

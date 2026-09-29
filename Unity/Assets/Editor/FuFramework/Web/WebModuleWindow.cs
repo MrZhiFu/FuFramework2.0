@@ -1256,7 +1256,7 @@ namespace FuFramework.Web.Editor
 			// 报文属性（可能为 null，扩展失败则无法展开报文）
 			m_jsonHeaderProperty = m_jsonDataBaseType?.GetProperty("Header", BindingFlags.Public | BindingFlags.Instance);
 			m_jsonFormProperty   = m_jsonDataBaseType?.GetProperty("Form",   BindingFlags.Public | BindingFlags.Instance);
-			m_pbSendDataProperty = m_pbDataType?.GetProperty("SendData", BindingFlags.Public     | BindingFlags.Instance);
+			m_pbSendDataProperty = m_pbDataType?.GetProperty("m_SendData", BindingFlags.Public     | BindingFlags.Instance);
 
 			return true;
 		}

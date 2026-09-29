@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using Hotfix.Framework.Core;
-using SoundGroupCfg = Hotfix.Game.Config.SoundGroup;
 using UnityEngine;
+using Hotfix.Framework.Core;
+using System.Collections.Generic;
+using SoundGroupCfg = Hotfix.Game.Config.SoundGroup;
 
 namespace Hotfix.Framework.Sound
 {
@@ -84,19 +84,19 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 初始化声音组的新实例。
 			/// </summary>
-			/// <param name="soundGroupInfo">声音组信息。</param>
-			public void Init(SoundGroupCfg row)
+			/// <param name="groupInfo">声音组信息。</param>
+			public void Init(SoundGroupCfg groupInfo)
 			{
-				row.NotNull(nameof(row));
-				Name                          = row.Id.ToString();
-				AllowBeReplacedBySamePriority = row.AllowBeReplacedBySamePriority;
+				groupInfo.NotNull(nameof(groupInfo));
+				Name                          = groupInfo.Id.ToString();
+				AllowBeReplacedBySamePriority = groupInfo.AllowBeReplacedBySamePriority;
 
 				// TODO：这里获取玩家是否存储了相关的设置，如果是，则使用玩家的设置，否则使用默认设置。
-				Volume = row.Volume;
-				Mute   = row.Mute;
+				Volume = groupInfo.Volume;
+				Mute   = groupInfo.Mute;
 
 				// 添加声音组辅助器中的声音播放代理辅助器
-				for (var i = 0; i < row.AgentCount; i++)
+				for (var i = 0; i < groupInfo.AgentCount; i++)
 				{
 					AddSoundAgentHelper(i);
 				}

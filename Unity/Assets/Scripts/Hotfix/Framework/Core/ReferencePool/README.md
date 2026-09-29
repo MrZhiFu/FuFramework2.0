@@ -26,13 +26,13 @@ IReference (引用接口)
 
 ReferencePool (引用池静态基座：纯 C# 静态类，不继承 ModuleBase、不参与模块生命周期，由各模块直接静态调用)
     ├── ReferenceCollection (顶层 internal 类) # 每个类型对应一个引用集合
-    │   ├── m_FreeStack: Stack<IReference>  # 闲置引用栈
+    │   ├── m_freeStack: Stack<IReference>  # 闲置引用栈
     │   ├── UsingReferenceCount            # 正在使用的引用数量
     │   ├── UnusedReferenceCount           # 闲置引用数量
     │   ├── AcquireReferenceCount          # 已获取引用数量
     │   └── ReleaseReferenceCount          # 已释放引用数量
     │
-    └── m_ReferenceCollectionDict: Dictionary<Type, ReferenceCollection>
+    └── m_referenceCollectionDict: Dictionary<Type, ReferenceCollection>
         # 类型到引用集合的映射
 
 
@@ -55,13 +55,13 @@ ReferencePoolInfo (结构体)
 │                ReferencePool                          │
 │                    (静态基座)                                 │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │   m_ReferenceCollectionDict: Dictionary<Type,       │   │
+│  │   m_referenceCollectionDict: Dictionary<Type,       │   │
 │  │                ReferenceCollection>                 │   │
 │  │                                                       │   │
 │  │  ┌─────────────────┐  ┌─────────────────┐           │   │
 │  │  │ TypeA Collection│  │ TypeB Collection│           │   │
 │  │  │                 │  │                 │           │   │
-│  │  │ m_FreeStack     │  │ m_FreeStack     │           │   │
+│  │  │ m_freeStack     │  │ m_freeStack     │           │   │
 │  │  │ ┌───┬───┬───┐  │  │ ┌───┬───┬───┐  │           │   │
 │  │  │ │Ref│Ref│Ref│  │  │ │Ref│Ref│Ref│  │           │   │
 │  │  │ └───┴───┴───┘  │  │ └───┴───┴───┘  │           │   │
@@ -90,9 +90,9 @@ Acquire<T>()
         ├── UsingReferenceCount++
         ├── AcquireReferenceCount++
         │
-        ├── lock (m_FreeStack)
-        │   ├── if (m_FreeStack.Count > 0)
-        │   │       return m_FreeStack.Pop()
+        ├── lock (m_freeStack)
+        │   ├── if (m_freeStack.Count > 0)
+        │   │       return m_freeStack.Pop()
         │   └── else
         │           AddReferenceCount++
         │           return new T()
@@ -110,11 +110,11 @@ Recycle(reference)
     │
     └── Recycle(reference) (ReferenceCollection)
         │
-        ├── lock (m_FreeStack)
-        │   ├── if (m_FreeStack.Contains(reference))   # 无条件检测，重复释放即抛异常
+        ├── lock (m_freeStack)
+        │   ├── if (m_freeStack.Contains(reference))   # 无条件检测，重复释放即抛异常
         │   │       throw Exception("重复释放")
         │   ├── reference.Clear()           # 清理对象状态（查重之后）
-        │   └── m_FreeStack.Push(reference)
+        │   └── m_freeStack.Push(reference)
         │
         ├── ReleaseReferenceCount++
         └── UsingReferenceCount--
@@ -124,7 +124,7 @@ Recycle(reference)
 
 ┌─────────────────┐     Acquire      ┌─────────────────┐
 │   引用池栈      │ ─────────────────▶ │   正在使用      │
-│  (m_FreeStack)  │                    │  (UsingCount)   │
+│  (m_freeStack)  │                    │  (UsingCount)   │
 │  (LIFO 后进先出) │ ◀───────────────── │                 │
 └─────────────────┘      Recycle       └─────────────────┘
     │    ▲                                    │
@@ -145,7 +145,7 @@ OnDispose()
     └── ClearAll()
         ├── 遍历所有 ReferenceCollection
         ├── 每个 collection.RemoveAll()
-        └── 清空 m_ReferenceCollectionDict
+        └── 清空 m_referenceCollectionDict
 
 
 【引用集合生命周期】
@@ -153,7 +153,7 @@ OnDispose()
 创建 (首次获取某类型引用时)
     │
     ├── new ReferenceCollection(type)
-    └── 添加到 m_ReferenceCollectionDict
+    └── 添加到 m_referenceCollectionDict
 
 使用 (Acquire/Recycle)
     │
@@ -162,7 +162,7 @@ OnDispose()
 
 销毁 (RemoveAllUnused/ClearAll)
     │
-    └── 清空 m_FreeStack（RemoveAllUnused 清单个类型；ClearAll 清全部类型）
+    └── 清空 m_freeStack（RemoveAllUnused 清单个类型；ClearAll 清全部类型）
         （保留类型条目与计数器，使之后的迟到 Recycle 仍然自洽）
 ```
 
@@ -248,7 +248,7 @@ internal sealed class ReferenceCollection
     public Type RefType { get; }
 
     // 引用栈
-    private readonly Stack<IReference> m_FreeStack;
+    private readonly Stack<IReference> m_freeStack;
 
     // 统计信息
     public int UsingReferenceCount { get; }      // 正在使用
@@ -269,7 +269,7 @@ internal sealed class ReferenceCollection
 
 **实现细节：**
 - 使用 `Stack<IReference>` 存储闲置引用（LIFO）
-- 所有操作使用 `lock (m_FreeStack)` 确保线程安全
+- 所有操作使用 `lock (m_freeStack)` 确保线程安全
 - `Recycle` 时自动调用 `reference.Clear()` 清理对象
 - 无条件执行重复释放检测，一旦发现即抛出异常
 
@@ -494,7 +494,7 @@ public class PlayerDamageEvent : GameEvent
 
 public class EventSystem : MonoBehaviour
 {
-    private readonly List<GameEvent> m_CurrentFrameEvents = new();
+    private readonly List<GameEvent> m_currentFrameEvents = new();
     
     private void Update()
     {
@@ -510,12 +510,12 @@ public class EventSystem : MonoBehaviour
     {
         var damageEvent = ReferencePool.Acquire<PlayerDamageEvent>();
         damageEvent.Initialize(source, damage, damageType);
-        m_CurrentFrameEvents.Add(damageEvent);
+        m_currentFrameEvents.Add(damageEvent);
     }
     
     private void ProcessFrameEvents()
     {
-        foreach (var gameEvent in m_CurrentFrameEvents)
+        foreach (var gameEvent in m_currentFrameEvents)
         {
             // 分发事件给监听者
             EventDispatcher.Dispatch(gameEvent);
@@ -525,11 +525,11 @@ public class EventSystem : MonoBehaviour
     private void ClearFrameEvents()
     {
         // 归还所有事件对象到引用池
-        foreach (var gameEvent in m_CurrentFrameEvents)
+        foreach (var gameEvent in m_currentFrameEvents)
         {
             ReferencePool.Recycle(gameEvent);
         }
-        m_CurrentFrameEvents.Clear();
+        m_currentFrameEvents.Clear();
     }
 }
 ```
@@ -543,11 +543,11 @@ using UnityEngine;
 
 public class ReferencePoolMonitor : MonoBehaviour
 {
-    [SerializeField] private bool m_ShowDebugInfo = true;
+    [SerializeField] private bool m_showDebugInfo = true;
     
     private void Update()
     {
-        if (!m_ShowDebugInfo) return;
+        if (!m_showDebugInfo) return;
         
         // 获取所有引用池的统计信息
         var poolInfos = ReferencePool.GetAllReferencePoolInfos();
@@ -691,14 +691,14 @@ using UnityEngine;
 public class ObjectPoolManager : MonoBehaviour
 {
     [Header("预分配配置")]
-    [SerializeField] private int m_PreAllocateCount = 20;
+    [SerializeField] private int m_preAllocateCount = 20;
     
     private void Start()
     {
         // 在游戏启动时预分配常用对象
-        ReferencePool.Add<NetworkMessage>(m_PreAllocateCount);
-        ReferencePool.Add<GameEvent>(m_PreAllocateCount);
-        ReferencePool.Add<RedDotNode>(m_PreAllocateCount);
+        ReferencePool.Add<NetworkMessage>(m_preAllocateCount);
+        ReferencePool.Add<GameEvent>(m_preAllocateCount);
+        ReferencePool.Add<RedDotNode>(m_preAllocateCount);
     }
 }
 ```

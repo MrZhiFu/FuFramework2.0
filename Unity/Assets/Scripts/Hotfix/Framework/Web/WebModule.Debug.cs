@@ -232,7 +232,7 @@ namespace Hotfix.Framework.Web
 		public WebModuleDebugInfo GetDebugSnapshot()
 		{
 			return new WebModuleDebugInfo(m_submitCount, m_jsonSubmitCount, m_pbSubmitCount, m_successCount, m_failedCount, m_timeoutCount, m_canceledCount,
-										  m_sentBytes, m_recvBytes, m_waitingJsonQueue.Count, m_sendingJsonList.Count, m_waitingPbQueue.Count, m_sendingPbList.Count);
+			                              m_sentBytes, m_recvBytes, m_waitingJsonQueue.Count, m_sendingJsonList.Count, m_waitingPbQueue.Count, m_sendingPbList.Count);
 		}
 
 		/// <summary>

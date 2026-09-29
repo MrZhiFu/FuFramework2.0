@@ -25,17 +25,17 @@ UI 模块是 FuFramework 中的用户界面管理系统，基于 FairyGUI 实现
 ModuleBase (抽象基类)
     ↑
 UIModule (UI管理模块)
-    ├── m_UIGroupDict (界面组字典)
-    ├── m_LoadingDict (加载中界面字典)
-    ├── m_WaitRecycleQueue (待回收界面队列)
-    ├── m_WinObjPool (界面实例对象池)
+    ├── m_uiGroupDict (界面组字典)
+    ├── m_loadingDict (加载中界面字典)
+    ├── m_waitRecycleQueue (待回收界面队列)
+    ├── m_winObjPool (界面实例对象池)
     ├── PkgManager (FUI包管理器)
     └── Blur (背景模糊: UIModule.Blur + BlurCapture)
 
 GComponent (FairyGUI)
     ↑
 UIGroup (界面组)
-    ├── m_UIInfoList (界面信息链表)
+    ├── m_uiInfoList (界面信息链表)
     ├── Pause (暂停状态)
     └── Refresh() (刷新界面组)
 
@@ -65,11 +65,11 @@ WinInfo (界面信息)
 ┌─────────────────────────────────────────────────────────────────┐
 │                        UIModule                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_UIGroupDict (Dictionary<EUILayer, UIGroup>)          │   │
+│  │  m_uiGroupDict (Dictionary<EUILayer, UIGroup>)          │   │
 │  │  - SceneUI, MainUI, Normal, Window, Tips, Guide, Loading│   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  m_WinObjPool (ObjectPool<WinObject>)                    │   │
+│  │  m_winObjPool (ObjectPool<WinObject>)                    │   │
 │  │  - 界面实例缓存与复用                                    │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -81,7 +81,7 @@ WinInfo (界面信息)
                     ┌─────────────────┐
                     │   UIGroup       │
                     │ (GComponent)    │
-                    │  - m_UIInfoList │
+                    │  - m_uiInfoList │
                     └────────┬────────┘
                              ↓
                     ┌─────────────────┐
@@ -116,10 +116,10 @@ UI 管理模块，继承自 ModuleBase，实现 `ICancelAsync`（可取消异步
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_UIGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
-| m_LoadingDict | Dictionary<int, string> | 加载中界面字典 |
-| m_WaitRecycleQueue | Queue<WinBase> | 待回收界面队列 |
-| m_WinObjPool | ObjectPool<WinObject> | 界面实例对象池 |
+| m_uiGroupDict | Dictionary<EUILayer, UIGroup> | 界面组字典 |
+| m_loadingDict | Dictionary<int, string> | 加载中界面字典 |
+| m_waitRecycleQueue | Queue<WinBase> | 待回收界面队列 |
+| m_winObjPool | ObjectPool<WinObject> | 界面实例对象池 |
 | PkgManager | FuiPkgManager | FUI包管理器 |
 
 **核心属性：**
@@ -267,8 +267,8 @@ public void StopTimer(int timerId)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_UIInfoList | FuLinkedList<WinInfo> | 界面信息链表 |
-| m_Pause | bool | 组暂停状态 |
+| m_uiInfoList | FuLinkedList<WinInfo> | 界面信息链表 |
+| m_pause | bool | 组暂停状态 |
 | Layer | EUILayer | 界面组层级 |
 
 **核心属性：**
@@ -305,9 +305,9 @@ public void Refresh()
 
 ```csharp
 // 从链表头部开始遍历
-var current = m_UIInfoList.First;
+var current = m_uiInfoList.First;
 var isCover = false;   // 是否覆盖后面的界面
-var isPause = m_Pause; // 是否暂停的标志
+var isPause = m_pause; // 是否暂停的标志
 
 while (current != null)
 {
@@ -329,11 +329,11 @@ FairyGUI 包管理器，负责 UI 包的加载、缓存和卸载管理。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_LoadedPkgDict | Dictionary<string, UIPackage> | 已加载的包 |
-| m_LoadingTasks | Dictionary<string, UniTask<UIPackage>> | 正在加载的任务 |
-| m_LoadingCts | Dictionary<string, CancellationTokenSource> | 取消令牌源 |
-| m_PkgAssetLoaderDict | Dictionary<string, AssetLoadRegister> | 资源加载器 |
-| m_PkgRefCountDict | Dictionary<string, int> | 包引用计数 |
+| m_loadedPkgDict | Dictionary<string, UIPackage> | 已加载的包 |
+| m_loadingTasks | Dictionary<string, UniTask<UIPackage>> | 正在加载的任务 |
+| m_loadingCts | Dictionary<string, CancellationTokenSource> | 取消令牌源 |
+| m_pkgAssetLoaderDict | Dictionary<string, AssetLoadRegister> | 资源加载器 |
+| m_pkgRefCountDict | Dictionary<string, int> | 包引用计数 |
 
 **核心方法：**
 
@@ -593,7 +593,7 @@ Close/CloseNow → OnWinClosed（隐藏/重定位覆盖层）
 UIModule.OnDispose → ReleaseBlur（Cancel Token + 释放 RT/材质/覆盖层/Shader 句柄）
 ```
 
-> `UIModule` 的 `ICancelAsync` 实现位于 `UIModule.Blur.cs`：`m_Scope` 持有模块级取消范围，
+> `UIModule` 的 `ICancelAsync` 实现位于 `UIModule.Blur.cs`：`m_scope` 持有模块级取消范围，
 > `InitBlur` 重建（新生命周期 = 新 Token）、`ReleaseBlur` 触发取消；框架重启前经 `CancelAllAsync` 等待 Shader 在途加载取消清理完毕。
 
 **使用：** 在 `UIConfig` 配置表中将界面 `Blur` 列设为 `true` 即可（如 `WinDialogGuide`）。
@@ -623,19 +623,19 @@ public class WinMain : WinBase
     // 详见 [UI 配置表（UIConfig）](#311-ui-配置表uiconfig) 小节。
     
     // 界面组件引用
-    private GButton m_StartButton;
-    private GButton m_SettingButton;
+    private GButton m_startButton;
+    private GButton m_settingButton;
     
     // 初始化界面
     protected override void OnInit()
     {
         // 获取界面组件
-        m_StartButton = WinUI.GetChild("start_btn") as GButton;
-        m_SettingButton = WinUI.GetChild("setting_btn") as GButton;
+        m_startButton = WinUI.GetChild("start_btn") as GButton;
+        m_settingButton = WinUI.GetChild("setting_btn") as GButton;
         
         // 注册按钮事件
-        AddUIListener(m_StartButton.onClick, OnStartButtonClick);
-        AddUIListener(m_SettingButton.onClick, OnSettingButtonClick);
+        AddUIListener(m_startButton.onClick, OnStartButtonClick);
+        AddUIListener(m_settingButton.onClick, OnSettingButtonClick);
         
         Debug.Log("主界面初始化完成");
     }
@@ -679,15 +679,15 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    private UIModule m_UIModule;
+    private UIModule m_uiModule;
     
     private void Start()
     {
         // 获取 UI 管理器
-        m_UIModule = ModuleManager.GetModule<UIModule>();
+        m_uiModule = ModuleManager.GetModule<UIModule>();
         
         // 打开主界面
-        m_UIModule.Open<WinMain>();
+        m_uiModule.Open<WinMain>();
         
         // 异步打开设置界面
         OpenSettingAsync();
@@ -695,7 +695,7 @@ public class GameController : MonoBehaviour
     
     private async void OpenSettingAsync()
     {
-        var settingWin = await m_UIModule.OpenAsync<WinSetting>();
+        var settingWin = await m_uiModule.OpenAsync<WinSetting>();
         if (settingWin != null)
         {
             Debug.Log("设置界面打开成功");
@@ -705,13 +705,13 @@ public class GameController : MonoBehaviour
     private void CloseMainWin()
     {
         // 关闭主界面
-        m_UIModule.Close<WinMain>();
+        m_uiModule.Close<WinMain>();
     }
     
     private void OnDestroy()
     {
         // 关闭所有界面
-        m_UIModule?.CloseAll();
+        m_uiModule?.CloseAll();
     }
 }
 ```
@@ -767,14 +767,14 @@ public class AnimatedWin : WinBase
 ```csharp
 public class UIGroupExample : MonoBehaviour
 {
-    private UIModule m_UIModule;
+    private UIModule m_uiModule;
     
     private void Start()
     {
-        m_UIModule = ModuleManager.GetModule<UIModule>();
+        m_uiModule = ModuleManager.GetModule<UIModule>();
         
         // 获取界面组
-        var mainUIGroup = m_UIModule.GetGroup(EUILayer.MainUI);
+        var mainUIGroup = m_uiModule.GetGroup(EUILayer.MainUI);
         
         // 暂停界面组
         mainUIGroup.Pause = true;
@@ -873,22 +873,22 @@ public class TimerExampleWin : WinBase
 ```csharp
 public class UIEventListener : MonoBehaviour
 {
-    private UIModule m_UIModule;
-    private EventModule m_EventModule;
+    private UIModule m_uiModule;
+    private EventModule m_eventModule;
     
     private void Start()
     {
-        m_UIModule = ModuleManager.GetModule<UIModule>();
-        m_EventModule = ModuleManager.GetModule<EventModule>();
+        m_uiModule = ModuleManager.GetModule<UIModule>();
+        m_eventModule = ModuleManager.GetModule<EventModule>();
         
         // 订阅界面打开成功事件
-        m_EventModule.Subscribe(OpenSuccessEventArgs.EventId, OnOpenSuccess);
+        m_eventModule.Subscribe(OpenSuccessEventArgs.EventId, OnOpenSuccess);
         
         // 订阅界面关闭完成事件
-        m_EventModule.Subscribe(CloseCompleteEventArgs.EventId, OnCloseComplete);
+        m_eventModule.Subscribe(CloseCompleteEventArgs.EventId, OnCloseComplete);
         
         // 订阅界面可见性变化事件
-        m_EventModule.Subscribe(ChangeVisibleEventArgs.EventId, OnVisibleChanged);
+        m_eventModule.Subscribe(ChangeVisibleEventArgs.EventId, OnVisibleChanged);
     }
     
     private void OnOpenSuccess(object sender, GameEventArgs e)
@@ -911,7 +911,7 @@ public class UIEventListener : MonoBehaviour
     
     private void OnDestroy()
     {
-        m_EventModule?.UnSubscribeAll(this);
+        m_eventModule?.UnSubscribeAll(this);
     }
 }
 ```
@@ -1091,7 +1091,7 @@ A: 使用 userData 参数：
 
 ```csharp
 var data = new PlayerData { Name = "Player1", Level = 10 };
-m_UIModule.Open<PlayerInfoWin>(data);
+m_uiModule.Open<PlayerInfoWin>(data);
 ```
 
 在 OnInit 或 OnOpen 中通过 UserData 属性获取：
@@ -1121,7 +1121,7 @@ private void OnBackButtonClick()
 A: 使用 PkgManager：
 
 ```csharp
-await m_UIModule.PkgManager.LoadPkgAsync("Main");
+await m_uiModule.PkgManager.LoadPkgAsync("Main");
 ```
 
 ### Q4: 如何获取当前最顶部的界面？
@@ -1130,8 +1130,8 @@ A: 使用 GetTop：
 
 ```csharp
 // 获取指定层级的顶部界面
-var topWin = m_UIModule.GetTop(EUILayer.Window);
+var topWin = m_uiModule.GetTop(EUILayer.Window);
 
 // 获取所有层级中最顶部的界面
-var topWin = m_UIModule.GetTop();
+var topWin = m_uiModule.GetTop();
 ```

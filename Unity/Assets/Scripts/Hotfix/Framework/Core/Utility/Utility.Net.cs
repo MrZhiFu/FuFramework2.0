@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -28,8 +27,8 @@ namespace Hotfix.Framework.Core
 			/// <returns>返回第一个可用的端口号，如果没有可用端口则返回-1</returns>
 			public static int GetFirstAvailablePort(int startPort = 667, int maxPort = 65535)
 			{
-				if (startPort < 0) startPort = 0;
-				if (maxPort > 65535) maxPort = 65535;
+				if (startPort < 0) startPort   = 0;
+				if (maxPort   > 65535) maxPort = 65535;
 				if (startPort >= maxPort) return -1;
 
 				// 一次性取回系统已用端口集合后再扫描：

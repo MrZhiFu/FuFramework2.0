@@ -66,7 +66,7 @@ namespace Hotfix.Framework.Web
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>字符串请求的任务。</returns>
 		private UniTask<WebStringResult> GetToStringReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header,
-														CancellationToken token, object userData = null)
+		                                                CancellationToken token, object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
 			m_scope.Token.ThrowIfCancellationRequested();
@@ -112,8 +112,8 @@ namespace Hotfix.Framework.Web
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>字符串请求的任务。</returns>
 		private UniTask<WebStringResult> PostToStringReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header,
-														 CancellationToken token,
-														 object userData = null)
+		                                                 CancellationToken token,
+		                                                 object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
 			m_scope.Token.ThrowIfCancellationRequested();
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Web
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>字节数组请求的任务。</returns>
 		private UniTask<WebBufferResult> PostToBytesReq(string url, Dictionary<string, object> from, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token,
-														object userData = null)
+		                                                object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
 			m_scope.Token.ThrowIfCancellationRequested();
@@ -262,11 +262,11 @@ namespace Hotfix.Framework.Web
 		/// <param name="asyncOperation">请求异步操作。</param>
 		/// <returns>是否成功登记在途（本方法不失败，恒返回 true）。</returns>
 		private bool SendRequest<T>(T webData, List<T> sendingList, UnityWebRequest unityWebRequest,
-									UnityWebRequestAsyncOperation asyncOperation) where T : WebDataBase
+		                            UnityWebRequestAsyncOperation asyncOperation) where T : WebDataBase
 		{
 			// 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
-			var capturedToken = m_scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
-			var inFlight      = m_scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+			var capturedToken                              = m_scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+			var inFlight                                   = m_scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
 			if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
 
 			// 任一 token 取消即 Abort 中断传输，避免在途请求等到超时才被回收；完成回调中注销。
@@ -330,6 +330,7 @@ namespace Hotfix.Framework.Web
 							webData.CompleteError(new Exception(errorText));
 							RecordResult(EWebRequestResult.Failed, webData, sendBytes, recvBytes, errorText);
 						}
+
 						return;
 					}
 

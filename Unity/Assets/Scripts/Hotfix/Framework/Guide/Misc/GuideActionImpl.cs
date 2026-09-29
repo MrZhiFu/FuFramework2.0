@@ -7,6 +7,7 @@ using AOT.Framework.Core.Log;
 using Hotfix.Game.UI;
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
@@ -145,8 +146,8 @@ namespace Hotfix.Framework.Guide
 				}
 
 				var targetRect = targetUI.TransformRect(new Rect(0, 0, targetUI.width, targetUI.height), winClickGuide.WinUI);
-				var clickArea = winClickGuide.GetClickArea();
-				clickArea.size = targetRect.size;
+				var clickArea  = winClickGuide.GetClickArea();
+				clickArea.size     = targetRect.size;
 				clickArea.position = targetRect.position;
 			}
 			catch (Exception e)
