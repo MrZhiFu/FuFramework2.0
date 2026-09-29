@@ -1,5 +1,6 @@
 using UnityEngine;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Storage;
 using System.Collections.Generic;
 using SoundGroupCfg = Hotfix.Game.Config.SoundGroup;
 
@@ -15,6 +16,11 @@ namespace Hotfix.Framework.Sound
 		/// </summary>
 		public class SoundGroup : MonoBehaviour
 		{
+			/// <summary>
+			/// 声音组设置存储键前缀。
+			/// </summary>
+			private const string STORAGE_KEY_PREFIX = "SoundGroup";
+
 			/// <summary>
 			/// 声音播放代理列表
 			/// </summary>
@@ -55,7 +61,7 @@ namespace Hotfix.Framework.Sound
 				{
 					if (value == m_mute) return;
 					m_mute = value;
-					// TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
+					SaveMuteSetting();
 					foreach (var soundAgent in m_soundAgents)
 					{
 						soundAgent.RefreshMute();
@@ -73,7 +79,7 @@ namespace Hotfix.Framework.Sound
 				{
 					if (Mathf.Approximately(value, m_volume)) return;
 					m_volume = value;
-					// TODO：这里需要保存声音组的设置到本地，以便下次打开游戏时还原。
+					SaveVolumeSetting();
 					foreach (var soundAgent in m_soundAgents)
 					{
 						soundAgent.RefreshVolume();
@@ -91,9 +97,12 @@ namespace Hotfix.Framework.Sound
 				Name                          = groupInfo.Id.ToString();
 				AllowBeReplacedBySamePriority = groupInfo.AllowBeReplacedBySamePriority;
 
-				// TODO：这里获取玩家是否存储了相关的设置，如果是，则使用玩家的设置，否则使用默认设置。
-				Volume = groupInfo.Volume;
-				Mute   = groupInfo.Mute;
+				// 还原玩家存储的设置；未存储过（首次启动/新增组）时回退配置表默认值。
+				// 直接赋字段不走 setter：还原不应触发存储回写（无谓标脏）。
+				// 代理创建（下方 AddSoundAgentHelper）经 SoundAgent.Init → Reset → RefreshVolume/RefreshMute
+				// 应用组值，故须先设值后建代理。
+				m_volume = LoadVolumeSetting(groupInfo.Volume);
+				m_mute   = LoadMuteSetting(groupInfo.Mute);
 
 				// 添加声音组辅助器中的声音播放代理辅助器
 				for (var i = 0; i < groupInfo.AgentCount; i++)
@@ -101,6 +110,60 @@ namespace Hotfix.Framework.Sound
 					AddSoundAgentHelper(i);
 				}
 			}
+
+			/// <summary>
+			/// 读取玩家存储的音量设置，未存储过时返回默认值。
+			/// </summary>
+			/// <param name="defaultValue">配置表默认音量。</param>
+			/// <returns>玩家存储的音量，无存储时为配置表默认值。</returns>
+			private float LoadVolumeSetting(float defaultValue)
+			{
+				var storage = StorageModule.Instance;
+				return storage != null ? storage.GetFloat(GetVolumeKey(), defaultValue: defaultValue) : defaultValue;
+			}
+
+			/// <summary>
+			/// 读取玩家存储的静音设置，未存储过时返回默认值。
+			/// </summary>
+			/// <param name="defaultValue">配置表默认静音。</param>
+			/// <returns>玩家存储的静音，无存储时为配置表默认值。</returns>
+			private bool LoadMuteSetting(bool defaultValue)
+			{
+				var storage = StorageModule.Instance;
+				return storage != null ? storage.GetBool(GetMuteKey(), defaultValue: defaultValue) : defaultValue;
+			}
+
+			/// <summary>
+			/// 保存音量设置到本地（仅标脏，落盘由 StorageModule 自动保存与释放时 SaveAll 兜底）。
+			/// </summary>
+			private void SaveVolumeSetting()
+			{
+				var storage = StorageModule.Instance;
+				if (storage == null) return; // 存储模块缺失：降级为不持久化（同 LocalizationModule 策略）
+				storage.SetFloat(GetVolumeKey(), m_volume);
+			}
+
+			/// <summary>
+			/// 保存静音设置到本地（仅标脏，落盘由 StorageModule 自动保存与释放时 SaveAll 兜底）。
+			/// </summary>
+			private void SaveMuteSetting()
+			{
+				var storage = StorageModule.Instance;
+				if (storage == null) return; // 存储模块缺失：降级为不持久化（同 LocalizationModule 策略）
+				storage.SetBool(GetMuteKey(), m_mute);
+			}
+
+			/// <summary>
+			/// 获取音量设置的存储键。
+			/// </summary>
+			/// <returns>音量设置存储键。</returns>
+			private string GetVolumeKey() => $"{STORAGE_KEY_PREFIX}_{Name}_Volume";
+
+			/// <summary>
+			/// 获取静音设置的存储键。
+			/// </summary>
+			/// <returns>静音设置存储键。</returns>
+			private string GetMuteKey() => $"{STORAGE_KEY_PREFIX}_{Name}_Mute";
 
 			/// <summary>
 			/// 增加声音代理辅助器。
