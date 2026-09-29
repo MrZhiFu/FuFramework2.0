@@ -27,7 +27,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 指定级别及以上级别的日志预定义符号。
 		/// </summary>
-		private static readonly string[] AboveLogSymbols =
+		private static readonly string[] sr_aboveLogSymbols =
 		{
 			ENABLE_INFO_AND_ABOVE_LOG_SYMBOL,
 			ENABLE_DEBUG_AND_ABOVE_LOG_SYMBOL,
@@ -39,7 +39,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 指定的级别的日志预定义符号。
 		/// </summary>
-		private static readonly string[] SpecifyLogSymbols =
+		private static readonly string[] sr_specifyLogSymbols =
 		{
 			ENABLE_INFO_LOG_SYMBOL,
 			ENABLE_DEBUG_LOG_SYMBOL,
@@ -66,12 +66,12 @@ namespace FuFramework.Core.Editor
 		{
 			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_LOG_SYMBOL);
 
-			foreach (var specifyLogScriptingDefineSymbol in SpecifyLogSymbols)
+			foreach (var specifyLogScriptingDefineSymbol in sr_specifyLogSymbols)
 			{
 				ScriptingDefineSymbols.RemoveScriptingDefineSymbol(specifyLogScriptingDefineSymbol);
 			}
 
-			foreach (var aboveLogScriptingDefineSymbol in AboveLogSymbols)
+			foreach (var aboveLogScriptingDefineSymbol in sr_aboveLogSymbols)
 			{
 				ScriptingDefineSymbols.RemoveScriptingDefineSymbol(aboveLogScriptingDefineSymbol);
 			}
@@ -176,7 +176,7 @@ namespace FuFramework.Core.Editor
 		{
 			if (string.IsNullOrEmpty(logSymbol)) return;
 
-			foreach (var i in AboveLogSymbols)
+			foreach (var i in sr_aboveLogSymbols)
 			{
 				if (i != logSymbol) continue;
 				DisableAllLogs();
@@ -214,7 +214,7 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		private static bool IsValidSpecifyLogSymbol(string symbol)
 		{
-			foreach (var validSymbol in SpecifyLogSymbols)
+			foreach (var validSymbol in sr_specifyLogSymbols)
 			{
 				if (validSymbol == symbol) return true;
 			}

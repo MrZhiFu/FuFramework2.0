@@ -25,16 +25,16 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 构建导出路径
 		/// </summary>
-		private static string _buildPath;
+		private static string s_buildPath;
 
 		/// <summary>
 		/// 构建时间
 		/// </summary>
-		private static string _buildTime;
+		private static string s_buildTime;
 
 		static BuildProductHelper()
 		{
-			_buildPath = string.Empty;
+			s_buildPath = string.Empty;
 			UpdateBuildTime();
 		}
 
@@ -59,9 +59,9 @@ namespace FuFramework.Core.Editor
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
 
 				// 构建相关设置
-				PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-				PlayerSettings.defaultScreenHeight = 720;
-				PlayerSettings.defaultScreenWidth = 1280;
+				PlayerSettings.fullScreenMode                    = FullScreenMode.Windowed;
+				PlayerSettings.defaultScreenHeight               = 720;
+				PlayerSettings.defaultScreenWidth                = 1280;
 				EditorUserBuildSettings.selectedStandaloneTarget = BuildTarget.StandaloneWindows64;
 				AssetDatabase.SaveAssets();
 
@@ -70,10 +70,10 @@ namespace FuFramework.Core.Editor
 
 				// 构建输出路径
 				var outputPath = BuildOutputPath() + Path.DirectorySeparatorChar;
-				var exePath = outputPath + PlayerSettings.productName + ".exe";
+				var exePath    = outputPath        + PlayerSettings.productName + ".exe";
 
 				// 执行构建
-				var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, exePath , EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
+				var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, exePath, EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
 				if (buildReport.summary.result != BuildResult.Succeeded) return;
 
 				// 删除 BackUpThisFolder_ButDontShipItWithYourGame备份文件夹。
@@ -124,10 +124,10 @@ namespace FuFramework.Core.Editor
 				HotFixEditorCompilerHelper.AddEditorInExcludePlatforms();
 
 				// 构建相关设置
-				PlayerSettings.SplashScreen.show = false;
-				PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+				PlayerSettings.SplashScreen.show   = false;
+				PlayerSettings.fullScreenMode      = FullScreenMode.Windowed;
 				PlayerSettings.defaultScreenHeight = 720;
-				PlayerSettings.defaultScreenWidth = 1280;
+				PlayerSettings.defaultScreenWidth  = 1280;
 				AssetDatabase.SaveAssets();
 
 				// 更新构建时间
@@ -135,7 +135,7 @@ namespace FuFramework.Core.Editor
 
 				// 构建输出路径
 				var outputPath = BuildOutputPath() + Path.DirectorySeparatorChar;
-				var appPath = outputPath + PlayerSettings.productName + ".app";
+				var appPath    = outputPath        + PlayerSettings.productName + ".app";
 
 				// 执行构建
 				var buildReport = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, appPath, EditorUserBuildSettings.activeBuildTarget, BuildOptions.None);
@@ -183,9 +183,9 @@ namespace FuFramework.Core.Editor
 			}
 
 			if (string.IsNullOrEmpty(PlayerSettings.Android.keystoreName)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keystorePass))
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass)
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keystorePass))
 			{
 				Debug.LogError("没有设置签名密钥,取消打包APK");
 				return;
@@ -200,20 +200,20 @@ namespace FuFramework.Core.Editor
 				UpdateBuildTime();
 
 				// 构建相关设置
-				EditorUserBuildSettings.buildAppBundle = false;
+				EditorUserBuildSettings.buildAppBundle               = false;
 				EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
 				AssetDatabase.SaveAssets();
 
 				// 构建输出路径
-				_buildPath = BuildOutputPath();
-				var apkPath = $"{_buildPath}.apk";
+				s_buildPath = BuildOutputPath();
+				var apkPath = $"{s_buildPath}.apk";
 
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, apkPath, BuildTarget.Android, BuildOptions.None);
 				Debug.Log("构建成功:" + apkPath);
 
 				// 构建完成后自动打开文件夹
-				EditorUtility.RevealInFinder(_buildPath);
+				EditorUtility.RevealInFinder(s_buildPath);
 			}
 			finally
 			{
@@ -237,9 +237,9 @@ namespace FuFramework.Core.Editor
 			}
 
 			if (string.IsNullOrEmpty(PlayerSettings.Android.keystoreName)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass)
-				|| string.IsNullOrEmpty(PlayerSettings.Android.keystorePass))
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasName)
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keyaliasPass)
+			    || string.IsNullOrEmpty(PlayerSettings.Android.keystorePass))
 			{
 				Debug.LogError("没有设置签名密钥,取消打包AAB");
 				return;
@@ -255,20 +255,20 @@ namespace FuFramework.Core.Editor
 
 				// 构建相关设置
 				EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
-				EditorUserBuildSettings.buildAppBundle = true;
-				EditorUserBuildSettings.androidCreateSymbols = AndroidCreateSymbols.Public; // 开启符号表的输出
+				EditorUserBuildSettings.buildAppBundle               = true;
+				EditorUserBuildSettings.androidCreateSymbols         = AndroidCreateSymbols.Public; // 开启符号表的输出
 				AssetDatabase.SaveAssets();
 
 				// 构建输出路径
-				_buildPath = BuildOutputPath();
-				var aapPath = $"{_buildPath}.aab";
+				s_buildPath = BuildOutputPath();
+				var aapPath = $"{s_buildPath}.aab";
 
 				// 执行构建
 				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, aapPath, BuildTarget.Android, BuildOptions.None);
 				Debug.Log("构建成功:" + aapPath);
 
 				// 构建完成后自动打开文件夹
-				EditorUtility.RevealInFinder(_buildPath);
+				EditorUtility.RevealInFinder(s_buildPath);
 			}
 			finally
 			{
@@ -301,14 +301,14 @@ namespace FuFramework.Core.Editor
 				UpdateBuildTime();
 
 				// 构建输出路径
-				_buildPath = BuildOutputPath();
+				s_buildPath = BuildOutputPath();
 
 				// 执行构建
-				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.WebGL, BuildOptions.None);
-				Debug.Log("构建成功:" + _buildPath);
+				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, s_buildPath, BuildTarget.WebGL, BuildOptions.None);
+				Debug.Log("构建成功:" + s_buildPath);
 
 				// 构建完成后自动打开文件夹
-				EditorUtility.RevealInFinder(_buildPath);
+				EditorUtility.RevealInFinder(s_buildPath);
 			}
 			finally
 			{
@@ -372,13 +372,13 @@ namespace FuFramework.Core.Editor
 				UpdateBuildTime();
 
 				// 构建输出路径
-				_buildPath = BuildOutputPath();
+				s_buildPath                         = BuildOutputPath();
 				EditorUserBuildSettings.development = true;
 
 				// 执行构建
-				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.iOS, BuildOptions.None);
-				Process.Start(_buildPath);
-				Debug.Log("构建成功:" + _buildPath);
+				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, s_buildPath, BuildTarget.iOS, BuildOptions.None);
+				Process.Start(s_buildPath);
+				Debug.Log("构建成功:" + s_buildPath);
 
 				// 构建完成后自动打开文件夹
 				EditorUtility.RevealInFinder(BuildOutputPath());
@@ -410,15 +410,15 @@ namespace FuFramework.Core.Editor
 				UpdateBuildTime();
 
 				// 构建输出路径
-				_buildPath = BuildOutputPath();
+				s_buildPath = BuildOutputPath();
 
 				// 执行构建
-				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, _buildPath, BuildTarget.iOS, BuildOptions.None);
-				Process.Start(_buildPath);
-				Debug.Log("构建成功:" + _buildPath);
+				BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, s_buildPath, BuildTarget.iOS, BuildOptions.None);
+				Process.Start(s_buildPath);
+				Debug.Log("构建成功:" + s_buildPath);
 
 				// 构建完成后自动打开文件夹
-				EditorUtility.RevealInFinder(_buildPath);
+				EditorUtility.RevealInFinder(s_buildPath);
 			}
 			finally
 			{
@@ -436,7 +436,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 更新构建时间
 		/// </summary>
-		private static void UpdateBuildTime() => _buildTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+		private static void UpdateBuildTime() => s_buildTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
 		/// <summary>
 		/// 获取发布导出路径：Builds/目标平台/应用标识Identifier/Version/BuildTime_v_BundleVersion
@@ -444,22 +444,22 @@ namespace FuFramework.Core.Editor
 		/// <returns></returns>
 		private static string BuildOutputPath()
 		{
-			var pathName = $"{Application.identifier}_{_buildTime}_v_{PlayerSettings.bundleVersion}";
+			var pathName = $"{Application.identifier}_{s_buildTime}_v_{PlayerSettings.bundleVersion}";
 			switch (EditorUserBuildSettings.activeBuildTarget)
 			{
 				case BuildTarget.Android:
-					pathName = $"{_buildTime}_v_{PlayerSettings.bundleVersion}_code_{PlayerSettings.Android.bundleVersionCode}";
+					pathName = $"{s_buildTime}_v_{PlayerSettings.bundleVersion}_code_{PlayerSettings.Android.bundleVersionCode}";
 					break;
 				case BuildTarget.iOS:
 				case BuildTarget.StandaloneOSX:
-					pathName = $"{_buildTime}_v_{PlayerSettings.bundleVersion}_code_{PlayerSettings.iOS.buildNumber}";
+					pathName = $"{s_buildTime}_v_{PlayerSettings.bundleVersion}_code_{PlayerSettings.iOS.buildNumber}";
 					break;
 				case BuildTarget.StandaloneWindows:
 				case BuildTarget.StandaloneWindows64:
-					pathName = $"{_buildTime}";
+					pathName = $"{s_buildTime}";
 					break;
 				case BuildTarget.WebGL:
-					pathName = $"{_buildTime}_v_{PlayerSettings.bundleVersion}";
+					pathName = $"{s_buildTime}_v_{PlayerSettings.bundleVersion}";
 					break;
 			}
 

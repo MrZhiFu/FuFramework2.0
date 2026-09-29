@@ -20,23 +20,23 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 当前域中已加载的所有程序集
 			/// </summary>
-			private static readonly System.Reflection.Assembly[] Assemblies;
+			private static readonly System.Reflection.Assembly[] sr_assemblies;
 
 			/// <summary>
 			/// 缓存类型的字典，key为类型名，value为类型
 			/// </summary>
-			private static readonly Dictionary<string, Type> CachedDict = new(StringComparer.Ordinal);
+			private static readonly Dictionary<string, Type> sr_cachedDict = new(StringComparer.Ordinal);
 
 			static Assembly()
 			{
-				Assemblies = AppDomain.CurrentDomain.GetAssemblies();
+				sr_assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			}
 
 			/// <summary>
 			/// 获取已加载的程序集。
 			/// </summary>
 			/// <returns>已加载的程序集。</returns>
-			public static System.Reflection.Assembly[] GetAssemblies() => Assemblies;
+			public static System.Reflection.Assembly[] GetAssemblies() => sr_assemblies;
 
 			/// <summary>
 			/// 获取已加载的程序集中的所有类型。
@@ -45,7 +45,7 @@ namespace AOT.Framework.Core.Utility
 			public static Type[] GetTypes()
 			{
 				var results = new List<Type>();
-				foreach (var assembly in Assemblies)
+				foreach (var assembly in sr_assemblies)
 				{
 					results.AddRange(assembly.GetTypes());
 				}
@@ -63,7 +63,7 @@ namespace AOT.Framework.Core.Utility
 					throw new ArgumentNullException(nameof(results));
 
 				results.Clear();
-				foreach (var assembly in Assemblies)
+				foreach (var assembly in sr_assemblies)
 				{
 					results.AddRange(assembly.GetTypes());
 				}
@@ -79,20 +79,20 @@ namespace AOT.Framework.Core.Utility
 				if (string.IsNullOrEmpty(typeName))
 					throw new ArgumentException("传入的类型名为空，请检查参数是否正确.", nameof(typeName));
 
-				if (CachedDict.TryGetValue(typeName, out var type)) return type;
+				if (sr_cachedDict.TryGetValue(typeName, out var type)) return type;
 
 				type = Type.GetType(typeName);
 				if (type != null)
 				{
-					CachedDict.Add(typeName, type);
+					sr_cachedDict.Add(typeName, type);
 					return type;
 				}
 
-				foreach (var assembly in Assemblies)
+				foreach (var assembly in sr_assemblies)
 				{
 					type = Type.GetType($"{typeName}, {assembly.FullName}");
 					if (type == null) continue;
-					CachedDict.Add(typeName, type);
+					sr_cachedDict.Add(typeName, type);
 					return type;
 				}
 

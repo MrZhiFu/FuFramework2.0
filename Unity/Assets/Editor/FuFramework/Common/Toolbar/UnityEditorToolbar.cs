@@ -18,22 +18,22 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 工具栏类型
 		/// </summary>
-		private static readonly System.Type ToolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
+		private static readonly System.Type sr_toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
 
 		/// <summary>
 		/// 当前工具栏实例
 		/// </summary>
-		private static ScriptableObject m_currentToolbar;
+		private static ScriptableObject s_currentToolbar;
 
 		/// <summary>
 		/// 工具栏 OnGUILeft 方法的回调。
 		/// </summary>
-		public static Action OnToolbarGUILeft;
+		public static Action s_OnToolbarGUILeft;
 
 		/// <summary>
 		/// 工具栏 OnGUIRight 方法的回调。
 		/// </summary>
-		public static Action OnToolbarGUIRight;
+		public static Action s_OnToolbarGUIRight;
 
 		static ToolbarCallback()
 		{
@@ -44,22 +44,22 @@ namespace FuFramework.Core.Editor
 		private static void OnUpdate()
 		{
 			// 依赖于工具栏是 ScriptableObject 并在布局更改时被删除的事实
-			if (m_currentToolbar != null) return;
+			if (s_currentToolbar != null) return;
 
 			// 查找工具栏实例
-			var toolbars = Resources.FindObjectsOfTypeAll(ToolbarType);
-			m_currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
-			if (m_currentToolbar == null) return;
+			var toolbars = Resources.FindObjectsOfTypeAll(sr_toolbarType);
+			s_currentToolbar = toolbars.Length > 0 ? (ScriptableObject)toolbars[0] : null;
+			if (s_currentToolbar == null) return;
 
 			// 获取工具栏根节点
-			var root = m_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+			var root = s_currentToolbar.GetType().GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
 			if (root == null) return;
-			var rawRoot = root.GetValue(m_currentToolbar);
+			var rawRoot = root.GetValue(s_currentToolbar);
 			var mRoot   = rawRoot as VisualElement;
 
 			// 注册绘制回调
-			RegisterCallback("ToolbarZoneLeftAlign",  OnToolbarGUILeft);
-			RegisterCallback("ToolbarZoneRightAlign", OnToolbarGUIRight);
+			RegisterCallback("ToolbarZoneLeftAlign",  s_OnToolbarGUILeft);
+			RegisterCallback("ToolbarZoneRightAlign", s_OnToolbarGUIRight);
 			return;
 
 			// 注册绘制回调
@@ -95,14 +95,17 @@ namespace FuFramework.Core.Editor
 	[InitializeOnLoad]
 	public static class UnityEditorToolbar
 	{
-		public static readonly List<Action> LeftToolbarGUI  = new(); // 左侧工具栏设置绘制内容回调
-		public static readonly List<Action> RightToolbarGUI = new(); // 右侧工具栏设置绘制内容回调
+		/// <summary> 左侧工具栏设置绘制内容回调 </summary>
+		public static readonly List<Action> sr_LeftToolbarCallBackList = new();
+
+		/// <summary> 右侧工具栏设置绘制内容回调 </summary>
+		public static readonly List<Action> sr_RightToolbarCallBackList = new();
 
 		static UnityEditorToolbar()
 		{
 			// 注册工具栏左右两侧绘制回调
-			ToolbarCallback.OnToolbarGUILeft  = GUILeft;
-			ToolbarCallback.OnToolbarGUIRight = GUIRight;
+			ToolbarCallback.s_OnToolbarGUILeft  = GUILeft;
+			ToolbarCallback.s_OnToolbarGUIRight = GUIRight;
 		}
 
 		/// <summary>
@@ -111,9 +114,9 @@ namespace FuFramework.Core.Editor
 		private static void GUILeft()
 		{
 			GUILayout.BeginHorizontal();
-			foreach (var handler in LeftToolbarGUI)
+			foreach (var callback in sr_LeftToolbarCallBackList)
 			{
-				handler();
+				callback();
 			}
 
 			GUILayout.EndHorizontal();
@@ -125,9 +128,9 @@ namespace FuFramework.Core.Editor
 		private static void GUIRight()
 		{
 			GUILayout.BeginHorizontal();
-			foreach (var handler in RightToolbarGUI)
+			foreach (var callback in sr_RightToolbarCallBackList)
 			{
-				handler();
+				callback();
 			}
 
 			GUILayout.EndHorizontal();

@@ -17,7 +17,7 @@ namespace FuFramework.Proto.Editor
 		/// <summary>
 		/// 导出目标
 		/// </summary>
-		public enum EExportTarget
+		private enum EExportTarget
 		{
 			/// <summary>
 			/// 客户端

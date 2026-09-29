@@ -28,7 +28,7 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 字节大小单位列表
 			/// </summary>
-			private static readonly string[] UnitList = { "B", "KB", "MB", "GB", "TB", "PB" };
+			private static readonly string[] sr_unitList = { "B", "KB", "MB", "GB", "TB", "PB" };
 
 			/// <summary>
 			/// 获取带有单位的字节大小
@@ -37,7 +37,7 @@ namespace AOT.Framework.Core.Utility
 			/// <returns>格式化后的字节大小字符串</returns>
 			public static string GetBytesSizeWithUnit(long size)
 			{
-				foreach (var unit in UnitList)
+				foreach (var unit in sr_unitList)
 				{
 					if (size <= 1024)
 					{
@@ -47,7 +47,7 @@ namespace AOT.Framework.Core.Utility
 					size /= 1024;
 				}
 
-				return size + UnitList[0];
+				return size + sr_unitList[0];
 			}
 
 			/// <summary>

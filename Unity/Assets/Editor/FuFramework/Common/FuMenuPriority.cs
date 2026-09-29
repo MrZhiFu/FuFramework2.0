@@ -311,12 +311,12 @@ namespace FuFramework.Core.Editor
 		private const int L10N_BASE = 1010;
 
 		/// <summary>
-		/// 生成现存问题报告。
+		/// 生成多语言现存问题报告。
 		/// </summary>
 		public const int L10N_GENERATE_ISSUE_REPORT = L10N_BASE + 0;
 
 		/// <summary>
-		/// 打开现存问题报告。
+		/// 打开多语言现存问题报告。
 		/// </summary>
 		public const int L10N_OPEN_ISSUE_REPORT = L10N_BASE + 1;
 

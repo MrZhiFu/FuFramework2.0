@@ -21,7 +21,7 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 合并路径的StringBuilder
 			/// </summary>
-			private static readonly StringBuilder CombinePathSb = new();
+			private static readonly StringBuilder sr_combinePathSb = new();
 
 			/// <summary>
 			/// 热更新资源路径(应用程序外部资源路径存放路径)
@@ -51,19 +51,19 @@ namespace AOT.Framework.Core.Utility
 				const string separatorA = "/";
 				const string separatorB = "\\";
 
-				CombinePathSb.Clear();
+				sr_combinePathSb.Clear();
 
 				for (var index = 0; index < paths.Length - 1; index++)
 				{
 					var path = paths[index];
-					CombinePathSb.Append(path);
+					sr_combinePathSb.Append(path);
 					if (path.EndsWith(separatorA)   || path.EndsWith(separatorB)) continue;
 					if (path.StartsWith(separatorA) || path.StartsWith(separatorB)) continue;
-					CombinePathSb.Append(separatorA);
+					sr_combinePathSb.Append(separatorA);
 				}
 
-				CombinePathSb.Append(paths[^1]); // ^1表示最后一个元素
-				return CombinePathSb.ToString();
+				sr_combinePathSb.Append(paths[^1]); // ^1表示最后一个元素
+				return sr_combinePathSb.ToString();
 			}
 
 			/// <summary>

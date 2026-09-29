@@ -87,7 +87,7 @@ namespace FuFramework.ReferencePool.Editor
 		private MethodInfo m_moduleRemoveAllPoolsMethod;
 
 		/// <summary>
-		/// ReferencePool.RemoveAllUnused<T> 泛型方法定义（静态）
+		/// ReferencePool.RemoveAllUnused 泛型方法定义（静态）
 		/// </summary>
 		private MethodInfo m_removeAllUnusedGenericMethod;
 

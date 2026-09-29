@@ -18,16 +18,16 @@ namespace AOT.Framework.ModuleSetting.Editor
 		private SerializedProperty m_openGuide;       // 是否开启引导
 
 
-		private SerializedProperty m_playMode;
-		private SerializedProperty m_defaultPackageName;
-		private SerializedProperty m_downloadingMaxNum;
-		private SerializedProperty m_failedTryAgainNum;
-		private SerializedProperty m_asyncSystemMaxSlicePerFrame;
-		private SerializedProperty m_resCdnRootURL;
-		private SerializedProperty m_enableAutoSave;
-		private SerializedProperty m_autoSaveInterval;
-		private SerializedProperty m_enableEncrypt;
-		private SerializedProperty m_encryptKey;
+		private SerializedProperty m_playMode;                    // 资源运行模式
+		private SerializedProperty m_defaultPackageName;          // 默认资源包名称
+		private SerializedProperty m_downloadingMaxNum;           // 下载最大并发数量
+		private SerializedProperty m_failedTryAgainNum;           // 下载失败重试次数
+		private SerializedProperty m_asyncSystemMaxSlicePerFrame; // 异步系统每帧最大时间切片（毫秒）
+		private SerializedProperty m_resCdnRootURL;               // 资源CDN根地址
+		private SerializedProperty m_enableAutoSave;              // 是否自动保存
+		private SerializedProperty m_autoSaveInterval;            // 自动保存间隔（秒）
+		private SerializedProperty m_enableEncrypt;               // 是否加密
+		private SerializedProperty m_encryptKey;                  // 加密密钥
 
 		private void OnEnable()
 		{

@@ -17,7 +17,7 @@ namespace FuFramework.Config.Editor
 		/// <summary>
 		/// 数据目标格式
 		/// </summary>
-		public enum EDataTarget
+		private enum EDataTarget
 		{
 			/// <summary>
 			/// JSON格式

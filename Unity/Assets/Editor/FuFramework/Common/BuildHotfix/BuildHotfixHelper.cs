@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -15,15 +14,25 @@ namespace FuFramework.Core.Editor
 	/// </summary>
 	public static class BuildHotfixHelper
 	{
-		// Unity代码生成dll位置
+		/// <summary>
+		///  Unity代码生成dll位置
+		/// </summary>
 		private const string HOT_FIX_ASSEMBLIES_DIR = "Library/ScriptAssemblies";
 
-		// 热更DLL名称数组
-		private static readonly string[] HotfixDlls = { "Hotfix.dll" };
+		/// <summary>
+		/// 热更DLL名称数组
+		/// </summary>
+		private static readonly string[] sr_hotfixDlls = { "Hotfix.dll" };
 
-		// 热更代码存放位置
-		private const string CODE_DIR    = "Assets/Bundles/Code/";
-		private const string AOTCodeDir = "Assets/Bundles/AOTCode/";
+		/// <summary>
+		/// 热更代码存放位置
+		/// </summary>
+		private const string CODE_DIR = "Assets/Bundles/Code/";
+
+		/// <summary>
+		/// AOT补充代码存放位置
+		/// </summary>
+		private const string AOT_CODE_DIR = "Assets/Bundles/AOTCode/";
 
 		/// <summary>
 		/// 复制热更新代码Dll到Assets/Bundles/Code目录
@@ -36,11 +45,11 @@ namespace FuFramework.Core.Editor
 				Directory.CreateDirectory(CODE_DIR);
 			}
 
-			foreach (var hotfix in HotfixDlls)
+			foreach (var hotfix in sr_hotfixDlls)
 			{
 				// 源DLL相对路径，相对于Unity工程根目录。Unity编辑器运行时，当前工作目录自动设置为项目根目录。
 				var srcRelativePath = Path.Combine(HOT_FIX_ASSEMBLIES_DIR, hotfix);
-				File.Copy(srcRelativePath, Path.Combine(CODE_DIR,        $"{hotfix}.bytes"), true);
+				File.Copy(srcRelativePath, Path.Combine(CODE_DIR,          $"{hotfix}.bytes"), true);
 				Debug.Log($"复制热更代码DLL--{srcRelativePath}到{CODE_DIR}完成");
 			}
 
@@ -48,15 +57,15 @@ namespace FuFramework.Core.Editor
 		}
 
 		/// <summary>
-		/// 复制AOT代码DLL到Assets/Bundles/AOTCode目录。
+		/// 复制AOT补充代码DLL到Assets/Bundles/AOTCode目录。
 		/// "AssembliesPostIl2CppStrip": IL2CPP裁剪后的AOT程序集目录
 		/// </summary>
 		[MenuItem("FuFramework/Build/Copy AOT Code(复制AOT代码DLL到Assets>Bundles>AOTCode)", false, FuMenuPriority.BUILD_HOTFIX_COPY_AOT_CODE)]
 		public static void CopyAOTCode()
 		{
-			if (!Directory.Exists(AOTCodeDir))
+			if (!Directory.Exists(AOT_CODE_DIR))
 			{
-				Directory.CreateDirectory(AOTCodeDir);
+				Directory.CreateDirectory(AOT_CODE_DIR);
 			}
 
 			var directoryInfo = new DirectoryInfo(Application.dataPath);
@@ -70,7 +79,7 @@ namespace FuFramework.Core.Editor
 				foreach (var fileInfo in files)
 				{
 					stringBuilder.AppendLine(fileInfo.Name);
-					fileInfo.CopyTo(AOTCodeDir + "/" + $"{fileInfo.Name}.bytes", true);
+					fileInfo.CopyTo(AOT_CODE_DIR + "/" + $"{fileInfo.Name}.bytes", true);
 				}
 
 				Debug.Log(stringBuilder);

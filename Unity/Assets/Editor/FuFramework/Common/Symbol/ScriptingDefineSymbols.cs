@@ -15,7 +15,7 @@ namespace FuFramework.Core.Editor
 		/// <summary>
 		/// 目标平台。
 		/// </summary>
-		private static readonly BuildTargetGroup[] BuildTargetGroups =
+		private static readonly BuildTargetGroup[] sr_buildTargetGroups =
 		{
 			BuildTargetGroup.Standalone,
 			BuildTargetGroup.iOS,
@@ -87,7 +87,7 @@ namespace FuFramework.Core.Editor
 		public static void AddScriptingDefineSymbol(string symbol)
 		{
 			if (string.IsNullOrEmpty(symbol)) return;
-			foreach (BuildTargetGroup buildTargetGroup in BuildTargetGroups)
+			foreach (BuildTargetGroup buildTargetGroup in sr_buildTargetGroups)
 			{
 				AddScriptingDefineSymbol(buildTargetGroup, symbol);
 			}
@@ -100,7 +100,7 @@ namespace FuFramework.Core.Editor
 		public static void RemoveScriptingDefineSymbol(string symbol)
 		{
 			if (string.IsNullOrEmpty(symbol)) return;
-			foreach (BuildTargetGroup buildTargetGroup in BuildTargetGroups)
+			foreach (BuildTargetGroup buildTargetGroup in sr_buildTargetGroups)
 			{
 				RemoveScriptingDefineSymbol(buildTargetGroup, symbol);
 			}
