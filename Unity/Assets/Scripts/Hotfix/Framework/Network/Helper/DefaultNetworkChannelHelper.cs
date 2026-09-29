@@ -30,12 +30,12 @@ namespace Hotfix.Framework.Network
 		{
 			get
 			{
-				if (m_event == null) m_event = ModuleManager.GetModule<EventModule>();
-				return m_event;
+				if (s_event == null) s_event = ModuleManager.GetModule<EventModule>();
+				return s_event;
 			}
 		}
 
-		private static EventModule m_event;
+		private static EventModule s_event;
 
 		/// <summary>
 		/// 自定义包处理器注册委托集合（显式注册入口）。

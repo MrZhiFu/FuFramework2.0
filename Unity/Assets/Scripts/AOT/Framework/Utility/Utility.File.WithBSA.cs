@@ -21,7 +21,7 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 插件是否已初始化
 			/// </summary>
-			private static bool m_isInited = false;
+			private static bool s_isInited = false;
 
 			/// <summary>
 			/// 判断文件是否存在
@@ -93,9 +93,9 @@ namespace AOT.Framework.Core.Utility
 			/// </summary>
 			private static void CheckInited()
 			{
-				if (m_isInited) return;
+				if (s_isInited) return;
 				BetterStreamingAssets.Initialize();
-				m_isInited = true;
+				s_isInited = true;
 			}
 		}
 	}

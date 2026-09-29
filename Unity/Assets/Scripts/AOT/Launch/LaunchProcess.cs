@@ -32,7 +32,7 @@ namespace AOT.Launch
 		/// <summary>
 		/// 加载界面视图。
 		/// </summary>
-		private static ILaunchView m_launchView;
+		private static ILaunchView s_launchView;
 
 		/// <summary>
 		/// 运行启动流程。加载完 Hotfix 程序集后直接反射进入热更入口。
@@ -47,7 +47,7 @@ namespace AOT.Launch
 			await LaunchLocalization.InitializeAsync();
 
 			// 显示加载界面
-			m_launchView = await LaunchView.CreateAsync();
+			s_launchView = await LaunchView.CreateAsync();
 
 			var playMode = GameSetting.Instance.PlayMode;
 
@@ -60,13 +60,13 @@ namespace AOT.Launch
 				if (updateConfig.ForceUpdate)
 				{
 					// 强更中止后续流程
-					m_launchView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () => Application.OpenURL(updateConfig.AppDownloadUrl));
+					s_launchView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () => Application.OpenURL(updateConfig.AppDownloadUrl));
 					return;
 				}
 			}
 
 			// 初始化资源包
-			m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_init_res_package));
+			s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_init_res_package));
 			if (updateConfig == null)
 			{
 				await LaunchAssetHelper.InitPackageAsync();
@@ -80,19 +80,19 @@ namespace AOT.Launch
 			}
 
 			// 获取版本号（失败重试）
-			m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_get_res_version));
+			s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_get_res_version));
 			string packageVersion;
 			while ((packageVersion = await LaunchAssetHelper.RequestVersionAsync()) == null)
 			{
-				m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_get_res_version_fail));
+				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_get_res_version_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 
 			// 更新资源清单（失败重试）
-			m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_res_manifest));
+			s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_res_manifest));
 			while (!await LaunchAssetHelper.UpdateManifestAsync(packageVersion))
 			{
-				m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_res_manifest_fail));
+				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_update_res_manifest_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 
@@ -101,8 +101,8 @@ namespace AOT.Launch
 				await CreateAndDownloadAsync(updateConfig);
 
 			// 资源更新完毕
-			m_launchView.SetDownloading(false);
-			m_launchView.SetTip(string.Empty);
+			s_launchView.SetDownloading(false);
+			s_launchView.SetTip(string.Empty);
 
 			// 加载 AOT 补充元数据 + Hotfix.dll，移交热更入口
 			await LoadHotfixAndHandoffAsync();
@@ -133,7 +133,7 @@ namespace AOT.Launch
 					FuLogger.LogError($"[Launch] 获取远端更新配置异常：{e.Message}");
 				}
 
-				m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_req_remote_update_config_fail));
+				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_req_remote_update_config_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 		}
@@ -153,9 +153,9 @@ namespace AOT.Launch
 				if (updateConfig is { ShowUpdateTips: true })
 				{
 					var confirmed = new UniTaskCompletionSource();
-					m_launchView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () =>
+					s_launchView.ShowUpdateDialog(updateConfig.UpdateAnnouncement, () =>
 					{
-						m_launchView.SetNeedUpgrade(false);
+						s_launchView.SetNeedUpgrade(false);
 						confirmed.TrySetResult();
 					});
 					await confirmed.Task;
@@ -166,7 +166,7 @@ namespace AOT.Launch
 					var progress = args.CurrentDownloadBytes / (args.TotalDownloadBytes * 1f);
 					var cur      = UtilityAOT.File.GetBytesSizeWithUnit(args.CurrentDownloadBytes);
 					var tot      = UtilityAOT.File.GetBytesSizeWithUnit(args.TotalDownloadBytes);
-					m_launchView.SetProgress(progress, LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_downloading, cur, tot));
+					s_launchView.SetProgress(progress, LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_downloading, cur, tot));
 				};
 				var failed = false;
 				downloader.DownloadError += _ => failed = true;
@@ -176,7 +176,7 @@ namespace AOT.Launch
 				await downloader;
 
 				if (!failed && downloader.Status == EOperationStatus.Succeeded) return; // 下载成功
-				m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_download_fail));
+				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_download_fail));
 				await UniTask.WaitForSeconds(3); // 失败后重建下载器重试
 			}
 		}
@@ -205,7 +205,7 @@ namespace AOT.Launch
 				if (bytes == null)
 				{
 					FuLogger.LogError($"[Launch] 加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
-					m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
+					s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
 					return;
 				}
 
@@ -221,7 +221,7 @@ namespace AOT.Launch
 			if (dllBytes == null)
 			{
 				FuLogger.LogError($"[Launch] 加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
-				m_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
+				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
 				return;
 			}
 
@@ -259,7 +259,7 @@ namespace AOT.Launch
 				return;
 			}
 
-			await (UniTask)mainMethod.Invoke(null, new object[] { m_launchView });
+			await (UniTask)mainMethod.Invoke(null, new object[] { s_launchView });
 		}
 	}
 }
