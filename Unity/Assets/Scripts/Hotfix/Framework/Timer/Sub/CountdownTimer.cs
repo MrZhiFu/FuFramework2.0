@@ -94,6 +94,14 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
+		/// 重置计时器进度：剩余时间回满
+		/// </summary>
+		public override void Reset()
+		{
+			RemainingTime = DurationTime;
+		}
+
+		/// <summary>
 		/// 当计时器完成时调用
 		/// </summary>
 		public override void OnComplete() => FinishCallBack?.Invoke();

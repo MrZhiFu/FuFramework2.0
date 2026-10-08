@@ -151,6 +151,16 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
+		/// 重置计时器进度
+		/// </summary>
+		/// <param name="timerId"></param>
+		public void ResetTimer(int timerId)
+		{
+			if (!m_timerList.Contains(timerId)) return;
+			m_timerModule.ResetTimer(timerId);
+		}
+
+		/// <summary>
 		/// 暂停所有计时器
 		/// </summary>
 		public void PauseAllTimers()
@@ -193,6 +203,22 @@ namespace Hotfix.Framework.Timer
 			for (var i = 0; i < m_tempTimerList.Count; i++)
 			{
 				StopTimer(m_tempTimerList[i]);
+			}
+
+			m_tempTimerList.Clear();
+		}
+
+		/// <summary>
+		/// 重置所有计时器进度
+		/// </summary>
+		public void ResetAllTimers()
+		{
+			if (m_timerModule == null) return;
+
+			SnapshotTimerIds();
+			for (var i = 0; i < m_tempTimerList.Count; i++)
+			{
+				ResetTimer(m_tempTimerList[i]);
 			}
 
 			m_tempTimerList.Clear();

@@ -106,10 +106,14 @@ public void PauseTimer(int timerId)
 public void ResumeTimer(int timerId)
 public void StopTimer(int timerId)
 
+// 重置计时器进度（仅清零进度，不重发 immediate，不改暂停状态）
+public void ResetTimer(int timerId)
+
 // 批量操作
 public void PauseAllTimers()
 public void ResumeAllTimers()
 public void StopAllTimers()
+public void ResetAllTimers()
 
 // 查询状态
 public bool IsTimerExist(int timerId)
@@ -152,6 +156,9 @@ public abstract void OnUpdate(float deltaTime, int deltaFrames)
 
 // 当计时器完成时调用（虚方法）
 public virtual void OnComplete()
+
+// 重置计时器进度（虚方法，基类无进度为空实现，子类按各自口径覆写）
+public virtual void Reset()
 ```
 
 ### 3.3 CountdownTimer
@@ -288,10 +295,14 @@ public void PauseTimer(int timerId)
 public void ResumeTimer(int timerId)
 public void StopTimer(int timerId)
 
+// 重置计时器进度（仅清零进度，不重发 immediate，不改暂停状态）
+public void ResetTimer(int timerId)
+
 // 批量操作
 public void PauseAllTimers()
 public void ResumeAllTimers()
 public void StopAllTimers()
+public void ResetAllTimers()
 
 // 清理和释放
 public void Clear()

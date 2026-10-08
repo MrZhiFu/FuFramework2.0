@@ -87,6 +87,15 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
+		/// 重置计时器进度：已执行次数与累计时间清零
+		/// </summary>
+		public override void Reset()
+		{
+			ExecutedCount   = 0;
+			AccumulatedTime = 0;
+		}
+
+		/// <summary>
 		/// 执行首帧「立即」回调：次数口径与 OnUpdate 内一致（先计数再回调）。
 		/// 由 TimerModule 在「计时器入字典、被帧驱动遍历到」时调用（见 TimerBase.Immediate），
 		/// 用户回调抛异常时由该次遍历的 catch → ReleaseTimer 正常回收。

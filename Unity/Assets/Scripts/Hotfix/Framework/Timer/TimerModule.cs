@@ -268,6 +268,22 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
+		/// 重置计时器进度（仅清零进度，不重发 immediate，不改暂停状态；
+		/// 不增删字典，可在计时器回调内安全调用）
+		/// </summary>
+		/// <param name="timerId">计时器ID</param>
+		public void ResetTimer(int timerId)
+		{
+			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
+			{
+				FuLogger.LogWarning($"[TimerModule] 重置计时器{timerId}失败，不存在该计时器！");
+				return;
+			}
+
+			timerInfo.Reset();
+		}
+
+		/// <summary>
 		/// 暂停所有计时器
 		/// </summary>
 		public void PauseAllTimers()
@@ -303,6 +319,17 @@ namespace Hotfix.Framework.Timer
 			for (var i = 0; i < timerSnapshot.Count; i++)
 			{
 				ReleaseTimer(timerSnapshot[i].Id);
+			}
+		}
+
+		/// <summary>
+		/// 重置所有计时器进度（同 ResetTimer 语义；不增删字典、不触发 OnTimerFinished，遍历安全无需快照防御）
+		/// </summary>
+		public void ResetAllTimers()
+		{
+			foreach (var (_, timerInfo) in m_timerDict)
+			{
+				timerInfo.Reset();
 			}
 		}
 

@@ -150,6 +150,10 @@ namespace Hotfix.Game.UI
 
         protected void StopAllTimers() => m_timerRegister.StopAllTimers();
 
+        protected void ResetTimer(int timerId) => m_timerRegister.ResetTimer(timerId);
+
+        protected void ResetAllTimers() => m_timerRegister.ResetAllTimers();
+
         protected bool IsTimerExist(int timerId) => m_timerRegister.IsTimerExist(timerId);
 
         protected bool IsTimerPaused(int timerId) => m_timerRegister.IsTimerPaused(timerId);

@@ -76,6 +76,12 @@ namespace Hotfix.Framework.UI
 		public void StopTimer(int timerId) => TimerRegister?.StopTimer(timerId);
 
 		/// <summary>
+		/// 重置计时器进度
+		/// </summary>
+		/// <param name="timerId"></param>
+		public void ResetTimer(int timerId) => TimerRegister?.ResetTimer(timerId);
+
+		/// <summary>
 		/// 暂停所有计时器
 		/// </summary>
 		public void PauseAllTimers() => TimerRegister?.PauseAllTimers();
@@ -89,6 +95,11 @@ namespace Hotfix.Framework.UI
 		/// 停止所有计时器
 		/// </summary>
 		public void StopAllTimers() => TimerRegister?.StopAllTimers();
+
+		/// <summary>
+		/// 重置所有计时器进度
+		/// </summary>
+		public void ResetAllTimers() => TimerRegister?.ResetAllTimers();
 
 		/// <summary>
 		/// 检查计时器是否存在

@@ -76,6 +76,12 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
+		/// 重置计时器进度（仅清零进度，不重发 immediate，不改暂停状态）。
+		/// 基类无进度字段故为空实现；有进度的计时器按各自口径覆写。
+		/// </summary>
+		public virtual void Reset() { }
+
+		/// <summary>
 		/// 当计时器完成时调用
 		/// </summary>
 		public virtual void OnComplete() { }
