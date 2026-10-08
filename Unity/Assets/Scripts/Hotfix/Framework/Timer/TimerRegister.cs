@@ -249,7 +249,7 @@ namespace Hotfix.Framework.Timer
 			{
 				StopAllTimers();
 				m_timerModule.OnTimerFinished -= OnTimerFinished;
-				m_timerModule = null;
+				m_timerModule                 =  null;
 			}
 
 			m_timerList.Clear();
