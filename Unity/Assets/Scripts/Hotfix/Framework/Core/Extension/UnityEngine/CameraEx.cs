@@ -61,7 +61,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="camera">相机</param>
 		/// <param name="renderer">渲染组件</param>
 		/// <returns>如果渲染组件在相机范围内返回true，否则返回false</returns>
-		public static bool IsVisibleFrom(this Camera camera, Renderer renderer)
+		public static bool IsInView(this Camera camera, Renderer renderer)
 		{
 			Plane[] planes = GeometryUtility.CalculateFrustumPlanes(camera);
 			return GeometryUtility.TestPlanesAABB(planes, renderer.bounds);
