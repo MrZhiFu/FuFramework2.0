@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -73,7 +71,7 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		/// <param name="deltaTime">增量时间（秒）</param>
 		/// <param name="_"></param>
-		public override void Update(float deltaTime, int _)
+		public override void OnUpdate(float deltaTime, int _)
 		{
 			if (IsPaused) return;
 
@@ -89,9 +87,9 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
-		/// 执行首帧「立即」回调：次数口径与 Update 内一致（先计数再回调）。
-		/// 由 TimerModule 在「计时器入字典、异步链起」之后调用（见 TimerBase.Immediate），
-		/// 用户回调抛异常时由异步链 finally → ReleaseTimer 正常回收。
+		/// 执行首帧「立即」回调：次数口径与 OnUpdate 内一致（先计数再回调）。
+		/// 由 TimerModule 在「计时器入字典、被帧驱动遍历到」时调用（见 TimerBase.Immediate），
+		/// 用户回调抛异常时由该次遍历的 catch → ReleaseTimer 正常回收。
 		/// </summary>
 		public override void RunImmediate()
 		{
@@ -115,19 +113,15 @@ namespace Hotfix.Framework.Timer
 			var timerInfo = ReferencePool.Acquire<IntervalTimer>();
 			if (timerInfo == null) return null;
 
-			timerInfo.Id               = timerId;
+			timerInfo.InitCommon(timerId, ignoreTimeScale);
 			timerInfo.Interval         = interval;
 			timerInfo.IntervalCallback = intervalCallback;
 			timerInfo.MaxCount         = repeatCount < 0 ? int.MaxValue : repeatCount;
 			timerInfo.ExecutedCount    = 0;
 			timerInfo.AccumulatedTime  = 0;
-			timerInfo.IgnoreTimeScale  = ignoreTimeScale;
-			timerInfo.IsPaused         = false;
-			timerInfo.Cts              = new CancellationTokenSource();
-			timerInfo.PlayerLoopTiming = PlayerLoopTiming.Update;
 
-			// 首帧回调不在此执行（此处尚未入字典、尚未起链）：只登记标记，由 TimerModule 在
-			// 入字典 + 起链之后调用 RunImmediate 执行一次（见 TimerBase.Immediate）。
+			// 首帧回调不在此执行（此处尚未入字典）：只登记标记，由 TimerModule 在
+			// 计时器被帧驱动遍历到时调用 RunImmediate 执行一次（见 TimerBase.Immediate）。
 			timerInfo.Immediate = immediate;
 
 			return timerInfo;

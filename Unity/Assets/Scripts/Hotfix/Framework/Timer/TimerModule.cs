@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 
@@ -8,11 +7,13 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 基于 UniTask 的计时器管理模块。
+	/// 计时器管理模块。
 	/// 目标： 用于管理计时器任务，提供启动计时器、暂停计时器、恢复计时器、停止计时器、获取计时器状态等功能。
 	/// 功能：
-	///     1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
+	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
 	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
+	/// 说明：统一帧驱动——本模块 override OnUpdate，每帧一次遍历驱动所有计时器，
+	/// 不为每个计时器起独立异步链（无 UniTask 任务、无每计时器 CancellationTokenSource）。
 	/// </summary>
 	public sealed class TimerModule : ModuleBase
 	{
@@ -20,6 +21,14 @@ namespace Hotfix.Framework.Timer
 		/// 计时器字典，key为计时器Id，value为计时器项
 		/// </summary>
 		private readonly Dictionary<int, TimerBase> m_timerDict = new();
+
+		/// <summary>
+		/// 帧驱动遍历用的复用快照缓冲。
+		/// 用户回调内可能调用 StopTimer/StopAllTimers/StartTimer 修改 m_timerDict，
+		/// 直接遍历字典会「遍历中修改容器」抛异常，故每帧先快照到本缓冲再遍历。
+		/// 复用实例字段避免每帧分配。
+		/// </summary>
+		private readonly List<TimerBase> m_updateSnapshot = new();
 
 		/// <summary>
 		/// 下一个计时器ID
@@ -42,39 +51,65 @@ namespace Hotfix.Framework.Timer
 		protected internal override void OnInit() { }
 
 		/// <summary>
+		/// 帧驱动：每帧一次遍历驱动所有计时器（由 GameDriven.Update → ModuleManager.Update 统一调用）。
+		/// 暂停的计时器跳过——暂停期间不累计时间，恢复后无需修正时间基准。
+		/// </summary>
+		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
+		{
+			if (m_timerDict.Count == 0) return;
+
+			// 快照：遍历前先快照到本缓冲，避免用户回调内修改 m_timerDict 时字典遍历抛异常。
+			SnapshotTimers();
+
+			foreach (var timer in m_updateSnapshot)
+			{
+				// 有效性校验：快照中的实例可能已在本次遍历期间被用户回调 Stop/回收（引用池同槽位复用
+				// 会让旧引用指向新计时器）。以「Id 仍映射到本实例」为准，失效条目直接跳过，不触碰。
+				if (!m_timerDict.TryGetValue(timer.Id, out var mapped) || mapped != timer) continue;
+
+				try
+				{
+					UpdateTimer(timer, deltaTime, unscaledDeltaTime);
+				}
+				catch (Exception e)
+				{
+					// 单计时器回调异常只终结它自己（与其余计时器隔离，同原异步链「异常只终结本链」的行为），
+					// 回收后继续驱动其余计时器。
+					FuLogger.LogError($"[TimerModule] 计时器{timer.Id}:{timer.Name}更新异常，已终止: {e.Message}\n{e.StackTrace}");
+					ReleaseTimer(timer.Id);
+				}
+			}
+		}
+
+		/// <summary>
 		/// 释放。
+		/// 直接遍历回收：统一帧驱动下没有在途异步链需要取消，无需原实现的「先快照清字典再逐个取消」防御
+		/// （若本方法发生在帧驱动遍历途中——如回调内触发重启——遍历余下的快照条目因有效性校验失败被跳过，
+		/// 不会触碰已回收实例）。与原实现一致：本方法不派发 OnTimerFinished，回收由本方法唯一负责。
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			// 先快照容器内容并清空字典，再逐个取消/回收：
-			// Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → 从 m_timerDict 移除并 ReferencePool.Recycle(timerInfo)。
-			// 若边遍历边取消，会同时踩到「遍历中修改容器」与「同一 timerInfo 被二次回收」（ReleaseTimer 再 Recycle 一次）；
-			// 先 Clear 后，延续里的 ReleaseTimer 找不到条目会直接返回，回收由本方法唯一负责。
 			if (m_timerDict.Count == 0) return;
 
-			var timerSnapshot = new List<TimerBase>(m_timerDict.Values);
-			m_timerDict.Clear();
-
-			for (var i = 0; i < timerSnapshot.Count; i++)
+			foreach (var (_, timerInfo) in m_timerDict)
 			{
-				var timerInfo = timerSnapshot[i];
-				timerInfo.Cts.Cancel();
-				ReferencePool.Recycle(timerInfo);
+				if (timerInfo != null) ReferencePool.Recycle(timerInfo);
 			}
+
+			m_timerDict.Clear();
 		}
 
 		#region Public Methods
 
 		/// <summary>
-		/// 启动一个倒计时计时器
+		/// 启动一个一次性倒计时计时器
 		/// </summary>
-		/// <param name="duration">计时器持续时间</param>
+		/// <param name="duration">计时器持续时间秒</param>
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
 		/// <returns>倒计时Id</returns>
-		public int StartCountdownTimer(float duration, Action finishCallBack, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+		public int StartCountdownTimer(float duration, Action finishCallBack, Action updateCallBack = null, bool ignoreTimeScale = false)
 		{
 			if (duration <= 0)
 			{
@@ -82,7 +117,7 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			return StartTimer(() => CountdownTimer.Create(++m_nextTimerId, duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale), "计时器");
+			return StartTimer(() => CountdownTimer.Create(++m_nextTimerId, duration, finishCallBack, updateCallBack, ignoreTimeScale), "一次性倒计时计时器");
 		}
 
 		/// <summary>
@@ -118,9 +153,8 @@ namespace Hotfix.Framework.Timer
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <returns>倒计时Id</returns>
-		public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+		public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
 		{
 			if (frameInterval <= 0)
 			{
@@ -134,7 +168,7 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			return StartTimer(() => FrameTimer.Create(++m_nextTimerId, frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming), "帧间隔计时器");
+			return StartTimer(() => FrameTimer.Create(++m_nextTimerId, frameInterval, intervalCallback, repeatCount, immediate), "帧间隔计时器");
 		}
 
 		/// <summary>
@@ -145,8 +179,8 @@ namespace Hotfix.Framework.Timer
 		/// <returns>计时器Id，失败返回-1</returns>
 		private int StartTimer(Func<TimerBase> createFunc, string timerTypeName)
 		{
-			// Create 不再执行 immediate 首帧回调（见 TimerBase.Immediate）：回调统一在计时器入字典、
-			// 起链之后由 ExecuteTimerAsync 执行，故这里不会因用户回调抛异常而漏回收已 Acquire 的实例。
+			// Create 不执行 immediate 首帧回调（见 TimerBase.Immediate）：回调统一延迟到计时器入字典、
+			// 被帧驱动遍历到时执行，故这里不会因用户回调抛异常而漏回收已 Acquire 的实例。
 			TimerBase timerInfo;
 			try
 			{
@@ -166,12 +200,11 @@ namespace Hotfix.Framework.Timer
 				return -1;
 			}
 
-			// 先取 Id 再起链：链的首帧回调（或同步完成路径）可能立刻回收本实例并把 Id 复位为 -1，
-			// 事后读 timerInfo.Id 会拿到被复用/已回收实例的值。
 			var timerId = timerInfo.Id;
 			m_timerDict[timerId] = timerInfo;
-			ExecuteTimerAsync(timerInfo).Forget();
 
+			// 统一帧驱动：无需为计时器单独起链，本帧（或下一帧）的 OnUpdate 会遍历到它；
+			// 其 immediate 回调届时执行，异常由该次遍历的 catch 兜底回收。
 			return timerId;
 		}
 
@@ -225,13 +258,13 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		public void StopTimer(int timerId)
 		{
-			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
+			if (!m_timerDict.ContainsKey(timerId))
 			{
 				FuLogger.LogWarning($"[TimerModule] 停止计时器{timerId}失败，不存在该计时器！");
 				return;
 			}
 
-			timerInfo.Cts.Cancel();
+			ReleaseTimer(timerId);
 		}
 
 		/// <summary>
@@ -261,15 +294,15 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		public void StopAllTimers()
 		{
-			// 先快照再取消：Cts.Cancel() 可能同步执行异步延续，延续的 finally 会走 ReleaseTimer → m_timerDict.Remove。
-			// 若直接遍历 m_timerDict.Values 边取消边移除，会触发「遍历中修改容器」抛异常。
-			// 此处不清字典也不回收（与 OnDispose 不同）：延续里的 ReleaseTimer 仍需负责回收与派发 OnTimerFinished。
+			// 快照到局部列表再逐个 ReleaseTimer：ReleaseTimer 会从字典移除，直接遍历字典会「遍历中修改容器」。
+			// 帧驱动遍历途中（回调内）调用本方法也安全：本帧外层快照的失效条目会被有效性校验跳过，
+			// 局部快照不会被外层复用缓冲干扰。此调用低频，局部列表的一次分配可接受。
 			if (m_timerDict.Count == 0) return;
 
 			var timerSnapshot = new List<TimerBase>(m_timerDict.Values);
 			for (var i = 0; i < timerSnapshot.Count; i++)
 			{
-				timerSnapshot[i].Cts.Cancel();
+				ReleaseTimer(timerSnapshot[i].Id);
 			}
 		}
 
@@ -304,76 +337,58 @@ namespace Hotfix.Framework.Timer
 		#region Private Methods
 
 		/// <summary>
-		/// 执行计时器的异步方法(统一处理所有类型的计时器)
+		/// 把活跃计时器快照到复用缓冲（供帧驱动遍历，防用户回调中修改容器）
+		/// </summary>
+		private void SnapshotTimers()
+		{
+			m_updateSnapshot.Clear();
+			m_updateSnapshot.AddRange(m_timerDict.Values);
+		}
+
+		/// <summary>
+		/// 驱动单个计时器一次更新
 		/// </summary>
 		/// <param name="timer">计时器对象</param>
-		private async UniTaskVoid ExecuteTimerAsync(TimerBase timer)
+		/// <param name="deltaTime">缩放后的帧间隔</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔</param>
+		private void UpdateTimer(TimerBase timer, float deltaTime, float unscaledDeltaTime)
 		{
-			// 链开头固定 Id 与令牌，整条链只用局部量：
-			// OnDispose 会在本链仍存活时取消并回收计时器实例（Cts 被 Clear 释放、Id 复位），
-			// 若最后仍读 timer.Id 去 ReleaseTimer，可能摘到复用实例的条目或二次回收。
-			var timerId        = timer.Id;
-			var token          = timer.Cts.Token;
-			var lastUpdateTime = timer.IgnoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
-			var lastFrameCount = UnityEngine.Time.frameCount;
-
-			try
+			// 首帧「立即」回调：在计时器已入字典、被帧驱动遍历到时执行。先于暂停判断——
+			// immediate 语义是「启动即执行一次」，不受启动后、首个驱动帧前的暂停影响。
+			if (timer.Immediate)
 			{
-				// 首帧「立即」回调：在计时器已入字典、本链已起之后执行，故回调内 StopTimer/StopAllTimers
-				// 能停到它，抛出时也会走 finally → ReleaseTimer 正常回收（原实现放在 Create 内、
-				// 入字典之前，异常会留下「已 Acquire 但不在字典」的计时器：既不回收也停不到）。
-				if (timer.Immediate)
+				timer.Immediate = false;
+				timer.RunImmediate();
+
+				// immediate 可能把次数打满（如 repeatCount=1），此时直接完成
+				if (timer.IsCompleted)
 				{
-					timer.Immediate = false;
-					timer.RunImmediate();
-				}
-
-				while (!timer.IsCompleted)
-				{
-					if (timer.IsPaused)
-					{
-						// 暂停时等待恢复，如果等待过程中被取消，则跳出循环，执行 finally 块，清理资源
-						await UniTask.WaitUntil(() => !timer.IsPaused, cancellationToken: token);
-						lastUpdateTime = timer.IgnoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
-						lastFrameCount = UnityEngine.Time.frameCount;
-						continue;
-					}
-
-					// 计算时间间隔和帧间隔
-					var currentTime       = timer.IgnoreTimeScale ? UnityEngine.Time.unscaledTime : UnityEngine.Time.time;
-					var currentFrameCount = UnityEngine.Time.frameCount;
-
-					var deltaTime   = currentTime       - lastUpdateTime;
-					var deltaFrames = currentFrameCount - lastFrameCount;
-
-					// 限制最大 deltaTime 防止卡顿后的时间跳跃
-					deltaTime = Math.Min(deltaTime, 0.1f);
-
-					lastUpdateTime = currentTime;
-					lastFrameCount = currentFrameCount;
-
-					// 更新计时器
-					timer.Update(deltaTime, deltaFrames);
-
-					// 检查计时器是否完成，调用完成回调
-					if (timer.IsCompleted)
-					{
-						timer.OnComplete();
-						break;
-					}
-
-					await UniTask.Yield(timer.PlayerLoopTiming, token);
+					timer.OnComplete();
+					ReleaseTimer(timer.Id);
+					return;
 				}
 			}
-			finally
+
+			if (timer.IsPaused) return;
+
+			var dt = timer.IgnoreTimeScale ? unscaledDeltaTime : deltaTime;
+
+			// 限制最大 dt 防止卡顿后的时间跳跃
+			if (dt > 0.1f) dt = 0.1f;
+
+			// 统一帧驱动每帧恰好遍历一次，帧增量恒为 1
+			timer.OnUpdate(dt, 1);
+
+			// 检查计时器是否完成，调用完成回调
+			if (timer.IsCompleted)
 			{
-				// 计时器结束/取消时清理资源（用链开头固定的 Id，绝不读可能已被回收复用的实例字段）
-				ReleaseTimer(timerId);
+				timer.OnComplete();
+				ReleaseTimer(timer.Id);
 			}
 		}
 
 		/// <summary>
-		/// 清理计时器资源
+		/// 清理计时器资源（从字典移除 → 回收 → 派发完成事件）
 		/// </summary>
 		/// <param name="timerId">计时器ID</param>
 		private void ReleaseTimer(int timerId)

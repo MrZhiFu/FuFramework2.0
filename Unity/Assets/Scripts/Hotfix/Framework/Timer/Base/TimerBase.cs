@@ -1,5 +1,3 @@
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -16,12 +14,12 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 计时器ID
 		/// </summary>
-		public int Id { get; protected set; }
+		public int Id { get; private set; }
 
 		/// <summary>
 		/// 是否忽略时间缩放
 		/// </summary>
-		public bool IgnoreTimeScale { get; protected set; }
+		public bool IgnoreTimeScale { get; private set; }
 
 		/// <summary>
 		/// 是否暂停
@@ -31,21 +29,11 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 是否需要执行首帧「立即」回调。
 		/// 由启动入口（TimerModule.StartIntervalTimer/StartFrameTimer 的 immediate 参数）置位，
-		/// 由 TimerModule 在「计时器已入字典、异步链已起」之后调用 RunImmediate 执行一次并复位。
+		/// 由 TimerModule 在「计时器已入字典、被帧驱动遍历到」时执行一次并复位。
 		/// 不在 Create 内执行：Create 发生在入字典之前，此时用户回调抛异常或回调内调 Stop* 都会
 		/// 作用在「已 Acquire 但不在字典中」的计时器上（既不回收也停不到，引用池计数永久虚高）。
 		/// </summary>
 		public bool Immediate { get; internal set; }
-
-		/// <summary>
-		/// 取消计时器的令牌
-		/// </summary>
-		public CancellationTokenSource Cts { get; protected set; }
-
-		/// <summary>
-		/// update更新时机类型
-		/// </summary>
-		public PlayerLoopTiming PlayerLoopTiming { get; protected set; }
 
 		/// <summary>
 		/// 计时器名称
@@ -58,28 +46,34 @@ namespace Hotfix.Framework.Timer
 		public abstract bool IsCompleted { get; }
 
 		/// <summary>
+		/// 初始化各计时器共有的基础字段（由各 Create 工厂在 Acquire 之后调用）
+		/// </summary>
+		/// <param name="timerId">计时器ID</param>
+		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
+		protected void InitCommon(int timerId, bool ignoreTimeScale)
+		{
+			Id              = timerId;
+			IgnoreTimeScale = ignoreTimeScale;
+			IsPaused        = false;
+		}
+
+		/// <summary>
+		/// 帧更新计时器
+		/// </summary>
+		/// <param name="deltaTime">时间增量</param>
+		/// <param name="deltaFrames">帧增量</param>
+		public abstract void OnUpdate(float deltaTime, int deltaFrames);
+
+		/// <summary>
 		/// 清理计时器
 		/// </summary>
 		public virtual void Clear()
 		{
-			Id = -1;
-
-			Cts?.Cancel();
-			Cts?.Dispose();
-			Cts = null;
-
-			IsPaused         = false;
-			Immediate        = false;
-			IgnoreTimeScale  = false;
-			PlayerLoopTiming = PlayerLoopTiming.Update;
+			Id              = -1;
+			IsPaused        = false;
+			Immediate       = false;
+			IgnoreTimeScale = false;
 		}
-
-		/// <summary>
-		/// 更新计时器
-		/// </summary>
-		/// <param name="deltaTime">时间增量</param>
-		/// <param name="deltaFrames">帧增量</param>
-		public abstract void Update(float deltaTime, int deltaFrames);
 
 		/// <summary>
 		/// 当计时器完成时调用
@@ -88,7 +82,7 @@ namespace Hotfix.Framework.Timer
 
 		/// <summary>
 		/// 执行首帧「立即」回调（默认无；时间/帧间隔计时器按各自的次数口径覆写）。
-		/// 由 TimerModule 在计时器入字典、起链之后调用一次，抛异常由异步链的 finally 统一回收。
+		/// 由 TimerModule 在计时器入字典、被帧驱动遍历到时调用一次，抛异常由该次遍历的 catch 统一回收。
 		/// </summary>
 		public virtual void RunImmediate() { }
 	}

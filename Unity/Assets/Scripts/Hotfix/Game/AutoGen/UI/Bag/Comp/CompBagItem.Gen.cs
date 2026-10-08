@@ -115,9 +115,9 @@ namespace Hotfix.Game.UI
 
         #region 计时器
 
-        protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, bool ignoreTimeScale = false)
+        protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
         {
-            m_timerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+            m_timerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
         }
 
         protected void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
@@ -125,9 +125,9 @@ namespace Hotfix.Game.UI
             m_timerRegister.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
         }
 
-        protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+        protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
         {
-            m_timerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+            m_timerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
         }
 
         protected void PauseTimer(int timerId) => m_timerRegister.PauseTimer(timerId);

@@ -2,15 +2,16 @@
 
 ## 1. 概述
 
-Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现，提供多种类型的计时器功能。该模块支持倒计时计时器、时间间隔计时器、帧间隔计时器，具备暂停、恢复、停止等完整生命周期管理功能。
+Timer 模块是 FuFramework 中的定时器管理系统，采用统一帧驱动（OnUpdate 每帧一次遍历）实现，提供多种类型的计时器功能。该模块支持一次性倒计时计时器、时间间隔计时器、帧间隔计时器，具备暂停、恢复、停止等完整生命周期管理功能。
 
 ### 1.1 核心特性
 
 - **多种计时器类型**：支持倒计时、时间间隔、帧间隔三种计时器
-- **基于 UniTask**：异步友好的计时器实现
+- **统一帧驱动**：OnUpdate 每帧一次遍历驱动所有计时器，无每计时器独立异步链开销
 - **完整生命周期管理**：启动、暂停、恢复、停止等完整操作
 - **时间缩放控制**：支持忽略时间缩放，适用于UI动画等场景
 - **抗时间跳跃**：处理卡顿情况，确保计时准确性
+- **异常隔离**：单计时器回调异常只终结它自己，不影响其余计时器
 - **对象池管理**：使用 ReferencePool 实现对象复用
 - **模块化设计**：支持 TimerRegister 进行分组管理
 
@@ -21,9 +22,9 @@ Timer 模块是 FuFramework 中的定时器管理系统，基于 UniTask 实现�
 ```
 ModuleBase (抽象基类)
     ↑
-TimerModule (计时器管理模块)
+TimerModule (计时器管理模块，override OnUpdate 统一帧驱动)
     ├── m_timerDict (计时器字典)
-    └── ExecuteTimerAsync (异步执行)
+    └── m_updateSnapshot (帧驱动复用快照缓冲)
 
 TimerBase (抽象基类)
     ↑
@@ -45,14 +46,15 @@ TimerRegister (计时器注册器)
 │  │  - 存储所有活跃计时器                                │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  ExecuteTimerAsync()                                │   │
-│  │  - 异步执行计时器循环                                │   │
-│  │  - 处理暂停/恢复逻辑                                 │   │
-│  │  - 抗时间跳跃处理                                    │   │
+│  │  OnUpdate() 统一帧驱动                               │   │
+│  │  - 每帧一次遍历（快照缓冲）驱动所有计时器             │   │
+│  │  - 暂停跳过（标志位）                                 │   │
+│  │  - 有效性校验 + 单计时器异常隔离                      │   │
+│  │  - 抗时间跳跃处理（dt 钳制）                          │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               ↓
-                    TimerBase.Update()
+                    TimerBase.OnUpdate()
                               ↓
         ┌─────────────────────┼─────────────────────┐
         ↓                     ↓                     ↓
@@ -74,6 +76,7 @@ TimerRegister (计时器注册器)
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | m_timerDict | Dictionary<int, TimerBase> | 计时器字典，Key为计时器ID |
+| m_updateSnapshot | List<TimerBase> | 帧驱动遍历用的复用快照缓冲 |
 | m_nextTimerId | int | 下一个计时器ID（自增） |
 
 **核心属性：**
@@ -88,8 +91,7 @@ TimerRegister (计时器注册器)
 ```csharp
 // 启动倒计时计时器
 public int StartCountdownTimer(float duration, Action finishCallBack, 
-    Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update, 
-    bool ignoreTimeScale = false)
+    Action updateCallBack = null, bool ignoreTimeScale = false)
 
 // 启动时间间隔计时器
 public int StartIntervalTimer(float interval, Action intervalCallback, 
@@ -97,7 +99,7 @@ public int StartIntervalTimer(float interval, Action intervalCallback,
 
 // 启动帧间隔计时器
 public int StartFrameTimer(int frameInterval, Action intervalCallback, 
-    int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+    int repeatCount = -1, bool immediate = false)
 
 // 暂停/恢复/停止计时器
 public void PauseTimer(int timerId)
@@ -117,11 +119,12 @@ public IEnumerable<string> GetAllTimerNames()
 
 **执行机制：**
 
-1. **ExecuteTimerAsync**：异步执行计时器循环
-   - 使用 UniTask.Yield 实现每帧更新
-   - 处理暂停状态（WaitUntil 等待恢复）
-   - 限制最大 deltaTime 防止时间跳跃
-   - 自动清理完成的计时器
+1. **OnUpdate 统一帧驱动**：由 GameDriven.Update → ModuleManager.Update 每帧调用
+   - 每帧一次遍历（复用快照缓冲防回调中修改容器）驱动所有计时器，无每计时器独立异步链
+   - 暂停状态直接跳过 tick（标志位），恢复后天然无暂停时间泄漏
+   - 有效性校验（Id 仍映射到本实例）防快照悬空；单计时器回调异常隔离回收
+   - 限制最大 deltaTime（0.1s）防止时间跳跃
+   - 自动清理完成/异常的计时器并派发 OnTimerFinished
 
 ### 3.2 TimerBase
 
@@ -134,8 +137,7 @@ public IEnumerable<string> GetAllTimerNames()
 | Id | int | 计时器ID |
 | IgnoreTimeScale | bool | 是否忽略时间缩放 |
 | IsPaused | bool | 是否暂停 |
-| Cts | CancellationTokenSource | 取消令牌源 |
-| PlayerLoopTiming | PlayerLoopTiming | 更新时机类型 |
+| Immediate | bool | 是否需要执行首帧「立即」回调 |
 | Name | string | 计时器名称（抽象属性） |
 | IsCompleted | bool | 是否已完成（抽象属性） |
 
@@ -146,7 +148,7 @@ public IEnumerable<string> GetAllTimerNames()
 public virtual void Clear()
 
 // 更新计时器（抽象方法）
-public abstract void Update(float deltaTime, int deltaFrames)
+public abstract void OnUpdate(float deltaTime, int deltaFrames)
 
 // 当计时器完成时调用（虚方法）
 public virtual void OnComplete()
@@ -170,14 +172,14 @@ public virtual void OnComplete()
 
 ```csharp
 // 更新计时器
-public override void Update(float deltaTime, int _)
+public override void OnUpdate(float deltaTime, int _)
 
 // 当计时器完成时调用
 public override void OnComplete()
 
 // 创建倒计时计时器（工厂方法）
 public static CountdownTimer Create(int timerId, float duration, Action finishCallBack, 
-    Action updateCallBack, PlayerLoopTiming playerLoopTiming, bool ignoreTimeScale)
+    Action updateCallBack, bool ignoreTimeScale)
 ```
 
 **使用示例：**
@@ -210,7 +212,7 @@ int timerId = timerModule.StartCountdownTimer(
 
 ```csharp
 // 更新计时器（使用累计时间机制处理卡顿）
-public override void Update(float deltaTime, int _)
+public override void OnUpdate(float deltaTime, int _)
 
 // 创建时间间隔计时器（工厂方法）
 public static IntervalTimer Create(int timerId, float interval, Action intervalCallback, 
@@ -250,11 +252,11 @@ while (AccumulatedTime >= Interval && ExecutedCount < MaxCount)
 
 ```csharp
 // 更新计时器（使用累计帧数机制）
-public override void Update(float _, int deltaFrames)
+public override void OnUpdate(float _, int deltaFrames)
 
 // 创建帧间隔计时器（工厂方法）
 public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, 
-    int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
+    int repeatCount, bool immediate)
 ```
 
 **注意：** 帧间隔计时器始终忽略时间缩放，确保与帧率同步。
@@ -267,8 +269,8 @@ public static FrameTimer Create(int timerId, int frameInterval, Action intervalC
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| m_timerModule | TimerModule | 计时器管理模块（静态） |
-| m_timerList | List<int> | 记录所有计时器ID的列表 |
+| m_timerModule | TimerModule | 计时器管理模块（实例字段） |
+| m_timerList | HashSet<int> | 记录所有计时器ID的集合（O(1) 增删查） |
 
 **核心方法：**
 
@@ -450,9 +452,10 @@ Timer/
 
 ## 7. 设计特点
 
-### 7.1 异步驱动
+### 7.1 统一帧驱动
 
-基于 UniTask 实现，使用 `UniTask.Yield` 实现每帧更新，避免使用 MonoBehaviour 的 Update 方法，降低性能开销。
+TimerModule override OnUpdate，每帧一次遍历驱动所有计时器，无每计时器独立异步链与 CancellationTokenSource 分配；
+单计时器回调异常隔离回收，不影响其余计时器。
 
 ### 7.2 抗时间跳跃
 
@@ -462,7 +465,7 @@ Timer/
 
 ### 7.3 暂停机制
 
-使用 `UniTask.WaitUntil` 实现暂停等待，暂停时不占用 CPU 资源，恢复时自动同步时间。
+暂停计时器在帧驱动遍历中被标志位跳过（不累计时间），恢复后继续驱动，天然无暂停时间泄漏。
 
 ### 7.4 对象池管理
 
@@ -487,4 +490,4 @@ TimerRegister 提供模块级别的计时器分组管理，便于批量控制和
 2. **回调耗时**：避免在计时器回调中执行耗时操作，可能影响其他计时器
 3. **对象释放**：使用 TimerRegister 时，调用 Release() 方法而非直接归还引用池
 4. **时间缩放**：忽略时间缩放的计时器使用 `Time.unscaledTime` 和 `Time.unscaledDeltaTime`
-5. **取消令牌**：通过 CancellationTokenSource 取消计时器，确保资源正确释放
+5. **停止即回收**：StopTimer/StopAllTimers/OnDispose 直接从字典移除并回收计时器实例（无在途异步链需要取消），并同步派发 OnTimerFinished

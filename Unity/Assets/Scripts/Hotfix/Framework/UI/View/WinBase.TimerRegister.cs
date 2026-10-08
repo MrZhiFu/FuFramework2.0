@@ -9,7 +9,7 @@ namespace Hotfix.Framework.UI
 	/// 界面基类分部类之一。
 	/// 目标：提供一个计时器订阅器，用于管理界面的计时器。
 	/// 功能：
-	///     1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
+	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
 	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
 	/// </summary>
 	public abstract partial class WinBase
@@ -21,17 +21,15 @@ namespace Hotfix.Framework.UI
 
 
 		/// <summary>
-		/// 启动一个倒计时计时器
+		/// 启动一个一次性倒计时计时器
 		/// </summary>
 		/// <param name="duration">计时器持续时间</param>
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update,
-		                                bool ignoreTimeScale = false)
+		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
 		{
-			TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+			TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
 		}
 
 		/// <summary>
@@ -54,10 +52,9 @@ namespace Hotfix.Framework.UI
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
 		{
-			TimerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+			TimerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
 		}
 
 		/// <summary>
@@ -76,7 +73,7 @@ namespace Hotfix.Framework.UI
 		/// 停止计时器
 		/// </summary>
 		/// <param name="timerId"></param>
-		public void StopTimer(int timerId) => TimerRegister.StopTimer(timerId);
+		public void StopTimer(int timerId) => TimerRegister?.StopTimer(timerId);
 
 		/// <summary>
 		/// 暂停所有计时器

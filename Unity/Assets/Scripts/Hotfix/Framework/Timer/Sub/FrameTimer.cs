@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -73,7 +71,7 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		/// <param name="_">暂不使用</param>
 		/// <param name="deltaFrames"> 增量帧数 </param>
-		public override void Update(float _, int deltaFrames)
+		public override void OnUpdate(float _, int deltaFrames)
 		{
 			if (IsPaused) return;
 
@@ -89,9 +87,9 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
-		/// 执行首帧「立即」回调：次数口径与 Update 内一致（先计数再回调）。
-		/// 由 TimerModule 在「计时器入字典、异步链起」之后调用（见 TimerBase.Immediate），
-		/// 用户回调抛异常时由异步链 finally → ReleaseTimer 正常回收。
+		/// 执行首帧「立即」回调：次数口径与 OnUpdate 内一致（先计数再回调）。
+		/// 由 TimerModule 在「计时器入字典、被帧驱动遍历到」时调用（见 TimerBase.Immediate），
+		/// 用户回调抛异常时由该次遍历的 catch → ReleaseTimer 正常回收。
 		/// </summary>
 		public override void RunImmediate()
 		{
@@ -109,26 +107,22 @@ namespace Hotfix.Framework.Timer
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <returns></returns>
-		public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate, PlayerLoopTiming playerLoopTiming)
+		public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate)
 		{
 			var timerInfo = ReferencePool.Acquire<FrameTimer>();
 			if (timerInfo == null) return null;
 
-			timerInfo.Id                = timerId;
+			// 帧间隔计时器总是忽略时间缩放，确保与帧率同步
+			timerInfo.InitCommon(timerId, true);
 			timerInfo.FrameInterval     = frameInterval;
 			timerInfo.IntervalCallback  = intervalCallback;
 			timerInfo.MaxCount          = repeatCount < 0 ? int.MaxValue : repeatCount;
 			timerInfo.ExecutedCount     = 0;
 			timerInfo.AccumulatedFrames = 0;
-			timerInfo.IgnoreTimeScale   = true; // 帧间隔计时器总是忽略时间缩放
-			timerInfo.IsPaused          = false;
-			timerInfo.Cts               = new CancellationTokenSource();
-			timerInfo.PlayerLoopTiming  = playerLoopTiming;
 
-			// 首帧回调不在此执行（此处尚未入字典、尚未起链）：只登记标记，由 TimerModule 在
-			// 入字典 + 起链之后调用 RunImmediate 执行一次（见 TimerBase.Immediate）。
+			// 首帧回调不在此执行（此处尚未入字典）：只登记标记，由 TimerModule 在
+			// 计时器被帧驱动遍历到时调用 RunImmediate 执行一次（见 TimerBase.Immediate）。
 			timerInfo.Immediate = immediate;
 
 			return timerInfo;

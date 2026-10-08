@@ -2,7 +2,6 @@ using System;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Timer
@@ -11,7 +10,7 @@ namespace Hotfix.Framework.Timer
 	/// 计时器注册器。
 	/// 目标： 用于单独管理属于自己模块的相关计时器。
 	/// 功能：
-	///     1. 启动倒计时计时器、时间间隔计时器、帧间隔计时器。
+	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
 	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
 	/// </summary>
 	public class TimerRegister : IReference
@@ -23,9 +22,9 @@ namespace Hotfix.Framework.Timer
 		private TimerModule m_timerModule;
 
 		/// <summary>
-		/// 记录所有计时器任务的列表
+		/// 记录所有计时器任务的 Id 集合（HashSet：Contains/Remove 均为 O(1)）
 		/// </summary>
-		private readonly List<int> m_timerList = new();
+		private readonly HashSet<int> m_timerList = new();
 
 		/// <summary>
 		/// 批量操作（PauseAll/ResumeAll/StopAll）的复用快照缓冲。
@@ -62,9 +61,9 @@ namespace Hotfix.Framework.Timer
 		private void SnapshotTimerIds()
 		{
 			m_tempTimerList.Clear();
-			for (var i = 0; i < m_timerList.Count; i++)
+			foreach (var timerId in m_timerList)
 			{
-				m_tempTimerList.Add(m_timerList[i]);
+				m_tempTimerList.Add(timerId);
 			}
 		}
 
@@ -78,20 +77,17 @@ namespace Hotfix.Framework.Timer
 		}
 
 		/// <summary>
-		/// 启动一个倒计时计时器
+		/// 启动一个一次性倒计时计时器
 		/// </summary>
-		/// <param name="duration">计时器持续时间</param>
+		/// <param name="duration">计时器持续时间(秒)</param>
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update,
-										bool ignoreTimeScale = false)
+		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
 		{
-			var timerId = m_timerModule.StartCountdownTimer(duration, finishCallBack, updateCallBack, playerLoopTiming, ignoreTimeScale);
+			var timerId = m_timerModule.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
 			if (timerId < 0) return;
-			if (m_timerList.Contains(timerId)) return;
-			m_timerList.Add(timerId);
+			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
 		}
 
 		/// <summary>
@@ -106,8 +102,7 @@ namespace Hotfix.Framework.Timer
 		{
 			var timerId = m_timerModule.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
 			if (timerId < 0) return;
-			if (m_timerList.Contains(timerId)) return;
-			m_timerList.Add(timerId);
+			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
 		}
 
 		/// <summary>
@@ -117,13 +112,11 @@ namespace Hotfix.Framework.Timer
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		/// <param name="playerLoopTiming">计时器所在的更新时间点类型</param>
-		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false, PlayerLoopTiming playerLoopTiming = PlayerLoopTiming.Update)
+		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
 		{
-			var timerId = m_timerModule.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate, playerLoopTiming);
+			var timerId = m_timerModule.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
 			if (timerId < 0) return;
-			if (m_timerList.Contains(timerId)) return;
-			m_timerList.Add(timerId);
+			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
 		}
 
 		/// <summary>
