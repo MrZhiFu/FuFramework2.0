@@ -18,7 +18,7 @@ namespace AOT.Launch
 		/// <summary>
 		/// YooAsset 是否已完成初始化（AOT/Hotfix 共用，防止二次初始化）。
 		/// </summary>
-		public static bool YooAssetInitialized { get; set; }
+		private static bool s_yooAssetInitialized;
 
 		/// <summary>
 		/// 最大下载数。
@@ -60,13 +60,13 @@ namespace AOT.Launch
 			s_failedTryAgainNum = GameSetting.Instance.FailedTryAgainNum;
 
 			// 初始化 YooAsset 与默认资源包。
-			if (!YooAssetInitialized)
+			if (!s_yooAssetInitialized)
 			{
 				YooAssets.Initialize();
 				YooAssets.SetAsyncOperationMaxTimeSlice(GameSetting.Instance.AsyncSystemMaxSlicePerFrame);
 
 				// 记入启动共享状态
-				YooAssetInitialized = true;
+				s_yooAssetInitialized = true;
 			}
 
 			// 获取或创建默认资源包（v3 移除了 SetDefaultPackage，改为自行持有引用）。
@@ -121,7 +121,7 @@ namespace AOT.Launch
 				// 主机模式：使用远程服务器文件系统(资源CDN服务器)。
 				case EPlayMode.HostPlayMode:
 				{
-					IRemoteService remote     = new RemoteServices(url, backupUrl);
+					IRemoteService remote    = new RemoteServices(url, backupUrl);
 					var            cacheFs   = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
 					var            buildInFs = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
 					return DefaultPackage.InitializePackageAsync(new HostPlayModeOptions { BuiltinFileSystemParameters = buildInFs, CacheFileSystemParameters = cacheFs });
@@ -264,10 +264,13 @@ namespace AOT.Launch
 			public IReadOnlyList<string> GetRemoteUrls(string fileName)
 			{
 				var urls = new List<string>(2);
+
 				if (!string.IsNullOrEmpty(HostServer))
 					urls.Add(HostServer + fileName);
+
 				if (!string.IsNullOrEmpty(FallbackHostServer))
 					urls.Add(FallbackHostServer + fileName);
+
 				return urls;
 			}
 		}
