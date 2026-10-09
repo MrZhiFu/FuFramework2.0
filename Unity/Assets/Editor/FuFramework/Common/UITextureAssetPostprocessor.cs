@@ -1,8 +1,7 @@
 ﻿using UnityEditor;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
+using AOT.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Utility;
 namespace FuFramework.UI.Editor
 {
 	/// <summary>
