@@ -41,11 +41,6 @@ namespace Hotfix.Framework.Timer
 
 
 		/// <summary>
-		/// 计时器名称
-		/// </summary>
-		public override string Name => $"类型：时间间隔计时器, Id：{Id}, 间隔更新回调：{IntervalCallback?.Method.Name}";
-
-		/// <summary>
 		/// 是否已完成（执行次数达到最大值）
 		/// </summary>
 		public override bool IsCompleted => ExecutedCount >= MaxCount;

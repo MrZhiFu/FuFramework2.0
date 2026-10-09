@@ -118,7 +118,10 @@ public void ResetAllTimers()
 // 查询状态
 public bool IsTimerExist(int timerId)
 public bool IsTimerPaused(int timerId)
-public IEnumerable<string> GetAllTimerNames()
+
+// 观察者快照（调试面板/运维工具用，不暴露计时器实例）
+public TimerInfo[] GetAllTimerInfos()
+public TimerModuleStatistics GetStatistics()
 ```
 
 **执行机制：**
@@ -142,7 +145,6 @@ public IEnumerable<string> GetAllTimerNames()
 | IgnoreTimeScale | bool | 是否忽略时间缩放 |
 | IsPaused | bool | 是否暂停 |
 | Immediate | bool | 是否需要执行首帧「立即」回调 |
-| Name | string | 计时器名称（抽象属性） |
 | IsCompleted | bool | 是否已完成（抽象属性） |
 
 **核心方法：**
@@ -444,7 +446,7 @@ private void UpdateProgressUI(float progress)
 ```
 Timer/
 ├── 
-│   ├── TimerModule.cs              # 计时器管理模块主类
+│   ├── TimerModule.cs              # 计时器管理模块主类（帧驱动与操作）
 │   ├── TimerRegister.cs            # 计时器注册器
 │   ├── Base/
 │   │   └── TimerBase.cs            # 计时器基类
@@ -452,6 +454,9 @@ Timer/
 │   │   ├── CountdownTimer.cs       # 倒计时计时器
 │   │   ├── IntervalTimer.cs        # 时间间隔计时器
 │   │   └── FrameTimer.cs           # 帧间隔计时器
+│   ├── Debug/                      # Editor 专属（整文件 #if UNITY_EDITOR，发布构建不存在）
+│   │   ├── TimerModule.Debug.cs    # 调试分部类（信息快照/生命周期统计/启动堆栈）
+│   │   └── TimerInfo.cs            # 信息与统计快照结构体、类型枚举
 └── README.md                       # 本文档
 ```
 
@@ -502,3 +507,4 @@ TimerRegister 提供模块级别的计时器分组管理，便于批量控制和
 3. **对象释放**：使用 TimerRegister 时，调用 Release() 方法而非直接归还引用池
 4. **时间缩放**：忽略时间缩放的计时器使用 `Time.unscaledTime` 和 `Time.unscaledDeltaTime`
 5. **停止即回收**：StopTimer/StopAllTimers/OnDispose 直接从字典移除并回收计时器实例（无在途异步链需要取消），并同步派发 OnTimerFinished
+6. **调试面板**：Editor 菜单 FuFramework/调试/计时器调试面板（仅 Play 模式可用），支持查看全部计时器状态与进度、暂停/恢复/重置/停止（单个与批量）、生命周期统计与启动来源堆栈（启动时自动记录，用于定位计时器来源；Editor 专用，运行时代码零负担）

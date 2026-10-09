@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Timer
 	/// 说明：统一帧驱动——本模块 override OnUpdate，每帧一次遍历驱动所有计时器，
 	/// 不为每个计时器起独立异步链（无 UniTask 任务、无每计时器 CancellationTokenSource）。
 	/// </summary>
-	public sealed class TimerModule : ModuleBase
+	public sealed partial class TimerModule : ModuleBase
 	{
 		/// <summary>
 		/// 计时器字典，key为计时器Id，value为计时器项
@@ -34,6 +34,26 @@ namespace Hotfix.Framework.Timer
 		/// 下一个计时器ID
 		/// </summary>
 		private int m_nextTimerId = 0;
+
+		/// <summary>
+		/// 累计启动数（生命周期统计，供 GetStatistics）
+		/// </summary>
+		private int m_startedCount;
+
+		/// <summary>
+		/// 累计自然完成数（倒计时到点/次数打满）
+		/// </summary>
+		private int m_finishedCount;
+
+		/// <summary>
+		/// 累计被主动停止数（StopTimer/StopAllTimers）
+		/// </summary>
+		private int m_stoppedCount;
+
+		/// <summary>
+		/// 累计异常终止数（回调抛异常被隔离回收）
+		/// </summary>
+		private int m_errorCount;
 
 		/// <summary>
 		/// 获取当前计时器数量
@@ -75,7 +95,8 @@ namespace Hotfix.Framework.Timer
 				{
 					// 单计时器回调异常只终结它自己（与其余计时器隔离，同原异步链「异常只终结本链」的行为），
 					// 回收后继续驱动其余计时器。
-					FuLogger.LogError($"[TimerModule] 计时器{timer.Id}:{timer.Name}更新异常，已终止: {e.Message}\n{e.StackTrace}");
+					FuLogger.LogError($"[TimerModule] 计时器{timer.Id}({timer.GetType().Name})更新异常，已终止: {e.Message}\n{e.StackTrace}");
+					m_errorCount++;
 					ReleaseTimer(timer.Id);
 				}
 			}
@@ -97,6 +118,9 @@ namespace Hotfix.Framework.Timer
 			}
 
 			m_timerDict.Clear();
+#if UNITY_EDITOR
+			ClearAllStartStackTraces();
+#endif
 		}
 
 		#region Public Methods
@@ -106,7 +130,7 @@ namespace Hotfix.Framework.Timer
 		/// </summary>
 		/// <param name="duration">计时器持续时间秒</param>
 		/// <param name="finishCallBack">计时器结束回调</param>
-		/// <param name="updateCallBack">计时器更新回调</param>
+		/// <param name="updateCallBack">计时器持续期间每帧更新回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
 		/// <returns>倒计时Id</returns>
 		public int StartCountdownTimer(float duration, Action finishCallBack, Action updateCallBack = null, bool ignoreTimeScale = false)
@@ -203,6 +227,11 @@ namespace Hotfix.Framework.Timer
 			var timerId = timerInfo.Id;
 			m_timerDict[timerId] = timerInfo;
 
+			m_startedCount++;
+#if UNITY_EDITOR
+			CaptureStartStackTrace(timerId);
+#endif
+
 			// 统一帧驱动：无需为计时器单独起链，本帧（或下一帧）的 OnUpdate 会遍历到它；
 			// 其 immediate 回调届时执行，异常由该次遍历的 catch 兜底回收。
 			return timerId;
@@ -222,12 +251,12 @@ namespace Hotfix.Framework.Timer
 
 			if (timerInfo.IsPaused)
 			{
-				FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}:{timerInfo.Name}失败，该计时器已处于暂停状态！");
+				FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于暂停状态！");
 				return;
 			}
 
 			timerInfo.IsPaused = true;
-			FuLogger.LogInfo($"[TimerModule] 暂停计时器{timerId}:{timerInfo.Name}成功");
+			FuLogger.LogInfo($"[TimerModule] 暂停计时器{timerId}({timerInfo.GetType().Name})成功");
 		}
 
 		/// <summary>
@@ -244,12 +273,12 @@ namespace Hotfix.Framework.Timer
 
 			if (!timerInfo.IsPaused)
 			{
-				FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}:{timerInfo.Name}失败，该计时器已处于运行状态！");
+				FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于运行状态！");
 				return;
 			}
 
 			timerInfo.IsPaused = false;
-			FuLogger.LogInfo($"[TimerModule] 恢复计时器{timerId}:{timerInfo.Name}成功");
+			FuLogger.LogInfo($"[TimerModule] 恢复计时器{timerId}({timerInfo.GetType().Name})成功");
 		}
 
 		/// <summary>
@@ -264,6 +293,7 @@ namespace Hotfix.Framework.Timer
 				return;
 			}
 
+			m_stoppedCount++;
 			ReleaseTimer(timerId);
 		}
 
@@ -316,6 +346,7 @@ namespace Hotfix.Framework.Timer
 			if (m_timerDict.Count == 0) return;
 
 			var timerSnapshot = new List<TimerBase>(m_timerDict.Values);
+			m_stoppedCount += timerSnapshot.Count;
 			for (var i = 0; i < timerSnapshot.Count; i++)
 			{
 				ReleaseTimer(timerSnapshot[i].Id);
@@ -346,18 +377,6 @@ namespace Hotfix.Framework.Timer
 		/// <param name="timerId">计时器ID</param>
 		/// <returns></returns>
 		public bool IsTimerPaused(int timerId) => m_timerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
-
-		/// <summary>
-		/// 获取所有计时器名称
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<string> GetAllTimerNames()
-		{
-			foreach (var timerInfo in m_timerDict.Values)
-			{
-				yield return timerInfo.Name;
-			}
-		}
 
 		#endregion
 
@@ -391,6 +410,7 @@ namespace Hotfix.Framework.Timer
 				if (timer.IsCompleted)
 				{
 					timer.OnComplete();
+					m_finishedCount++;
 					ReleaseTimer(timer.Id);
 					return;
 				}
@@ -410,6 +430,7 @@ namespace Hotfix.Framework.Timer
 			if (timer.IsCompleted)
 			{
 				timer.OnComplete();
+				m_finishedCount++;
 				ReleaseTimer(timer.Id);
 			}
 		}
@@ -422,6 +443,9 @@ namespace Hotfix.Framework.Timer
 		{
 			if (!m_timerDict.Remove(timerId, out var timerInfo)) return;
 			if (timerInfo == null) return;
+#if UNITY_EDITOR
+			ClearStartStackTrace(timerId);
+#endif
 			FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
 			ReferencePool.Recycle(timerInfo);
 			OnTimerFinished?.Invoke(timerId);

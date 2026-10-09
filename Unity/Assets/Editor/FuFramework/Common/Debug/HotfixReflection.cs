@@ -124,6 +124,16 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		public static System.Type WebPbData => Resolve("Hotfix.Framework.Web.WebPbData");
 
+		/// <summary>
+		/// Hotfix.Framework.Timer.TimerModule
+		/// </summary>
+		public static System.Type TimerModule => Resolve("Hotfix.Framework.Timer.TimerModule");
+
+		/// <summary>
+		/// Hotfix.Framework.Timer.TimerInfo
+		/// </summary>
+		public static System.Type TimerInfo => Resolve("Hotfix.Framework.Timer.TimerInfo");
+
 		#endregion
 
 		#region 模块实例获取

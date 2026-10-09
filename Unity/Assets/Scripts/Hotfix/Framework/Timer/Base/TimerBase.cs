@@ -36,11 +36,6 @@ namespace Hotfix.Framework.Timer
 		public bool Immediate { get; internal set; }
 
 		/// <summary>
-		/// 计时器名称
-		/// </summary>
-		public abstract string Name { get; }
-
-		/// <summary>
 		/// 是否已完成
 		/// </summary>
 		public abstract bool IsCompleted { get; }

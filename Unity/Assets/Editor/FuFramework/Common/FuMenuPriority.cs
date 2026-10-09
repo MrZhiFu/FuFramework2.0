@@ -432,6 +432,11 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		public const int DEBUG_PANEL_EVENT = DEBUG_PANEL_BASE + 5;
 
+		/// <summary>
+		/// 计时器调试面板。
+		/// </summary>
+		public const int DEBUG_PANEL_TIMER = DEBUG_PANEL_BASE + 6;
+
 		#endregion
 	}
 }
