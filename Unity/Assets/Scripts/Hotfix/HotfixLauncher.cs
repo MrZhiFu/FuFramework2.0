@@ -198,10 +198,10 @@ namespace Hotfix
 
 #if ENABLE_BINARY_CONFIG
 			// 使用二进制配置表
-			await tableManager.LoadAsync(ConfigBufferLoader);
+			await tableManager.LoadAsync(BinaryJsonConfigLoader);
 #else
 			// 使用JSON配置表
-			await tableManager.LoadAsync(ConfigLoader);
+			await tableManager.LoadAsync(JsonConfigLoader);
 #endif
 
 			// 订阅语言切换事件并登记实例（退订/覆盖次序固定，勿在别处重复登记）
@@ -224,7 +224,7 @@ namespace Hotfix
 		/// </summary>
 		/// <param name="file"></param>
 		/// <returns></returns>
-		private static async UniTask<ByteBuf> ConfigBufferLoader(string file)
+		private static async UniTask<ByteBuf> BinaryJsonConfigLoader(string file)
 		{
 			var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
 			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath, GlobalModule.AssetModule.Token);
@@ -249,7 +249,7 @@ namespace Hotfix
 		/// </summary>
 		/// <param name="file"></param>
 		/// <returns></returns>
-		private static async UniTask<JSONNode> ConfigLoader(string file)
+		private static async UniTask<JSONNode> JsonConfigLoader(string file)
 		{
 			var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
 			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
