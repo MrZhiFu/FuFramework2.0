@@ -375,7 +375,7 @@ namespace FuFramework.Event.Editor
 		}
 
 		/// <summary>
-		/// 绘制单个 handler 行：方法名 | 所属类型 | 静态/实例 | 目标对象类型 | [跳转]
+		/// 绘制单个 handler 行：方法名 | 所属类型 | 静态/实例 | 目标对象类型 | [代码定位]
 		/// </summary>
 		private void DrawHandlerRow(HandlerRow row)
 		{
@@ -388,7 +388,7 @@ namespace FuFramework.Event.Editor
 			GUILayout.Label(row.m_IsStatic ? "静态" : $"实例({row.m_TargetTypeName})", GUILayout.MinWidth(120));
 			GUILayout.FlexibleSpace();
 
-			if (GUILayout.Button("跳转", GUILayout.Width(44)))
+			if (GUILayout.Button("代码定位", GUILayout.Width(70)))
 			{
 				OpenHandlerSource(row.m_Method);
 			}
