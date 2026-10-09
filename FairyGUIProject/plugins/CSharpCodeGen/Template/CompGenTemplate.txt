@@ -93,19 +93,19 @@ namespace #NAMESPACE#
 
         #region 计时器
 
-        protected void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
+        protected int StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
         {
-            m_timerRegister.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
+            return m_timerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale) ?? -1;
         }
 
-        protected void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+        protected int StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
         {
-            m_timerRegister.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+            return m_timerRegister?.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale) ?? -1;
         }
 
-        protected void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
+        protected int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
         {
-            m_timerRegister.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
+            return m_timerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate) ?? -1;
         }
 
         protected void PauseTimer(int timerId) => m_timerRegister.PauseTimer(timerId);

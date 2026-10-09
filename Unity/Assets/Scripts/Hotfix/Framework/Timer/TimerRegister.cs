@@ -83,11 +83,13 @@ namespace Hotfix.Framework.Timer
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
+		/// <returns>计时器 Id，失败返回 -1（失败时不加入本注册器；不需要按 id 操作时可忽略返回值，批量清理不受影响）</returns>
+		public int StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
 		{
 			var timerId = m_timerModule.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
-			if (timerId < 0) return;
+			if (timerId < 0) return -1;
 			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
+			return timerId;
 		}
 
 		/// <summary>
@@ -98,11 +100,13 @@ namespace Hotfix.Framework.Timer
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+		/// <returns>计时器 Id，失败返回 -1（失败时不加入本注册器；不需要按 id 操作时可忽略返回值，批量清理不受影响）</returns>
+		public int StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
 		{
 			var timerId = m_timerModule.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
-			if (timerId < 0) return;
+			if (timerId < 0) return -1;
 			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
+			return timerId;
 		}
 
 		/// <summary>
@@ -112,11 +116,13 @@ namespace Hotfix.Framework.Timer
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
+		/// <returns>计时器 Id，失败返回 -1（失败时不加入本注册器；不需要按 id 操作时可忽略返回值，批量清理不受影响）</returns>
+		public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
 		{
 			var timerId = m_timerModule.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
-			if (timerId < 0) return;
+			if (timerId < 0) return -1;
 			m_timerList.Add(timerId); // HashSet 幂等：重复 Id 自动忽略（与原 Contains+Add 等价）
+			return timerId;
 		}
 
 		/// <summary>

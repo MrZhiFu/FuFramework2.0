@@ -27,9 +27,10 @@ namespace Hotfix.Framework.UI
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
+		/// <returns>计时器 Id，失败返回 -1</returns>
+		public int StartCountdownTimer(float duration, Action finishCallBack = null, Action updateCallBack = null, bool ignoreTimeScale = false)
 		{
-			TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale);
+			return TimerRegister?.StartCountdownTimer(duration, finishCallBack, updateCallBack, ignoreTimeScale) ?? -1;
 		}
 
 		/// <summary>
@@ -40,9 +41,10 @@ namespace Hotfix.Framework.UI
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		public void StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
+		/// <returns>计时器 Id，失败返回 -1</returns>
+		public int StartIntervalTimer(float interval, Action intervalCallback, int repeatCount = -1, bool immediate = false, bool ignoreTimeScale = false)
 		{
-			TimerRegister?.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale);
+			return TimerRegister?.StartIntervalTimer(interval, intervalCallback, repeatCount, immediate, ignoreTimeScale) ?? -1;
 		}
 
 		/// <summary>
@@ -52,9 +54,10 @@ namespace Hotfix.Framework.UI
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		public void StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
+		/// <returns>计时器 Id，失败返回 -1</returns>
+		public int StartFrameTimer(int frameInterval, Action intervalCallback, int repeatCount = -1, bool immediate = false)
 		{
-			TimerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate);
+			return TimerRegister?.StartFrameTimer(frameInterval, intervalCallback, repeatCount, immediate) ?? -1;
 		}
 
 		/// <summary>

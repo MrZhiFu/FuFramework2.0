@@ -251,9 +251,10 @@ public void ClearUIListener(EventListener listener)
 public void ClearAllUIListener()
 
 // 计时器
-public void StartCountdownTimer(float duration, Action finishCallBack = null, ...)
-public void StartIntervalTimer(float interval, Action intervalCallback, ...)
-public void StartFrameTimer(int frameInterval, Action intervalCallback, ...)
+// 计时器（Start 返回计时器 Id，失败 -1；不需要按 id 操作时可忽略返回值）
+public int StartCountdownTimer(float duration, Action finishCallBack = null, ...)
+public int StartIntervalTimer(float interval, Action intervalCallback, ...)
+public int StartFrameTimer(int frameInterval, Action intervalCallback, ...)
 public void PauseTimer(int timerId)
 public void ResumeTimer(int timerId)
 public void StopTimer(int timerId)
@@ -437,8 +438,9 @@ protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
 protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
 
 // 计时器
-protected void StartCountdownTimer(float duration, Action finishCallBack = null, ...)
-protected void StartIntervalTimer(float interval, Action intervalCallback, ...)
+// 计时器（Start 返回计时器 Id，失败 -1）
+protected int StartCountdownTimer(float duration, Action finishCallBack = null, ...)
+protected int StartIntervalTimer(float interval, Action intervalCallback, ...)
 ```
 
 ### 3.8 EUILayer 枚举

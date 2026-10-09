@@ -287,10 +287,11 @@ public static FrameTimer Create(int timerId, int frameInterval, Action intervalC
 // 创建计时器注册器（工厂方法）
 public static TimerRegister Create()
 
-// 启动计时器（与 TimerModule 接口相同）
-public void StartCountdownTimer(float duration, Action finishCallBack = null, ...)
-public void StartIntervalTimer(float interval, Action intervalCallback, ...)
-public void StartFrameTimer(int frameInterval, Action intervalCallback, ...)
+// 启动计时器（与 TimerModule 接口相同；返回计时器 Id 供按 id 操作使用，失败返回 -1；
+// 不需要按 id 操作时可忽略返回值，批量清理不受影响）
+public int StartCountdownTimer(float duration, Action finishCallBack = null, ...)
+public int StartIntervalTimer(float interval, Action intervalCallback, ...)
+public int StartFrameTimer(int frameInterval, Action intervalCallback, ...)
 
 // 暂停/恢复/停止计时器
 public void PauseTimer(int timerId)
