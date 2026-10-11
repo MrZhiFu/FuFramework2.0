@@ -170,7 +170,7 @@ public static class SessionManager
         if (oldSession != null)
         {
             // 创建提示消息，通知用户其账号已在其他设备上登录
-            var msg = new RespPrompt
+            var msg = new NotifyPrompt
             {
                 Type = 5,
                 Content = "你的账号已在其他设备上登陆",

@@ -7,6 +7,56 @@ using FuFramework.NetWork.Messages;
 namespace FuFramework.Proto.Proto
 {
     /// <summary>
+    /// 角色信息定义
+    /// </summary>
+    [ProtoContract]
+    [System.ComponentModel.Description("角色信息定义")]
+    public sealed class PlayerInfo
+    {
+        /// <summary>
+        /// 角色ID
+        /// </summary>
+        [ProtoMember(1)]
+        [System.ComponentModel.Description("角色ID")]
+        public long Id { get; set; }
+
+        /// <summary>
+        /// 角色名
+        /// </summary>
+        [ProtoMember(2)]
+        [System.ComponentModel.Description("角色名")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 角色等级
+        /// </summary>
+        [ProtoMember(3)]
+        [System.ComponentModel.Description("角色等级")]
+        public uint Level { get; set; }
+
+        /// <summary>
+        /// 角色状态
+        /// </summary>
+        [ProtoMember(4)]
+        [System.ComponentModel.Description("角色状态")]
+        public int State { get; set; }
+
+        /// <summary>
+        /// 角色头像
+        /// </summary>
+        [ProtoMember(5)]
+        [System.ComponentModel.Description("角色头像")]
+        public uint Avatar { get; set; }
+
+        /// <summary>
+        /// 角色当前经验
+        /// </summary>
+        [ProtoMember(6)]
+        [System.ComponentModel.Description("角色当前经验")]
+        public ulong CurrentExp { get; set; }
+    }
+
+    /// <summary>
     /// 请求账号登录
     /// </summary>
     [ProtoContract]
@@ -15,38 +65,38 @@ namespace FuFramework.Proto.Proto
     public sealed class ReqLogin : MessageObject, IRequestMessage
     {
         /// <summary>
-        /// 
+        /// 用户名
         /// </summary>
         [ProtoMember(1)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("用户名")]
         public string UserName { get; set; }
 
         /// <summary>
-        /// 
+        /// 平台
         /// </summary>
         [ProtoMember(2)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("平台")]
         public string Platform { get; set; }
 
         /// <summary>
-        /// 
+        /// sdk类型
         /// </summary>
         [ProtoMember(3)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("sdk类型")]
         public int SdkType { get; set; }
 
         /// <summary>
-        /// 
+        /// SdkToken
         /// </summary>
         [ProtoMember(4)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("SdkToken")]
         public string SdkToken { get; set; }
 
         /// <summary>
-        /// 
+        /// 设备
         /// </summary>
         [ProtoMember(5)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("设备")]
         public string Device { get; set; }
 
         /// <summary>
@@ -58,18 +108,18 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 请求账号登录返回
+    /// 账号登录响应
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("请求账号登录返回")]
+    [System.ComponentModel.Description("账号登录响应")]
     [MessageTypeHandler(19660811)]
     public sealed class RespLogin : MessageObject, IResponseMessage
     {
         /// <summary>
-        /// 
+        /// 返回码
         /// </summary>
         [ProtoMember(1)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("返回码")]
         public int Code { get; set; }
 
         /// <summary>
@@ -132,10 +182,10 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 请求角色创建返回
+    /// 角色创建响应
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("请求角色创建返回")]
+    [System.ComponentModel.Description("角色创建响应")]
     [MessageTypeHandler(19660813)]
     public sealed class RespPlayerCreate : MessageObject, IResponseMessage
     {
@@ -171,10 +221,10 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 请求角色列表返回
+    /// 角色列表响应
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("请求角色列表返回")]
+    [System.ComponentModel.Description("角色列表响应")]
     [MessageTypeHandler(19660815)]
     public sealed class RespPlayerList : MessageObject, IResponseMessage
     {
@@ -194,56 +244,6 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 
-    /// </summary>
-    [ProtoContract]
-    [System.ComponentModel.Description("")]
-    public sealed class PlayerInfo
-    {
-        /// <summary>
-        /// 角色ID
-        /// </summary>
-        [ProtoMember(1)]
-        [System.ComponentModel.Description("角色ID")]
-        public long Id { get; set; }
-
-        /// <summary>
-        /// 角色名
-        /// </summary>
-        [ProtoMember(2)]
-        [System.ComponentModel.Description("角色名")]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 角色等级
-        /// </summary>
-        [ProtoMember(3)]
-        [System.ComponentModel.Description("角色等级")]
-        public uint Level { get; set; }
-
-        /// <summary>
-        /// 角色状态
-        /// </summary>
-        [ProtoMember(4)]
-        [System.ComponentModel.Description("角色状态")]
-        public int State { get; set; }
-
-        /// <summary>
-        /// 角色头像
-        /// </summary>
-        [ProtoMember(5)]
-        [System.ComponentModel.Description("角色头像")]
-        public uint Avatar { get; set; }
-
-        /// <summary>
-        /// 角色当前经验
-        /// </summary>
-        [ProtoMember(6)]
-        [System.ComponentModel.Description("角色当前经验")]
-        public ulong CurrentExp { get; set; }
-    }
-
-    /// <summary>
     /// 请求玩家登录
     /// </summary>
     [ProtoContract]
@@ -260,18 +260,18 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 请求玩家登录返回
+    /// 玩家登录响应
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("请求玩家登录返回")]
+    [System.ComponentModel.Description("玩家登录响应")]
     [MessageTypeHandler(19660817)]
     public sealed class RespPlayerLogin : MessageObject, IResponseMessage
     {
         /// <summary>
-        /// 
+        /// 返回码
         /// </summary>
         [ProtoMember(1)]
-        [System.ComponentModel.Description("")]
+        [System.ComponentModel.Description("返回码")]
         public int Code { get; set; }
 
         /// <summary>
@@ -297,12 +297,12 @@ namespace FuFramework.Proto.Proto
     }
 
     /// <summary>
-    /// 客户端每次请求都会回复错误码
+    /// 错误码通知（每个请求的旁路错误回复）
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("客户端每次请求都会回复错误码")]
+    [System.ComponentModel.Description("错误码通知（每个请求的旁路错误回复）")]
     [MessageTypeHandler(19660818)]
-    public sealed class RespErrorCode : MessageObject, IResponseMessage
+    public sealed class NotifyErrorCode : MessageObject, INotifyMessage
     {
         /// <summary>
         /// 0:表示无错误
@@ -317,22 +317,15 @@ namespace FuFramework.Proto.Proto
         [ProtoMember(2)]
         [System.ComponentModel.Description("错误描述（不为0时有效）")]
         public string Desc { get; set; }
-
-        /// <summary>
-        /// 返回的错误码
-        /// </summary>
-        [ProtoMember(2047)]
-        [System.ComponentModel.Description("返回的错误码")]
-        public int ErrorCode { get; set; }
     }
 
     /// <summary>
-    /// 
+    /// 提示信息通知
     /// </summary>
     [ProtoContract]
-    [System.ComponentModel.Description("")]
+    [System.ComponentModel.Description("提示信息通知")]
     [MessageTypeHandler(19660819)]
-    public sealed class RespPrompt : MessageObject, IResponseMessage
+    public sealed class NotifyPrompt : MessageObject, INotifyMessage
     {
         /// <summary>
         /// 提示信息类型（1Tip提示，2跑马灯，3插队跑马灯，4弹窗，5弹窗回到登陆，6弹窗退出游戏）
@@ -347,13 +340,6 @@ namespace FuFramework.Proto.Proto
         [ProtoMember(2)]
         [System.ComponentModel.Description("提示内容")]
         public string Content { get; set; }
-
-        /// <summary>
-        /// 返回的错误码
-        /// </summary>
-        [ProtoMember(2047)]
-        [System.ComponentModel.Description("返回的错误码")]
-        public int ErrorCode { get; set; }
     }
 
 }

@@ -6,6 +6,50 @@ using Hotfix.Framework.Network;
 namespace Hotfix.Game.Proto
 {
 	/// <summary>
+	/// 角色信息定义
+	/// </summary>
+	[ProtoContract]
+	public sealed class PlayerInfo
+	{
+		/// <summary>
+		/// 角色ID
+		/// </summary>
+		[ProtoMember(1)]
+		public long Id { get; set; }
+
+		/// <summary>
+		/// 角色名
+		/// </summary>
+		[ProtoMember(2)]
+		public string Name { get; set; }
+
+		/// <summary>
+		/// 角色等级
+		/// </summary>
+		[ProtoMember(3)]
+		public uint Level { get; set; }
+
+		/// <summary>
+		/// 角色状态
+		/// </summary>
+		[ProtoMember(4)]
+		public int State { get; set; }
+
+		/// <summary>
+		/// 角色头像
+		/// </summary>
+		[ProtoMember(5)]
+		public uint Avatar { get; set; }
+
+		/// <summary>
+		/// 角色当前经验
+		/// </summary>
+		[ProtoMember(6)]
+		public ulong CurrentExp { get; set; }
+
+	}
+
+	/// <summary>
 	/// 请求账号登录
 	/// </summary>
 	[ProtoContract]
@@ -13,31 +57,31 @@ namespace Hotfix.Game.Proto
 	public sealed class ReqLogin : MessageObject, IRequestMessage
 	{
 		/// <summary>
-		/// 
+		/// 用户名
 		/// </summary>
 		[ProtoMember(1)]
 		public string UserName { get; set; }
 
 		/// <summary>
-		/// 
+		/// 平台
 		/// </summary>
 		[ProtoMember(2)]
 		public string Platform { get; set; }
 
 		/// <summary>
-		/// 
+		/// sdk类型
 		/// </summary>
 		[ProtoMember(3)]
 		public int SdkType { get; set; }
 
 		/// <summary>
-		/// 
+		/// SdkToken
 		/// </summary>
 		[ProtoMember(4)]
 		public string SdkToken { get; set; }
 
 		/// <summary>
-		/// 
+		/// 设备
 		/// </summary>
 		[ProtoMember(5)]
 		public string Device { get; set; }
@@ -51,14 +95,14 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 请求账号登录返回
+	/// 账号登录响应
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660811)]
 	public sealed class RespLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
-		/// 
+		/// 返回码
 		/// </summary>
 		[ProtoMember(1)]
 		public int Code { get; set; }
@@ -117,7 +161,7 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 请求角色创建返回
+	/// 角色创建响应
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660813)]
@@ -153,7 +197,7 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 请求角色列表返回
+	/// 角色列表响应
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660815)]
@@ -174,50 +218,6 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 
-	/// </summary>
-	[ProtoContract]
-	public sealed class PlayerInfo
-	{
-		/// <summary>
-		/// 角色ID
-		/// </summary>
-		[ProtoMember(1)]
-		public long Id { get; set; }
-
-		/// <summary>
-		/// 角色名
-		/// </summary>
-		[ProtoMember(2)]
-		public string Name { get; set; }
-
-		/// <summary>
-		/// 角色等级
-		/// </summary>
-		[ProtoMember(3)]
-		public uint Level { get; set; }
-
-		/// <summary>
-		/// 角色状态
-		/// </summary>
-		[ProtoMember(4)]
-		public int State { get; set; }
-
-		/// <summary>
-		/// 角色头像
-		/// </summary>
-		[ProtoMember(5)]
-		public uint Avatar { get; set; }
-
-		/// <summary>
-		/// 角色当前经验
-		/// </summary>
-		[ProtoMember(6)]
-		public ulong CurrentExp { get; set; }
-
-	}
-
-	/// <summary>
 	/// 请求玩家登录
 	/// </summary>
 	[ProtoContract]
@@ -233,14 +233,14 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 请求玩家登录返回
+	/// 玩家登录响应
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660817)]
 	public sealed class RespPlayerLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
-		/// 
+		/// 返回码
 		/// </summary>
 		[ProtoMember(1)]
 		public int Code { get; set; }
@@ -266,11 +266,11 @@ namespace Hotfix.Game.Proto
 	}
 
 	/// <summary>
-	/// 客户端每次请求都会回复错误码
+	/// 错误码通知（每个请求的旁路错误回复）
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660818)]
-	public sealed class RespErrorCode : MessageObject, IResponseMessage
+	public sealed class NotifyErrorCode : MessageObject, INotifyMessage
 	{
 		/// <summary>
 		/// 0:表示无错误
@@ -284,20 +284,14 @@ namespace Hotfix.Game.Proto
 		[ProtoMember(2)]
 		public string Desc { get; set; }
 
-		/// <summary>
-		/// 返回的错误码
-		/// </summary>
-		[ProtoMember(2047)]
-		public int ErrorCode { get; set; }
-
 	}
 
 	/// <summary>
-	/// 
+	/// 提示信息通知
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660819)]
-	public sealed class RespPrompt : MessageObject, IResponseMessage
+	public sealed class NotifyPrompt : MessageObject, INotifyMessage
 	{
 		/// <summary>
 		/// 提示信息类型（1Tip提示，2跑马灯，3插队跑马灯，4弹窗，5弹窗回到登陆，6弹窗退出游戏）
@@ -310,12 +304,6 @@ namespace Hotfix.Game.Proto
 		/// </summary>
 		[ProtoMember(2)]
 		public string Content { get; set; }
-
-		/// <summary>
-		/// 返回的错误码
-		/// </summary>
-		[ProtoMember(2047)]
-		public int ErrorCode { get; set; }
 
 	}
 

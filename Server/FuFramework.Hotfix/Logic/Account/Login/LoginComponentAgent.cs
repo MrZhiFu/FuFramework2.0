@@ -11,11 +11,11 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
     {
         if (reqLogin.UserName.IsNullOrEmpty() || reqLogin.Password.IsNullOrEmpty())
         {
-            var respErrorCode = new RespErrorCode
+            var notifyErrorCode = new NotifyErrorCode
             {
                 ErrCode = (int)ResultCode.Failed,
             };
-            await workChannel.WriteAsync(respErrorCode, (int)OperationStatusCode.AccountCannotBeNull);
+            await workChannel.WriteAsync(notifyErrorCode, (int)OperationStatusCode.AccountCannotBeNull);
             return;
         }
 

@@ -46,7 +46,7 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 注册「消息ID &lt;-&gt; 类型」映射、心跳类型集合。
-        /// 共 29 条。
+        /// 共 23 条。
         /// </summary>
         private static void RegisterMessageIds()
         {
@@ -55,20 +55,14 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<NotifyServerFullyLoaded>(655372, EMessageKind.Notify);
             MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request);
             MessageIdRegistry.Register<RespBagInfo>(6553611, EMessageKind.Response);
-            MessageIdRegistry.Register<NotifyBagItem>(6553612, EMessageKind.Notify);
-            MessageIdRegistry.Register<NotifyBagInfoChanged>(6553613, EMessageKind.Notify);
-            MessageIdRegistry.Register<ReqComposePet>(6553614, EMessageKind.Request);
-            MessageIdRegistry.Register<RespComposePet>(6553615, EMessageKind.Response);
-            MessageIdRegistry.Register<ReqUseItem>(6553616, EMessageKind.Request);
-            MessageIdRegistry.Register<RespUseItem>(6553617, EMessageKind.Response);
-            MessageIdRegistry.Register<ReqDiscardItem>(6553618, EMessageKind.Request);
-            MessageIdRegistry.Register<RespDiscardItem>(6553619, EMessageKind.Response);
-            MessageIdRegistry.Register<ReqSellItem>(6553620, EMessageKind.Request);
-            MessageIdRegistry.Register<RespItemChange>(6553621, EMessageKind.Response);
-            MessageIdRegistry.Register<ReqAddItem>(6553622, EMessageKind.Request);
-            MessageIdRegistry.Register<RespAddItem>(6553623, EMessageKind.Response);
-            MessageIdRegistry.Register<ReqRemoveItem>(6553624, EMessageKind.Request);
-            MessageIdRegistry.Register<RespRemoveItem>(6553625, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqUseItem>(6553612, EMessageKind.Request);
+            MessageIdRegistry.Register<RespUseItem>(6553613, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqAddItem>(6553614, EMessageKind.Request);
+            MessageIdRegistry.Register<RespAddItem>(6553615, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqRemoveItem>(6553616, EMessageKind.Request);
+            MessageIdRegistry.Register<RespRemoveItem>(6553617, EMessageKind.Response);
+            MessageIdRegistry.Register<NotifyBagItem>(6553618, EMessageKind.Notify);
+            MessageIdRegistry.Register<NotifyBagInfoChanged>(6553619, EMessageKind.Notify);
             MessageIdRegistry.Register<ReqLogin>(19660810, EMessageKind.Request);
             MessageIdRegistry.Register<RespLogin>(19660811, EMessageKind.Response);
             MessageIdRegistry.Register<ReqPlayerCreate>(19660812, EMessageKind.Request);
@@ -77,8 +71,8 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<RespPlayerList>(19660815, EMessageKind.Response);
             MessageIdRegistry.Register<ReqPlayerLogin>(19660816, EMessageKind.Request);
             MessageIdRegistry.Register<RespPlayerLogin>(19660817, EMessageKind.Response);
-            MessageIdRegistry.Register<RespErrorCode>(19660818, EMessageKind.Response);
-            MessageIdRegistry.Register<RespPrompt>(19660819, EMessageKind.Response);
+            MessageIdRegistry.Register<NotifyErrorCode>(19660818, EMessageKind.Notify);
+            MessageIdRegistry.Register<NotifyPrompt>(19660819, EMessageKind.Notify);
         }
 
         /// <summary>
