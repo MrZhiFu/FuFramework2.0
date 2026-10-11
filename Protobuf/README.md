@@ -13,7 +13,7 @@ Protobuf/
     Bag_100.proto               package Bag;       option module = 100
     Basic_10.proto              package Basic;     option module = 10
     Common_20.proto             package Common;    option module = 20
-    Inner_Basic_2.proto         package Inner_Basic; option module = 2
+    Inner_Basic_2.proto         package Inner_Basic; option module = 2   （空置预留：服务器间内部协议占位，暂无消息）
     User_300.proto              package User;      option module = 300
 
   Proto2CsExport-All.bat        ★ 一键：客户端 + 服务端 + 注册表
