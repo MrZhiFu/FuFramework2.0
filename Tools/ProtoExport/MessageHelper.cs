@@ -8,7 +8,7 @@ public static partial class MessageHelper
     private const string EnumPattern = @"enum\s+(\w+)\s*\{\s*([^}]*)\s*\}";
 
     // 正则表达式匹配messages
-    private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]+)\s*\}";
+    private const string MessagePattern = @"message\s+(\w+)\s*\{\s*([^}]*)\s*\}";
     private const string CommentPattern = @"//([^\n]*)\n\s*(enum|message)\s+(\w+)\s*{";
     private const string StartPattern = @"option start = (\d+);";
     private const string ModulePattern = @"option module = (-?\d+);";
