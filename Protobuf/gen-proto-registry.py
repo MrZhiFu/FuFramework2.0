@@ -27,7 +27,7 @@ gen-proto-registry.py
           IPacketHeartBeatHandler / IMessageCompressHandler / IMessageDecompressHandler，
           且（与原扫描一致）实现标记接口 IPacketHandler。
           接口判定包含继承链，因此「派生自框架基类」的实现（如
-          Hotfix.Game.Network.DefaultPacketHeartBeatHandler : BasePacketHeartBeatHandler）
+          Hotfix.Game.Network.PacketHeartBeatHandler : BasePacketHeartBeatHandler）
           也能被正确识别并注册为心跳处理器（后注册覆盖框架基类）。
 
 背景（项目铁律 4：运行时杜绝反射）：

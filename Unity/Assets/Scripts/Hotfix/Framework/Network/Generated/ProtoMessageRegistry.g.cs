@@ -109,8 +109,8 @@ namespace Hotfix.Framework.Network
 
             DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
             {
-                // IPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/DefaultPacketHeartBeatHandler.cs
-                channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.DefaultPacketHeartBeatHandler());
+                // IPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs
+                channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
             });
         }
     }

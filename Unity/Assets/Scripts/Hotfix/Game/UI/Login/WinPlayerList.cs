@@ -161,7 +161,7 @@ namespace Hotfix.Game.UI
 			networkChannel = NetworkModule.Instance.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
 
 			// 心跳处理器由框架在创建频道时自动装配（DefaultNetworkChannelHelper.Initialize →
-			// 生成式静态注册表会注册游戏侧 DefaultPacketHeartBeatHandler），此处无需再手动注册。
+			// 生成式静态注册表会注册游戏侧 PacketHeartBeatHandler），此处无需再手动注册。
 			// （原先的手动补注册是框架反射扫描顺序问题的兜底，已随生成式静态注册消除。）
 			networkChannel.Connect(new Uri($"tcp://{serverIp}:{serverPort}"));
 		}

@@ -162,7 +162,7 @@ new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChange
 // 1) 静态注册入口（对所有 DefaultNetworkChannelHelper 生效，建议启动期调用一次）
 DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
 {
-    channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.DefaultPacketHeartBeatHandler());
+    channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
 });
 
 // 2) 或派生 DefaultNetworkChannelHelper 并重写 RegisterCustomHandlers()

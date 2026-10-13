@@ -84,7 +84,7 @@ namespace Hotfix.Framework.Network
 		///
 		/// 心跳处理器：此处装配的是框架基类 BasePacketHeartBeatHandler，仅作为**兜底默认**。
 		///     原实现靠反射扫描，会同时命中基类与该基类的游戏侧派生类
-		///     Hotfix.Game.Network.DefaultPacketHeartBeatHandler；由于 RegisterHeartBeatHandler 是
+		///     Hotfix.Game.Network.PacketHeartBeatHandler；由于 RegisterHeartBeatHandler 是
 		///     「后注册覆盖」，而编译产物中基类排在派生类之后，框架扫描的结果是**基类生效**
 		///     （基类 Handler() 仅抛 NotImplementedException）。
 		///     此前运行期之所以正常，是因为游戏侧 WinPlayerList.OnBtnLoginClick 在
