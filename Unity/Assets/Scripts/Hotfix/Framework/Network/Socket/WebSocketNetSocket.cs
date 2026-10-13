@@ -14,6 +14,9 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	internal sealed class WebSocketNetSocket : INetworkSocket
 	{
+		/// <summary>
+		/// 底层 WebSocket 客户端
+		/// </summary>
 		private readonly IWebSocket m_client;
 
 		/// <summary>
@@ -21,11 +24,27 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private bool m_isConnecting;
 
+		/// <summary>
+		/// 连接任务完成源
+		/// </summary>
 		private UniTaskCompletionSource<bool> m_connectTask = new();
 
+		/// <summary>
+		/// 收到底层消息的回调
+		/// </summary>
 		private readonly Action<byte[]> m_onReceiveAction;
+
+		/// <summary>
+		/// 底层连接关闭的回调
+		/// </summary>
 		private readonly Action<string> m_onCloseAction;
 
+		/// <summary>
+		/// 创建 WebSocket 套接字
+		/// </summary>
+		/// <param name="url">连接地址</param>
+		/// <param name="onReceiveAction">收到消息的回调</param>
+		/// <param name="onCloseAction">连接关闭的回调</param>
 		public WebSocketNetSocket(string url, Action<byte[]> onReceiveAction, Action<string> onCloseAction)
 		{
 			m_client           =  new WebSocket(url);
@@ -37,17 +56,32 @@ namespace Hotfix.Framework.Network
 			m_client.OnMessage += OnMessage;
 		}
 
+		/// <summary>
+		/// 底层消息回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">消息参数</param>
 		private void OnMessage(object sender, MessageEventArgs e)
 		{
 			if (e.IsBinary)
 				m_onReceiveAction.Invoke(e.RawData);
 		}
 
+		/// <summary>
+		/// 底层连接关闭回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">关闭参数</param>
 		private void OnClose(object sender, CloseEventArgs e)
 		{
 			m_onCloseAction?.Invoke(e.Reason + " " + e.Code);
 		}
 
+		/// <summary>
+		/// 底层错误回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">错误参数</param>
 		private void OnError(object sender, ErrorEventArgs e)
 		{
 			if (m_isConnecting)
@@ -63,6 +97,11 @@ namespace Hotfix.Framework.Network
 			m_connectTask.TrySetResult(false);
 		}
 
+		/// <summary>
+		/// 底层连接打开回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">打开参数</param>
 		private void OnOpen(object sender, OpenEventArgs e)
 		{
 			m_isConnecting = false;
@@ -70,6 +109,10 @@ namespace Hotfix.Framework.Network
 		}
 
 
+		/// <summary>
+		/// 异步连接远程主机
+		/// </summary>
+		/// <param name="cancellationToken">取消令牌（超时或主动断开时取消）</param>
 		public async UniTask ConnectAsync(CancellationToken cancellationToken)
 		{
 			m_isConnecting = true;
@@ -84,19 +127,44 @@ namespace Hotfix.Framework.Network
 			}
 		}
 
+		/// <summary>
+		/// 底层 WebSocket 客户端实例
+		/// </summary>
 		public IWebSocket Client => m_client;
 
+		/// <summary>
+		/// 是否已连接
+		/// </summary>
 		public bool IsConnected => m_client.IsConnected;
 
+		/// <summary>
+		/// 是否已关闭
+		/// </summary>
 		public bool IsClosed { get; private set; }
 
+		/// <summary>
+		/// 本地端点（WebSocket 不提供，恒为 null）
+		/// </summary>
 		public EndPoint LocalEndPoint => null;
 
+		/// <summary>
+		/// 远程端点（WebSocket 不提供，恒为 null）
+		/// </summary>
 		public EndPoint RemoteEndPoint => null;
 
+		/// <summary>
+		/// 接收缓冲区大小。单位字节
+		/// </summary>
 		public int ReceiveBufferSize { get; set; }
+
+		/// <summary>
+		/// 发送缓冲区大小。单位字节
+		/// </summary>
 		public int SendBufferSize    { get; set; }
 
+		/// <summary>
+		/// 禁用收发并关闭底层连接
+		/// </summary>
 		public void Shutdown()
 		{
 			if (IsClosed) return;
@@ -115,6 +183,9 @@ namespace Hotfix.Framework.Network
 			}
 		}
 
+		/// <summary>
+		/// 关闭连接并释放底层客户端
+		/// </summary>
 		public void Close()
 		{
 			if (IsClosed) return;

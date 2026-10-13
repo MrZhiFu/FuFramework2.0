@@ -49,7 +49,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="errorMessage">错误信息。</param>
 		/// <returns>创建的网络错误事件。</returns>
 		public static NetworkErrorEventArgs Create(INetworkChannel networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
-												   string errorMessage)
+		                                           string errorMessage)
 		{
 			var networkErrorEventArgs = ReferencePool.Acquire<NetworkErrorEventArgs>();
 			networkErrorEventArgs.NetworkChannel  = networkChannel;

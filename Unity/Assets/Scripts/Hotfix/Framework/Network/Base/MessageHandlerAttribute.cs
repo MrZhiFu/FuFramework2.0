@@ -129,6 +129,9 @@ namespace Hotfix.Framework.Network
 			m_messageObjects.Enqueue(messageObject);
 		}
 
+		/// <summary>
+		/// 转发队列中的一条消息到绑定的处理方法
+		/// </summary>
 		internal void Invoke()
 		{
 			if (m_messageObjects.Count <= 0)

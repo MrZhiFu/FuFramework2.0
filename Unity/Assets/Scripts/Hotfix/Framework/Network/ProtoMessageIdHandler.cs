@@ -17,6 +17,9 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public static class ProtoMessageIdHandler
 	{
+		/// <summary>
+		/// 静态注册表是否已初始化
+		/// </summary>
 		private static bool s_isInitialized;
 
 		/// <summary>

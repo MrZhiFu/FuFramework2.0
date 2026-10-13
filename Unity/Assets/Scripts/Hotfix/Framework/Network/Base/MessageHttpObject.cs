@@ -1,10 +1,8 @@
 using Newtonsoft.Json;
-using Utility = Hotfix.Framework.Core.Utility;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using ProtoBuf;
+using AOT.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
-using AOT.Framework.Core.Utility;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
@@ -25,8 +23,15 @@ namespace Hotfix.Framework.Network
 		[ProtoMember(2)]
 		public int UniqueId { get; set; }
 
+		/// <summary>
+		/// 消息体字节（JSON 序列化时忽略）
+		/// </summary>
 		[JsonIgnore] [ProtoMember(3)] public byte[] Body { get; set; }
 
+		/// <summary>
+		/// 序列化为 JSON 字符串
+		/// </summary>
+		/// <returns>消息的 JSON 表示</returns>
 		public override string ToString() => UtilityAOT.Json.ToJson(this);
 	}
 }

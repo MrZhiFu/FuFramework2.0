@@ -30,6 +30,12 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public Action<IMessageHandler, MessageObject> Invoke { get; }
 
+		/// <summary>
+		/// 创建消息处理方法描述
+		/// </summary>
+		/// <param name="messageType">消息类型</param>
+		/// <param name="methodName">处理方法名</param>
+		/// <param name="invoke">生成期产出的直接委托</param>
 		public ProtoMessageHandlerMethod(Type messageType, string methodName, Action<IMessageHandler, MessageObject> invoke)
 		{
 			MessageType = messageType;

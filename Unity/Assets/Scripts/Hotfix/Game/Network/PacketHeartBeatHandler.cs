@@ -4,7 +4,7 @@ using Hotfix.Game.Proto;
 
 namespace Hotfix.Game.Network
 {
-	public sealed class PacketHeartBeatHandler : BasePacketHeartBeatHandler
+	public sealed class PacketHeartBeatHandler : DefaultPacketHeartBeatHandler
 	{
 		private readonly ReqHeartBeat m_reqHeartBeat = new();
 

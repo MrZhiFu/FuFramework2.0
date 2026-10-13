@@ -24,11 +24,29 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private readonly HashSet<long> m_removeReplyHandlingObjectIds = new();
 
+		/// <summary>
+		/// RPC 开始处理函数
+		/// </summary>
 		private EventHandler<MessageObject> m_rpcStartHandler;
+
+		/// <summary>
+		/// RPC 结束处理函数
+		/// </summary>
 		private EventHandler<MessageObject> m_rpcEndHandler;
+
+		/// <summary>
+		/// RPC 错误处理函数
+		/// </summary>
 		private EventHandler<MessageObject> m_rpcErrorHandler;
+
+		/// <summary>
+		/// RPC 错误码处理函数
+		/// </summary>
 		private EventHandler<MessageObject> m_rpcErrorCodeHandler;
 
+		/// <summary>
+		/// RPC 超时时间。单位毫秒
+		/// </summary>
 		private readonly int m_rpcTimeout;
 
 		/// <summary>
@@ -38,6 +56,10 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private static readonly ConcurrentDictionary<Type, bool> sr_responseMessageTypeCache = new();
 
+		/// <summary>
+		/// 创建 RPC 状态
+		/// </summary>
+		/// <param name="timeout">RPC 超时时间。单位毫秒，不能小于 3000</param>
 		public RpcState(int timeout)
 		{
 			m_rpcTimeout = timeout;

@@ -1,7 +1,7 @@
-using Newtonsoft.Json;
-using Utility = Hotfix.Framework.Core.Utility;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 using ProtoBuf;
+using Newtonsoft.Json;
+using Hotfix.Framework.Core;
+using AOT.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -18,6 +18,9 @@ namespace Hotfix.Framework.Network
 		[JsonIgnore]
 		public int UniqueId { get; private set; }
 
+		/// <summary>
+		/// 创建消息对象并生成唯一编号
+		/// </summary>
 		protected MessageObject() => UpdateUniqueId();
 
 		/// <summary>
@@ -30,6 +33,10 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void SetUpdateUniqueId(int uniqueId) => UniqueId = uniqueId;
 
+		/// <summary>
+		/// 序列化为 JSON 字符串
+		/// </summary>
+		/// <returns>消息的 JSON 表示</returns>
 		public override string ToString() => UtilityAOT.Json.ToJson(this);
 	}
 }

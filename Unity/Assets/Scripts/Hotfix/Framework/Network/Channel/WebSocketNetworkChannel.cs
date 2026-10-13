@@ -72,9 +72,9 @@ namespace Hotfix.Framework.Network
 				const string errorMessage = "Initialize network channel failure.";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SocketError,
-					socketError: SocketError.Success,
-					errorMessage: errorMessage);
+				                      errorCode: ENetworkErrorCode.SocketError,
+				                      socketError: SocketError.Success,
+				                      errorMessage: errorMessage);
 				return;
 			}
 
@@ -82,19 +82,34 @@ namespace Hotfix.Framework.Network
 			ConnectAsync(userData).Forget();
 		}
 
+		/// <summary>
+		/// 底层连接关闭回调，触发频道关闭
+		/// </summary>
+		/// <param name="errorMessage">关闭原因</param>
 		private void CloseCallback(string errorMessage) => Close();
 
+		/// <summary>
+		/// 关闭频道并取消进行中的连接
+		/// </summary>
 		public override void Close()
 		{
 			base.Close();
 			m_cancellationTokenSource?.Cancel();
 		}
 
+		/// <summary>
+		/// 判断频道是否已关闭
+		/// </summary>
+		/// <returns>Socket 断开且连接令牌已取消时返回 true</returns>
 		private bool IsClose()
 		{
 			return m_Socket != null && !m_Socket.IsConnected && m_cancellationTokenSource != null && m_cancellationTokenSource.IsCancellationRequested;
 		}
 
+		/// <summary>
+		/// 处理发送：序列化待发消息并交由底层 WebSocket 发出
+		/// </summary>
+		/// <returns>是否发送成功</returns>
 		protected override bool ProcessSend()
 		{
 			lock (m_SendPacketPool)
@@ -117,9 +132,9 @@ namespace Hotfix.Framework.Network
 						if (m_NetworkChannelError == null) throw;
 						var socketException = exception as SocketException;
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-							errorCode: ENetworkErrorCode.SerializeError,
-							socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-							errorMessage: exception.ToString());
+						                      errorCode: ENetworkErrorCode.SerializeError,
+						                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+						                      errorMessage: exception.ToString());
 						return false;
 					}
 					finally
@@ -132,9 +147,9 @@ namespace Hotfix.Framework.Network
 						const string errorMessage = "Serialized packet failure.";
 						if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-							errorCode: ENetworkErrorCode.SerializeError,
-							socketError: SocketError.Success,
-							errorMessage: errorMessage);
+						                      errorCode: ENetworkErrorCode.SerializeError,
+						                      socketError: SocketError.Success,
+						                      errorMessage: errorMessage);
 						return false;
 					}
 
@@ -157,9 +172,9 @@ namespace Hotfix.Framework.Network
 			{
 				PActive = false;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SocketError,
-					socketError: SocketError.Disconnecting,
-					errorMessage: "Network channel is closing.");
+				                      errorCode: ENetworkErrorCode.SocketError,
+				                      socketError: SocketError.Disconnecting,
+				                      errorMessage: "Network channel is closing.");
 				return false;
 			}
 
@@ -183,6 +198,10 @@ namespace Hotfix.Framework.Network
 			return true;
 		}
 
+		/// <summary>
+		/// 异步连接远程主机（超时与取消由 CancellationTokenSource 控制）
+		/// </summary>
+		/// <param name="userData">用户自定义数据</param>
 		private async UniTaskVoid ConnectAsync(object userData)
 		{
 			var cancellationTokenSource = m_cancellationTokenSource;
@@ -200,11 +219,11 @@ namespace Hotfix.Framework.Network
 			catch (OperationCanceledException)
 			{
 				m_IsConnecting = false;
-				PActive       = false;
+				PActive        = false;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ConnectError,
-					socketError: SocketError.TimedOut,
-					errorMessage: $"WebSocket connect canceled or timeout after {CONNECT_TIMEOUT_MILLISECONDS}ms.");
+				                      errorCode: ENetworkErrorCode.ConnectError,
+				                      socketError: SocketError.TimedOut,
+				                      errorMessage: $"WebSocket connect canceled or timeout after {CONNECT_TIMEOUT_MILLISECONDS}ms.");
 			}
 			catch (Exception exception)
 			{
@@ -218,12 +237,16 @@ namespace Hotfix.Framework.Network
 				}
 
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ConnectError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ConnectError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 连接完成回调：校验连接状态，成功后重置计数并广播连接成功事件
+		/// </summary>
+		/// <param name="connectState">连接状态</param>
 		private void ConnectCallback(ConnectState connectState)
 		{
 			m_IsConnecting = false;
@@ -243,9 +266,9 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ConnectError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ConnectError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 				return;
 			}
 
@@ -258,6 +281,10 @@ namespace Hotfix.Framework.Network
 			PActive = true;
 		}
 
+		/// <summary>
+		/// 底层消息回调：投递数据到接收缓冲并驱动心跳重置
+		/// </summary>
+		/// <param name="buffer">收到的原始字节</param>
 		private void ReceiveCallback(byte[] buffer)
 		{
 			try
@@ -299,8 +326,8 @@ namespace Hotfix.Framework.Network
 						if (m_NetworkChannelError != null)
 						{
 							EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-								errorCode: ENetworkErrorCode.DeserializePacketError,
-								errorMessage: "Packet body is invalid.");
+							                      errorCode: ENetworkErrorCode.DeserializePacketError,
+							                      errorMessage: "Packet body is invalid.");
 							return;
 						}
 					}
@@ -316,15 +343,15 @@ namespace Hotfix.Framework.Network
 				else
 				{
 					EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-						errorCode: ENetworkErrorCode.DeserializePacketHeaderError,
-						errorMessage: "Packet header is invalid.");
+					                      errorCode: ENetworkErrorCode.DeserializePacketHeaderError,
+					                      errorMessage: "Packet header is invalid.");
 				}
 			}
 			catch (Exception e)
 			{
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.DeserializePacketError,
-					errorMessage: "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
+				                      errorCode: ENetworkErrorCode.DeserializePacketError,
+				                      errorMessage: "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
 			}
 		}
 	}

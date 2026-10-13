@@ -1,6 +1,6 @@
+using ProtoBuf;
 using System.IO;
 using Hotfix.Framework.Core;
-using ProtoBuf;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -36,6 +36,9 @@ namespace Hotfix.Framework.Network
 		private const int NET_UNIQUE_ID_LENGTH = sizeof(int);
 
 
+		/// <summary>
+		/// 创建发送包头处理器，并计算包头总长度
+		/// </summary>
 		public DefaultPacketSendHeaderHandler()
 		{
 			// 4 + 1 + 1 + 4 + 4
@@ -68,7 +71,14 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public virtual uint LimitCompressLength => 512;
 
+		/// <summary>
+		/// 当前缓存字节的写入偏移
+		/// </summary>
 		private          int    m_offset;
+
+		/// <summary>
+		/// 包头缓存字节（避免每次发包重新分配）
+		/// </summary>
 		private readonly byte[] m_cachedByte;
 
 		/// <summary>
@@ -78,10 +88,10 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageCompressHandler">压缩消息内容处理器</param>
 		/// <param name="destination">缓存流</param>
 		/// <param name="messageBodyBuffer">消息序列化完的二进制数组</param>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
+		/// <typeparam name="T">消息类型</typeparam>
+		/// <returns>是否序列化成功</returns>
 		public bool Handler<T>(T messageObject, IMessageCompressHandler messageCompressHandler, MemoryStream destination,
-							   out byte[] messageBodyBuffer) where T : MessageObject
+		                       out byte[] messageBodyBuffer) where T : MessageObject
 		{
 			m_offset = 0;
 			var messageType = messageObject.GetType();

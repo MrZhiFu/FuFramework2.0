@@ -100,26 +100,47 @@ namespace Hotfix.Framework.Network
 			Instance = null;
 		}
 
+		/// <summary>
+		/// 频道连接成功回调，广播连接成功事件
+		/// </summary>
+		/// <param name="networkChannel">网络频道</param>
+		/// <param name="userData">用户自定义数据</param>
 		private void OnNetworkChannelConnected(NetworkChannelBase networkChannel, object userData)
 		{
 			var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel, userData);
 			m_eventModule.Broadcast(this, networkConnectedEventArgs);
 		}
 
+		/// <summary>
+		/// 频道关闭回调，广播连接关闭事件
+		/// </summary>
+		/// <param name="networkChannel">网络频道</param>
 		private void OnNetworkChannelClosed(NetworkChannelBase networkChannel)
 		{
 			var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel);
 			m_eventModule.Broadcast(this, networkClosedEventArgs);
 		}
 
+		/// <summary>
+		/// 频道心跳丢失回调，广播心跳丢失事件
+		/// </summary>
+		/// <param name="networkChannel">网络频道</param>
+		/// <param name="missHeartBeatCount">连续丢失次数</param>
 		private void OnNetworkChannelMissHeartBeat(NetworkChannelBase networkChannel, int missHeartBeatCount)
 		{
 			var networkMissHeartBeatEventArgs = NetworkMissHeartBeatEventArgs.Create(networkChannel, missHeartBeatCount);
 			m_eventModule.Broadcast(this, networkMissHeartBeatEventArgs);
 		}
 
+		/// <summary>
+		/// 频道错误回调，广播网络错误事件
+		/// </summary>
+		/// <param name="networkChannel">网络频道</param>
+		/// <param name="errorCode">网络错误码</param>
+		/// <param name="socketErrorCode">套接字错误码</param>
+		/// <param name="errorMessage">错误消息</param>
 		private void OnNetworkChannelError(NetworkChannelBase networkChannel, ENetworkErrorCode errorCode, SocketError socketErrorCode,
-										   string errorMessage)
+		                                   string errorMessage)
 		{
 			var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
 			m_eventModule.Broadcast(this, networkErrorEventArgs);

@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using System.Collections.Generic;
-using Utility = Hotfix.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -25,8 +24,19 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private const int DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE = 10;
 
+		/// <summary>
+		/// 待发送消息包池（链表，按先进先出顺序发送）
+		/// </summary>
 		protected readonly FuLinkedList<MessageObject> m_SendPacketPool;
+
+		/// <summary>
+		/// 网络频道帮助器（负责装配处理器与序列化收发包）
+		/// </summary>
 		protected readonly INetworkChannelHelper       m_NetworkChannelHelper;
+
+		/// <summary>
+		/// 网络地址类型
+		/// </summary>
 		protected          EAddressFamily              m_EAddressFamily;
 
 		/// <summary>
@@ -59,9 +69,24 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected INetworkSocket m_Socket;
 
+		/// <summary>
+		/// 发送状态
+		/// </summary>
 		protected readonly SendState      m_SendState;
+
+		/// <summary>
+		/// 接收状态
+		/// </summary>
 		protected readonly ReceiveState   m_ReceiveState;
+
+		/// <summary>
+		/// 心跳状态
+		/// </summary>
 		protected readonly HeartBeatState m_HeartBeatState;
+
+		/// <summary>
+		/// RPC 状态
+		/// </summary>
 		protected readonly RpcState       m_RpcState;
 
 		/// <summary>
@@ -94,26 +119,39 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected bool m_IsConnecting = false;
 
+		/// <summary>
+		/// 是否已释放
+		/// </summary>
 		private bool m_disposed;
-		private bool m_pActive;
 
 		/// <summary>
 		/// 网络是否激活
 		/// </summary>
-		protected bool PActive
-		{
-			get => m_pActive;
-			set
-			{
-				if (m_pActive == value) return;
-				m_pActive = value;
-			}
-		}
+		protected bool PActive { get; set; }
 
+		/// <summary>
+		/// 发送包头处理器
+		/// </summary>
 		private IPacketSendHeaderHandler    m_packetSendHeaderHandler;
+
+		/// <summary>
+		/// 发送包体处理器
+		/// </summary>
 		private IPacketSendBodyHandler      m_packetSendBodyHandler;
+
+		/// <summary>
+		/// 接收包头处理器
+		/// </summary>
 		private IPacketReceiveHeaderHandler m_packetReceiveHeaderHandler;
+
+		/// <summary>
+		/// 接收包体处理器
+		/// </summary>
 		private IPacketReceiveBodyHandler   m_packetReceiveBodyHandler;
+
+		/// <summary>
+		/// 心跳处理器
+		/// </summary>
 		private IPacketHeartBeatHandler     m_packetHeartBeatHandler;
 
 		/// <summary>
@@ -136,6 +174,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private readonly object m_closeLock = new();
 
+		/// <summary>
+		/// 待执行消息链表（接收线程投递、主线程派发）
+		/// </summary>
 		protected readonly FuLinkedList<MessageObject> m_executionMessageLinkedList = new();
 
 		/// <summary>
@@ -167,10 +208,29 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private sealed class LifecycleEvent
 		{
+			/// <summary>
+			/// 生命周期事件类型
+			/// </summary>
 			public EChannelLifecycleEventType m_Type;
+
+			/// <summary>
+			/// 用户自定义数据
+			/// </summary>
 			public object                     m_UserData;
+
+			/// <summary>
+			/// 网络错误码
+			/// </summary>
 			public ENetworkErrorCode          m_ErrorCode;
+
+			/// <summary>
+			/// 套接字错误码
+			/// </summary>
 			public SocketError                m_SocketError;
+
+			/// <summary>
+			/// 错误消息
+			/// </summary>
 			public string                     m_ErrorMessage;
 		}
 
@@ -237,9 +297,24 @@ namespace Hotfix.Framework.Network
 			}
 		}
 
+		/// <summary>
+		/// 连接成功回调（参数：频道、用户自定义数据）
+		/// </summary>
 		public Action<NetworkChannelBase, object>                                 m_NetworkChannelConnected;
+
+		/// <summary>
+		/// 连接关闭回调（参数：频道）
+		/// </summary>
 		public Action<NetworkChannelBase>                                         m_NetworkChannelClosed;
+
+		/// <summary>
+		/// 心跳丢失回调（参数：频道、连续丢失次数）
+		/// </summary>
 		public Action<NetworkChannelBase, int>                                    m_NetworkChannelMissHeartBeat;
+
+		/// <summary>
+		/// 网络错误回调（参数：频道、错误码、套接字错误码、错误消息）
+		/// </summary>
 		public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> m_NetworkChannelError;
 
 		/// <summary>
@@ -250,13 +325,13 @@ namespace Hotfix.Framework.Network
 		/// <param name="rpcTimeout">RPC超时时间</param>
 		public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
 		{
-			Name                                          = name ?? string.Empty;
+			Name                                           = name ?? string.Empty;
 			m_SendPacketPool                               = new FuLinkedList<MessageObject>();
 			m_NetworkChannelHelper                         = networkChannelHelper;
 			m_EAddressFamily                               = EAddressFamily.Unknown;
 			m_ResetHeartBeatElapseSecondsWhenReceivePacket = false;
 			m_HeartBeatInterval                            = DEFAULT_HEART_BEAT_INTERVAL;
-			m_MissHeartBeatCountByClose                     = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			m_MissHeartBeatCountByClose                    = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			m_Socket                                       = null;
 			m_SendState                                    = new SendState();
 			m_ReceiveState                                 = new ReceiveState();
@@ -264,13 +339,13 @@ namespace Hotfix.Framework.Network
 			m_RpcState                                     = new RpcState(rpcTimeout);
 			m_SentPacketCount                              = 0;
 			m_ReceivedPacketCount                          = 0;
-			PActive                                       = false;
+			PActive                                        = false;
 			m_IsConnecting                                 = false;
-			m_disposed                                    = false;
-			m_NetworkChannelConnected                     = null;
-			m_NetworkChannelClosed                        = null;
-			m_NetworkChannelMissHeartBeat                 = null;
-			m_NetworkChannelError                         = null;
+			m_disposed                                     = false;
+			m_NetworkChannelConnected                      = null;
+			m_NetworkChannelClosed                         = null;
+			m_NetworkChannelMissHeartBeat                  = null;
+			m_NetworkChannelError                          = null;
 
 			networkChannelHelper.Initialize(this);
 		}
@@ -523,8 +598,8 @@ namespace Hotfix.Framework.Network
 				m_HeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
 				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)
 				{
-					sendHeartBeat                          = true;
-					missHeartBeatCount                     = m_HeartBeatState.MissHeartBeatCount;
+					sendHeartBeat                           = true;
+					missHeartBeatCount                      = m_HeartBeatState.MissHeartBeatCount;
 					m_HeartBeatState.HeartBeatElapseSeconds = 0f;
 					m_HeartBeatState.MissHeartBeatCount++;
 				}
@@ -1011,6 +1086,9 @@ namespace Hotfix.Framework.Network
 			}
 		}
 
+		/// <summary>
+		/// 处理接收数据的占位实现（当前接收在子类回调中直接处理，保留扩展点）
+		/// </summary>
 		protected void ProcessReceive() { }
 
 		/// <summary>
@@ -1046,6 +1124,10 @@ namespace Hotfix.Framework.Network
 			return (int)bodyLength;
 		}
 
+		/// <summary>
+		/// 发送调试日志（仅 ENABLE_NETWORK_REQ_LOG 宏开启时输出）
+		/// </summary>
+		/// <param name="messageObject">已发送的消息对象</param>
 		protected void DebugSendLog(MessageObject messageObject)
 		{
 #if ENABLE_NETWORK_REQ_LOG
@@ -1056,6 +1138,10 @@ namespace Hotfix.Framework.Network
 #endif
 		}
 
+		/// <summary>
+		/// 接收调试日志（仅 ENABLE_NETWORK_RSP_LOG 宏开启时输出）
+		/// </summary>
+		/// <param name="messageObject">已接收的消息对象</param>
 		protected void DebugReceiveLog(MessageObject messageObject)
 		{
 #if ENABLE_NETWORK_RSP_LOG

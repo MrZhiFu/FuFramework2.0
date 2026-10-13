@@ -14,7 +14,14 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	internal sealed class SystemTcpNetworkChannel : NetworkChannelBase
 	{
-		private ConnectState m_connectState;
+		/// <summary>
+		/// 连接状态
+		/// </summary>
+		private ConnectState    m_connectState;
+
+		/// <summary>
+		/// 系统 Socket 封装
+		/// </summary>
 		private SystemNetSocket m_systemNetSocket;
 
 		/// <summary>
@@ -46,7 +53,7 @@ namespace Hotfix.Framework.Network
 			if (m_IsVerifyAddress)
 			{
 				m_systemNetSocket = new SystemNetSocket(m_ConnectEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				m_Socket = m_systemNetSocket;
+				m_Socket          = m_systemNetSocket;
 			}
 
 			if (m_Socket == null)
@@ -54,9 +61,9 @@ namespace Hotfix.Framework.Network
 				const string errorMessage = "Initialize network channel failure.";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SocketError,
-					socketError: SocketError.Success,
-					errorMessage: errorMessage);
+				                      errorCode: ENetworkErrorCode.SocketError,
+				                      socketError: SocketError.Success,
+				                      errorMessage: errorMessage);
 				return;
 			}
 
@@ -65,22 +72,28 @@ namespace Hotfix.Framework.Network
 			ConnectAsync(userData);
 		}
 
+		/// <summary>
+		/// 处理发送：序列化完成后发起异步发送
+		/// </summary>
+		/// <returns>是否成功发起发送</returns>
 		protected override bool ProcessSend()
 		{
 			if (!base.ProcessSend()) return false;
 			SendAsync();
 			return true;
-
 		}
 
-		#region Receive
+		#region 收包
 
+		/// <summary>
+		/// 发起异步接收（写入接收缓冲区）
+		/// </summary>
 		private void ReceiveAsync()
 		{
 			try
 			{
 				var position = (int)m_ReceiveState.Stream.Position;
-				var length = (int)(m_ReceiveState.Stream.Length - m_ReceiveState.Stream.Position);
+				var length   = (int)(m_ReceiveState.Stream.Length - m_ReceiveState.Stream.Position);
 				m_systemNetSocket.BeginReceive(m_ReceiveState.Stream.GetBuffer(), position, length, SocketFlags.None, ReceiveCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
@@ -89,12 +102,16 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ReceiveError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ReceiveError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 异步接收完成回调：投递数据到接收缓冲并继续发起下一次接收
+		/// </summary>
+		/// <param name="asyncResult">异步操作结果</param>
 		private void ReceiveCallback(IAsyncResult asyncResult)
 		{
 			var systemNetSocket = (SystemNetSocket)asyncResult.AsyncState;
@@ -111,9 +128,9 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ReceiveError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ReceiveError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 				return;
 			}
 
@@ -139,9 +156,9 @@ namespace Hotfix.Framework.Network
 				// 连接会静默卡死。这里统一转为 NetworkChannelError 事件（封送主线程触发）。
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.DeserializePacketError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.DeserializePacketError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 			}
 			finally
 			{
@@ -196,7 +213,7 @@ namespace Hotfix.Framework.Network
 		private bool ProcessPackHeader()
 		{
 			var headerLength = PacketReceiveHeaderHandler.PacketHeaderLength;
-			var buffer = new byte[headerLength];
+			var buffer       = new byte[headerLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
 			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
 			if (!processSuccess)
@@ -218,7 +235,7 @@ namespace Hotfix.Framework.Network
 		private bool ProcessPackBody()
 		{
 			var bodyLength = ValidateAndGetPacketBodyLength(m_ReceiveState.PacketHeader);
-			var buffer = new byte[bodyLength];
+			var buffer     = new byte[bodyLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, bodyLength);
 
 			if (m_ReceiveState.PacketHeader.ZipFlag != 0)
@@ -249,17 +266,22 @@ namespace Hotfix.Framework.Network
 
 		#endregion
 
-		#region Sender
+		#region 发包
 
+		/// <summary>
+		/// 处理待发送消息：频道未激活时报错，序列化失败则抛出异常
+		/// </summary>
+		/// <param name="messageObject">待发送的消息对象</param>
+		/// <returns>是否序列化成功</returns>
 		protected override bool ProcessSendMessage(MessageObject messageObject)
 		{
 			if (PActive == false)
 			{
 				PActive = false;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SocketError,
-					socketError: SocketError.Disconnecting,
-					errorMessage: "Network channel is closing.");
+				                      errorCode: ENetworkErrorCode.SocketError,
+				                      socketError: SocketError.Disconnecting,
+				                      errorMessage: "Network channel is closing.");
 				return false;
 			}
 
@@ -278,7 +300,7 @@ namespace Hotfix.Framework.Network
 			try
 			{
 				m_systemNetSocket.BeginSend(m_SendState.Stream.GetBuffer(), (int)m_SendState.Stream.Position,
-					(int)(m_SendState.Stream.Length - m_SendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
+				                            (int)(m_SendState.Stream.Length - m_SendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
@@ -286,12 +308,16 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SendError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.SendError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 异步发送完成回调：未发完则续发，发完则重置发送状态
+		/// </summary>
+		/// <param name="asyncResult">异步操作结果</param>
 		private void SendCallback(IAsyncResult asyncResult)
 		{
 			var systemNetSocket = (SystemNetSocket)asyncResult.AsyncState;
@@ -308,9 +334,9 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) return;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.SendError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.SendError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 				return;
 			}
 
@@ -327,8 +353,12 @@ namespace Hotfix.Framework.Network
 
 		#endregion
 
-		#region Connect
+		#region 连接
 
+		/// <summary>
+		/// 发起异步连接
+		/// </summary>
+		/// <param name="userData">用户自定义数据</param>
 		private void ConnectAsync(object userData)
 		{
 			try
@@ -342,16 +372,20 @@ namespace Hotfix.Framework.Network
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ConnectError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ConnectError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 			}
 		}
 
+		/// <summary>
+		/// 异步连接完成回调：连接成功后初始化频道并启动接收
+		/// </summary>
+		/// <param name="asyncResult">异步操作结果</param>
 		private void ConnectCallback(IAsyncResult asyncResult)
 		{
 			m_IsConnecting = false;
-			var connectState = (ConnectState)asyncResult.AsyncState;
+			var connectState    = (ConnectState)asyncResult.AsyncState;
 			var systemNetSocket = (SystemNetSocket)connectState.Socket;
 			try
 			{
@@ -365,14 +399,14 @@ namespace Hotfix.Framework.Network
 			{
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-					errorCode: ENetworkErrorCode.ConnectError,
-					socketError: socketException?.SocketErrorCode ?? SocketError.Success,
-					errorMessage: exception.ToString());
+				                      errorCode: ENetworkErrorCode.ConnectError,
+				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
+				                      errorMessage: exception.ToString());
 				Close();
 				return;
 			}
 
-			m_SentPacketCount = 0;
+			m_SentPacketCount     = 0;
 			m_ReceivedPacketCount = 0;
 
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();

@@ -84,6 +84,11 @@ namespace Hotfix.Framework.Network
 			return defaultMessageActorObject;
 		}
 
+		/// <summary>
+		/// 创建 RPC 消息数据对象
+		/// </summary>
+		/// <param name="requestMessage">请求消息</param>
+		/// <param name="timeout">超时时间。单位毫秒</param>
 		private RpcMessageData(IRequestMessage requestMessage, int timeout)
 		{
 			CreatedTime    = Utility.Time.ClientNow();
@@ -93,6 +98,9 @@ namespace Hotfix.Framework.Network
 			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
 		}
 
+		/// <summary>
+		/// 底层任务完成源
+		/// </summary>
 		private readonly UniTaskCompletionSource<IResponseMessage> m_tcs;
 
 		/// <summary>
@@ -100,6 +108,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public UniTask<IResponseMessage> Task => m_tcs.Task;
 
+		/// <summary>
+		/// 释放资源
+		/// </summary>
 		public void Dispose()
 		{
 			GC.SuppressFinalize(this);

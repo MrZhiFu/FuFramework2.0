@@ -35,6 +35,9 @@ namespace Hotfix.Framework.Network
 			}
 		}
 
+		/// <summary>
+		/// 事件组件实例
+		/// </summary>
 		private static EventModule s_event;
 
 		/// <summary>
@@ -51,9 +54,12 @@ namespace Hotfix.Framework.Network
 		///
 		/// 仅限启动期调用，之后不再变更。
 		/// </summary>
-		private static readonly List<Action<INetworkChannel>> s_CustomHandlerRegistrars = new();
+		private static readonly List<Action<INetworkChannel>> sr_customHandlerRegistrars = new();
 
-		private static readonly object s_CustomHandlerRegistrarsLock = new();
+		/// <summary>
+		/// 自定义处理器注册表锁对象
+		/// </summary>
+		private static readonly object sr_customHandlerRegistrarsLock = new();
 
 		/// <summary>
 		/// 显式注册一个自定义包处理器装配委托。
@@ -63,9 +69,9 @@ namespace Hotfix.Framework.Network
 		public static void AddCustomHandlerRegistrar(Action<INetworkChannel> registrar)
 		{
 			registrar.NotNull(nameof(registrar));
-			lock (s_CustomHandlerRegistrarsLock)
+			lock (sr_customHandlerRegistrarsLock)
 			{
-				s_CustomHandlerRegistrars.Add(registrar);
+				sr_customHandlerRegistrars.Add(registrar);
 			}
 		}
 
@@ -78,11 +84,11 @@ namespace Hotfix.Framework.Network
 		///     接收包体 → DefaultPacketReceiveBodyHandler
 		///     发送包头 → DefaultPacketSendHeaderHandler
 		///     发送包体 → DefaultPacketSendBodyHandler
-		///     心跳     → BasePacketHeartBeatHandler（兜底，可被框架外实现覆盖）
+		///     心跳     → DefaultPacketHeartBeatHandler（兜底，可被框架外实现覆盖）
 		///     压缩     → DefaultMessageCompressHandler
 		///     解压     → DefaultMessageDecompressHandler
 		///
-		/// 心跳处理器：此处装配的是框架基类 BasePacketHeartBeatHandler，仅作为**兜底默认**。
+		/// 心跳处理器：此处装配的是框架基类 DefaultPacketHeartBeatHandler，仅作为**兜底默认**。
 		///     原实现靠反射扫描，会同时命中基类与该基类的游戏侧派生类
 		///     Hotfix.Game.Network.PacketHeartBeatHandler；由于 RegisterHeartBeatHandler 是
 		///     「后注册覆盖」，而编译产物中基类排在派生类之后，框架扫描的结果是**基类生效**
@@ -101,7 +107,7 @@ namespace Hotfix.Framework.Network
 			channel.RegisterHandler(new DefaultPacketReceiveBodyHandler());
 			channel.RegisterHandler(new DefaultPacketSendHeaderHandler());
 			channel.RegisterHandler(new DefaultPacketSendBodyHandler());
-			channel.RegisterHeartBeatHandler(new BasePacketHeartBeatHandler());
+			channel.RegisterHeartBeatHandler(new DefaultPacketHeartBeatHandler());
 			channel.RegisterMessageCompressHandler(new DefaultMessageCompressHandler());
 			channel.RegisterMessageDecompressHandler(new DefaultMessageDecompressHandler());
 		}
@@ -125,11 +131,11 @@ namespace Hotfix.Framework.Network
 			RegisterDefaultHandlers();
 			RegisterCustomHandlers();
 
-			lock (s_CustomHandlerRegistrarsLock)
+			lock (sr_customHandlerRegistrarsLock)
 			{
-				for (var i = 0; i < s_CustomHandlerRegistrars.Count; i++)
+				foreach (var handler in sr_customHandlerRegistrars)
 				{
-					s_CustomHandlerRegistrars[i]?.Invoke(m_networkChannel);
+					handler?.Invoke(m_networkChannel);
 				}
 			}
 
@@ -139,6 +145,9 @@ namespace Hotfix.Framework.Network
 			Event.Subscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 		}
 
+		/// <summary>
+		/// 关闭网络频道帮助器，退订网络事件
+		/// </summary>
 		public void Shutdown()
 		{
 			Event.Unsubscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
@@ -148,12 +157,19 @@ namespace Hotfix.Framework.Network
 			m_networkChannel = null;
 		}
 
+		/// <summary>
+		/// 连接前的准备：设置 Socket 收发缓冲区大小
+		/// </summary>
 		public void PrepareForConnecting()
 		{
 			m_networkChannel.Socket.ReceiveBufferSize = 1024 * 64 - 1;
 			m_networkChannel.Socket.SendBufferSize    = 1024 * 64 - 1;
 		}
 
+		/// <summary>
+		/// 发送心跳包。由频道的定时心跳检查触发
+		/// </summary>
+		/// <returns>是否已发起发送</returns>
 		public bool SendHeartBeat()
 		{
 			var message = m_networkChannel.PacketHeartBeatHandler.Handler();
@@ -161,6 +177,13 @@ namespace Hotfix.Framework.Network
 			return true;
 		}
 
+		/// <summary>
+		/// 序列化发送包头
+		/// </summary>
+		/// <param name="messageObject">待发送的消息对象</param>
+		/// <param name="destination">包头写入目标流</param>
+		/// <param name="messageBodyBuffer">输出：待发送的消息体缓冲区</param>
+		/// <returns>是否序列化成功</returns>
 		public bool SerializePacketHeader<T>(T messageObject, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
@@ -172,6 +195,12 @@ namespace Hotfix.Framework.Network
 			                                                        out messageBodyBuffer);
 		}
 
+		/// <summary>
+		/// 序列化发送包体
+		/// </summary>
+		/// <param name="messageBodyBuffer">消息体缓冲区</param>
+		/// <param name="destination">包体写入目标流</param>
+		/// <returns>是否序列化成功</returns>
 		public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
@@ -183,6 +212,11 @@ namespace Hotfix.Framework.Network
 			return m_networkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
 		}
 
+		/// <summary>
+		/// 反序列化接收包头
+		/// </summary>
+		/// <param name="source">包头原始字节</param>
+		/// <returns>是否解析成功</returns>
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
@@ -190,6 +224,13 @@ namespace Hotfix.Framework.Network
 			return m_networkChannel.PacketReceiveHeaderHandler.Handler(source);
 		}
 
+		/// <summary>
+		/// 反序列化接收包体
+		/// </summary>
+		/// <param name="source">包体原始字节</param>
+		/// <param name="messageId">消息 ID</param>
+		/// <param name="messageObject">输出：反序列化得到的消息对象</param>
+		/// <returns>是否解析成功</returns>
 		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
 		{
 			source.NotNull(nameof(source));
@@ -197,6 +238,9 @@ namespace Hotfix.Framework.Network
 			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
 		}
 
+		/// <summary>
+		/// 重置帮助器状态
+		/// </summary>
 		public void Clear()
 		{
 			// 仅重置字段：本类型始终由 new 直接构造、从不经引用池获取，Clear 不会被引用池调用。
@@ -205,24 +249,44 @@ namespace Hotfix.Framework.Network
 			m_networkChannel = null;
 		}
 
+		/// <summary>
+		/// 网络连接成功事件回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">事件参数</param>
 		private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogInfo($"网络连接成功......{ne.NetworkChannel.Name}");
 		}
 
+		/// <summary>
+		/// 网络连接关闭事件回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">事件参数</param>
 		private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogInfo($"网络连接关闭......{ne.NetworkChannel.Name}");
 		}
 
+		/// <summary>
+		/// 网络心跳丢失事件回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">事件参数</param>
 		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ne.MissCount}' times.");
 		}
 
+		/// <summary>
+		/// 网络错误事件回调
+		/// </summary>
+		/// <param name="sender">事件源</param>
+		/// <param name="e">事件参数</param>
 		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;

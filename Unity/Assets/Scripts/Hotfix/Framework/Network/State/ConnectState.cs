@@ -17,6 +17,11 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public object UserData { get; }
 
+		/// <summary>
+		/// 创建连接状态
+		/// </summary>
+		/// <param name="socket">网络 Socket</param>
+		/// <param name="userData">用户自定义数据</param>
 		public ConnectState(INetworkSocket socket, object userData)
 		{
 			Socket   = socket;
