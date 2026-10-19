@@ -181,9 +181,8 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private static bool ContainsHandler(List<MessageHandlerAttribute> list, IMessageHandler messageHandler, string invokeMethodName)
 		{
-			for (var i = 0; i < list.Count; i++)
+			foreach (var exist in list)
 			{
-				var exist = list[i];
 				if (!ReferenceEquals(exist.TargetHandler, messageHandler)) continue;
 				if (exist.InvokeMethodName != invokeMethodName) continue;
 				return true;

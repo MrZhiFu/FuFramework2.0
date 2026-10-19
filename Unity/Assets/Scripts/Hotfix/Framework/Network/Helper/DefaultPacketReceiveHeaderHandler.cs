@@ -9,6 +9,37 @@ namespace Hotfix.Framework.Network
 	public sealed class DefaultPacketReceiveHeaderHandler : IPacketReceiveHeaderHandler, IPacketHandler
 	{
 		/// <summary>
+		/// 网络包长度
+		/// </summary>
+		private const int NET_PACKET_LENGTH = sizeof(uint);
+
+		/// <summary>
+		/// 操作消息类型
+		/// </summary>
+		private const int OPERATION_TYPE_LENGTH = sizeof(byte);
+
+		/// <summary>
+		/// 消息压缩标记长度
+		/// </summary>
+		private const int NET_ZIP_FLAG_LENGTH = sizeof(byte);
+
+		/// <summary>
+		/// 消息码
+		/// </summary>
+		private const int NET_CMD_ID_LENGTH = sizeof(int);
+
+		/// <summary>
+		/// 消息编号
+		/// </summary>
+		private const int NET_UNIQUE_ID_LENGTH = sizeof(int);
+
+		/// <summary>
+		/// 包头长度 2 + 1 + 1 + 4 + 4
+		/// </summary>
+		public ushort PacketHeaderLength => NET_PACKET_LENGTH + OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
+
+
+		/// <summary>
 		/// 包长度
 		/// </summary>
 		public uint PacketLength { get; private set; }
@@ -47,45 +78,19 @@ namespace Hotfix.Framework.Network
 			var offset       = 0;
 			var packetLength = reader.ReadUInt(ref offset); //4
 			PacketLength = packetLength;
+
 			// operationType
 			OperationType = reader.ReadByte(ref offset); //1
+
 			// zipFlag
 			ZipFlag = reader.ReadByte(ref offset); //1
+
 			// uniqueId
 			UniqueId = reader.ReadInt(ref offset); //4
+
 			// MessageId
 			Id = reader.ReadInt(ref offset); //4
 			return true;
 		}
-
-		/// <summary>
-		/// 网络包长度
-		/// </summary>
-		private const int NET_PACKET_LENGTH = sizeof(uint);
-
-		/// <summary>
-		/// 操作消息类型
-		/// </summary>
-		private const int OPERATION_TYPE_LENGTH = sizeof(byte);
-
-		/// <summary>
-		/// 消息压缩标记长度
-		/// </summary>
-		private const int NET_ZIP_FLAG_LENGTH = sizeof(byte);
-
-		/// <summary>
-		/// 消息码
-		/// </summary>
-		private const int NET_CMD_ID_LENGTH = sizeof(int);
-
-		/// <summary>
-		/// 消息编号
-		/// </summary>
-		private const int NET_UNIQUE_ID_LENGTH = sizeof(int);
-
-		/// <summary>
-		/// 包头长度 2 + 1 + 1 + 4 + 4
-		/// </summary>
-		public ushort PacketHeaderLength => NET_PACKET_LENGTH + OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
 	}
 }

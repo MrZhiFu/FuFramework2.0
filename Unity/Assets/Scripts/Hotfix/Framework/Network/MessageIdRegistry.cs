@@ -103,20 +103,21 @@ namespace Hotfix.Framework.Network
 
 			if ((kind & EMessageKind.HeartBeat) != 0)
 			{
-				if (!sr_heartBeatTypes.Add(type)) throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
+				if (!sr_heartBeatTypes.Add(type)) 
+					throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
 			}
 
+			// 请求
 			if ((kind & EMessageKind.Request) != 0)
 			{
-				// 请求
 				if (sr_reqDictionary.TryAdd(messageId, type)) return;
 				sr_reqDictionary.TryGetValueByKey(messageId, out var exist);
 				throw new InvalidOperationException($"请求Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? type.FullName}");
 			}
 
+			// 响应/推送
 			if ((kind & (EMessageKind.Response | EMessageKind.Notify)) != 0)
 			{
-				// 返回
 				if (sr_respDictionary.TryAdd(messageId, type)) return;
 				sr_respDictionary.TryGetValueByKey(messageId, out var exist);
 				throw new InvalidOperationException($"返回Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? type.FullName}");

@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Network
 			m_Socket = new WebSocketNetSocket(m_lastAddress.ToString(), ReceiveCallback, CloseCallback);
 			if (m_Socket == null)
 			{
-				const string errorMessage = "Initialize network channel failure.";
+				const string errorMessage = "初始化网络频道失败。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SocketError,
@@ -144,7 +144,7 @@ namespace Hotfix.Framework.Network
 
 					if (!serializeResult)
 					{
-						const string errorMessage = "Serialized packet failure.";
+						const string errorMessage = "序列化消息失败。";
 						if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 						                      errorCode: ENetworkErrorCode.SerializeError,
@@ -174,7 +174,7 @@ namespace Hotfix.Framework.Network
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SocketError,
 				                      socketError: SocketError.Disconnecting,
-				                      errorMessage: "Network channel is closing.");
+				                      errorMessage: "网络频道正在关闭。");
 				return false;
 			}
 
@@ -191,7 +191,7 @@ namespace Hotfix.Framework.Network
 			}
 			else
 			{
-				const string errorMessage = "Serialized packet failure.";
+				const string errorMessage = "序列化消息失败。";
 				throw new InvalidOperationException(errorMessage);
 			}
 
@@ -223,7 +223,7 @@ namespace Hotfix.Framework.Network
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.ConnectError,
 				                      socketError: SocketError.TimedOut,
-				                      errorMessage: $"WebSocket connect canceled or timeout after {CONNECT_TIMEOUT_MILLISECONDS}ms.");
+				                      errorMessage: $"WebSocket 连接已取消或超时（{CONNECT_TIMEOUT_MILLISECONDS}ms）。");
 			}
 			catch (Exception exception)
 			{
@@ -327,7 +327,7 @@ namespace Hotfix.Framework.Network
 						{
 							EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 							                      errorCode: ENetworkErrorCode.DeserializePacketError,
-							                      errorMessage: "Packet body is invalid.");
+							                      errorMessage: "包体无效。");
 							return;
 						}
 					}
@@ -344,14 +344,14 @@ namespace Hotfix.Framework.Network
 				{
 					EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					                      errorCode: ENetworkErrorCode.DeserializePacketHeaderError,
-					                      errorMessage: "Packet header is invalid.");
+					                      errorMessage: "包头无效。");
 				}
 			}
 			catch (Exception e)
 			{
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.DeserializePacketError,
-				                      errorMessage: "Packet body is invalid." + e.Message + "\n" + e.StackTrace);
+				                      errorMessage: "包体无效。" + e.Message + "\n" + e.StackTrace);
 			}
 		}
 	}

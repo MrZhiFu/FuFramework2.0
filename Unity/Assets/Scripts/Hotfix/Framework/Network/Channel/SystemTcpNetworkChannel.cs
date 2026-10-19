@@ -17,7 +17,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 连接状态
 		/// </summary>
-		private ConnectState    m_connectState;
+		private ConnectState m_connectState;
 
 		/// <summary>
 		/// 系统 Socket 封装
@@ -58,7 +58,7 @@ namespace Hotfix.Framework.Network
 
 			if (m_Socket == null)
 			{
-				const string errorMessage = "Initialize network channel failure.";
+				const string errorMessage = "初始化网络频道失败。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SocketError,
@@ -147,6 +147,7 @@ namespace Hotfix.Framework.Network
 
 			try
 			{
+				// 处理本次收到的字节
 				ProcessReceivedBytes(bytesReceived);
 			}
 			catch (Exception exception)
@@ -177,23 +178,26 @@ namespace Hotfix.Framework.Network
 		private void ProcessReceivedBytes(int bytesReceived)
 		{
 			m_ReceiveState.Stream.Position += bytesReceived;
-			if (m_ReceiveState.Stream.Position < m_ReceiveState.Stream.Length)
-			{
-				return;
-			}
 
+			// 如果每凑够一个完整的数据包，就返回等待继续接收
+			if (m_ReceiveState.Stream.Position < m_ReceiveState.Stream.Length) return;
+
+			// 完整的包，从头开始处理
 			m_ReceiveState.Stream.Position = 0L;
 			bool processSuccess;
 			if (m_ReceiveState.PacketHeader != null)
 			{
+				// 解析包体
 				processSuccess = ProcessPackBody();
 			}
 			else
 			{
+				// 解析包头
 				processSuccess = ProcessPackHeader();
 				if (m_ReceiveState.IsEmptyBody)
 				{
-					// 如果是空消息,直接返回
+					// 空消息（包体长度 = 0）：包头即整条消息，没有包体可等攒，
+					// 当帧调 ProcessPackBody 解析入队并复位状态机后再返回（不能省略，否则消息丢失且状态机残留错位）。
 					ProcessPackBody();
 					return;
 				}
@@ -229,7 +233,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 解析消息内容
+		/// 解析消息体
 		/// </summary>
 		/// <returns></returns>
 		private bool ProcessPackBody()
@@ -281,13 +285,13 @@ namespace Hotfix.Framework.Network
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SocketError,
 				                      socketError: SocketError.Disconnecting,
-				                      errorMessage: "Network channel is closing.");
+				                      errorMessage: "网络频道正在关闭。");
 				return false;
 			}
 
 			var serializeResult = base.ProcessSendMessage(messageObject);
 			if (serializeResult) return true;
-			const string errorMessage = "Serialized packet failure.";
+			const string errorMessage = "序列化消息失败。";
 			throw new InvalidOperationException(errorMessage);
 		}
 
@@ -299,6 +303,7 @@ namespace Hotfix.Framework.Network
 		{
 			try
 			{
+				// 每次都是从"进度指针"往后发，所以续发永远不会把已发的字节重发一遍
 				m_systemNetSocket.BeginSend(m_SendState.Stream.GetBuffer(), (int)m_SendState.Stream.Position,
 				                            (int)(m_SendState.Stream.Length - m_SendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
 			}
@@ -323,6 +328,7 @@ namespace Hotfix.Framework.Network
 			var systemNetSocket = (SystemNetSocket)asyncResult.AsyncState;
 			if (!systemNetSocket.IsConnected) return;
 
+			// 这次发送实际发出字节数
 			int bytesSent;
 			try
 			{
@@ -340,7 +346,10 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
+			// 发送进度往前推
 			m_SendState.Stream.Position += bytesSent;
+
+			// 如果未发完则续发，否则记录已发次数，并重置发送状态
 			if (m_SendState.Stream.Position < m_SendState.Stream.Length)
 			{
 				SendAsync();

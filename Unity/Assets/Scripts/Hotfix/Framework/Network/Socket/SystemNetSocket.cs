@@ -65,7 +65,7 @@ namespace Hotfix.Framework.Network
 			set
 			{
 				if (value <= 0)
-					throw new ArgumentException("Receive buffer size is invalid.", nameof(value));
+					throw new ArgumentException("接收缓冲区大小无效。", nameof(value));
 				m_socket.ReceiveBufferSize = value;
 			}
 		}
@@ -79,7 +79,7 @@ namespace Hotfix.Framework.Network
 			set
 			{
 				if (value <= 0)
-					throw new ArgumentException("Send buffer size is invalid.", nameof(value));
+					throw new ArgumentException("发送缓冲区大小无效。", nameof(value));
 				m_socket.SendBufferSize = value;
 			}
 		}

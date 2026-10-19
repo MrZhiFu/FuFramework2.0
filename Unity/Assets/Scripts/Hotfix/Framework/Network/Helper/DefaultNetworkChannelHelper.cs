@@ -220,7 +220,6 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
-
 			return m_networkChannel.PacketReceiveHeaderHandler.Handler(source);
 		}
 
@@ -234,7 +233,6 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
 		{
 			source.NotNull(nameof(source));
-
 			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
 		}
 

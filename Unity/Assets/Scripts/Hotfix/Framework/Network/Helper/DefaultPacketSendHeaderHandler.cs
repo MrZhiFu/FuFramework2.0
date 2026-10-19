@@ -11,40 +11,46 @@ namespace Hotfix.Framework.Network
 	public class DefaultPacketSendHeaderHandler : IPacketSendHeaderHandler, IPacketHandler
 	{
 		/// <summary>
-		/// 网络包长度
+		/// 网络包长度(4字节)
 		/// </summary>
 		private const int NET_PACKET_LENGTH = sizeof(uint);
 
 		/// <summary>
-		/// 消息码
-		/// </summary>
-		private const int NET_CMD_ID_LENGTH = sizeof(int);
-
-		/// <summary>
-		/// 消息操作类型长度
+		/// 消息操作类型长度(1字节)
 		/// </summary>
 		private const int NET_OPERATION_TYPE_LENGTH = sizeof(byte);
 
 		/// <summary>
-		/// 消息压缩标记长度
+		/// 消息压缩标记长度(1字节)
 		/// </summary>
 		private const int NET_ZIP_FLAG_LENGTH = sizeof(byte);
 
 		/// <summary>
-		/// 消息编号
+		/// 消息编号长度(4字节)
 		/// </summary>
 		private const int NET_UNIQUE_ID_LENGTH = sizeof(int);
 
+		/// <summary>
+		/// 消息码出长度(4字节)
+		/// </summary>
+		private const int NET_CMD_ID_LENGTH = sizeof(int);
+
 
 		/// <summary>
-		/// 创建发送包头处理器，并计算包头总长度
+		/// 包头缓存字节（避免每次发包重新分配）
 		/// </summary>
-		public DefaultPacketSendHeaderHandler()
-		{
-			// 4 + 1 + 1 + 4 + 4
-			PacketHeaderLength = NET_PACKET_LENGTH + NET_OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
-			m_cachedByte       = new byte[PacketHeaderLength];
-		}
+		private readonly byte[] m_cachedByte;
+
+		/// <summary>
+		/// 超过消息的长度超过该值的时候启用压缩.该值 必须在设置压缩器的时候才生效,默认512字节
+		/// </summary>
+		public virtual uint LimitCompressLength => 512;
+
+		/// <summary>
+		/// 当前缓存字节的写入偏移
+		/// </summary>
+		private int m_offset;
+
 
 		/// <summary>
 		/// 消息包头长度
@@ -66,20 +72,16 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public bool IsZip { get; private set; }
 
-		/// <summary>
-		/// 超过消息的长度超过该值的时候启用压缩.该值 必须在设置压缩器的时候才生效,默认512
-		/// </summary>
-		public virtual uint LimitCompressLength => 512;
 
 		/// <summary>
-		/// 当前缓存字节的写入偏移
+		/// 创建发送包头处理器，并计算包头总长度
 		/// </summary>
-		private          int    m_offset;
-
-		/// <summary>
-		/// 包头缓存字节（避免每次发包重新分配）
-		/// </summary>
-		private readonly byte[] m_cachedByte;
+		public DefaultPacketSendHeaderHandler()
+		{
+			// 4 + 1 + 1 + 4 + 4
+			PacketHeaderLength = NET_PACKET_LENGTH + NET_OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
+			m_cachedByte       = new byte[PacketHeaderLength];
+		}
 
 		/// <summary>
 		/// 处理消息

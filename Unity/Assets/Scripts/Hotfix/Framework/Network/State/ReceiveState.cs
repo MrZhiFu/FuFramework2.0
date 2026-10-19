@@ -12,17 +12,17 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 默认缓冲区长度
 		/// </summary>
-		public const int  DEFAULT_BUFFER_LENGTH = 1024 * 64;
+		public const int DEFAULT_BUFFER_LENGTH = 1024 * 64;
 
 		/// <summary>
 		/// 默认包头长度
 		/// </summary>
-		public const int  PACKET_HEADER_LENGTH  = 14;
+		public const int PACKET_HEADER_LENGTH = 14;
 
 		/// <summary>
 		/// 是否已释放
 		/// </summary>
-		private      bool m_disposed            = false;
+		private bool m_disposed = false;
 
 		/// <summary>
 		/// 接收数据流
@@ -81,7 +81,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="packetHeader">接收包头处理器</param>
 		public void Reset(int targetLength, IPacketReceiveHeaderHandler packetHeader)
 		{
-			if (targetLength < 0) throw new InvalidOperationException("Target length is invalid.");
+			if (targetLength < 0) throw new InvalidOperationException("目标长度无效。");
 
 			Stream.Position = 0L;
 			Stream.SetLength(targetLength);

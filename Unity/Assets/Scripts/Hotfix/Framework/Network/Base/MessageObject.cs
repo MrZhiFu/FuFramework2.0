@@ -24,12 +24,12 @@ namespace Hotfix.Framework.Network
 		protected MessageObject() => UpdateUniqueId();
 
 		/// <summary>
-		/// 更新唯一编码
+		/// 更新唯一编号
 		/// </summary>
 		public void UpdateUniqueId() => UniqueId = Utility.IdGenerator.GetNextUniqueIntId();
 
 		/// <summary>
-		/// 设置唯一编码
+		/// 设置唯一编号
 		/// </summary>
 		public void SetUpdateUniqueId(int uniqueId) => UniqueId = uniqueId;
 

@@ -56,7 +56,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Cancel()
 		{
-			m_tcs.TrySetException(new OperationCanceledException("Rpc call canceled! Message is :" + RequestMessage));
+			m_tcs.TrySetException(new OperationCanceledException("RPC 调用已取消。消息为：" + RequestMessage));
 		}
 
 		/// <summary>
@@ -68,7 +68,7 @@ namespace Hotfix.Framework.Network
 		{
 			ElapseTime += time;
 			if (ElapseTime < Timeout) return false;
-			m_tcs.TrySetException(new TimeoutException("Rpc call timeout! Message is :" + RequestMessage));
+			m_tcs.TrySetException(new TimeoutException("RPC 调用超时。消息为：" + RequestMessage));
 			return true;
 		}
 

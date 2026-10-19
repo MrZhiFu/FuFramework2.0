@@ -12,12 +12,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 默认缓冲区长度
 		/// </summary>
-		private const int  DEFAULT_BUFFER_LENGTH = 1024 * 64;
+		private const int DEFAULT_BUFFER_LENGTH = 1024 * 64;
 
 		/// <summary>
 		/// 是否已释放
 		/// </summary>
-		private       bool m_disposed;
+		private bool m_disposed;
 
 		/// <summary>
 		/// 发送数据流

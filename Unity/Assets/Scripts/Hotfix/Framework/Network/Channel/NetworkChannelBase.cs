@@ -32,12 +32,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 网络频道帮助器（负责装配处理器与序列化收发包）
 		/// </summary>
-		protected readonly INetworkChannelHelper       m_NetworkChannelHelper;
+		protected readonly INetworkChannelHelper m_NetworkChannelHelper;
 
 		/// <summary>
 		/// 网络地址类型
 		/// </summary>
-		protected          EAddressFamily              m_EAddressFamily;
+		protected EAddressFamily m_EAddressFamily;
 
 		/// <summary>
 		/// 当收到数据包时是否重置心跳流逝时长
@@ -72,12 +72,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送状态
 		/// </summary>
-		protected readonly SendState      m_SendState;
+		protected readonly SendState m_SendState;
 
 		/// <summary>
 		/// 接收状态
 		/// </summary>
-		protected readonly ReceiveState   m_ReceiveState;
+		protected readonly ReceiveState m_ReceiveState;
 
 		/// <summary>
 		/// 心跳状态
@@ -87,7 +87,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// RPC 状态
 		/// </summary>
-		protected readonly RpcState       m_RpcState;
+		protected readonly RpcState m_RpcState;
 
 		/// <summary>
 		/// 是否验证地址
@@ -132,12 +132,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送包头处理器
 		/// </summary>
-		private IPacketSendHeaderHandler    m_packetSendHeaderHandler;
+		private IPacketSendHeaderHandler m_packetSendHeaderHandler;
 
 		/// <summary>
 		/// 发送包体处理器
 		/// </summary>
-		private IPacketSendBodyHandler      m_packetSendBodyHandler;
+		private IPacketSendBodyHandler m_packetSendBodyHandler;
 
 		/// <summary>
 		/// 接收包头处理器
@@ -147,12 +147,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 接收包体处理器
 		/// </summary>
-		private IPacketReceiveBodyHandler   m_packetReceiveBodyHandler;
+		private IPacketReceiveBodyHandler m_packetReceiveBodyHandler;
 
 		/// <summary>
 		/// 心跳处理器
 		/// </summary>
-		private IPacketHeartBeatHandler     m_packetHeartBeatHandler;
+		private IPacketHeartBeatHandler m_packetHeartBeatHandler;
 
 		/// <summary>
 		/// 心跳状态的专用锁对象。
@@ -216,22 +216,22 @@ namespace Hotfix.Framework.Network
 			/// <summary>
 			/// 用户自定义数据
 			/// </summary>
-			public object                     m_UserData;
+			public object m_UserData;
 
 			/// <summary>
 			/// 网络错误码
 			/// </summary>
-			public ENetworkErrorCode          m_ErrorCode;
+			public ENetworkErrorCode m_ErrorCode;
 
 			/// <summary>
 			/// 套接字错误码
 			/// </summary>
-			public SocketError                m_SocketError;
+			public SocketError m_SocketError;
 
 			/// <summary>
 			/// 错误消息
 			/// </summary>
-			public string                     m_ErrorMessage;
+			public string m_ErrorMessage;
 		}
 
 		/// <summary>
@@ -300,17 +300,17 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 连接成功回调（参数：频道、用户自定义数据）
 		/// </summary>
-		public Action<NetworkChannelBase, object>                                 m_NetworkChannelConnected;
+		public Action<NetworkChannelBase, object> m_NetworkChannelConnected;
 
 		/// <summary>
 		/// 连接关闭回调（参数：频道）
 		/// </summary>
-		public Action<NetworkChannelBase>                                         m_NetworkChannelClosed;
+		public Action<NetworkChannelBase> m_NetworkChannelClosed;
 
 		/// <summary>
 		/// 心跳丢失回调（参数：频道、连续丢失次数）
 		/// </summary>
-		public Action<NetworkChannelBase, int>                                    m_NetworkChannelMissHeartBeat;
+		public Action<NetworkChannelBase, int> m_NetworkChannelMissHeartBeat;
 
 		/// <summary>
 		/// 网络错误回调（参数：频道、错误码、套接字错误码、错误消息）
@@ -506,6 +506,7 @@ namespace Hotfix.Framework.Network
 			while (true)
 			{
 				MessageObject messageObject;
+
 				// 接收回调运行在线程池线程（AddLast），此处与其互斥出队；
 				// 同时在锁内校验 First 是否为空，避免链表被清空后 RemoveFirst 抛异常冲出 ModuleManager.Update。
 				lock (m_ExecutionMessageLock)
@@ -557,9 +558,8 @@ namespace Hotfix.Framework.Network
 
 			try
 			{
-				for (var i = 0; i < handlers.Count; i++)
+				foreach (var handler in handlers)
 				{
-					var handler = handlers[i];
 					handler.SetMessageObject(messageObject);
 					try
 					{
@@ -824,7 +824,7 @@ namespace Hotfix.Framework.Network
 				else
 				{
 					// 获取IP失败
-					FuLogger.LogError($"IP address is invalid.{host}");
+					FuLogger.LogError($"IP 地址无效。{host}");
 					m_IsVerifyAddress = false;
 					Close();
 					m_Socket = null;
@@ -832,7 +832,7 @@ namespace Hotfix.Framework.Network
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"IP address is invalid.{host} {e.Message}");
+				FuLogger.LogError($"IP 地址无效。{host} {e.Message}");
 				m_IsVerifyAddress = false;
 				Close();
 				m_Socket = null;
@@ -860,7 +860,7 @@ namespace Hotfix.Framework.Network
 						break;
 
 					default:
-						var errorMessage = $"Not supported address family '{m_ConnectEndPoint.AddressFamily}'.";
+						var errorMessage = $"不支持的地址族 '{m_ConnectEndPoint.AddressFamily}'。";
 						if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 						                      errorCode: ENetworkErrorCode.AddressFamilyError,
@@ -938,7 +938,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 向远程主机发送消息包。
+		/// 向远程主机发送消息包(将消息对象加入发送队列，后续由 ProcessSend 处理发送逻辑)。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
 		/// <param name="messageObject">要发送的消息包。</param>
@@ -947,7 +947,7 @@ namespace Hotfix.Framework.Network
 			messageObject.NotNull(nameof(messageObject));
 			if (m_Socket == null)
 			{
-				const string errorMessage = "You must connect first.";
+				const string errorMessage = "Socket为null，无法发送消息包。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SendError,
@@ -958,7 +958,7 @@ namespace Hotfix.Framework.Network
 
 			if (!PActive)
 			{
-				const string errorMessage = "Socket is not active.";
+				const string errorMessage = "Socket 未激活，无法发送消息包。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SendError,
@@ -969,7 +969,7 @@ namespace Hotfix.Framework.Network
 
 			if (messageObject == null)
 			{
-				const string errorMessage = "Packet is invalid.";
+				const string errorMessage = "消息包无效。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SendError,
@@ -1012,7 +1012,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 处理发送消息对象
+		/// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
 		/// </summary>
 		/// <param name="messageObject">消息对象</param>
 		/// <returns></returns>
@@ -1026,7 +1026,7 @@ namespace Hotfix.Framework.Network
 			}
 			else
 			{
-				const string errorMessage = "Serialized packet failure.";
+				const string errorMessage = "序列化消息失败。";
 				throw new InvalidOperationException(errorMessage);
 			}
 
@@ -1036,20 +1036,25 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理消息发送
 		/// </summary>
-		/// <returns></returns>
+		/// <returns> 是否成功处理消息发送 </returns>
 		/// <exception cref="InvalidOperationException"></exception>
 		protected virtual bool ProcessSend()
 		{
 			lock (m_SendPacketPool)
 			{
+				// 闸门：同一时刻只允许一批消息在途。
+				// ① Stream.Length > 0：上一批还没发完（发完才 Reset 清零），不能再灌新消息，避免两批混在一个流里；
+				// ② 发送队列已空：没有可发的消息。两种情况都无需装货，直接返回（子类据此不会发起新一轮发送）。
 				if (m_SendState.Stream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
 
+				// 处理待发送的消息对象，直到遇到错误或发送完毕为止。
 				while (m_SendPacketPool.First != null)
 				{
 					var  messageObject = m_SendPacketPool.First.Value;
 					bool serializeResult;
 					try
 					{
+						// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
 						serializeResult = ProcessSendMessage(messageObject);
 						DebugSendLog(messageObject);
 					}
@@ -1069,16 +1074,17 @@ namespace Hotfix.Framework.Network
 						m_SendPacketPool.RemoveFirst();
 					}
 
+					// 消息序列化处理成功，继续处理下一个消息对象
 					if (serializeResult) continue;
-					const string errorMessage = "Serialized packet failure.";
+					
+					// 处理发送消息对象失败，返回false，停止整帧发送
+					const string errorMessage = "序列化消息失败.";
 					if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 					EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					                      errorCode: ENetworkErrorCode.SerializeError,
 					                      socketError: SocketError.Success,
 					                      errorMessage: errorMessage);
 					return false;
-
-					// m_SendState.Reset();
 				}
 
 				m_SendState.Stream.Position = 0L;
@@ -1112,13 +1118,13 @@ namespace Hotfix.Framework.Network
 			var headerLength = header.PacketHeaderLength;
 			if (packetLength < headerLength)
 			{
-				throw new InvalidOperationException($"Packet length is invalid. packetLength:{packetLength}, headerLength:{headerLength}");
+				throw new InvalidOperationException($"包长度非法。packetLength:{packetLength}, headerLength:{headerLength}");
 			}
 
 			var bodyLength = (long)packetLength - headerLength;
 			if (bodyLength > MaxPacketBodyLength)
 			{
-				throw new InvalidOperationException($"Packet body length exceeds limit. bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
+				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
 			}
 
 			return (int)bodyLength;
