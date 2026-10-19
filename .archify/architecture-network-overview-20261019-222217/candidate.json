@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Network 模块整体架构",
+    "subtitle": "分层 · 装配 · 注册数据流",
+    "output": ".archify/architecture-network-overview-20261019-222217/network-overview.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MrZhiFu/FuFramework2.0.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "493c1acd9f05cd6e7dd6d32a3d5fa76d3ae1eb41"
+    }
+  },
+  "components": [
+    {
+      "id": "business",
+      "type": "frontend",
+      "label": "游戏业务层",
+      "sublabel": "WinPlayerList",
+      "pos": [
+        30,
+        80
+      ],
+      "size": [
+        120,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Game/UI/Login/WinPlayerList.cs",
+          "line": 148,
+          "end_line": 167
+        }
+      ]
+    },
+    {
+      "id": "module",
+      "type": "backend",
+      "label": "NetworkModule",
+      "sublabel": "门面：管理频道",
+      "pos": [
+        225,
+        80
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/NetworkModule.cs",
+          "line": 17,
+          "end_line": 74
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "type": "backend",
+      "label": "NetworkChannelBase",
+      "sublabel": "收发·心跳·派发",
+      "pos": [
+        500,
+        80
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 483,
+          "end_line": 499
+        }
+      ]
+    },
+    {
+      "id": "tcp",
+      "type": "backend",
+      "label": "SystemTcpNetworkChannel",
+      "sublabel": "TCP",
+      "pos": [
+        730,
+        40
+      ],
+      "size": [
+        150,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/SystemTcpNetworkChannel.cs",
+          "line": 15,
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "id": "ws",
+      "type": "backend",
+      "label": "WebSocketNetworkChannel",
+      "sublabel": "WebSocket",
+      "pos": [
+        920,
+        40
+      ],
+      "size": [
+        150,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/WebSocketNetworkChannel.cs",
+          "line": 15,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "helper",
+      "type": "backend",
+      "label": "DefaultNetworkChannelHelper",
+      "sublabel": "Initialize 装配",
+      "pos": [
+        270,
+        220
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Helper/DefaultNetworkChannelHelper.cs",
+          "line": 125,
+          "end_line": 141
+        }
+      ]
+    },
+    {
+      "id": "handlers",
+      "type": "backend",
+      "label": "7 个默认包处理器",
+      "sublabel": "收发头体·心跳·压缩",
+      "pos": [
+        660,
+        300
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Helper/DefaultNetworkChannelHelper.cs",
+          "line": 96,
+          "end_line": 107
+        }
+      ]
+    },
+    {
+      "id": "socket",
+      "type": "backend",
+      "label": "INetworkSocket 实现",
+      "sublabel": "SystemNetSocket / WS",
+      "pos": [
+        825,
+        200
+      ],
+      "size": [
+        190,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Socket/SystemNetSocket.cs",
+          "line": 11,
+          "end_line": 13
+        }
+      ]
+    },
+    {
+      "id": "registry",
+      "type": "backend",
+      "label": "注册基础设施",
+      "sublabel": "MessageIdRegistry·ProtoMessage*",
+      "pos": [
+        500,
+        440
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/MessageIdRegistry.cs",
+          "line": 53,
+          "end_line": 100
+        }
+      ]
+    },
+    {
+      "id": "generated",
+      "type": "database",
+      "label": "ProtoMessageRegistry.g.cs",
+      "sublabel": "生成物静态注册表",
+      "pos": [
+        500,
+        560
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Generated/ProtoMessageRegistry.g.cs",
+          "line": 40,
+          "end_line": 45
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Hotfix.Framework.Network（框架）",
+      "wraps": [
+        "module",
+        "channel",
+        "tcp",
+        "ws",
+        "helper",
+        "handlers",
+        "socket",
+        "registry",
+        "generated"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "biz-create",
+      "from": "business",
+      "to": "module",
+      "label": "创建频道",
+      "variant": "emphasis"
+    },
+    {
+      "id": "module-update",
+      "from": "module",
+      "to": "channel",
+      "label": "每帧 Update"
+    },
+    {
+      "id": "helper-assemble",
+      "from": "helper",
+      "to": "channel",
+      "label": "Initialize 装配"
+    },
+    {
+      "id": "channel-handlers",
+      "from": "channel",
+      "to": "handlers",
+      "label": "序列化/解析调用"
+    },
+    {
+      "id": "channel-tcp",
+      "from": "channel",
+      "to": "tcp",
+      "label": "继承",
+      "variant": "dashed"
+    },
+    {
+      "id": "channel-ws",
+      "from": "channel",
+      "to": "ws",
+      "label": "继承",
+      "variant": "dashed"
+    },
+    {
+      "id": "sync-tcp",
+      "from": "tcp",
+      "to": "socket",
+      "label": "使用 Socket"
+    },
+    {
+      "id": "sync-ws",
+      "from": "ws",
+      "to": "socket",
+      "label": "使用 Socket"
+    },
+    {
+      "id": "channel-registry",
+      "from": "channel",
+      "to": "registry",
+      "label": "查注册表"
+    },
+    {
+      "id": "generated-registry",
+      "from": "generated",
+      "to": "registry",
+      "label": "生成期写入",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "装配时机",
+      "items": [
+        "CreateNetworkChannel 经 helper.Initialize 装配 7 个默认处理器（helper → handlers）",
+        "生成物经 AddCustomHandlerRegistrar 追加游戏侧覆盖（后注册覆盖）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "零反射注册",
+      "items": [
+        "消息 ID↔类型与 [MessageHandler] 委托由生成物在生成期固化",
+        "运行期只做查表、绑定、直接调用（铁律 4）"
+      ]
+    }
+  ]
+}

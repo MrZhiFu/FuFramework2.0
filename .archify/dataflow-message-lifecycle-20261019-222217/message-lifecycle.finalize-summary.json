@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "dataflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\candidate.json",
+    "sha256": "06e3fde202307937a4a10b679bc4e11f5118e33c9c8bd25b918663ce49156207",
+    "bytes": 5105
+  },
+  "artifact": {
+    "path": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\message-lifecycle.html",
+    "sha256": "c68cfc7d63305616aa0909b95f41991d2ec8db5b4454d785a269dfe128bfd622",
+    "bytes": 754678
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\message-lifecycle.finalize.json",
+    "summaryReceipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\message-lifecycle.finalize-summary.json",
+    "browserCheckReceipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\message-lifecycle.browser-check.json"
+  },
+  "update": {
+    "status": "update_available",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.2.0",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.2.0",
+    "severity": "normal",
+    "checkedAt": "2026-10-19T14:24:03.481Z",
+    "source": "cache",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.0.1 → 3.2.0. A previous check at 2026-10-19T14:24:03.481Z found a newer release. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.2.0. The installed Skill has not changed; ask to snooze or ignore this reminder.",
+    "eventKey": "archify@sha256:70e210265c59f24dcbdf2a502ff671104b5454e7ee7d3554aecd86bad32384f5"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1839
+}

@@ -1,0 +1,198 @@
+{
+  "schema_version": 2,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "心跳保活状态机",
+    "subtitle": "每帧计时 → 到点发送 → 回包复位 → 连续丢失断开",
+    "output": ".archify/lifecycle-heartbeat-20261019-222217/heartbeat.html",
+    "viewBox": [
+      1085,
+      620
+    ],
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MrZhiFu/FuFramework2.0.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "493c1acd9f05cd6e7dd6d32a3d5fa76d3ae1eb41"
+    }
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "心跳主循环"
+    },
+    {
+      "id": "terminal",
+      "label": "终态"
+    }
+  ],
+  "states": [
+    {
+      "id": "connected",
+      "type": "start",
+      "label": "已连接",
+      "sublabel": "PActive=true",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "入口"
+    },
+    {
+      "id": "ticking",
+      "type": "active",
+      "label": "心跳计时",
+      "sublabel": "HeartBeatElapseSeconds += dt",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "每帧",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 517,
+          "end_line": 554
+        }
+      ]
+    },
+    {
+      "id": "decide",
+      "type": "decision",
+      "label": "到 5 秒？",
+      "sublabel": ">= HeartBeatInterval",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 517,
+          "end_line": 554
+        }
+      ]
+    },
+    {
+      "id": "sent",
+      "type": "waiting",
+      "label": "发送并等待回包",
+      "sublabel": "MissCount++ · 等回包",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 517,
+          "end_line": 554
+        }
+      ]
+    },
+    {
+      "id": "expired",
+      "type": "failure",
+      "label": "连续丢失超阈值",
+      "sublabel": "Count > 阈值",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "判定死亡",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 517,
+          "end_line": 554
+        }
+      ]
+    },
+    {
+      "id": "closed",
+      "type": "failure",
+      "label": "Close 断开",
+      "sublabel": "PActive=false · 广播关闭事件",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "终态",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 517,
+          "end_line": 554
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t-go",
+      "from": "connected",
+      "to": "ticking",
+      "label": "连接就绪"
+    },
+    {
+      "id": "t-tick",
+      "from": "ticking",
+      "to": "decide",
+      "label": "每帧累计"
+    },
+    {
+      "id": "t-back",
+      "from": "decide",
+      "to": "ticking",
+      "label": "未到间隔"
+    },
+    {
+      "id": "t-send",
+      "from": "decide",
+      "to": "sent",
+      "label": "到间隔：发心跳",
+      "variant": "emphasis"
+    },
+    {
+      "id": "t-reset",
+      "from": "sent",
+      "to": "ticking",
+      "label": "收到任意包 → Reset",
+      "variant": "emphasis"
+    },
+    {
+      "id": "t-miss",
+      "from": "sent",
+      "to": "expired",
+      "label": "连续丢失 > 阈值",
+      "variant": "security"
+    },
+    {
+      "id": "t-expire",
+      "from": "expired",
+      "to": "closed",
+      "label": "触发 Close",
+      "variant": "security"
+    },
+    {
+      "id": "t-close",
+      "from": "connected",
+      "to": "closed",
+      "label": "断开/错误",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "保活语义",
+      "items": [
+        "每 5 秒发一次心跳；收到任何包都重置计时",
+        "判定死亡的唯一标准：连续丢失次数超过阈值",
+        "心跳与回包都中断 = 判定对方不在线"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "异常唤醒",
+      "items": [
+        "Close 时挂起的 RPC 全部 Cancel，避免 await 悬挂",
+        "关闭事件广播给全游戏（如登录窗口可据此弹重连）"
+      ]
+    }
+  ]
+}

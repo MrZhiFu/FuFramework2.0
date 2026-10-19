@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "频道类体系",
+    "subtitle": "接口 · 基类 · TCP/WS 实现并排 · 处理器装配",
+    "output": ".archify/architecture-channel-classes-20261019-222217/channel-classes.html",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MrZhiFu/FuFramework2.0.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "493c1acd9f05cd6e7dd6d32a3d5fa76d3ae1eb41"
+    }
+  },
+  "components": [
+    {
+      "id": "itf_ch",
+      "type": "backend",
+      "label": "INetworkChannel",
+      "sublabel": "接口：频道契约",
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        140,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Interface/INetworkChannel.cs",
+          "line": 11,
+          "end_line": 208
+        }
+      ]
+    },
+    {
+      "id": "base",
+      "type": "backend",
+      "label": "NetworkChannelBase",
+      "sublabel": "收发状态机·心跳·派发",
+      "pos": [
+        230,
+        60
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 483,
+          "end_line": 499
+        }
+      ]
+    },
+    {
+      "id": "tcp",
+      "type": "backend",
+      "label": "SystemTcpNetworkChannel",
+      "sublabel": "TCP 实现",
+      "pos": [
+        110,
+        190
+      ],
+      "size": [
+        170,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/SystemTcpNetworkChannel.cs",
+          "line": 15,
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "id": "ws",
+      "type": "backend",
+      "label": "WebSocketNetworkChannel",
+      "sublabel": "WebSocket 实现",
+      "pos": [
+        355,
+        190
+      ],
+      "size": [
+        180,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/WebSocketNetworkChannel.cs",
+          "line": 15,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "itf_sock",
+      "type": "backend",
+      "label": "INetworkSocket",
+      "sublabel": "接口：电话线",
+      "pos": [
+        710,
+        60
+      ],
+      "size": [
+        160,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Interface/INetworkSocket.cs",
+          "line": 6,
+          "end_line": 11
+        }
+      ]
+    },
+    {
+      "id": "s_tcp",
+      "type": "backend",
+      "label": "SystemNetSocket",
+      "sublabel": "系统 Socket 封装",
+      "pos": [
+        623,
+        190
+      ],
+      "size": [
+        160,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Socket/SystemNetSocket.cs",
+          "line": 11,
+          "end_line": 13
+        }
+      ]
+    },
+    {
+      "id": "s_ws",
+      "type": "backend",
+      "label": "WebSocketNetSocket",
+      "sublabel": "UnityWebSocket 封装",
+      "pos": [
+        797,
+        190
+      ],
+      "size": [
+        160,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Socket/WebSocketNetSocket.cs",
+          "line": 15,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "helper",
+      "type": "backend",
+      "label": "DefaultNetworkChannelHelper",
+      "sublabel": "装配 7 个处理器",
+      "pos": [
+        230,
+        330
+      ],
+      "size": [
+        210,
+        64
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Helper/DefaultNetworkChannelHelper.cs",
+          "line": 125,
+          "end_line": 141
+        }
+      ]
+    },
+    {
+      "id": "itf_hb",
+      "type": "backend",
+      "label": "IPacketHeartBeatHandler",
+      "sublabel": "接口：心跳",
+      "pos": [
+        520,
+        330
+      ],
+      "size": [
+        170,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Interface/IPacketHeartBeatHandler.cs",
+          "line": 8,
+          "end_line": 25
+        }
+      ]
+    },
+    {
+      "id": "g_hb",
+      "type": "backend",
+      "label": "游戏 PacketHeartBeatHandler",
+      "sublabel": "返回 ReqHeartBeat",
+      "pos": [
+        730,
+        330
+      ],
+      "size": [
+        200,
+        56
+      ],
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs",
+          "line": 7,
+          "end_line": 17
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "频道树（Interface + Channel/）",
+      "wraps": [
+        "itf_ch",
+        "base",
+        "tcp",
+        "ws"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Socket 树（Interface + Socket/）",
+      "wraps": [
+        "itf_sock",
+        "s_tcp",
+        "s_ws"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "心跳树（游戏侧派生）",
+      "wraps": [
+        "itf_hb",
+        "g_hb"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c-base-itf",
+      "from": "base",
+      "to": "itf_ch",
+      "label": "实现",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-tcp-base",
+      "from": "tcp",
+      "to": "base",
+      "label": "继承",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-ws-base",
+      "from": "ws",
+      "to": "base",
+      "label": "继承",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-st-itf",
+      "from": "s_tcp",
+      "to": "itf_sock",
+      "label": "实现",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-sw-itf",
+      "from": "s_ws",
+      "to": "itf_sock",
+      "label": "实现",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-gh-itf",
+      "from": "g_hb",
+      "to": "itf_hb",
+      "label": "实现",
+      "variant": "dashed"
+    },
+    {
+      "id": "c-helper-base",
+      "from": "helper",
+      "to": "base",
+      "label": "Initialize 装配"
+    },
+    {
+      "id": "c-base-sock",
+      "from": "base",
+      "to": "itf_sock",
+      "label": "持有 Socket",
+      "variant": "security"
+    },
+    {
+      "id": "c-base-hb",
+      "from": "base",
+      "to": "itf_hb",
+      "label": "持有",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "抽象分层",
+      "items": [
+        "业务只认 INetworkChannel 接口，TCP/WebSocket 可替换",
+        "Socket 与 Channel 之间用 INetworkSocket 隔离传输差异",
+        "心跳处理器是唯一游戏侧派生的扩展点（后注册覆盖）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "装配方式",
+      "items": [
+        "DefaultNetworkChannelHelper.Initialize 装配 7 个默认处理器",
+        "生成物追加注册游戏侧覆盖，频道内部零反射"
+      ]
+    }
+  ]
+}

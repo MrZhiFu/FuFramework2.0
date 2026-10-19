@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "841cf7ac-a1dc-46b0-b3ef-43ffa732b285",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\architecture-network-overview-20261019-222217\\candidate.json",
+  "output": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\architecture-network-overview-20261019-222217\\network-overview.html",
+  "specification": {
+    "sha256": "4479c0a2b1d5c353d7ad07c5213edfb592a0989be426953c28ebe39e57490fbf",
+    "bytes": 7352
+  },
+  "artifact": {
+    "sha256": "535e5625d62e55cb61e905cf1c65cb43d4688045e54b3abf518d7a2b209a97ff",
+    "bytes": 767282
+  }
+}

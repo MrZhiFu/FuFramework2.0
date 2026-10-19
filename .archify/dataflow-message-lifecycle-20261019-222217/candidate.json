@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "一条消息的一生",
+    "subtitle": "发送 → 传输 → 接收 → 派发",
+    "output": ".archify/dataflow-message-lifecycle-20261019-222217/message-lifecycle.html",
+    "viewBox": [
+      1085,
+      430
+    ],
+    "locale": "zh-CN",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MrZhiFu/FuFramework2.0.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "493c1acd9f05cd6e7dd6d32a3d5fa76d3ae1eb41"
+    }
+  },
+  "stages": [
+    {
+      "label": "发送·封包"
+    },
+    {
+      "label": "缓冲·写出"
+    },
+    {
+      "label": "网络传输"
+    },
+    {
+      "label": "接收·解析"
+    },
+    {
+      "label": "派发消费"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "business",
+      "type": "frontend",
+      "label": "业务代码",
+      "sublabel": "Send<ReqLogin>",
+      "stage": 0,
+      "row": 0,
+      "width": 130,
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Game/UI/Login/WinPlayerList.cs",
+          "line": 148,
+          "end_line": 167
+        }
+      ]
+    },
+    {
+      "id": "write",
+      "type": "backend",
+      "label": "序列化→BeginSend",
+      "sublabel": "信封+包体写 SendState.Stream",
+      "stage": 1,
+      "row": 0,
+      "width": 170,
+      "tag": "主线程",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Helper/DefaultPacketSendHeaderHandler.cs",
+          "line": 93,
+          "end_line": 119
+        }
+      ]
+    },
+    {
+      "id": "tcp",
+      "type": "external",
+      "label": "TCP 传输",
+      "sublabel": "可靠字节流",
+      "stage": 2,
+      "row": 0,
+      "width": 130,
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Socket/SystemNetSocket.cs",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "id": "recv",
+      "type": "backend",
+      "label": "接收解析",
+      "sublabel": "攒包→切包→反序列化",
+      "stage": 3,
+      "row": 1,
+      "width": 170,
+      "tag": "线程池线程",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/SystemTcpNetworkChannel.cs",
+          "line": 115,
+          "end_line": 268
+        }
+      ]
+    },
+    {
+      "id": "consume",
+      "type": "backend",
+      "label": "派发消费",
+      "sublabel": "RPC 配对 / [MessageHandler]",
+      "stage": 4,
+      "row": 1,
+      "width": 160,
+      "tag": "主线程",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 504,
+          "end_line": 533
+        }
+      ]
+    },
+    {
+      "id": "server",
+      "type": "external",
+      "label": "服务器",
+      "sublabel": "处理业务·回发响应",
+      "stage": 2,
+      "row": 1,
+      "width": 160,
+      "sources": [
+        {
+          "path": "Server/Framework/FuFramework.NetWork.Message/FuFramework.NetWork.Message/ClientMessageEncoderHandler.cs",
+          "line": 26,
+          "end_line": 48
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "from": "business",
+      "to": "write",
+      "label": "发送请求",
+      "variant": "emphasis"
+    },
+    {
+      "from": "write",
+      "to": "tcp",
+      "label": "异步写出"
+    },
+    {
+      "from": "recv",
+      "to": "consume",
+      "label": "入队派发"
+    },
+    {
+      "from": "tcp",
+      "to": "server",
+      "label": "请求到达",
+      "variant": "emphasis",
+      "labelDy": 36
+    },
+    {
+      "from": "server",
+      "to": "recv",
+      "label": "响应回发",
+      "variant": "emphasis",
+      "labelDy": 36
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "线程分界",
+      "items": [
+        "发送封包在主线程完成，BeginSend 后由 OS 异步负责传输",
+        "接收解析（攒包→切包→反序列化）全在线程池线程",
+        "派发回到主线程，消息处理器可触碰 Unity API"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "粘包半包对策",
+      "items": [
+        "包头 14 字节携带总长 PacketLength",
+        "蓄水池：长度够了就切，不够就攒",
+        "信封 Self-describing：无需两端同步状态"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "RPC 配对",
+      "items": [
+        "UniqueId 走包头侧信道，绕过 proto 序列化",
+        "响应到达先 TryReply 配对，配不上再走 Handler 派发"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "服务器侧",
+      "items": [
+        "解码同一 14 字节信封（大端对表，两端一致）",
+        "处理业务后回发响应，信封回显同一 UniqueId"
+      ]
+    }
+  ]
+}

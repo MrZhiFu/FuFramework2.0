@@ -1,0 +1,148 @@
+# 06 · RPC 与业务接入（请求-响应）
+
+> 配套图：[RPC 时序图](../.archify/sequence-rpc-call-20261019-222217/rpc-call.html)
+> 本篇回答：`await channel.Call<RespLogin>(req)` 这三个词**各自在做什么**，响应用什么"钥匙"配回来，超时/断线为什么"必然唤醒"而不是永久悬挂，以及业务侧怎么写才符合铁律 5。
+
+---
+
+## 一、What：RPC 是什么，`Call` 三个词各干嘛
+
+**RPC = Remote Procedure Call（远程过程调用）**——把"让服务器干活"伪装成"本地函数调用"：
+
+```
+你想做的（像调本地函数）：   RespLogin resp = 请服务器登录(账号, 密码);
+RPC 实际发生的：
+  ① 把"请登录"变成一条消息 req 发过去           ← "打电话"
+  ② await：我什么都不干，只等回信               ← "等对方回话"
+  ③ 收到回复 resp → 当"返回值"拿回来            ← "对方回话，挂断"
+```
+心电、`Send` 都不是 RPC（它们不等回复）；"**发了还要 await 等回话**"才是 RPC。项目实现（`NetworkChannelBase.cs:932`）就三行：
+
+```csharp
+public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
+{
+    messageObject.NotNull(nameof(messageObject));
+    Send(messageObject);                            // ① 发包（第 2/3 篇全链路）
+    var result = await m_RpcState.Call(messageObject);  // ② 挂起表登记 + 等配对
+    return result as TResult;                       // ③ 强转：IResponseMessage → RespLogin
+}
+```
+
+---
+
+## 二、Why：为什么用 `UniqueId` 配对；为什么必须"主动终结"
+
+### 2.1 为什么不用消息 ID 配对
+
+消息 ID（如 `19660810`）是"发货渠道"，同类型共用；而 `UniqueId` 是"每份独一无二的快递单号"（`MessageObject` 构造时 `IdGenerator` 生成）。如果靠消息 ID：
+
+- 挂起表里同时只能有一条同类型请求，第二条覆盖第一条；
+- 两个 `await` 会拿到**同一个**响应（错配）。
+
+只有 `UniqueId` 能让"同时挂 N 条同类型请求、各配各的"成立（字典 key 各不同）。
+
+### 2.2 为什么 `UniqueId` 走"侧信道"
+
+`MessageObject.UniqueId` 是 `[JsonIgnore]`、**不参与 proto 序列化**。与其给每条消息定义 `unique_id` 字段、序列化浪费字节，不如塞进本来就要发的 14 字节信封第 4 字段——**零额外成本**，收端 `ReadInt` 一个字段读回。这条"绕过 proto、只活在自己定义里的号码"就称**侧信道**（正式内容走"主信道"=信纸）。三个词的人话翻译：
+
+> "UniqueId 不写进正式消息里，而是贴在快递箱外面的单据上（14 字节信封）；靠着它，await 才能把千里之外的响应认领回它等的那个请求。"
+
+### 2.3 为什么断线/超时必须"主动终结"而不是 `Clear()` 了事
+
+`await` 最恶的坑是**永久悬挂**——不占线程，但调用方永远醒不来。`Clear()` 只清了登记表，**却不管每个挂起的 Task**（它们始终未完成）。所以 `RpcState.Dispose` 必须对每个挂起 `Cancel()`（`TrySetException(OperationCanceledException)`）——**表可以清，任务必须有人叫醒**。
+
+---
+
+## 三、How：完整时序 + 三种结局 + 双通道分流 + 业务写法
+
+### 3.1 完整时序（见 RPC 时序图）
+
+```
+业务   await channel.Call<RespLogin>(req)
+           ↓ NetworkChannelBase.Call: Send(req) → RpcState.Call → 挂起表登记（key=req.UniqueId）
+        —— 到这里调用方就"悬起"了，什么都不占，等 Task 恢复 ——
+           ↓ 服务器处理，响应 RespLogin 回来 → 收包全链路 → 信封读回 UniqueId
+主线程 ProcessReceivedMessage:
+   └─ m_RpcState.TryReply(resp)
+        ├─ 类型缓存查是不是 IResponseMessage
+        ├─ TryRemove(resp.UniqueId) 在挂起表找配对
+        ├─ 配上 → data.Reply(resp) → UniTaskCompletionSource.TrySetResult → await 恢复
+        │        → m_rpcEndHandler；若 ErrorCode≠0 → m_rpcErrorCodeHandler
+        └─ 没配上 → DispatchMessage（当普通推送走 [MessageHandler]）
+        ↓
+   await 恢复：return resp as RespLogin → 调用方拿到响应 ✅
+```
+
+### 3.2 三种结局
+
+`RpcMessageData`（挂起记录）内部持一个 `UniTaskCompletionSource`，`await` 悬的就是它的 `Task`。三种结局都落在"对这个 Task 做一次 SetXxx"上：
+
+| 结局 | 触发方 | 机制 | await 表现 |
+|------|--------|------|-----------|
+| 正常响应 | 收包主线程 | `TryReply` → `m_tcs.TrySetResult(resp)` | 恢复返回 RespLogin |
+| 超时 | `RpcState.Update` 每帧 | 逐项 `IncrementalElapseTime` → 超时 `TrySetException(TimeoutException)` | 抛超时异常 |
+| 断线 | 频道 Close | `RpcState.Dispose` → 每个挂起 `Cancel()` → `TrySetException(OperationCanceledException)` | 抛取消异常 |
+
+代码注释原话把动机写得很直白（`RpcState.cs`）：*断线/销毁时必须让所有挂起的请求以异常结束，否则 await 会永久悬挂（原实现只做了字典 Clear）。*
+
+### 3.3 双通道分流（TryReply 优先）
+
+```csharp
+if (m_RpcState.TryReply(messageObject)) continue;   // 配上了 → 不再派发
+DispatchMessage(messageObject);                     // 没配上 → 当 [MessageHandler] 普通推送
+```
+落到 `DispatchMessage` 的三种情况：① 根本不是 `IResponseMessage`；② 是响应但挂起表里没有配对（服务器主动推送）；③ 迟到的 RPC 响应（请求已超时/断线，响应晚到无人认领）。
+
+### 3.4 业务侧怎么写（铁律 5 的实际应用）
+
+```csharp
+try
+{
+    var resp = await m_channel.Call<RespLogin>(new ReqLogin { Account = "a", Pwd = "b" });
+    if (resp.ErrorCode == 0) { /* 进游戏 */ }
+    else { /* 弹错误码 */ }
+}
+catch (OperationCanceledException) { /* 断线：提示重连 */ }
+catch (TimeoutException)           { /* 超时：提示网络差 */ }
+```
+
+- 每个异步链必须有**生命周期所有者**：这个 `Call` 的调用方（登录窗口）负责 try/catch 接手异常，而不是放任 await 悬着。
+- fire-and-forget 起步请 `.Forget()`；**不要**在 RPC 里做"等等等 + 不取消"的长等待——断线那下 `Cancel` 就是给你兜底的。
+- 响应也同时是普通消息？可以：同一个消息既能被 RPC 认领（TryReply 命中），配不上也能被 `[MessageHandler]` 订阅处理。
+
+---
+
+## 四、自测（随学随考）
+
+### 题目
+
+1. 为什么配对用 `UniqueId` 而不用消息 ID？
+2. 客户端收到的响应 `RespLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
+3. 为什么断线必须 `Cancel` 而不是只 `Clear()` 字典？
+4. 同一条响应，`TryReply` 和 `DispatchMessage` 谁先执行？什么时候会落到后者？
+5. "RPC 是远程过程调用" —— 用三句话给一个没听过的人解释。
+6. 业务侧为什么必须捕获 `OperationCanceledException` 与 `TimeoutException`？
+
+### 答案
+
+1. 消息 ID 是发货渠道，同类型共用 → 靠它配对会错配（两条同类型请求拿同一个响应）；`UniqueId` 是每实例唯一单号 → 挂起表 key 各不同，能同时挂 N 条同类型请求、各配各的。
+2. 从响应信封的侧信道读回：收包时 `MessageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId)`（`SystemTcpNetworkChannel.ProcessPackBody`）。服务器在响应信封里回显了请求的同一个 UniqueId，客户端读回来赋给响应的 MessageObject，`TryReply` 就能拿它去挂起表配对。proto 里没有这个字段（`[JsonIgnore]`），它只活在自定义包头里。
+3. `Clear()` 只清登记表，不清每个挂起的 Task——`await` 仍悬在未完成状态，调用方永久醒不来（还要泄漏一坨继续堆栈）。`Cancel()` 对每个挂起 `TrySetException(OperationCanceledException)` → await 抛出取消异常，调用方 catch 后走重连提示。
+4. **先 `TryReply`，配上了 `continue`；配不上才 `DispatchMessage`**。落到后者的三种情况：不是 IResponseMessage；是响应但挂起表无配对（主动推送）；迟到的 RPC 响应（请求已超时/断线）。
+5. RPC = 远程过程调用。① 你把"请服务器干一件事"变成一条消息发过去；② 然后空手 await，等它回信；③ 收到回信把它当"返回值"用——整个过程像在调用一个本地函数。
+6. `Call` 的 Task 有三种结局（正常/超时/断线），两处异常路径会以 `TimeoutException`/`OperationCanceledException` 抛给 await；不捕获就可能逃逸到主循环无人处理，或让登录流程卡住。捕获它们才能优雅地上重连提示、清理 UI 状态（这符合铁律 5 的"异步链必须有生命周期所有者"）。
+
+---
+
+## 结语
+
+六篇至此闭环：
+
+- **01 全景**：一条消息怎么从业务走到网线再回来；频道=一条线路的完整封装。
+- **02 Socket 与 TCP**：TCP 承诺与不承诺、粘包根源、BeginReceive 零线程等待、为什么热路径用 APM、两个蓄水池与"指针追总量"。
+- **03 包头/包体与压缩**：14 字节信封逐字段、int/uint/byte 与占格、大端字节序真相、压缩策略、空消息特例。
+- **04 频道核心**：Update 状态机、发送/接收状态机、心跳保活与断线判定、锁的领地。
+- **05 装配系统**：零反射动机、生成期前移、三张表、internal 可见性、后注册覆盖。
+- **06 RPC**：Call 三合一、UniqueId 侧信道配对、超时/断线必然唤醒、业务写法。
+
+现在，你可以从一个登录按钮讲到一条消息的字节排布、再讲回 `await` 的三种结局——这就是这个网络模块的完整心智模型。

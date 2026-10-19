@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "RPC：await Call<RespLogin> 的请求与响应",
+    "subtitle": "含超时 / 断线的异常终结",
+    "output": ".archify/sequence-rpc-call-20261019-222217/rpc-call.html",
+    "viewBox": [
+      940,
+      600
+    ],
+    "column_fit": "spread",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MrZhiFu/FuFramework2.0.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "493c1acd9f05cd6e7dd6d32a3d5fa76d3ae1eb41"
+    }
+  },
+  "participants": [
+    {
+      "id": "biz",
+      "type": "frontend",
+      "label": "业务登录",
+      "sublabel": "LoginAsync",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Game/UI/Login/WinPlayerList.cs",
+          "line": 148,
+          "end_line": 167
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "type": "backend",
+      "label": "频道",
+      "sublabel": "NetworkChannelBase / Call",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/NetworkChannelBase.cs",
+          "line": 932,
+          "end_line": 938
+        }
+      ]
+    },
+    {
+      "id": "rpc",
+      "type": "backend",
+      "label": "RpcState",
+      "sublabel": "挂起表",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/State/RpcState.cs",
+          "line": 101,
+          "end_line": 120
+        }
+      ]
+    },
+    {
+      "id": "net",
+      "type": "messagebus",
+      "label": "Socket / TCP",
+      "sublabel": "14 字节信封"
+    },
+    {
+      "id": "server",
+      "type": "external",
+      "label": "服务器",
+      "sublabel": "回显 UniqueId",
+      "sources": [
+        {
+          "path": "Server/Framework/FuFramework.NetWork.Message/FuFramework.NetWork.Message/ClientMessageEncoderHandler.cs",
+          "line": 26,
+          "end_line": 48
+        }
+      ]
+    },
+    {
+      "id": "recv",
+      "type": "backend",
+      "label": "接收解析",
+      "sublabel": "ProcessPackBody",
+      "sources": [
+        {
+          "path": "Unity/Assets/Scripts/Hotfix/Framework/Network/Channel/SystemTcpNetworkChannel.cs",
+          "line": 251,
+          "end_line": 252
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 360,
+      "label": "请求 → 配对 → 恢复"
+    },
+    {
+      "from": 380,
+      "to": 490,
+      "label": "异常终结（超时 / 断线）"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-call",
+      "from": "biz",
+      "to": "channel",
+      "y": 168,
+      "label": "Call<RespLogin>(req)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m-send",
+      "from": "channel",
+      "to": "rpc",
+      "y": 196,
+      "label": "Send(req) + RpcState.Call 登记",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m-out",
+      "from": "rpc",
+      "to": "net",
+      "y": 224,
+      "label": "信封携带 UniqueId 异步发出"
+    },
+    {
+      "id": "m-tcp",
+      "from": "net",
+      "to": "server",
+      "y": 252,
+      "label": "TCP 字节流"
+    },
+    {
+      "id": "m-back",
+      "from": "server",
+      "to": "net",
+      "y": 280,
+      "label": "响应返回",
+      "variant": "return"
+    },
+    {
+      "id": "m-recv",
+      "from": "net",
+      "to": "recv",
+      "y": 308,
+      "label": "ReceiveCallback（线程池）"
+    },
+    {
+      "id": "m-pair",
+      "from": "recv",
+      "to": "rpc",
+      "y": 336,
+      "label": "TryReply：按 UniqueId 配对",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m-resume",
+      "from": "rpc",
+      "to": "biz",
+      "y": 364,
+      "label": "await 恢复 → RespLogin",
+      "variant": "return"
+    },
+    {
+      "id": "m-timeout",
+      "from": "rpc",
+      "to": "biz",
+      "y": 420,
+      "label": "超时：TimeoutException",
+      "variant": "dashed"
+    },
+    {
+      "id": "m-cancel",
+      "from": "rpc",
+      "to": "biz",
+      "y": 448,
+      "label": "断线：OperationCanceledException",
+      "variant": "dashed"
+    },
+    {
+      "id": "m-act",
+      "from": "recv",
+      "to": "biz",
+      "y": 476,
+      "label": "配不上的响应走 [MessageHandler]",
+      "variant": "dashed"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "channel",
+      "from": 168,
+      "to": 200,
+      "type": "backend"
+    },
+    {
+      "participant": "rpc",
+      "from": 196,
+      "to": 368,
+      "type": "backend"
+    },
+    {
+      "participant": "net",
+      "from": 224,
+      "to": 310,
+      "type": "messagebus"
+    },
+    {
+      "participant": "recv",
+      "from": 308,
+      "to": 342,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "配对钥匙",
+      "items": [
+        "请求方 MessageObject.UniqueId 写进 14 字节信封（侧信道）",
+        "服务器回显同一 UniqueId，收包 SetUpdateUniqueId 还原",
+        "RpcState 挂起表以 UniqueId 为 key 配对"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "异常必然唤醒",
+      "items": [
+        "超时：Update 逐帧累计 → TrySetException(Timeout)",
+        "断线：Dispose → Cancel → OperationCanceledException",
+        "否则 await 会永久悬挂（原实现只 Clear 表）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "双通道分流",
+      "items": [
+        "先 TryReply 配对成功 → 命中 RPC",
+        "配不上 → DispatchMessage 走 [MessageHandler]"
+      ]
+    }
+  ]
+}

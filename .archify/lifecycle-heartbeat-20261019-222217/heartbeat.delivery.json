@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "8e292ef8-2a2b-4d0a-a87c-ce6fdc8ac20b",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\lifecycle-heartbeat-20261019-222217\\candidate.json",
+  "output": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\lifecycle-heartbeat-20261019-222217\\heartbeat.html",
+  "specification": {
+    "sha256": "9d1a9720afb61f3ac17d99008239796dc5c3873be154fe30ce8dcfd42e56bc4a",
+    "bytes": 4794
+  },
+  "artifact": {
+    "sha256": "c129c33d760c57c38602adaa0493e7ed9432f1ef959ecda0cfb024337ed6404c",
+    "bytes": 760202
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4f7d6271-dbd9-47b3-90d6-aaa9fcf7b2fd",
+  "status": "current",
+  "command": "deliver",
+  "type": "dataflow",
+  "input": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\candidate.json",
+  "output": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\dataflow-message-lifecycle-20261019-222217\\message-lifecycle.html",
+  "specification": {
+    "sha256": "06e3fde202307937a4a10b679bc4e11f5118e33c9c8bd25b918663ce49156207",
+    "bytes": 5105
+  },
+  "artifact": {
+    "sha256": "c68cfc7d63305616aa0909b95f41991d2ec8db5b4454d785a269dfe128bfd622",
+    "bytes": 754678
+  }
+}

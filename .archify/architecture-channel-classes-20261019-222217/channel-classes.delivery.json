@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "95f388f9-e270-4240-b843-8d53030cc15e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\architecture-channel-classes-20261019-222217\\candidate.json",
+  "output": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\architecture-channel-classes-20261019-222217\\channel-classes.html",
+  "specification": {
+    "sha256": "d9057baad94906c23f8e1a3e5c5ae6533526348d6dec0203a1d86991256fd8c1",
+    "bytes": 7504
+  },
+  "artifact": {
+    "sha256": "618f1f1218b8eef6a256d2c937dfd1fa562173e4ff28f1e67dad78b2c4b9cd38",
+    "bytes": 766235
+  }
+}

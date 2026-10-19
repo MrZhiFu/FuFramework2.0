@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\candidate.json",
+    "sha256": "8e72fe0f29816fb45697204be219b8854be13d66902aee8017276831483c806b",
+    "bytes": 5823
+  },
+  "artifact": {
+    "path": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\rpc-call.html",
+    "sha256": "880da8b21bca8f3ed097f8bbc6fae08a972748c8bf4657c82aa7117001bc15ed",
+    "bytes": 759672
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\rpc-call.finalize.json",
+    "summaryReceipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\rpc-call.finalize-summary.json",
+    "browserCheckReceipt": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\rpc-call.browser-check.json"
+  },
+  "update": {
+    "status": "update_available",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.2.0",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.2.0",
+    "severity": "normal",
+    "checkedAt": "2026-10-19T14:24:03.481Z",
+    "source": "cache",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.0.1 → 3.2.0. A previous check at 2026-10-19T14:24:03.481Z found a newer release. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.2.0. The installed Skill has not changed; ask to snooze or ignore this reminder.",
+    "eventKey": "archify@sha256:70e210265c59f24dcbdf2a502ff671104b5454e7ee7d3554aecd86bad32384f5"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2203
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "06956ffa-0dc4-4203-b585-34b2cad56e41",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\candidate.json",
+  "output": "D:\\_WorkSpace\\Unity\\FuFramework2.0\\.archify\\sequence-rpc-call-20261019-222217\\rpc-call.html",
+  "specification": {
+    "sha256": "8e72fe0f29816fb45697204be219b8854be13d66902aee8017276831483c806b",
+    "bytes": 5823
+  },
+  "artifact": {
+    "sha256": "880da8b21bca8f3ed097f8bbc6fae08a972748c8bf4657c82aa7117001bc15ed",
+    "bytes": 759672
+  }
+}
