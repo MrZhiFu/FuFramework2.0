@@ -7,7 +7,7 @@ gen-proto-registry.py
 扫描协议生成物与热更源码，产出「协议消息注册表」（纯静态、零运行时反射）。
 
 产出文件：
-    Unity/Assets/Scripts/Hotfix/Framework/Network/Generated/ProtoMessageRegistry.g.cs
+    Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/ProtoMessageRegistry.g.cs
 
 扫描来源：
     1. <Unity>/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs
@@ -21,7 +21,7 @@ gen-proto-registry.py
           可见性契约：目标方法必须为 internal 或 public，否则**报错并中止生成**
           （生成物位于同程序集，需要能直接调用该方法）。
        -> 实现 IMessageHandler 的类型（用于区分「已登记但无处理方法」与「未登记」）
-    3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Helper/）
+    3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Handler/）
        -> 框架外「具体（非抽象）」的包处理器实现：实现 IPacketReceiveHeaderHandler /
           IPacketReceiveBodyHandler / IPacketSendHeaderHandler / IPacketSendBodyHandler /
           IPacketHeartBeatHandler / IMessageCompressHandler / IMessageDecompressHandler，
@@ -65,9 +65,9 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 UNITY_ROOT = os.path.join(REPO_ROOT, "Unity")
 HOTFIX_ROOT = os.path.join(UNITY_ROOT, "Assets", "Scripts", "Hotfix")
 PROTO_DIR = os.path.join(HOTFIX_ROOT, "Game", "AutoGen", "Proto")
-NETWORK_HELPER_DIR = os.path.join(HOTFIX_ROOT, "Framework", "Network", "Helper")
+NETWORK_HANDLER_DIR = os.path.join(HOTFIX_ROOT, "Framework", "Network", "Handler")
 OUTPUT_PATH = os.path.join(
-    HOTFIX_ROOT, "Framework", "Network", "Generated", "ProtoMessageRegistry.g.cs"
+    HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "ProtoMessageRegistry.g.cs"
 )
 OUTPUT_REL = os.path.relpath(OUTPUT_PATH, REPO_ROOT).replace("\\", "/")
 
@@ -585,7 +585,7 @@ def scan_external_packet_handlers(decls, by_name):
     warnings = []
 
     for decl in decls:
-        if is_under(decl["path"], NETWORK_HELPER_DIR):
+        if is_under(decl["path"], NETWORK_HANDLER_DIR):
             continue
 
         if re.search(r"\b(abstract|static)\b", decl["mods"]):
