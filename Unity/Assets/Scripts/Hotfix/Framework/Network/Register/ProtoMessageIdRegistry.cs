@@ -50,7 +50,7 @@ namespace Hotfix.Framework.Network
 	/// 而是由生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
 	/// 生成脚本：<c>Protobuf/gen-proto-registry.py</c>。
 	/// </summary>
-	public static class MessageIdRegistry
+	public static class ProtoMessageIdRegistry
 	{
 		/// <summary>
 		/// 请求消息：消息ID &lt;-&gt; 类型

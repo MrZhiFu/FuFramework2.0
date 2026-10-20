@@ -55,7 +55,7 @@ namespace Hotfix.Framework.Network
 	///     （无 GetMethods / IsDefined / GetCustomAttribute / CreateDelegate / MethodInfo.Invoke）。
 	///     新增 [MessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
 	/// </summary>
-	public static class ProtoMessageHandler
+	public static class ProtoMessageHandlerRegistry
 	{
 		/// <summary>
 		/// 消息处理器字典, Key为消息类型, Value为消息处理器列表
@@ -64,7 +64,7 @@ namespace Hotfix.Framework.Network
 
 		/// <summary>
 		/// 「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」静态表（由生成物写入）。
-		/// 说明：仅在启动期 ProtoMessageIdHandler.Init 内写入一次，之后只读；
+		/// 说明：仅在启动期 NetworkModule.OnInit 内写入一次，之后只读；
 		/// 仍使用 ConcurrentDictionary 以容忍 Add/Remove 与初始化并发的极端情况。
 		/// </summary>
 		private static readonly ConcurrentDictionary<Type, ProtoMessageHandlerMethod[]> sr_handlerMethodRegistry = new();

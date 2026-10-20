@@ -132,7 +132,7 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// </summary>
 		public void Register()
 		{
-			ProtoMessageHandler.Add(this);
+			ProtoMessageHandlerRegistry.Add(this);
 		}
 	}
 }

@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Web
 			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 			url = NormalizeURL(url, null);
-			var id = ProtoMessageIdHandler.GetReqMessageIdByType(message.GetType());
+			var id = ProtoMessageIdRegistry.GetReqMessageIdByType(message.GetType());
 			var messageHttpObject = new MessageHttpObject
 			{
 				Id       = id,

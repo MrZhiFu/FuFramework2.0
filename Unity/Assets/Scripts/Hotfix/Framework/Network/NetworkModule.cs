@@ -47,6 +47,11 @@ namespace Hotfix.Framework.Network
 			{
 				FuLogger.LogFatal("[NetworkModule] 事件模块不存在!");
 			}
+
+			// 初始化协议注册表（原 ProtoMessageIdHandler.Init 职责并入，模块生命周期保证先于一切查询）：
+			// 先 Reset 保证「注册失败后重试」不残留半成品，再由生成物写入全部静态注册数据。
+			ProtoMessageIdRegistry.Reset();
+			ProtoMessageRegistry.RegisterAll();
 		}
 
 		/// <summary>

@@ -305,7 +305,7 @@ def scan_proto_messages():
     """返回 (messages, proto_namespaces, warnings)。
 
     messages: list of dict(id, type, kind_flags, file)
-      kind_flags 已按原 ProtoMessageIdHandler 的注册优先级归一：
+      kind_flags 已按原实现的注册优先级归一：
         心跳位独立；请求/响应/推送三者按 Request > Response > Notify 取首个命中项。
     """
     messages = []
@@ -658,13 +658,13 @@ namespace Hotfix.Framework.Network
     internal static class ProtoMessageRegistry
     {{
         /// <summary>
-        /// 框架外包处理器的注册是否已执行（ProtoMessageIdHandler.Init 失败重试时避免重复追加委托）。
+        /// 框架外包处理器的注册是否已执行（NetworkModule.OnInit 失败重试时避免重复追加委托）。
         /// </summary>
         private static bool s_ExternalPacketHandlersRegistered;
 
         /// <summary>
         /// 注册全部协议消息、用户消息处理方法与框架外包处理器。
-        /// 由 ProtoMessageIdHandler.Init 调用，且仅在首次初始化时执行一次。
+        /// 由 NetworkModule.OnInit 调用，且仅在首次初始化时执行一次。
         /// </summary>
         internal static void RegisterAll()
         {{
@@ -727,7 +727,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     lines = []
     for msg in messages:
         lines.append(
-            "            MessageIdRegistry.Register<%s>(%d, %s);\n"
+            "            ProtoMessageIdRegistry.Register<%s>(%d, %s);\n"
             % (msg["type"], msg["id"], msg["kind"])
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
@@ -740,7 +740,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         full_name = ("%s.%s" % (ns, type_name)) if ns else type_name
         registered_types.append((ns, type_name))
         lines.append(
-            "            ProtoMessageHandler.RegisterHandlerType(typeof(%s), new[]\n            {\n"
+            "            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(%s), new[]\n            {\n"
             % full_name
         )
         for entry in entries:
@@ -752,14 +752,14 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         lines.append("            });\n")
 
     # 已实现 IMessageHandler 但无 [MessageHandler] 方法：登记空清单，
-    # 使 ProtoMessageHandler 能区分「已登记无处理方法」与「未登记（需重新生成）」。
+    # 使 ProtoMessageHandlerRegistry 能区分「已登记无处理方法」与「未登记（需重新生成）」。
     for (ns, type_name) in sorted(handler_types):
         if (ns, type_name) in handlers:
             continue
         full_name = ("%s.%s" % (ns, type_name)) if ns else type_name
         registered_types.append((ns, type_name))
         lines.append(
-            "            ProtoMessageHandler.RegisterHandlerType(typeof(%s), Array.Empty<ProtoMessageHandlerMethod>());\n"
+            "            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(%s), Array.Empty<ProtoMessageHandlerMethod>());\n"
             % full_name
         )
     handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 IMessageHandler 实现类型。\n"

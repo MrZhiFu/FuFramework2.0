@@ -57,7 +57,6 @@ namespace Hotfix
 			FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
 
 			// 初始化协议消息处理器：
-			InitProto();
 
 			// 初始化 FairyGUI相关：注册自定义加载器（CustomLoader）与自定义组件绑定（CustomCompBind）。
 			InitFGUI();
@@ -76,14 +75,6 @@ namespace Hotfix
 
 			// 进入游戏
 			EnterGame(launchView);
-		}
-
-		/// <summary>
-		/// 初始化协议消息处理器：
-		/// </summary>
-		private static void InitProto()
-		{
-			ProtoMessageIdHandler.Init();
 		}
 
 		/// <summary>

@@ -547,13 +547,13 @@ namespace Hotfix.Framework.Network
 			{
 				m_handlerBufferBusy = true;
 				handlers            = m_handlerBuffer;
-				ProtoMessageHandler.GetHandlers(messageObject.GetType(), handlers);
+				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
 			}
 			else
 			{
 				// 重入时不能复用缓冲区，退化为新建列表。
 				handlers = new List<MessageHandlerAttribute>(8);
-				ProtoMessageHandler.GetHandlers(messageObject.GetType(), handlers);
+				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
 			}
 
 			try

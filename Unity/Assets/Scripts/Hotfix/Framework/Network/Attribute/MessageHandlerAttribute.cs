@@ -14,7 +14,7 @@ namespace Hotfix.Framework.Network
 	///     本特性只用于在源码里「声明」某个方法要处理某个消息类型，供生成脚本
 	///     <c>Protobuf/gen-proto-registry.py</c> 扫描。运行期的注册与派发完全不再读取特性、不再查找方法：
 	///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 会为每个 [MessageHandler] 方法直接产出
-	///     强类型委托，由 <see cref="ProtoMessageHandler.Add"/> 绑定到本类的实例上。
+	///     强类型委托，由 <see cref="ProtoMessageHandlerRegistry.Add"/> 绑定到本类的实例上。
 	///     因此运行时不存在 <c>GetMethods</c> / <c>IsDefined</c> / <c>GetCustomAttribute</c> /
 	///     <c>CreateDelegate</c> / <c>MethodInfo.Invoke</c>。
 	///
@@ -98,7 +98,7 @@ namespace Hotfix.Framework.Network
 
 		/// <summary>
 		/// 绑定处理对象与生成物产出的强类型委托。
-		/// 由 <see cref="ProtoMessageHandler.Add"/> 调用；不再做任何方法查找。
+		/// 由 <see cref="ProtoMessageHandlerRegistry.Add"/> 调用；不再做任何方法查找。
 		/// </summary>
 		/// <param name="messageHandler">消息处理对象实例</param>
 		/// <param name="invokeDelegate">生成物产出的直接委托</param>

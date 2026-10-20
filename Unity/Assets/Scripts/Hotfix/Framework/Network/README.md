@@ -120,7 +120,7 @@ public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 ```
 
 生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/ProtoMessageRegistry.g.cs` 中的
-`MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
+`ProtoMessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
 
 **方式二：用户处理方法 —— 方法级别 `[MessageHandler(typeof(消息类型), nameof(方法名))]`**
 
@@ -139,7 +139,7 @@ new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChange
     static (handler, message) => ((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)),
 ```
 
-运行时 `ProtoMessageHandler.Add(this)` 只做「绑定委托」，**不查找方法、不使用任何反射**
+运行时 `ProtoMessageHandlerRegistry.Add(this)` 只做「绑定委托」，**不查找方法、不使用任何反射**
 （无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）。
 
 > **可见性契约（重要）**：由于生成物直接调用该方法，`[MessageHandler]` 标注的方法
@@ -237,9 +237,9 @@ public class NetworkExample
             rpcTimeout: 5000
         );
 
-        // 注册消息处理器（使用 ProtoMessageHandler）
-        ProtoMessageHandler.Add(new LoginMessageHandler());
-        ProtoMessageHandler.Add(new GameMessageHandler());
+        // 注册消息处理器（使用 ProtoMessageHandlerRegistry）
+        ProtoMessageHandlerRegistry.Add(new LoginMessageHandler());
+        ProtoMessageHandlerRegistry.Add(new GameMessageHandler());
     }
 
     public void Connect()
@@ -363,7 +363,8 @@ Network/
 │   ├── MessageHandlerAttribute.cs                    # 消息处理器特性（方法须 internal/public）
 │   └── MessageTypeHandlerAttribute.cs                # 消息类型处理器特性
 ├── Register/                                         # 注册设施 + 生成物
-│   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
+│   ├── ProtoMessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
+│   ├── MessageHandlerRegistry.cs                     # 消息处理方法注册表（[MessageHandler] 绑定/派发）
 │   └── AutoGen/
 │       └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 ├── State/                                            # 频道内部状态（internal）
@@ -378,12 +379,9 @@ Network/
 │   ├── NetworkClosedEventArgs.cs
 │   ├── NetworkErrorEventArgs.cs
 │   └── NetworkMissHeartBeatEventArgs.cs
-├── Misc/                                             # 杂项（枚举与错误码）
+└── Misc/                                             # 杂项（枚举与错误码）
 │   ├── EAddressFamily.cs                             # 地址类型枚举
-│   ├── EServiceType.cs                               # 服务类型枚举
 │   └── NetworkErrorCode.cs                           # 网络错误码
-├── ProtoMessageHandler.cs                            # 消息处理器注册（消费生成静态表）
-├── ProtoMessageIdHandler.cs                          # 消息 ID 映射（消费生成静态表）
 └── README.md                                         # 本文档
 ```
 
