@@ -8,7 +8,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// RPC 消息数据对象
 	/// </summary>
-	internal sealed class RpcMessageData : IDisposable
+	internal sealed class RpcMessageData
 	{
 		/// <summary>
 		/// 消息的唯一ID
@@ -21,6 +21,11 @@ namespace Hotfix.Framework.Network
 		public long CreatedTime { get; }
 
 		/// <summary>
+		/// 超时时间。单位毫秒
+		/// </summary>
+		public int Timeout { get; }
+
+		/// <summary>
 		/// 消耗的时间
 		/// </summary>
 		public long ElapseTime { get; private set; }
@@ -29,11 +34,6 @@ namespace Hotfix.Framework.Network
 		/// 请求消息
 		/// </summary>
 		public IRequestMessage RequestMessage { get; private set; }
-
-		/// <summary>
-		/// 超时时间。单位毫秒
-		/// </summary>
-		public int Timeout { get; }
 
 		/// <summary>
 		/// 响应消息
@@ -107,13 +107,5 @@ namespace Hotfix.Framework.Network
 		/// 等待的返回结果。UniTaskCompletionSource.Task 支持被多个调用方重复 await。
 		/// </summary>
 		public UniTask<IResponseMessage> Task => m_tcs.Task;
-
-		/// <summary>
-		/// 释放资源
-		/// </summary>
-		public void Dispose()
-		{
-			GC.SuppressFinalize(this);
-		}
 	}
 }

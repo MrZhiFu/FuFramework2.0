@@ -143,12 +143,12 @@ namespace Hotfix.Framework.Network
 		public bool IsClosed { get; private set; }
 
 		/// <summary>
-		/// 本地端点（WebSocket 不提供，恒为 null）
+		/// 本地端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
 		/// </summary>
 		public EndPoint LocalEndPoint => null;
 
 		/// <summary>
-		/// 远程端点（WebSocket 不提供，恒为 null）
+		/// 远程端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
 		/// </summary>
 		public EndPoint RemoteEndPoint => null;
 
@@ -163,30 +163,9 @@ namespace Hotfix.Framework.Network
 		public int SendBufferSize    { get; set; }
 
 		/// <summary>
-		/// 禁用收发并关闭底层连接
+		/// 关闭连接并释放底层客户端（退订回调 + 关闭连接）。
 		/// </summary>
-		public void Shutdown()
-		{
-			if (IsClosed) return;
-			IsClosed = true;
-
-			// 退订全部回调：否则 m_client 会一直持有本对象（含 2×64KB 接收缓冲等），
-			// 频道销毁后仍无法被回收。
-			Unsubscribe();
-			try
-			{
-				m_client.CloseAsync();
-			}
-			catch (Exception e)
-			{
-				FuLogger.LogError(e.Message);
-			}
-		}
-
-		/// <summary>
-		/// 关闭连接并释放底层客户端
-		/// </summary>
-		public void Close()
+		public void Dispose()
 		{
 			if (IsClosed) return;
 			IsClosed = true;

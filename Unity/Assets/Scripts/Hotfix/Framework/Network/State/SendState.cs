@@ -38,19 +38,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Dispose()
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// 释放资源
-		/// </summary>
-		/// <param name="disposing">是否释放托管资源</param>
-		private void Dispose(bool disposing)
-		{
 			if (m_disposed) return;
 
-			if (disposing && Stream != null)
+			if (Stream != null)
 			{
 				Stream.Dispose();
 				Stream = null;

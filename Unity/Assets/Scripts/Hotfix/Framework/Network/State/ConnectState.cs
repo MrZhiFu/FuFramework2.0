@@ -8,14 +8,14 @@ namespace Hotfix.Framework.Network
 	internal sealed class ConnectState
 	{
 		/// <summary>
-		/// Socket
-		/// </summary>
-		public INetworkSocket Socket { get; }
-
-		/// <summary>
 		/// 用户自定义数据
 		/// </summary>
 		public object UserData { get; }
+
+		/// <summary>
+		/// Socket
+		/// </summary>
+		public INetworkSocket Socket { get; }
 
 		/// <summary>
 		/// 创建连接状态

@@ -120,7 +120,7 @@ namespace Hotfix.Framework.Network
 			networkChannel.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
 			networkChannel.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
 			networkChannel.m_NetworkChannelError         -= OnNetworkChannelError;
-			networkChannel.Shutdown();
+			networkChannel.Dispose();
 			return channelName != null && m_networkChannelDict.Remove(channelName);
 		}
 

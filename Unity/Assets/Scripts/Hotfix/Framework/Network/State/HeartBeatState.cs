@@ -8,14 +8,14 @@ namespace Hotfix.Framework.Network
 	internal sealed class HeartBeatState
 	{
 		/// <summary>
-		/// 心跳间隔时长
-		/// </summary>
-		public float HeartBeatElapseSeconds { get; set; }
-
-		/// <summary>
 		/// 心跳丢失次数
 		/// </summary>
 		public int MissHeartBeatCount { get; set; }
+
+		/// <summary>
+		/// 心跳间隔时长
+		/// </summary>
+		public float HeartBeatElapseSeconds { get; set; }
 
 		/// <summary>
 		/// 重置心跳数据=>保活

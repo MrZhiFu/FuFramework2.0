@@ -15,9 +15,9 @@ namespace Hotfix.Framework.Network
 		void Initialize(INetworkChannel networkChannel);
 
 		/// <summary>
-		/// 关闭并清理网络频道辅助器。
+		/// 销毁并清理网络频道辅助器（由频道的 Dispose 驱动）。
 		/// </summary>
-		void Shutdown();
+		void Dispose();
 
 		/// <summary>
 		/// 准备进行连接。

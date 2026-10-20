@@ -76,9 +76,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Dispose()
 		{
-			foreach (var pair in m_waitingReplyHandlingObjects)
+			foreach (var (_, rpcMessageData) in m_waitingReplyHandlingObjects)
 			{
-				pair.Value.Cancel();
+				rpcMessageData.Cancel();
 			}
 
 			m_waitingReplyHandlingObjects.Clear();

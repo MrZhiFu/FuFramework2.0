@@ -25,11 +25,6 @@ namespace Hotfix.Framework.Network
 		private bool m_disposed = false;
 
 		/// <summary>
-		/// 接收数据流
-		/// </summary>
-		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
-
-		/// <summary>
 		/// 是否为空消息体
 		/// </summary>
 		public bool IsEmptyBody { get; private set; }
@@ -37,7 +32,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 接收包头处理器
 		/// </summary>
-		public IPacketReceiveHeaderHandler PacketHeader { get; set; }
+		public IPacketReceiveHeaderHandler PacketHeader { get; private set; }
+
+		/// <summary>
+		/// 接收数据流
+		/// </summary>
+		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 准备接收包头
@@ -53,19 +53,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Dispose()
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// 释放资源
-		/// </summary>
-		/// <param name="disposing">是否释放托管资源</param>
-		private void Dispose(bool disposing)
-		{
 			if (m_disposed) return;
 
-			if (disposing && Stream != null)
+			if (Stream != null)
 			{
 				Stream.Dispose();
 				Stream = null;

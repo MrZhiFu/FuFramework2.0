@@ -415,6 +415,8 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
+			m_SendState.Reset();
+
 			m_SentPacketCount     = 0;
 			m_ReceivedPacketCount = 0;
 

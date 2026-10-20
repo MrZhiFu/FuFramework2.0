@@ -28,11 +28,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static EventModule Event
 		{
-			get
-			{
-				if (s_event == null) s_event = ModuleManager.GetModule<EventModule>();
-				return s_event;
-			}
+			get { return s_event ??= ModuleManager.GetModule<EventModule>(); }
 		}
 
 		/// <summary>
@@ -84,9 +80,9 @@ namespace Hotfix.Framework.Network
 		///     接收包体 → DefaultPacketReceiveBodyHandler
 		///     发送包头 → DefaultPacketSendHeaderHandler
 		///     发送包体 → DefaultPacketSendBodyHandler
-		///     心跳     → DefaultPacketHeartBeatHandler（兜底，可被框架外实现覆盖）
-		///     压缩     → DefaultMessageCompressHandler
-		///     解压     → DefaultMessageDecompressHandler
+		///     心跳    → DefaultPacketHeartBeatHandler（兜底，可被框架外实现覆盖）
+		///     压缩    → DefaultMessageCompressHandler
+		///     解压    → DefaultMessageDecompressHandler
 		///
 		/// 心跳处理器：此处装配的是框架基类 DefaultPacketHeartBeatHandler，仅作为**兜底默认**。
 		///     原实现靠反射扫描，会同时命中基类与该基类的游戏侧派生类
@@ -148,7 +144,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 关闭网络频道帮助器，退订网络事件
 		/// </summary>
-		public void Shutdown()
+		public void Dispose()
 		{
 			Event.Unsubscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
 			Event.Unsubscribe(NetworkClosedEventArgs.EventId,        OnNetworkClosedEventArgs);
@@ -243,7 +239,7 @@ namespace Hotfix.Framework.Network
 		{
 			// 仅重置字段：本类型始终由 new 直接构造、从不经引用池获取，Clear 不会被引用池调用。
 			// 原实现在此调用 m_networkChannel?.Close()（带副作用的“清理”）与引用池 Clear 的纯重置约定不符，故移除；
-			// 频道的关闭由 NetworkChannelBase.Shutdown 等频道自身生命周期负责。
+			// 频道的关闭由 NetworkChannelBase.Dispose 等频道自身生命周期负责。
 			m_networkChannel = null;
 		}
 
@@ -277,7 +273,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogWarning($"Network channel '{ne.NetworkChannel.Name}' miss heart beat '{ne.MissCount}' times.");
+			FuLogger.LogWarning($"网络频道 '{ne.NetworkChannel.Name}' 心跳连续丢失 {ne.MissCount} 次。");
 		}
 
 		/// <summary>
@@ -288,7 +284,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogError($"Network channel '{ne.NetworkChannel.Name}' error, error code is '{ne.ErrorCode}', error message is '{ne.ErrorMessage}'.");
+			FuLogger.LogError($"网络频道 '{ne.NetworkChannel.Name}' 发生错误，错误码：'{ne.ErrorCode}'，错误消息：'{ne.ErrorMessage}'。");
 			ne.NetworkChannel.Close();
 		}
 	}

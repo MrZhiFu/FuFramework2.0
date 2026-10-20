@@ -42,12 +42,12 @@ namespace Hotfix.Framework.Network
 		public Socket Socket => m_socket;
 
 		/// <summary>
-		/// 本地端点
+		/// 本地端点（IP 地址 + 端口）
 		/// </summary>
 		public EndPoint LocalEndPoint => m_socket.LocalEndPoint;
 
 		/// <summary>
-		/// 远程端点
+		/// 远程端点（IP 地址 + 端口）
 		/// </summary>
 		public EndPoint RemoteEndPoint => m_socket.RemoteEndPoint;
 
@@ -85,25 +85,24 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 禁用收发，但不释放底层资源
+		/// 关闭并释放底层 Socket（禁用收发 + 释放句柄）。
 		/// </summary>
-		public void Shutdown()
+		public void Dispose()
 		{
 			if (IsClosed) return;
-			m_socket.Shutdown(SocketShutdown.Both);
-		}
+			try
+			{
+				m_socket.Shutdown(SocketShutdown.Both);
+			}
+			catch (SocketException)
+			{
+				// 连接已断时 Shutdown 会抛异常，忽略：后续 Close/Dispose 仍需执行。
+			}
 
-		/// <summary>
-		/// 关闭并释放底层 Socket
-		/// </summary>
-		public void Close()
-		{
-			if (IsClosed) return;
 			m_socket.Close();
 			m_socket.Dispose();
 			IsClosed = true;
 		}
-
 
 		/// <summary>
 		/// 开始异步发送

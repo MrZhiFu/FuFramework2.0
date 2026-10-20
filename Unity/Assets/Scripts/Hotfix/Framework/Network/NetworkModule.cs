@@ -83,7 +83,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			// 同样先快照：Shutdown 会广播关闭事件并触达用户处理器，
+			// 同样先快照：OnDispose 会广播关闭事件并触达用户处理器，
 			// 用户代码可能在此期间销毁/创建频道。
 			m_networkChannelSnapshot.Clear();
 			foreach (var networkChannel in m_networkChannelDict.Values)
@@ -97,7 +97,7 @@ namespace Hotfix.Framework.Network
 				networkChannelBase.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
 				networkChannelBase.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
 				networkChannelBase.m_NetworkChannelError         -= OnNetworkChannelError;
-				networkChannelBase.Shutdown();
+				networkChannelBase.Dispose();
 			}
 
 			m_networkChannelSnapshot.Clear();

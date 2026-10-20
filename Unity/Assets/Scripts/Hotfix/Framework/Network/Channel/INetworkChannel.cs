@@ -181,10 +181,10 @@ namespace Hotfix.Framework.Network
 		void Connect(Uri address, object userData = null);
 
 		/// <summary>
-		/// 设置忽略指定的消息包的发送和接收ID列表
+		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。
 		/// </summary>
-		/// <param name="sendIds">发送消息ID列表</param>
-		/// <param name="receiveIds">接收消息ID列表</param>
+		/// <param name="sendIds">发送消息ID忽略列表。传 null 清空。</param>
+		/// <param name="receiveIds">接收消息ID忽略列表。传 null 清空。</param>
 		void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds);
 
 		/// <summary>

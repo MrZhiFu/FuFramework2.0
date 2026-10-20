@@ -404,8 +404,21 @@ Network/
 
 1. **主线程限制**：网络回调（数据包消息与 Connected/Closed/Error 生命周期事件）均在主线程执行——
    Socket 回调线程只入队，主线程 channel.Update 排水后触发；消息处理器中避免阻塞操作
-2. **生命周期事件的销毁语义**：频道销毁（DestroyNetworkChannel / 模块 Shutdown）后 Update 不再被调用，未派发的生命周期事件将随频道对象一并丢弃（不入池、无泄漏）
+2. **生命周期事件的销毁语义**：频道销毁（DestroyNetworkChannel 内部会调频道 Dispose）后 Update 不再被调用，未派发的生命周期事件将随频道对象一并丢弃（不入池、无泄漏）
 3. **消息序列化**：消息类必须有无参构造函数，且字段必须可序列化
 4. **内存管理**：接收缓冲区大小需根据消息大小合理配置
 5. **心跳间隔**：根据服务器配置设置合理的心跳间隔（通常 5-30 秒）
 6. **重连策略**：避免无限重连，设置最大重连次数和指数退避
+
+## 10. 调试：网络消息日志
+
+排查协议问题时，可开启每条消息的内容日志：
+
+1. **开启/关闭宏**：菜单 `FuFramework/日志设置/开启网络请求日志打印`（响应日志同理），
+   分别对应编译宏 `ENABLE_NETWORK_REQ_LOG` / `ENABLE_NETWORK_RSP_LOG`（Editor 类：`NetworkLogScriptingDefineSymbols`）
+2. **日志效果**：开启后每收/发一条消息打印 `消息ID、UniqueId、消息内容(Json)`
+3. **过滤高频消息**（如心跳、移动同步）：调用
+   `channel.SetIgnoreLogNetworkIds(sendIds, receiveIds)` 传入要忽略打印的消息 ID 列表
+   （传 null 清空对应列表；两列表独立，null 安全）
+
+> 注意：宏变更会触发全量重编译，团队协作时不要长期开启；日志在主线程输出，高频包建议配合忽略列表使用。
