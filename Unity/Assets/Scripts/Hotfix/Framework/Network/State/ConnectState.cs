@@ -3,7 +3,7 @@
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络连接状态
+	/// 连接流程状态：随异步连接发起而创建，携带 Socket 与用户自定义数据，供连接回调取回上下文。
 	/// </summary>
 	internal sealed class ConnectState
 	{

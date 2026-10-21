@@ -3,7 +3,7 @@
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 心跳状态
+	/// 心跳保活状态：记录流逝时长与连续丢失次数，收包/重连时 Reset 清账，供断线判定。
 	/// </summary>
 	internal sealed class HeartBeatState
 	{

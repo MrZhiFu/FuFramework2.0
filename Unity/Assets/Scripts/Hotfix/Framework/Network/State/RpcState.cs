@@ -2,38 +2,29 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Hotfix.Framework.Core;
-using AOT.Framework.Extension;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// RPC状态类
+	/// RPC 配对状态：按 UniqueId 登记等待中的请求，TryReply 配对回包唤醒 await，Update 超时清理，Dispose 终结全部挂起。
 	/// </summary>
 	internal sealed class RpcState : IDisposable
 	{
 		/// <summary>
-		/// 等待回复处理对象字典
+		/// 等待回复的请求字典（UniqueId → 等待载体 RpcMessageData）
 		/// </summary>
-		private readonly ConcurrentDictionary<long, RpcMessageData> m_waitingReplyHandlingObjects = new();
+		private readonly ConcurrentDictionary<long, RpcMessageData> m_waitingReplyDict = new();
 
 		/// <summary>
-		/// 删除等待中的处理器ID列表,由于超时导致的删除
+		/// 因超时待移除的请求 ID 列表（Update 中先收集、后统一从等待字典移除）
 		/// </summary>
-		private readonly HashSet<long> m_removeReplyHandlingObjectIds = new();
+		private readonly HashSet<long> m_timeoutReplyIdSet = new();
 
 		/// <summary>
 		/// RPC 超时时间。单位毫秒
 		/// </summary>
 		private readonly int m_rpcTimeout;
-
-		/// <summary>
-		/// 消息类型是否为响应类型的缓存。
-		/// 说明：原实现每收一包都调用 Type.IsImplWithInterface（内部会分配 GetInterfaces 数组），
-		/// 这里按类型缓存结果，热路径上不再重复做接口扫描。
-		/// </summary>
-		private static readonly ConcurrentDictionary<Type, bool> sr_responseMessageTypeCache = new();
 
 		/// <summary>
 		/// 创建 RPC 状态
@@ -55,26 +46,27 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void Dispose()
 		{
-			foreach (var (_, rpcMessageData) in m_waitingReplyHandlingObjects)
+			foreach (var (_, rpcMessageData) in m_waitingReplyDict)
 			{
 				rpcMessageData.Cancel();
 			}
 
-			m_waitingReplyHandlingObjects.Clear();
-			m_removeReplyHandlingObjectIds.Clear();
+			m_waitingReplyDict.Clear();
+			m_timeoutReplyIdSet.Clear();
 		}
 
 		/// <summary>
-		/// 处理RPC回复消息，并触发相应的结束处理程序。
+		/// 处理 RPC 回复消息：按 UniqueId 配对等待中的请求并唤醒其 await。
 		/// </summary>
 		/// <param name="message">要处理的消息对象，必须实现IResponseMessage接口。</param>
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
 		public bool TryReply(MessageObject message)
 		{
-			if (!sr_responseMessageTypeCache.GetOrAdd(message.GetType(), static type => type.IsImplWithInterface(typeof(IResponseMessage)))) return false;
-			if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
+			// 非响应消息（Notify/Req）直接跳过配对：模式匹配编译为 isinst 指令，零分配，无需类型缓存
+			if (message is not IResponseMessage responseMessage) return false;
+			if (!m_waitingReplyDict.TryRemove(message.UniqueId, out var rpcMessageData)) return false;
 
-			messageActorObject.Reply(message as IResponseMessage);
+			rpcMessageData.Reply(responseMessage);
 			return true;
 		}
 
@@ -87,13 +79,13 @@ namespace Hotfix.Framework.Network
 		/// <returns>返回一个任务，该任务在收到响应时完成，并返回IResponseMessage。</returns>
 		public UniTask<IResponseMessage> Call(MessageObject messageObject)
 		{
-			if (m_waitingReplyHandlingObjects.TryGetValue(messageObject.UniqueId, out var messageActorObject))
+			if (m_waitingReplyDict.TryGetValue(messageObject.UniqueId, out var existing))
 			{
-				return messageActorObject.Task;
+				return existing.Task;
 			}
 
 			var rpcMessageData = RpcMessageData.Create(messageObject as IRequestMessage, m_rpcTimeout);
-			m_waitingReplyHandlingObjects.TryAdd(messageObject.UniqueId, rpcMessageData);
+			m_waitingReplyDict.TryAdd(messageObject.UniqueId, rpcMessageData);
 			return rpcMessageData.Task;
 		}
 
@@ -103,26 +95,26 @@ namespace Hotfix.Framework.Network
 		/// <param name="deltaTime"></param>
 		public void Update(float deltaTime)
 		{
-			if (m_waitingReplyHandlingObjects.Count > 0)
+			if (m_waitingReplyDict.Count > 0)
 			{
 				var elapseSecondsTime = (long)(deltaTime * 1000);
-				m_removeReplyHandlingObjectIds.Clear();
-				foreach (var handlingObject in m_waitingReplyHandlingObjects)
+				m_timeoutReplyIdSet.Clear();
+				foreach (var (id, rpcMessageData) in m_waitingReplyDict)
 				{
-					var isTimeout = handlingObject.Value.IncrementalElapseTime(elapseSecondsTime);
+					var isTimeout = rpcMessageData.IncrementalElapseTime(elapseSecondsTime);
 					if (!isTimeout) continue;
-					m_removeReplyHandlingObjectIds.Add(handlingObject.Key);
+					m_timeoutReplyIdSet.Add(id);
 				}
 			}
 
-			if (m_removeReplyHandlingObjectIds.Count > 0)
+			if (m_timeoutReplyIdSet.Count > 0)
 			{
-				foreach (var objectId in m_removeReplyHandlingObjectIds)
+				foreach (var objectId in m_timeoutReplyIdSet)
 				{
-					m_waitingReplyHandlingObjects.TryRemove(objectId, out _);
+					m_waitingReplyDict.TryRemove(objectId, out _);
 				}
 
-				m_removeReplyHandlingObjectIds.Clear();
+				m_timeoutReplyIdSet.Clear();
 			}
 		}
 	}

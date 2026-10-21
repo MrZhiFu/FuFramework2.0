@@ -46,8 +46,19 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected enum EChannelLifecycleEventType
 		{
+			/// <summary>
+			/// 连接成功事件
+			/// </summary>
 			Connected,
+			
+			/// <summary>
+			/// 连接关闭事件
+			/// </summary>
 			Closed,
+			
+			/// <summary>
+			/// 网络错误事件
+			/// </summary>
 			Error
 		}
 

@@ -6,7 +6,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// RPC 消息数据对象
+	/// 单次 RPC 调用的等待载体：以 UniTaskCompletionSource 承载 await，由 Reply（回包配对）、Cancel（断线/销毁）、超时三条路径终结等待。
 	/// </summary>
 	internal sealed class RpcMessageData
 	{
@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 超时时间。单位毫秒
 		/// </summary>
-		public int Timeout { get; }
+		public int TimeoutTime { get; }
 
 		/// <summary>
 		/// 消耗的时间
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.Network
 		internal bool IncrementalElapseTime(long time)
 		{
 			ElapseTime += time;
-			if (ElapseTime < Timeout) return false;
+			if (ElapseTime < TimeoutTime) return false;
 			m_tcs.TrySetException(new TimeoutException("RPC 调用超时。消息为：" + RequestMessage));
 			return true;
 		}
@@ -75,25 +75,24 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 创建RPC 消息数据对象
 		/// </summary>
-		/// <param name="actorRequestMessage"></param>
-		/// <param name="timeout"></param>
-		/// <returns></returns>
-		internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeout = 5000)
+		/// <param name="actorRequestMessage">请求消息</param>
+		/// <param name="timeoutTime">超时时间。单位毫秒</param>
+		internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeoutTime = 5000)
 		{
-			var defaultMessageActorObject = new RpcMessageData(actorRequestMessage, timeout);
-			return defaultMessageActorObject;
+			var rpcMessageData = new RpcMessageData(actorRequestMessage, timeoutTime);
+			return rpcMessageData;
 		}
 
 		/// <summary>
 		/// 创建 RPC 消息数据对象
 		/// </summary>
 		/// <param name="requestMessage">请求消息</param>
-		/// <param name="timeout">超时时间。单位毫秒</param>
-		private RpcMessageData(IRequestMessage requestMessage, int timeout)
+		/// <param name="timeoutTime">超时时间。单位毫秒</param>
+		private RpcMessageData(IRequestMessage requestMessage, int timeoutTime)
 		{
 			CreatedTime    = Utility.Time.ClientNow();
 			RequestMessage = requestMessage;
-			Timeout        = timeout;
+			TimeoutTime    = timeoutTime;
 			UniqueId       = ((MessageObject)requestMessage).UniqueId;
 			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
 		}

@@ -5,7 +5,7 @@ using System.IO;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 消息发送状态
+	/// 发送状态：待发消息的序列化字节流载体，由发送管线写入、SendCallback 从 Position 增量续发，发完 Reset 清空复用。
 	/// </summary>
 	internal sealed class SendState : IDisposable
 	{

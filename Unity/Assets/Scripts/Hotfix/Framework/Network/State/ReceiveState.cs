@@ -5,7 +5,7 @@ using System.IO;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络数据接收状态
+	/// 接收状态：攒包缓冲流与当前包的解析进度（目标长度、包头处理器、空包体标志），支撑粘包/半包切分。
 	/// </summary>
 	internal sealed class ReceiveState : IDisposable
 	{
