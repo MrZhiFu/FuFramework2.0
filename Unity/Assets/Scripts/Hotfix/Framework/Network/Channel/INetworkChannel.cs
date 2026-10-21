@@ -231,7 +231,6 @@ namespace Hotfix.Framework.Network
 		/// PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 		/// </code>
 		/// </example>
-		UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)
-			where TResponse : MessageObject, IResponseMessage;
+		UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject) where TResponse : MessageObject, IResponseMessage;
 	}
 }
