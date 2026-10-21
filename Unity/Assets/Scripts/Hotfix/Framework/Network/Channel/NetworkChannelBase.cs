@@ -34,7 +34,7 @@ namespace Hotfix.Framework.Network
 		private readonly object m_closeLock = new();
 
 		/// <summary>
-		/// 网络是否激活
+		/// 网络频道是否已激活(已连接至服务器)
 		/// </summary>
 		protected bool PActive { get; set; }
 

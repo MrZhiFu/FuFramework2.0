@@ -187,8 +187,7 @@ namespace Hotfix.Framework.Network
 			messageObject.NotNull(nameof(messageObject));
 			destination.NotNull(nameof(destination));
 
-			return m_networkChannel.PacketSendHeaderHandler.Handler(messageObject, m_networkChannel.MessageCompressHandler, destination,
-			                                                        out messageBodyBuffer);
+			return m_networkChannel.PacketSendHeaderHandler.Handler(messageObject, m_networkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
 		}
 
 		/// <summary>

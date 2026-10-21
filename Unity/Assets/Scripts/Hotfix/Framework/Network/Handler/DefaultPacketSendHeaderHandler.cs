@@ -78,7 +78,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public DefaultPacketSendHeaderHandler()
 		{
-			// 4 + 1 + 1 + 4 + 4
+			// 4 + 1 + 1 + 4 + 4 = 14 字节
 			PacketHeaderLength = NET_PACKET_LENGTH + NET_OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
 			m_cachedByte       = new byte[PacketHeaderLength];
 		}

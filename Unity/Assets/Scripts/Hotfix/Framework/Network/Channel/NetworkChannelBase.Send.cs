@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Network
 
 			if (!PActive)
 			{
-				const string errorMessage = "Socket 未激活，无法发送消息包。";
+				const string errorMessage = "网络频道未激活(未连接至服务器)，无法发送消息包。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SendError,
