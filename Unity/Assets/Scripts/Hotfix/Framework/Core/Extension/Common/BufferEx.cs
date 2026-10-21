@@ -72,7 +72,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">要写入的字节数组。</param>
 		/// <param name="value">要写入的整数值。</param>
 		/// <param name="offset">写入操作的偏移量。</param>
-		public static unsafe void WriteInt(this byte[] buffer, int value, ref int offset)
+		public static void WriteInt(this byte[] buffer, int value, ref int offset)
 		{
 			if (offset + INT_SIZE > buffer.Length)
 			{
@@ -80,11 +80,8 @@ namespace Hotfix.Framework.Core
 				return;
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				*(int*)(ptr + offset) =  System.Net.IPAddress.HostToNetworkOrder(value);
-				offset                += INT_SIZE;
-			}
+			BinaryPrimitives.WriteInt32BigEndian(buffer.AsSpan(offset, INT_SIZE), value);
+			offset += INT_SIZE;
 		}
 
 		/// <summary>
@@ -95,17 +92,14 @@ namespace Hotfix.Framework.Core
 		/// <param name="offset">写入操作的偏移量。</param>
 		public static void WriteUInt(this byte[] buffer, uint value, ref int offset)
 		{
-			if (offset + INT_SIZE > buffer.Length)
+			if (offset + U_INT_SIZE > buffer.Length)
 			{
-				offset += INT_SIZE;
+				offset += U_INT_SIZE;
 				return;
 			}
 
-			var     span  = buffer.AsSpan();
-			ref var local = ref span;
-			var     start = offset;
-			BinaryPrimitives.WriteUInt32BigEndian(local.Slice(start, local.Length - start), value);
-			offset += INT_SIZE;
+			BinaryPrimitives.WriteUInt32BigEndian(buffer.AsSpan(offset, U_INT_SIZE), value);
+			offset += U_INT_SIZE;
 		}
 
 		/// <summary>
@@ -116,18 +110,14 @@ namespace Hotfix.Framework.Core
 		/// <param name="offset">要写入值的缓冲区中的偏移量。</param>
 		public static void WriteUShort(this byte[] buffer, ushort value, ref int offset)
 		{
-			if (offset + 2 > buffer.Length)
+			if (offset + U_SHORT_SIZE > buffer.Length)
 			{
-				offset += 2;
+				offset += U_SHORT_SIZE;
+				return;
 			}
-			else
-			{
-				Span<byte>     span  = buffer.AsSpan();
-				ref Span<byte> local = ref span;
-				var            start = offset;
-				BinaryPrimitives.WriteUInt16BigEndian(local.Slice(start, local.Length - start), value);
-				offset += 2;
-			}
+
+			BinaryPrimitives.WriteUInt16BigEndian(buffer.AsSpan(offset, U_SHORT_SIZE), value);
+			offset += U_SHORT_SIZE;
 		}
 
 		/// <summary>
@@ -136,7 +126,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">要写入的字节数组。</param>
 		/// <param name="value">要写入的短整数值。</param>
 		/// <param name="offset">写入操作的偏移量。</param>
-		public static unsafe void WriteShort(this byte[] buffer, short value, ref int offset)
+		public static void WriteShort(this byte[] buffer, short value, ref int offset)
 		{
 			if (offset + SHORT_SIZE > buffer.Length)
 			{
@@ -144,11 +134,8 @@ namespace Hotfix.Framework.Core
 				return;
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				*(short*)(ptr + offset) =  System.Net.IPAddress.HostToNetworkOrder(value);
-				offset                  += SHORT_SIZE;
-			}
+			BinaryPrimitives.WriteInt16BigEndian(buffer.AsSpan(offset, SHORT_SIZE), value);
+			offset += SHORT_SIZE;
 		}
 
 		/// <summary>
@@ -157,7 +144,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">要写入的字节数组。</param>
 		/// <param name="value">要写入的长整数值。</param>
 		/// <param name="offset">写入操作的偏移量。</param>
-		public static unsafe void WriteLong(this byte[] buffer, long value, ref int offset)
+		public static void WriteLong(this byte[] buffer, long value, ref int offset)
 		{
 			if (offset + LONG_SIZE > buffer.Length)
 			{
@@ -165,11 +152,8 @@ namespace Hotfix.Framework.Core
 				return;
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				*(long*)(ptr + offset) =  System.Net.IPAddress.HostToNetworkOrder(value);
-				offset                 += LONG_SIZE;
-			}
+			BinaryPrimitives.WriteInt64BigEndian(buffer.AsSpan(offset, LONG_SIZE), value);
+			offset += LONG_SIZE;
 		}
 
 		/// <summary>
@@ -178,7 +162,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">要写入的字节数组。</param>
 		/// <param name="value">要写入的单精度浮点数值。</param>
 		/// <param name="offset">字节数组中的偏移量，传递引用以便更新偏移量。</param>
-		public static unsafe void WriteFloat(this byte[] buffer, float value, ref int offset)
+		public static void WriteFloat(this byte[] buffer, float value, ref int offset)
 		{
 			if (offset + FLOAT_SIZE > buffer.Length)
 			{
@@ -186,12 +170,8 @@ namespace Hotfix.Framework.Core
 				return;
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				*(float*)(ptr + offset) =  value;
-				*(int*)(ptr   + offset) =  System.Net.IPAddress.HostToNetworkOrder(*(int*)(ptr + offset));
-				offset                  += FLOAT_SIZE;
-			}
+			BinaryPrimitives.WriteInt32BigEndian(buffer.AsSpan(offset, FLOAT_SIZE), BitConverter.SingleToInt32Bits(value));
+			offset += FLOAT_SIZE;
 		}
 
 		/// <summary>
@@ -200,7 +180,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">要写入的字节数组。</param>
 		/// <param name="value">要写入的双精度浮点数值。</param>
 		/// <param name="offset">字节数组中的偏移量，传递引用以便更新偏移量。</param>
-		public static unsafe void WriteDouble(this byte[] buffer, double value, ref int offset)
+		public static void WriteDouble(this byte[] buffer, double value, ref int offset)
 		{
 			if (offset + DOUBLE_SIZE > buffer.Length)
 			{
@@ -208,12 +188,8 @@ namespace Hotfix.Framework.Core
 				return;
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				*(double*)(ptr + offset) =  value;
-				*(long*)(ptr   + offset) =  System.Net.IPAddress.HostToNetworkOrder(*(long*)(ptr + offset));
-				offset                   += DOUBLE_SIZE;
-			}
+			BinaryPrimitives.WriteInt64BigEndian(buffer.AsSpan(offset, DOUBLE_SIZE), BitConverter.DoubleToInt64Bits(value));
+			offset += DOUBLE_SIZE;
 		}
 
 		/// <summary>
@@ -253,7 +229,7 @@ namespace Hotfix.Framework.Core
 
 			if (offset + value.Length + INT_SIZE > buffer.Length)
 			{
-				throw new ArgumentException($"buffer write out of index {offset + value.Length + INT_SIZE}, {buffer.Length}");
+				throw new ArgumentException($"缓冲区写入越界 {offset + value.Length + INT_SIZE}, {buffer.Length}");
 			}
 
 			fixed (byte* ptr = buffer, valPtr = value)
@@ -376,19 +352,16 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">包含整数值的字节数组。</param>
 		/// <param name="offset">从字节数组中读取整数值的偏移量。</param>
 		/// <returns>从字节数组中读取的整数值。</returns>
-		public static unsafe int ReadInt(this byte[] buffer, ref int offset)
+		public static int ReadInt(this byte[] buffer, ref int offset)
 		{
 			if (offset < 0 || offset + INT_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				var value = *(int*)(ptr + offset);
-				offset += INT_SIZE;
-				return System.Net.IPAddress.NetworkToHostOrder(value);
-			}
+			var value = BinaryPrimitives.ReadInt32BigEndian(buffer.AsSpan(offset, INT_SIZE));
+			offset += INT_SIZE;
+			return value;
 		}
 
 		/// <summary>
@@ -402,15 +375,13 @@ namespace Hotfix.Framework.Core
 		{
 			if (offset < 0 || offset + U_INT_SIZE > buffer.Length)
 			{
-				throw new Exception("buffer read out of index");
+				throw new Exception("缓冲区读取越界");
 			}
 
-			Span<byte>     span  = buffer.AsSpan();
-			ref Span<byte> local = ref span;
-			var            start = offset;
-			var            num   = (int)BinaryPrimitives.ReadUInt32BigEndian(local.Slice(start, local.Length - start));
+			var num = BinaryPrimitives.ReadUInt32BigEndian(buffer.AsSpan(offset, U_INT_SIZE));
 			offset += U_INT_SIZE;
-			return (uint)num;
+
+			return num;
 		}
 
 		/// <summary>
@@ -419,19 +390,16 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">包含短整数值的字节数组。</param>
 		/// <param name="offset">从字节数组中读取短整数值的偏移量。</param>
 		/// <returns>从字节数组中读取的短整数值。</returns>
-		public static unsafe short ReadShort(this byte[] buffer, ref int offset)
+		public static short ReadShort(this byte[] buffer, ref int offset)
 		{
 			if (offset < 0 || offset + SHORT_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				var value = *(short*)(ptr + offset);
-				offset += SHORT_SIZE;
-				return System.Net.IPAddress.NetworkToHostOrder(value);
-			}
+			var value = BinaryPrimitives.ReadInt16BigEndian(buffer.AsSpan(offset, SHORT_SIZE));
+			offset += SHORT_SIZE;
+			return value;
 		}
 
 		/// <summary>
@@ -444,14 +412,12 @@ namespace Hotfix.Framework.Core
 		{
 			if (offset < 0 || offset + U_SHORT_SIZE > buffer.Length)
 			{
-				throw new Exception("buffer read out of index");
+				throw new Exception("缓冲区读取越界");
 			}
 
-			Span<byte>     span  = buffer.AsSpan();
-			ref Span<byte> local = ref span;
-			var            start = offset;
-			var            num   = BinaryPrimitives.ReadUInt16BigEndian(local.Slice(start, local.Length - start));
+			var num = BinaryPrimitives.ReadUInt16BigEndian(buffer.AsSpan(offset, U_SHORT_SIZE));
 			offset += U_SHORT_SIZE;
+
 			return num;
 		}
 
@@ -461,19 +427,16 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">字节数组。</param>
 		/// <param name="offset">偏移量。</param>
 		/// <returns>长整型数值。</returns>
-		public static unsafe long ReadLong(this byte[] buffer, ref int offset)
+		public static long ReadLong(this byte[] buffer, ref int offset)
 		{
 			if (offset < 0 || offset + LONG_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
-			fixed (byte* ptr = buffer)
-			{
-				var value = *(long*)(ptr + offset);
-				offset += LONG_SIZE;
-				return System.Net.IPAddress.NetworkToHostOrder(value);
-			}
+			var value = BinaryPrimitives.ReadInt64BigEndian(buffer.AsSpan(offset, LONG_SIZE));
+			offset += LONG_SIZE;
+			return value;
 		}
 
 		/// <summary>
@@ -482,23 +445,17 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">字节数组。</param>
 		/// <param name="offset">偏移量。</param>
 		/// <returns>单精度浮点数值。</returns>
-		public static unsafe float ReadFloat(this byte[] buffer, ref int offset)
+		public static float ReadFloat(this byte[] buffer, ref int offset)
 		{
 			if (offset < 0 || offset + FLOAT_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
-			// 大端序解码：先读入局部变量再翻转，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
-			int raw;
-			fixed (byte* ptr = buffer)
-			{
-				raw = System.Net.IPAddress.NetworkToHostOrder(*(int*)(ptr + offset));
-			}
-
-			var value = *(float*)&raw;
+			// 大端序解码，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
+			var raw = BinaryPrimitives.ReadInt32BigEndian(buffer.AsSpan(offset, FLOAT_SIZE));
 			offset += FLOAT_SIZE;
-			return value;
+			return BitConverter.Int32BitsToSingle(raw);
 		}
 
 		/// <summary>
@@ -507,23 +464,17 @@ namespace Hotfix.Framework.Core
 		/// <param name="buffer">字节数组。</param>
 		/// <param name="offset">偏移量。</param>
 		/// <returns>双精度浮点数值。</returns>
-		public static unsafe double ReadDouble(this byte[] buffer, ref int offset)
+		public static double ReadDouble(this byte[] buffer, ref int offset)
 		{
 			if (offset < 0 || offset + DOUBLE_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
-			// 大端序解码：先读入局部变量再翻转，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
-			long raw;
-			fixed (byte* ptr = buffer)
-			{
-				raw = System.Net.IPAddress.NetworkToHostOrder(*(long*)(ptr + offset));
-			}
-
-			var value = *(double*)&raw;
+			// 大端序解码，不原地改写源数组（保证读操作幂等，同一 buffer 可重复解析）
+			var raw = BinaryPrimitives.ReadInt64BigEndian(buffer.AsSpan(offset, DOUBLE_SIZE));
 			offset += DOUBLE_SIZE;
-			return value;
+			return BitConverter.Int64BitsToDouble(raw);
 		}
 
 		/// <summary>
@@ -536,7 +487,7 @@ namespace Hotfix.Framework.Core
 		{
 			if (offset < 0 || offset + BYTE_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
 			fixed (byte* ptr = buffer)
@@ -597,6 +548,7 @@ namespace Hotfix.Framework.Core
 		public static byte[] ReadBytes(this byte[] buffer, ref int offset)
 		{
 			var len = ReadInt(buffer, ref offset);
+
 			//数据不可信：len 极大时 len * BYTE_SIZE 会整数溢出，改为「剩余可读长度」上界判断
 			if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
 			{
@@ -619,7 +571,7 @@ namespace Hotfix.Framework.Core
 		{
 			if (offset < 0 || offset + BYTE_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
 			fixed (byte* ptr = buffer)
@@ -642,6 +594,7 @@ namespace Hotfix.Framework.Core
 			fixed (byte* ptr = buffer)
 			{
 				var len = ReadShort(buffer, ref offset);
+
 				//数据不可信：len 为 short 但长度上界判断同样不能用乘法（offset 可能已被前序解析推到非法值）
 				if (len <= 0 || offset < 0 || offset > buffer.Length || len > buffer.Length - offset)
 					return "";
@@ -662,7 +615,7 @@ namespace Hotfix.Framework.Core
 		{
 			if (offset < 0 || offset + BOOL_SIZE > buffer.Length)
 			{
-				throw new ArgumentOutOfRangeException(nameof(offset), "buffer read out of index");
+				throw new ArgumentOutOfRangeException(nameof(offset), "缓冲区读取越界");
 			}
 
 			fixed (byte* ptr = buffer)
@@ -714,7 +667,7 @@ namespace Hotfix.Framework.Core
 		public static string ToHex(this byte[] bytes)
 		{
 			sr_stringBuilder.Clear();
-			foreach (byte b in bytes)
+			foreach (var b in bytes)
 			{
 				sr_stringBuilder.Append(b.ToString("X2"));
 			}
@@ -731,7 +684,7 @@ namespace Hotfix.Framework.Core
 		public static string ToHex(this byte[] bytes, string format)
 		{
 			sr_stringBuilder.Clear();
-			foreach (byte b in bytes)
+			foreach (var b in bytes)
 			{
 				sr_stringBuilder.Append(b.ToString(format));
 			}
@@ -749,7 +702,7 @@ namespace Hotfix.Framework.Core
 		public static string ToHex(this byte[] bytes, int offset, int count)
 		{
 			sr_stringBuilder.Clear();
-			for (int i = offset; i < offset + count; ++i)
+			for (var i = offset; i < offset + count; ++i)
 			{
 				sr_stringBuilder.Append(bytes[i].ToString("X2"));
 			}
@@ -762,10 +715,7 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		/// <param name="bytes">要转换的字节数组。</param>
 		/// <returns>转换后的字符串。</returns>
-		public static string ToDefaultString(this byte[] bytes)
-		{
-			return Encoding.Default.GetString(bytes);
-		}
+		public static string ToDefaultString(this byte[] bytes) => Encoding.Default.GetString(bytes);
 
 		/// <summary>
 		/// 将字节数组的一部分转换为字符串，使用默认编码。
@@ -774,20 +724,14 @@ namespace Hotfix.Framework.Core
 		/// <param name="index">起始位置。</param>
 		/// <param name="count">要转换的字节数。</param>
 		/// <returns>转换后的字符串。</returns>
-		public static string ToDefaultString(this byte[] bytes, int index, int count)
-		{
-			return Encoding.Default.GetString(bytes, index, count);
-		}
+		public static string ToDefaultString(this byte[] bytes, int index, int count) => Encoding.Default.GetString(bytes, index, count);
 
 		/// <summary>
 		/// 将字节数组转换为字符串，使用UTF-8编码。
 		/// </summary>
 		/// <param name="bytes">要转换的字节数组。</param>
 		/// <returns>转换后的字符串。</returns>
-		public static string ToUtf8String(this byte[] bytes)
-		{
-			return Encoding.UTF8.GetString(bytes);
-		}
+		public static string ToUtf8String(this byte[] bytes) => Encoding.UTF8.GetString(bytes);
 
 		/// <summary>
 		/// 将字节数组的一部分转换为字符串，使用UTF-8编码。
@@ -796,9 +740,6 @@ namespace Hotfix.Framework.Core
 		/// <param name="index">起始位置。</param>
 		/// <param name="count">要转换的字节数。</param>
 		/// <returns>转换后的字符串。</returns>
-		public static string ToUtf8String(this byte[] bytes, int index, int count)
-		{
-			return Encoding.UTF8.GetString(bytes, index, count);
-		}
+		public static string ToUtf8String(this byte[] bytes, int index, int count) => Encoding.UTF8.GetString(bytes, index, count);
 	}
 }
