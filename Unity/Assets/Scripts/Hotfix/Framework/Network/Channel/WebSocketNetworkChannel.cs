@@ -124,7 +124,9 @@ namespace Hotfix.Framework.Network
 					try
 					{
 						serializeResult = ProcessSendMessage(messageObject);
+#if ENABLE_NETWORK_REQ_LOG
 						DebugSendLog(messageObject);
+#endif
 					}
 					catch (Exception exception)
 					{
@@ -274,9 +276,6 @@ namespace Hotfix.Framework.Network
 
 			m_SendState.Reset();
 
-			m_SentPacketCount     = 0;
-			m_ReceivedPacketCount = 0;
-
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();
 			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
 			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, connectState.UserData);
@@ -293,10 +292,9 @@ namespace Hotfix.Framework.Network
 			{
 				lock (m_HeartBeatLock)
 				{
-					m_HeartBeatState.Reset(m_ResetHeartBeatElapseSecondsWhenReceivePacket);
+					// 收包仅清零丢失计数，不重置流逝时长
+					m_HeartBeatState.Reset(false);
 				}
-
-				m_ReceivedPacketCount++;
 
 				if (buffer.Length < PacketReceiveHeaderHandler.PacketHeaderLength) return;
 
@@ -322,7 +320,9 @@ namespace Hotfix.Framework.Network
 						messageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
 					}
 
+#if ENABLE_NETWORK_RSP_LOG
 					DebugReceiveLog(messageObject);
+#endif
 					if (!processSuccess)
 					{
 						if (m_NetworkChannelError != null)
@@ -339,8 +339,6 @@ namespace Hotfix.Framework.Network
 					{
 						m_executionMessageLinkedList.AddLast(messageObject);
 					}
-
-					m_ReceivedPacketCount++;
 				}
 				else
 				{

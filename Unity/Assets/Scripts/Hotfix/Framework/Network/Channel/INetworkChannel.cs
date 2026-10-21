@@ -26,46 +26,6 @@ namespace Hotfix.Framework.Network
 		bool Connected { get; }
 
 		/// <summary>
-		/// 获取网络地址类型。
-		/// </summary>
-		EAddressFamily EAddressFamily { get; }
-
-		/// <summary>
-		/// 获取要发送的消息包数量。
-		/// </summary>
-		int SendPacketCount { get; }
-
-		/// <summary>
-		/// 获取累计发送的消息包数量。
-		/// </summary>
-		int SentPacketCount { get; }
-
-		/// <summary>
-		/// 获取累计已接收的消息包数量。
-		/// </summary>
-		int ReceivedPacketCount { get; }
-
-		/// <summary>
-		/// 获取或设置当收到消息包时是否重置心跳流逝时间。
-		/// </summary>
-		bool ResetHeartBeatElapseSecondsWhenReceivePacket { get; set; }
-
-		/// <summary>
-		/// 获取丢失心跳的次数。
-		/// </summary>
-		int MissHeartBeatCount { get; }
-
-		/// <summary>
-		/// 获取或设置心跳间隔时长，以秒为单位。
-		/// </summary>
-		float HeartBeatInterval { get; set; }
-
-		/// <summary>
-		/// 获取心跳等待时长，以秒为单位。
-		/// </summary>
-		float HeartBeatElapseSeconds { get; }
-
-		/// <summary>
 		/// 消息发送包头处理器
 		/// </summary>
 		IPacketSendHeaderHandler PacketSendHeaderHandler { get; }
@@ -94,11 +54,6 @@ namespace Hotfix.Framework.Network
 		/// 消息压缩处理器
 		/// </summary>
 		IMessageCompressHandler MessageCompressHandler { get; }
-
-		/// <summary>
-		/// 消息解压处理器
-		/// </summary>
-		IMessageDecompressHandler MessageDecompressHandler { get; }
 
 		/// <summary>
 		/// 注册消息压缩处理器
@@ -143,35 +98,11 @@ namespace Hotfix.Framework.Network
 		void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler);
 
 		/// <summary>
-		/// 注册网络消息心跳处理函数，用于处理心跳消息
+		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。
 		/// </summary>
-		/// <param name="handler">要注册的网络消息包处理函数</param>
-		[Obsolete("Use RegisterHeartBeatHandler instead")]
-		void RegisterHandler(IPacketHeartBeatHandler handler);
-
-		/// <summary>
-		/// 设置RPC 的 ErrorCode 不为 0 的时候的处理函数
-		/// </summary>
-		/// <param name="handler"></param>
-		void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler);
-
-		/// <summary>
-		/// 设置RPC错误的处理函数
-		/// </summary>
-		/// <param name="handler"></param>
-		void SetRPCErrorHandler(EventHandler<MessageObject> handler);
-
-		/// <summary>
-		/// 设置RPC开始的处理函数
-		/// </summary>
-		/// <param name="handler"></param>
-		void SetRPCStartHandler(EventHandler<MessageObject> handler);
-
-		/// <summary>
-		/// 设置RPC结束的处理函数
-		/// </summary>
-		/// <param name="handler"></param>
-		void SetRPCEndHandler(EventHandler<MessageObject> handler);
+		/// <param name="sendIds">发送消息ID忽略列表。传 null 清空。</param>
+		/// <param name="receiveIds">接收消息ID忽略列表。传 null 清空。</param>
+		void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds);
 
 		/// <summary>
 		/// 连接到远程主机。
@@ -181,14 +112,7 @@ namespace Hotfix.Framework.Network
 		void Connect(Uri address, object userData = null);
 
 		/// <summary>
-		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。
-		/// </summary>
-		/// <param name="sendIds">发送消息ID忽略列表。传 null 清空。</param>
-		/// <param name="receiveIds">接收消息ID忽略列表。传 null 清空。</param>
-		void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds);
-
-		/// <summary>
-		/// 关闭网络频道。
+		/// 关闭连接并释放所有相关资源。
 		/// </summary>
 		void Close();
 
@@ -198,7 +122,7 @@ namespace Hotfix.Framework.Network
 		///     1. 消息仅加入发送队列，由后续帧的 ProcessSend 异步序列化发出，本方法立即返回；
 		///     2. 不关心服务器是否回复：服务器若回包，将作为一条独立消息走消息分发（DispatchMessage），与本次发送无程序上的关联；
 		///     3. 适用于无回复预期的通知类消息（聊天发言、移动同步等）；
-		///        需要拿到服务器响应的一问一答消息，请使用 <see cref="Call{TResult}"/>。
+		///        需要拿到服务器响应的一问一答消息，请使用 <see cref="Call{TResponse}"/>。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
 		/// <param name="messageObject">要发送的消息包。</param>

@@ -116,7 +116,7 @@ finally
 BeginSend（从 Position 发到 Length）→ 一轮可能只发出去一部分
 SendCallback:  Position += bytesSent
   - Position < Length  → 还有货没发完 → 续发 SendAsync()（从新 Position 接着发）
-  - Position == Length → 全部发完 → SentPacketCount++ → Reset() 清箱
+  - Position == Length → 全部发完 → Reset() 清箱
 ```
 
 `ProcessSend` 开头还有一道**闸门**（`NetworkChannelBase`）：

@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Log;
 using AOT.Framework.Extension;
 
 // ReSharper disable once CheckNamespace
@@ -23,26 +22,6 @@ namespace Hotfix.Framework.Network
 		/// 删除等待中的处理器ID列表,由于超时导致的删除
 		/// </summary>
 		private readonly HashSet<long> m_removeReplyHandlingObjectIds = new();
-
-		/// <summary>
-		/// RPC 开始处理函数
-		/// </summary>
-		private EventHandler<MessageObject> m_rpcStartHandler;
-
-		/// <summary>
-		/// RPC 结束处理函数
-		/// </summary>
-		private EventHandler<MessageObject> m_rpcEndHandler;
-
-		/// <summary>
-		/// RPC 错误处理函数
-		/// </summary>
-		private EventHandler<MessageObject> m_rpcErrorHandler;
-
-		/// <summary>
-		/// RPC 错误码处理函数
-		/// </summary>
-		private EventHandler<MessageObject> m_rpcErrorCodeHandler;
 
 		/// <summary>
 		/// RPC 超时时间。单位毫秒
@@ -95,21 +74,7 @@ namespace Hotfix.Framework.Network
 			if (!sr_responseMessageTypeCache.GetOrAdd(message.GetType(), static type => type.IsImplWithInterface(typeof(IResponseMessage)))) return false;
 			if (!m_waitingReplyHandlingObjects.TryRemove(message.UniqueId, out var messageActorObject)) return false;
 
-			try
-			{
-				var responseMessage = message as IResponseMessage;
-				messageActorObject.Reply(responseMessage);
-				m_rpcEndHandler?.Invoke(this, message);
-				if (responseMessage?.ErrorCode != default)
-				{
-					m_rpcErrorCodeHandler?.Invoke(this, message);
-				}
-			}
-			catch (Exception e)
-			{
-				FuLogger.LogFatal(e);
-			}
-
+			messageActorObject.Reply(message as IResponseMessage);
 			return true;
 		}
 
@@ -127,26 +92,16 @@ namespace Hotfix.Framework.Network
 				return messageActorObject.Task;
 			}
 
-			var defaultMessageActorObject = RpcMessageData.Create(messageObject as IRequestMessage, m_rpcTimeout);
-			m_waitingReplyHandlingObjects.TryAdd(messageObject.UniqueId, defaultMessageActorObject);
-			try
-			{
-				m_rpcStartHandler?.Invoke(this, messageObject);
-			}
-			catch (Exception e)
-			{
-				FuLogger.LogFatal(e);
-			}
-
-			return defaultMessageActorObject.Task;
+			var rpcMessageData = RpcMessageData.Create(messageObject as IRequestMessage, m_rpcTimeout);
+			m_waitingReplyHandlingObjects.TryAdd(messageObject.UniqueId, rpcMessageData);
+			return rpcMessageData.Task;
 		}
 
 		/// <summary>
 		/// 逻辑更新，处理计时和超时移除任务
 		/// </summary>
 		/// <param name="deltaTime"></param>
-		/// <param name="unscaledDeltaTime"></param>
-		public void Update(float deltaTime, float unscaledDeltaTime)
+		public void Update(float deltaTime)
 		{
 			if (m_waitingReplyHandlingObjects.Count > 0)
 			{
@@ -157,14 +112,6 @@ namespace Hotfix.Framework.Network
 					var isTimeout = handlingObject.Value.IncrementalElapseTime(elapseSecondsTime);
 					if (!isTimeout) continue;
 					m_removeReplyHandlingObjectIds.Add(handlingObject.Key);
-					try
-					{
-						m_rpcErrorHandler?.Invoke(this, handlingObject.Value.RequestMessage as MessageObject);
-					}
-					catch (Exception e)
-					{
-						FuLogger.LogFatal(e);
-					}
 				}
 			}
 
@@ -177,46 +124,6 @@ namespace Hotfix.Framework.Network
 
 				m_removeReplyHandlingObjectIds.Clear();
 			}
-		}
-
-		/// <summary>
-		/// 设置RPC错误Code的处理函数
-		/// </summary>
-		/// <param name="handler">处理函数</param>
-		public void SetRPCErrorCodeHandler(EventHandler<MessageObject> handler)
-		{
-			handler.NotNull(nameof(handler));
-			m_rpcErrorCodeHandler = handler;
-		}
-
-		/// <summary>
-		/// 设置RPC错误的处理函数
-		/// </summary>
-		/// <param name="handler">处理函数</param>
-		public void SetRPCErrorHandler(EventHandler<MessageObject> handler)
-		{
-			handler.NotNull(nameof(handler));
-			m_rpcErrorHandler = handler;
-		}
-
-		/// <summary>
-		/// 设置RPC开始的处理函数
-		/// </summary>
-		/// <param name="handler">处理函数</param>
-		public void SetRPCStartHandler(EventHandler<MessageObject> handler)
-		{
-			handler.NotNull(nameof(handler));
-			m_rpcStartHandler = handler;
-		}
-
-		/// <summary>
-		/// 设置RPC结束的处理函数
-		/// </summary>
-		/// <param name="handler">处理函数</param>
-		public void SetRPCEndHandler(EventHandler<MessageObject> handler)
-		{
-			handler.NotNull(nameof(handler));
-			m_rpcEndHandler = handler;
 		}
 	}
 }

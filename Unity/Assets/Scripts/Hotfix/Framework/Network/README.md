@@ -379,8 +379,7 @@ Network/
 │   ├── NetworkClosedEventArgs.cs
 │   ├── NetworkErrorEventArgs.cs
 │   └── NetworkMissHeartBeatEventArgs.cs
-└── Misc/                                             # 杂项（枚举与错误码）
-│   ├── EAddressFamily.cs                             # 地址类型枚举
+└── Misc/                                             # 杂项（错误码）
 │   └── NetworkErrorCode.cs                           # 网络错误码
 └── README.md                                         # 本文档
 ```

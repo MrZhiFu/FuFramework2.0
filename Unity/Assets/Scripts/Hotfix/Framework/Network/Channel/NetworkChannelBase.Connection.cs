@@ -14,11 +14,6 @@ namespace Hotfix.Framework.Network
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
 		/// <summary>
-		/// 网络地址类型
-		/// </summary>
-		protected EAddressFamily m_EAddressFamily;
-
-		/// <summary>
 		/// 是否验证地址
 		/// </summary>
 		protected bool m_IsVerifyAddress = true;
@@ -119,12 +114,9 @@ namespace Hotfix.Framework.Network
 			{
 				switch (m_ConnectEndPoint.AddressFamily)
 				{
+					// 地址族校验：仅允许 IPv4/IPv6，其他地址族视为不支持
 					case AddressFamily.InterNetwork:
-						m_EAddressFamily = EAddressFamily.IPv4;
-						break;
-
 					case AddressFamily.InterNetworkV6:
-						m_EAddressFamily = EAddressFamily.IPv6;
 						break;
 
 					default:

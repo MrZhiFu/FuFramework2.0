@@ -92,6 +92,148 @@ namespace Hotfix.Framework.Network
 		private readonly Queue<LifecycleEvent> m_lifecycleEventQueue = new();
 
 		/// <summary>
+		/// 连接成功回调（参数：频道、用户自定义数据）
+		/// </summary>
+		public Action<NetworkChannelBase, object> m_NetworkChannelConnected;
+
+		/// <summary>
+		/// 连接关闭回调（参数：频道）
+		/// </summary>
+		public Action<NetworkChannelBase> m_NetworkChannelClosed;
+
+		/// <summary>
+		/// 心跳丢失回调（参数：频道、连续丢失次数）
+		/// </summary>
+		public Action<NetworkChannelBase, int> m_NetworkChannelMissHeartBeat;
+
+		/// <summary>
+		/// 网络错误回调（参数：频道、错误码、套接字错误码、错误消息）
+		/// </summary>
+		public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> m_NetworkChannelError;
+
+		/// <summary>
+		/// 获取网络频道名称。
+		/// </summary>
+		public string Name { get; }
+
+		/// <summary>
+		/// 获取网络频道所使用的 Socket。
+		/// </summary>
+		public INetworkSocket Socket => m_Socket;
+
+		/// <summary>
+		/// 获取是否已连接。
+		/// </summary>
+		public bool Connected => m_Socket is { IsConnected: true };
+
+		/// <summary>
+		/// 初始化网络频道基类的新实例。
+		/// </summary>
+		/// <param name="name">网络频道名称。</param>
+		/// <param name="networkChannelHelper">网络频道辅助器。</param>
+		/// <param name="rpcTimeout">RPC超时时间</param>
+		protected NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
+		{
+			Name                          = name ?? string.Empty;
+			m_SendPacketPool              = new FuLinkedList<MessageObject>();
+			m_NetworkChannelHelper        = networkChannelHelper;
+			m_HeartBeatInterval           = DEFAULT_HEART_BEAT_INTERVAL;
+			m_MissHeartBeatCountByClose   = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			m_Socket                      = null;
+			m_SendState                   = new SendState();
+			m_ReceiveState                = new ReceiveState();
+			m_HeartBeatState              = new HeartBeatState();
+			m_rpcState                    = new RpcState(rpcTimeout);
+			PActive                       = false;
+			m_IsConnecting                = false;
+			m_disposed                    = false;
+			m_NetworkChannelConnected     = null;
+			m_NetworkChannelClosed        = null;
+			m_NetworkChannelMissHeartBeat = null;
+			m_NetworkChannelError         = null;
+
+			networkChannelHelper.Initialize(this);
+		}
+
+		/// <summary>
+		/// 网络频道轮询。
+		/// </summary>
+		/// <param name="deltaTime">帧间隔时间。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
+		public virtual void Update(float deltaTime, float unscaledDeltaTime)
+		{
+			// 先排水生命周期事件，再做活跃检查：频道 Close 后 PActive=false，若排水在检查之后，
+			// 已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
+			DrainLifecycleEvents();
+
+			if (m_Socket == null || !PActive) return;
+
+			ProcessSend();
+			ProcessReceive();
+
+			if (m_Socket == null || !PActive) return;
+
+			ProcessHeartBeat(unscaledDeltaTime);
+			ProcessReceivedMessage();
+			m_rpcState.Update(deltaTime);
+		}
+
+		/// <summary>
+		/// 关闭连接并释放所有相关资源。
+		/// 语义：断开连接（可重连）——重连时将重建 Socket；彻底销毁频道请调 Dispose。
+		/// </summary>
+		public virtual void Close()
+		{
+			lock (m_closeLock)
+			{
+				if (m_Socket == null) return;
+				PActive = false;
+
+				try
+				{
+					m_Socket.Dispose();
+				}
+				catch
+				{
+					// ignored
+				}
+				finally
+				{
+					m_Socket = null;
+					// 原为 NetworkChannelClosed?.Invoke(this)（可能运行在 Socket 回调线程）——改为入队封送。
+					// m_Socket==null 的早退保证重复 Close 不会重复入队；事件队列不被 Close 清空。
+					EnqueueLifecycleEvent(EChannelLifecycleEventType.Closed);
+				}
+			}
+
+			// 以下清理放在 m_closeLock 之外：ProcessSend 会先持有 m_SendPacketPool，
+			// 其中的错误回调可能再次进入 Close，若这里持 m_closeLock 再抢 m_SendPacketPool，
+			// 两条路径锁序相反会形成 ABBA 死锁。
+			lock (m_SendPacketPool) m_SendPacketPool.Clear();
+			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
+
+			// 断线/销毁时终结所有挂起的 RPC 请求，否则 await 会永久悬挂。
+			m_rpcState.Dispose();
+			lock (m_ExecutionMessageLock) m_executionMessageLinkedList.Clear();
+		}
+
+		/// <summary>
+		/// 销毁网络频道（终态：断开连接 + 释放全部状态与辅助器，频道不可复用）。
+		/// 仅断开连接请调 Close（可重连：重连时将重建 Socket）。
+		/// </summary>
+		public void Dispose()
+		{
+			if (m_disposed) return;
+
+			Close();
+			m_SendState.Dispose();
+			m_ReceiveState.Dispose();
+			m_NetworkChannelHelper.Dispose();
+
+			m_disposed = true;
+		}
+
+		/// <summary>
 		/// 将生命周期事件入队，由主线程 Update 排水时触发（封送，替代跨线程直接 Invoke）。
 		/// 调用方保留「订阅者为 null 时抛异常」的既有行为，本方法不做判空。
 		/// </summary>
@@ -144,160 +286,6 @@ namespace Hotfix.Framework.Network
 						break;
 				}
 			}
-		}
-
-		/// <summary>
-		/// 连接成功回调（参数：频道、用户自定义数据）
-		/// </summary>
-		public Action<NetworkChannelBase, object> m_NetworkChannelConnected;
-
-		/// <summary>
-		/// 连接关闭回调（参数：频道）
-		/// </summary>
-		public Action<NetworkChannelBase> m_NetworkChannelClosed;
-
-		/// <summary>
-		/// 心跳丢失回调（参数：频道、连续丢失次数）
-		/// </summary>
-		public Action<NetworkChannelBase, int> m_NetworkChannelMissHeartBeat;
-
-		/// <summary>
-		/// 网络错误回调（参数：频道、错误码、套接字错误码、错误消息）
-		/// </summary>
-		public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> m_NetworkChannelError;
-
-		/// <summary>
-		/// 初始化网络频道基类的新实例。
-		/// </summary>
-		/// <param name="name">网络频道名称。</param>
-		/// <param name="networkChannelHelper">网络频道辅助器。</param>
-		/// <param name="rpcTimeout">RPC超时时间</param>
-		public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
-		{
-			Name                                           = name ?? string.Empty;
-			m_SendPacketPool                               = new FuLinkedList<MessageObject>();
-			m_NetworkChannelHelper                         = networkChannelHelper;
-			m_EAddressFamily                               = EAddressFamily.Unknown;
-			m_HeartBeatInterval                            = DEFAULT_HEART_BEAT_INTERVAL;
-			m_MissHeartBeatCountByClose                    = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
-			m_ResetHeartBeatElapseSecondsWhenReceivePacket = false;
-			m_Socket                                       = null;
-			m_SendState                                    = new SendState();
-			m_ReceiveState                                 = new ReceiveState();
-			m_HeartBeatState                               = new HeartBeatState();
-			m_RpcState                                     = new RpcState(rpcTimeout);
-			m_SentPacketCount                              = 0;
-			m_ReceivedPacketCount                          = 0;
-			PActive                                        = false;
-			m_IsConnecting                                 = false;
-			m_disposed                                     = false;
-			m_NetworkChannelConnected                      = null;
-			m_NetworkChannelClosed                         = null;
-			m_NetworkChannelMissHeartBeat                  = null;
-			m_NetworkChannelError                          = null;
-
-			networkChannelHelper.Initialize(this);
-		}
-
-		/// <summary>
-		/// 获取网络频道名称。
-		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
-		/// 获取网络频道所使用的 Socket。
-		/// </summary>
-		public INetworkSocket Socket => m_Socket;
-
-		/// <summary>
-		/// 获取是否已连接。
-		/// </summary>
-		public bool Connected => m_Socket is { IsConnected: true };
-
-		/// <summary>
-		/// 获取网络地址类型。
-		/// </summary>
-		public EAddressFamily EAddressFamily => m_EAddressFamily;
-
-		/// <summary>
-		/// 网络频道轮询。
-		/// </summary>
-		/// <param name="deltaTime">帧间隔时间。</param>
-		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-		public virtual void Update(float deltaTime, float unscaledDeltaTime)
-		{
-			// 先排水生命周期事件，再做活跃检查：频道 Close 后 PActive=false，若排水在检查之后，
-			// 已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
-			DrainLifecycleEvents();
-
-			if (m_Socket == null || !PActive) return;
-
-			ProcessSend();
-			ProcessReceive();
-
-			if (m_Socket == null || !PActive) return;
-
-			ProcessHeartBeat(unscaledDeltaTime);
-			ProcessReceivedMessage();
-			m_RpcState.Update(deltaTime, unscaledDeltaTime);
-		}
-
-		/// <summary>
-		/// 关闭连接并释放所有相关资源。
-		/// 语义：断开连接（可重连）——重连时将重建 Socket；彻底销毁频道请调 Dispose。
-		/// </summary>
-		public virtual void Close()
-		{
-			lock (m_closeLock)
-			{
-				if (m_Socket == null) return;
-				PActive = false;
-
-				try
-				{
-					m_Socket.Dispose();
-				}
-				catch
-				{
-					// ignored
-				}
-				finally
-				{
-					m_Socket = null;
-					// 原为 NetworkChannelClosed?.Invoke(this)（可能运行在 Socket 回调线程）——改为入队封送。
-					// m_Socket==null 的早退保证重复 Close 不会重复入队；事件队列不被 Close 清空。
-					EnqueueLifecycleEvent(EChannelLifecycleEventType.Closed);
-				}
-
-				m_SentPacketCount     = 0;
-				m_ReceivedPacketCount = 0;
-			}
-
-			// 以下清理放在 m_closeLock 之外：ProcessSend 会先持有 m_SendPacketPool，
-			// 其中的错误回调可能再次进入 Close，若这里持 m_closeLock 再抢 m_SendPacketPool，
-			// 两条路径锁序相反会形成 ABBA 死锁。
-			lock (m_SendPacketPool) m_SendPacketPool.Clear();
-			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
-
-			// 断线/销毁时终结所有挂起的 RPC 请求，否则 await 会永久悬挂。
-			m_RpcState.Dispose();
-			lock (m_ExecutionMessageLock) m_executionMessageLinkedList.Clear();
-		}
-
-		/// <summary>
-		/// 销毁网络频道（终态：断开连接 + 释放全部状态与辅助器，频道不可复用）。
-		/// 仅断开连接请调 Close（可重连：重连时将重建 Socket）。
-		/// </summary>
-		public void Dispose()
-		{
-			if (m_disposed) return;
-
-			Close();
-			m_SendState.Dispose();
-			m_ReceiveState.Dispose();
-			m_NetworkChannelHelper.Dispose();
-
-			m_disposed = true;
 		}
 	}
 }

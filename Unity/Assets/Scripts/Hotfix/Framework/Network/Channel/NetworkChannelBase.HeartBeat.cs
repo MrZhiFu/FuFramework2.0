@@ -19,11 +19,6 @@ namespace Hotfix.Framework.Network
 		private const int DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE = 10;
 
 		/// <summary>
-		/// 当收到数据包时是否重置心跳流逝时长
-		/// </summary>
-		protected bool m_ResetHeartBeatElapseSecondsWhenReceivePacket;
-
-		/// <summary>
 		/// 心跳间隔
 		/// </summary>
 		protected float m_HeartBeatInterval;
@@ -63,8 +58,9 @@ namespace Hotfix.Framework.Network
 				m_HeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
 				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)
 				{
-					sendHeartBeat                           = true;
-					missHeartBeatCount                      = m_HeartBeatState.MissHeartBeatCount;
+					sendHeartBeat      = true;
+					missHeartBeatCount = m_HeartBeatState.MissHeartBeatCount;
+
 					m_HeartBeatState.HeartBeatElapseSeconds = 0f;
 					m_HeartBeatState.MissHeartBeatCount++;
 				}
@@ -92,50 +88,6 @@ namespace Hotfix.Framework.Network
 			{
 				// 心跳丢失达到上限。触发断开
 				Close();
-			}
-		}
-
-		/// <summary>
-		/// 获取或设置当收到消息包时是否重置心跳流逝时间。
-		/// </summary>
-		public bool ResetHeartBeatElapseSecondsWhenReceivePacket
-		{
-			get => m_ResetHeartBeatElapseSecondsWhenReceivePacket;
-			set => m_ResetHeartBeatElapseSecondsWhenReceivePacket = value;
-		}
-
-		/// <summary>
-		/// 获取丢失心跳的次数。
-		/// </summary>
-		public int MissHeartBeatCount
-		{
-			get
-			{
-				lock (m_HeartBeatLock)
-					return m_HeartBeatState.MissHeartBeatCount;
-			}
-		}
-
-		/// <summary>
-		/// 获取或设置心跳间隔时长，以秒为单位。
-		/// </summary>
-		public float HeartBeatInterval
-		{
-			get => m_HeartBeatInterval;
-			set => m_HeartBeatInterval = value;
-		}
-
-		/// <summary>
-		/// 获取心跳等待时长，以秒为单位。
-		/// </summary>
-		public float HeartBeatElapseSeconds
-		{
-			get
-			{
-				lock (m_HeartBeatLock)
-				{
-					return m_HeartBeatState.HeartBeatElapseSeconds;
-				}
 			}
 		}
 	}

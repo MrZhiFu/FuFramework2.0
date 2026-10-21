@@ -141,7 +141,8 @@ namespace Hotfix.Framework.Network
 
 			lock (m_HeartBeatLock)
 			{
-				m_HeartBeatState.Reset(m_ResetHeartBeatElapseSecondsWhenReceivePacket);
+				// 收包仅清零丢失计数，不重置流逝时长
+				m_HeartBeatState.Reset(false);
 			}
 
 			try
@@ -254,7 +255,9 @@ namespace Hotfix.Framework.Network
 				messageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
 			}
 
+#if ENABLE_NETWORK_RSP_LOG
 			DebugReceiveLog(messageObject);
+#endif
 
 			// 将收到的消息加入到链表最后（接收回调在线程池线程，需与主线程消费互斥）
 			lock (m_ExecutionMessageLock)
@@ -262,7 +265,6 @@ namespace Hotfix.Framework.Network
 				m_executionMessageLinkedList.AddLast(messageObject);
 			}
 
-			m_ReceivedPacketCount++;
 			m_ReceiveState.PrepareForPacketHeader();
 			return processSuccess;
 		}
@@ -348,14 +350,13 @@ namespace Hotfix.Framework.Network
 			// 发送进度往前推
 			m_SendState.Stream.Position += bytesSent;
 
-			// 如果未发完则续发，否则记录已发次数，并重置发送状态
+			// 如果未发完则续发，否则重置发送状态
 			if (m_SendState.Stream.Position < m_SendState.Stream.Length)
 			{
 				SendAsync();
 				return;
 			}
 
-			m_SentPacketCount++;
 			m_SendState.Reset();
 		}
 
@@ -415,9 +416,6 @@ namespace Hotfix.Framework.Network
 			}
 
 			m_SendState.Reset();
-
-			m_SentPacketCount     = 0;
-			m_ReceivedPacketCount = 0;
 
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();
 			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);

@@ -17,11 +17,6 @@ namespace Hotfix.Framework.Network
 		protected readonly ReceiveState m_ReceiveState;
 
 		/// <summary>
-		/// 接收数据包数量
-		/// </summary>
-		protected int m_ReceivedPacketCount;
-
-		/// <summary>
 		/// 接收消息ID忽略列表
 		/// </summary>
 		protected List<int> m_IgnoreReceiveIds = new();
@@ -71,7 +66,7 @@ namespace Hotfix.Framework.Network
 				try
 				{
 					// 执行RPC匹配
-					if (m_RpcState.TryReply(messageObject)) continue;
+					if (m_rpcState.TryReply(messageObject)) continue;
 
 					// 执行通知消息（锁外派发，避免长时间持锁阻塞接收线程）
 					DispatchMessage(messageObject);

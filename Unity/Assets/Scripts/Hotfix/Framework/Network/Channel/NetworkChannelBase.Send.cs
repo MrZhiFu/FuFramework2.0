@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Hotfix.Framework.Core;
+
+#if ENABLE_NETWORK_REQ_LOG
 using AOT.Framework.Core.Log;
+#endif
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -26,11 +29,6 @@ namespace Hotfix.Framework.Network
 		/// 发送消息ID忽略列表
 		/// </summary>
 		protected List<int> m_IgnoreSendIds = new();
-
-		/// <summary>
-		/// 发送数据包的数量
-		/// </summary>
-		protected int m_SentPacketCount;
 
 		/// <summary>
 		/// 向远程主机单向发送消息包（发完即忘，不等待服务器回复）。
@@ -107,7 +105,10 @@ namespace Hotfix.Framework.Network
 					{
 						// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
 						serializeResult = ProcessSendMessage(messageObject);
+
+#if ENABLE_NETWORK_REQ_LOG
 						DebugSendLog(messageObject);
+#endif
 					}
 					catch (Exception exception)
 					{
