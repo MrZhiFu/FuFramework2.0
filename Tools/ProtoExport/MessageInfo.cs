@@ -114,6 +114,12 @@ namespace FuFramework.ProtoExport
         public string MessageName { get; private set; }
 
         /// <summary>
+        /// 配对的响应消息类型名（如 ReqPlayerLogin → RespPlayerLogin）。
+        /// 由 MessageHelper 在解析后按 MessageName 配对填充；无配对响应的请求（如心跳）为 null。
+        /// </summary>
+        public string PairResponseName { get; set; }
+
+        /// <summary>
         /// 名称
         /// </summary>
         public string Name

@@ -33,7 +33,12 @@ namespace Hotfix.Framework.Network
 		protected int m_SentPacketCount;
 
 		/// <summary>
-		/// 向远程主机发送消息包(将消息对象加入发送队列，后续由 ProcessSend 处理发送逻辑)。
+		/// 向远程主机单向发送消息包（发完即忘，不等待服务器回复）。
+		/// 说明：
+		///     1. 仅校验状态后将消息加入发送队列，本方法立即返回；
+		///        序列化与实际发出由后续帧的 ProcessSend/ProcessSendMessage 完成；
+		///     2. 不等待服务器回复；需要一问一答请使用 Call（内部第一步就是调用本方法）。
+		/// 详细说明与示例见 <see cref="INetworkChannel.Send{T}"/>。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
 		/// <param name="messageObject">要发送的消息包。</param>

@@ -30,7 +30,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(6553610)]
-	public sealed class ReqBagInfo : MessageObject, IRequestMessage
+	public sealed class ReqBagInfo : MessageObject, IRequestMessage<RespBagInfo>
 	{
 	}
 
@@ -61,7 +61,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(6553612)]
-	public sealed class ReqUseItem : MessageObject, IRequestMessage
+	public sealed class ReqUseItem : MessageObject, IRequestMessage<RespUseItem>
 	{
 		/// <summary>
 		/// 道具id
@@ -109,7 +109,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(6553614)]
-	public sealed class ReqAddItem : MessageObject, IRequestMessage
+	public sealed class ReqAddItem : MessageObject, IRequestMessage<RespAddItem>
 	{
 		/// <summary>
 		/// 增加的道具，key:道具id，value:增加数量
@@ -147,7 +147,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(6553616)]
-	public sealed class ReqRemoveItem : MessageObject, IRequestMessage
+	public sealed class ReqRemoveItem : MessageObject, IRequestMessage<RespRemoveItem>
 	{
 		/// <summary>
 		/// 减少的道具，key:道具id，value:减少数量

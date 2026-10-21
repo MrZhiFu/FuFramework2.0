@@ -53,8 +53,12 @@ namespace FuFramework.ProtoExport
                     }
                     else
                     {
+                        // 有配对响应的请求携带 Req→Resp 映射接口，供客户端 Call 泛型编译期校验；其余沿用 ParentClass
+                        var parentClass = operationCodeInfo.IsRequest && !string.IsNullOrEmpty(operationCodeInfo.PairResponseName)
+                            ? $"{operationCodeInfo.ParentClass}<{operationCodeInfo.PairResponseName}>"
+                            : operationCodeInfo.ParentClass;
                         sb.AppendLine($"\t[MessageTypeHandler({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
-                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
+                        sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {parentClass}");
                     }
 
                     sb.AppendLine("\t{");

@@ -227,16 +227,28 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 向远程主机发送消息包
+		/// 向远程主机发起 RPC 调用：发送请求并挂起等待服务器响应。
+		/// 说明：
+		///     1. 第一步即调用 Send 完成物理发送（复用同一条发送管线）；
+		///     2. 随后按 UniqueId 向 RpcState 登记等待，收到配对回包时唤醒并返回结果；
+		///        超时或断线时以错误/取消结束。
+		/// 详细说明与示例见 <see cref="INetworkChannel.Call{TResponse}"/>。
 		/// </summary>
-		/// <param name="messageObject"></param>
-		/// <typeparam name="TResult"></typeparam>
-		public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where TResult : MessageObject, IResponseMessage
+		/// <typeparam name="TResponse">响应消息类型，从请求实现的 IRequestMessage&lt;TResponse&gt; 自动推断。</typeparam>
+		/// <param name="messageObject">请求消息对象（须为生成器产出的、实现映射接口的 Req 消息）。</param>
+		/// <returns>服务器响应消息；响应类型与 TResponse 不符时抛出异常（而非返回 null）。</returns>
+		public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)
+			where TResponse : MessageObject, IResponseMessage
 		{
 			messageObject.NotNull(nameof(messageObject));
-			Send(messageObject);
-			var result = await m_RpcState.Call(messageObject);
-			return result as TResult;
+			// 生成器产出的 Req 消息均为 MessageObject 子类；显式转换以便复用发送管线与 RPC 登记。
+			var request = (MessageObject)messageObject;
+			Send(request);
+			var result = await m_RpcState.Call(request);
+			if (result is TResponse response) return response;
+
+			// 编译期已锁定 Req→Resp 配对，此处只可能因服务器回包类型异常触发——显式失败优于原 as 的静默 null。
+			throw new InvalidOperationException($"RPC 响应类型不匹配。请求:{request.GetType().Name}, 期望响应:{typeof(TResponse).Name}, 实际:{result?.GetType().Name ?? "null"}");
 		}
 
 		/// <summary>

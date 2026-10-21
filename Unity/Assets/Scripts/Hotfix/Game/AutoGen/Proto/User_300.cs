@@ -54,7 +54,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660810)]
-	public sealed class ReqLogin : MessageObject, IRequestMessage
+	public sealed class ReqLogin : MessageObject, IRequestMessage<RespLogin>
 	{
 		/// <summary>
 		/// 用户名
@@ -144,7 +144,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660812)]
-	public sealed class ReqPlayerCreate : MessageObject, IRequestMessage
+	public sealed class ReqPlayerCreate : MessageObject, IRequestMessage<RespPlayerCreate>
 	{
 		/// <summary>
 		/// 账号ID
@@ -186,7 +186,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660814)]
-	public sealed class ReqPlayerList : MessageObject, IRequestMessage
+	public sealed class ReqPlayerList : MessageObject, IRequestMessage<RespPlayerList>
 	{
 		/// <summary>
 		/// 账号ID
@@ -222,7 +222,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageTypeHandler(19660816)]
-	public sealed class ReqPlayerLogin : MessageObject, IRequestMessage
+	public sealed class ReqPlayerLogin : MessageObject, IRequestMessage<RespPlayerLogin>
 	{
 		/// <summary>
 		/// 角色ID

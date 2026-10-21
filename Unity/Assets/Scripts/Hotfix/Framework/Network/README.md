@@ -101,9 +101,9 @@ public interface INetworkChannel
     void Close();
 
     // 消息发送
-    void Send<T>(T messageObject) where T : MessageObject;          // 普通消息
-    Task<TResult> Call<TResult>(MessageObject messageObject)        // RPC 调用
-        where TResult : MessageObject, IResponseMessage;
+    void Send<T>(T messageObject) where T : MessageObject;                  // 单向消息（发完即忘）
+    UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)  // RPC 调用（Req→Resp 编译期配对）
+        where TResponse : MessageObject, IResponseMessage;
 }
 ```
 
@@ -265,8 +265,8 @@ var moveNotify = new PlayerMoveNotify
 };
 m_channel.Send(moveNotify);
 
-// RPC 调用（请求-响应模式）
-public async Task<LoginResponse> LoginAsync(string username, string password)
+// RPC 调用（请求-响应模式）：响应类型由请求的 IRequestMessage<TResponse> 映射接口自动推断
+public async UniTask<LoginResponse> LoginAsync(string username, string password)
 {
     var request = new LoginRequest
     {
@@ -276,7 +276,7 @@ public async Task<LoginResponse> LoginAsync(string username, string password)
 
     try
     {
-        var response = await m_channel.Call<LoginResponse>(request);
+        var response = await m_channel.Call(request);
         return response;
     }
     catch (TimeoutException)

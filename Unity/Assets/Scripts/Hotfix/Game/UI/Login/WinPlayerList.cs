@@ -91,7 +91,7 @@ namespace Hotfix.Game.UI
 		{
 	        // 请求玩家登录
 	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
-	        var respPlayerLogin = await NetworkModule.Instance.GetNetworkChannel("network").Call<RespPlayerLogin>(reqPlayerLogin);
+	        var respPlayerLogin = await NetworkModule.Instance.GetNetworkChannel("network").Call(reqPlayerLogin);
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
