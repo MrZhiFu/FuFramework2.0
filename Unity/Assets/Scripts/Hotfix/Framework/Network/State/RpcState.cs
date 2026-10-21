@@ -62,7 +62,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
 		public bool TryReply(MessageObject message)
 		{
-			// 非响应消息（Notify/Req）直接跳过配对：模式匹配编译为 isinst 指令，零分配，无需类型缓存
+			// 非响应消息（Notify/Req）直接跳过配对
 			if (message is not IResponseMessage responseMessage) return false;
 			if (!m_waitingReplyDict.TryRemove(message.UniqueId, out var rpcMessageData)) return false;
 
