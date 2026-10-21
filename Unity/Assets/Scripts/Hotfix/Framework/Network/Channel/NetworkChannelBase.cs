@@ -174,27 +174,27 @@ namespace Hotfix.Framework.Network
 		/// <param name="rpcTimeout">RPC超时时间</param>
 		public NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
 		{
-			Name                      = name ?? string.Empty;
-			m_SendPacketPool          = new FuLinkedList<MessageObject>();
-			m_NetworkChannelHelper    = networkChannelHelper;
-			m_EAddressFamily          = EAddressFamily.Unknown;
-			m_HeartBeatInterval       = DEFAULT_HEART_BEAT_INTERVAL;
-			m_MissHeartBeatCountByClose = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			Name                                           = name ?? string.Empty;
+			m_SendPacketPool                               = new FuLinkedList<MessageObject>();
+			m_NetworkChannelHelper                         = networkChannelHelper;
+			m_EAddressFamily                               = EAddressFamily.Unknown;
+			m_HeartBeatInterval                            = DEFAULT_HEART_BEAT_INTERVAL;
+			m_MissHeartBeatCountByClose                    = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			m_ResetHeartBeatElapseSecondsWhenReceivePacket = false;
-			m_Socket                  = null;
-			m_SendState               = new SendState();
-			m_ReceiveState            = new ReceiveState();
-			m_HeartBeatState          = new HeartBeatState();
-			m_RpcState                = new RpcState(rpcTimeout);
-			m_SentPacketCount         = 0;
-			m_ReceivedPacketCount     = 0;
-			PActive                   = false;
-			m_IsConnecting            = false;
-			m_disposed                = false;
-			m_NetworkChannelConnected = null;
-			m_NetworkChannelClosed    = null;
-			m_NetworkChannelMissHeartBeat = null;
-			m_NetworkChannelError         = null;
+			m_Socket                                       = null;
+			m_SendState                                    = new SendState();
+			m_ReceiveState                                 = new ReceiveState();
+			m_HeartBeatState                               = new HeartBeatState();
+			m_RpcState                                     = new RpcState(rpcTimeout);
+			m_SentPacketCount                              = 0;
+			m_ReceivedPacketCount                          = 0;
+			PActive                                        = false;
+			m_IsConnecting                                 = false;
+			m_disposed                                     = false;
+			m_NetworkChannelConnected                      = null;
+			m_NetworkChannelClosed                         = null;
+			m_NetworkChannelMissHeartBeat                  = null;
+			m_NetworkChannelError                          = null;
 
 			networkChannelHelper.Initialize(this);
 		}

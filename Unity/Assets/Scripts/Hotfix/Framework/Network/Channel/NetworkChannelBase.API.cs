@@ -247,7 +247,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="receiveIds">接收消息ID忽略列表。传 null 清空。</param>
 		public void SetIgnoreLogNetworkIds(List<int> sendIds, List<int> receiveIds)
 		{
-			m_IgnoreSendIds    = sendIds ?? new List<int>();
+			m_IgnoreSendIds    = sendIds    ?? new List<int>();
 			m_IgnoreReceiveIds = receiveIds ?? new List<int>();
 		}
 	}

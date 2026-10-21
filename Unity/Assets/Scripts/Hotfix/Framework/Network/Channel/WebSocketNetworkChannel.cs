@@ -20,15 +20,15 @@ namespace Hotfix.Framework.Network
 		private const int CONNECT_TIMEOUT_MILLISECONDS = 15000;
 
 		/// <summary>
+		/// 最近一次连接的地址，用于在地址解析完成后创建 WebSocket 客户端。
+		/// </summary>
+		private Uri m_lastAddress;
+
+		/// <summary>
 		/// 取消令牌源。每次连接都会重建（见 OnConnectEndPointReady），
 		/// 原实现为 readonly 且只 Cancel 不重建，导致 Cancel 之后频道永远无法重连。
 		/// </summary>
 		private CancellationTokenSource m_cancellationTokenSource = new();
-
-		/// <summary>
-		/// 最近一次连接的地址，用于在地址解析完成后创建 WebSocket 客户端。
-		/// </summary>
-		private Uri m_lastAddress;
 
 		/// <summary>
 		/// 初始化网络频道的新实例。

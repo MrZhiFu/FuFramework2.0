@@ -40,7 +40,6 @@ namespace Hotfix.Framework.Network
 		public override void Connect(Uri address, object userData = null)
 		{
 			if (m_IsConnecting) return;
-
 			base.Connect(address, userData);
 		}
 
