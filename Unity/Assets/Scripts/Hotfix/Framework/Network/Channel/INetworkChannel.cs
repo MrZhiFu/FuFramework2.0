@@ -11,11 +11,6 @@ namespace Hotfix.Framework.Network
 	public interface INetworkChannel
 	{
 		/// <summary>
-		/// 获取网络频道名称。
-		/// </summary>
-		string Name { get; }
-
-		/// <summary>
 		/// 获取网络频道所使用的 Socket。
 		/// </summary>
 		INetworkSocket Socket { get; }

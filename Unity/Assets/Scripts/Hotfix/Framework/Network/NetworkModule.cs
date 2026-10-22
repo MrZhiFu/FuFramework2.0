@@ -10,7 +10,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 网络管理模块。
 	/// 功能：
-	///     1. 管理网络频道。
+	///     1. 持有唯一的网络频道（单连接模型；传输实现由编译宏在创建时决定 TCP/WS）。
 	///     2. 网络事件广播。
 	///     3. 驱动网络频道Update轮询。
 	/// </summary>
@@ -22,14 +22,9 @@ namespace Hotfix.Framework.Network
 		public static NetworkModule Instance { get; private set; }
 
 		/// <summary>
-		/// 所有网络频道的字典，Key为网络频道名称，Value为网络频道对象。
+		/// 当前网络频道（模块内唯一；未创建时为 null）。
 		/// </summary>
-		private readonly Dictionary<string, NetworkChannelBase> m_networkChannelDict = new();
-
-		/// <summary>
-		/// 遍历频道字典时使用的快照缓冲，避免遍历过程中字典被修改。
-		/// </summary>
-		private readonly List<NetworkChannelBase> m_networkChannelSnapshot = new();
+		private NetworkChannelBase m_networkChannel;
 
 		/// <summary>
 		/// 事件组件。
@@ -61,21 +56,10 @@ namespace Hotfix.Framework.Network
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			// 先快照再遍历：Update 内部会触达用户消息处理器，
-			// 用户代码可能调用 DestroyNetworkChannel/CreateNetworkChannel 修改字典，
-			// 直接遍历字典会抛 InvalidOperationException 中断整帧。
-			m_networkChannelSnapshot.Clear();
-			foreach (var networkChannel in m_networkChannelDict.Values)
-			{
-				m_networkChannelSnapshot.Add(networkChannel);
-			}
-
-			foreach (var channel in m_networkChannelSnapshot)
-			{
-				channel.Update(deltaTime, unscaledDeltaTime);
-			}
-
-			m_networkChannelSnapshot.Clear();
+			// 频道未创建时静默跳过（Update 内部有未连接早退守卫）。
+			// 用户代码可能在消息处理器里 CreateChannel/DestroyChannel，
+			// 但单字段无遍历过程，不存在集合失效问题。
+			m_networkChannel?.Update(deltaTime, unscaledDeltaTime);
 		}
 
 		/// <summary>
@@ -83,25 +67,8 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			// 同样先快照：OnDispose 会广播关闭事件并触达用户处理器，
-			// 用户代码可能在此期间销毁/创建频道。
-			m_networkChannelSnapshot.Clear();
-			foreach (var networkChannel in m_networkChannelDict.Values)
-			{
-				m_networkChannelSnapshot.Add(networkChannel);
-			}
-
-			foreach (var networkChannelBase in m_networkChannelSnapshot)
-			{
-				networkChannelBase.m_NetworkChannelConnected     -= OnNetworkChannelConnected;
-				networkChannelBase.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
-				networkChannelBase.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
-				networkChannelBase.m_NetworkChannelError         -= OnNetworkChannelError;
-				networkChannelBase.Dispose();
-			}
-
-			m_networkChannelSnapshot.Clear();
-			m_networkChannelDict.Clear();
+			// 单频道直接走 DestroyChannel（退订 + Dispose + 置空同一入口）。
+			DestroyChannel();
 			Instance = null;
 		}
 

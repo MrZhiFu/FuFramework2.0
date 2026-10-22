@@ -21,8 +21,6 @@ namespace Hotfix.Game.UI
 		 private List<PlayerInfo> playerList = new();
 		 private PlayerInfo       m_selectedPlayerInfo;
 
-		 private static INetworkChannel networkChannel; // 网络频道
-
 		 public static string serverIp   = "127.0.0.1"; // 服务器IP
 		 public static int    serverPort = 29100;       // 服务器端口
 
@@ -91,7 +89,7 @@ namespace Hotfix.Game.UI
 		{
 	        // 请求玩家登录
 	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
-	        var respPlayerLogin = await NetworkModule.Instance.GetNetworkChannel("network").Call(reqPlayerLogin);
+	        var respPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin);
 	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
 	        // 打开主界面
@@ -147,23 +145,25 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnLoginClick(EventContext ctx)
 		{
-			if (networkChannel is { Connected: true })
+			var channel = NetworkModule.Instance.Channel;
+			if (channel is { Connected: true })
 			{
 				LoginAsync().Forget();
 				return;
 			}
 
-			if (networkChannel != null && NetworkModule.Instance.HasNetworkChannel("network") && !networkChannel.Connected)
+			if (channel != null)
 			{
-				NetworkModule.Instance.DestroyNetworkChannel("network");
+				// 未连接的旧频道直接销毁重建，保证装配状态干净
+				NetworkModule.Instance.DestroyChannel();
 			}
 
-			networkChannel = NetworkModule.Instance.CreateNetworkChannel("network", new DefaultNetworkChannelHelper());
+			channel = NetworkModule.Instance.CreateChannel(new DefaultNetworkChannelHelper());
 
 			// 心跳处理器由框架在创建频道时自动装配（DefaultNetworkChannelHelper.Initialize →
 			// 生成式静态注册表会注册游戏侧 PacketHeartBeatHandler），此处无需再手动注册。
 			// （原先的手动补注册是框架反射扫描顺序问题的兜底，已随生成式静态注册消除。）
-			networkChannel.Connect(new Uri($"tcp://{serverIp}:{serverPort}"));
+			channel.Connect(new Uri($"tcp://{serverIp}:{serverPort}"));
 		}
 
 		#endregion

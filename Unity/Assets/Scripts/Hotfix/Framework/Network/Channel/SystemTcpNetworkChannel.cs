@@ -30,7 +30,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="name">网络频道名称。</param>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		public SystemTcpNetworkChannel(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(name, networkChannelHelper, rpcTimeout) { }
+		public SystemTcpNetworkChannel(INetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
 
 		/// <summary>
 		/// 连接到远程主机。
@@ -206,7 +206,7 @@ namespace Hotfix.Framework.Network
 			if (!processSuccess)
 			{
 				// 兼容原有语义：解析失败不抛异常，只记录日志（接收续接由调用方的 finally 保证）。
-				FuLogger.LogWarning($"[{Name}] 数据包解析失败，已丢弃。");
+				FuLogger.LogWarning("数据包解析失败，已丢弃。");
 			}
 		}
 

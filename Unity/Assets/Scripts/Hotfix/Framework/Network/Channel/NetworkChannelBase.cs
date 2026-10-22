@@ -123,11 +123,6 @@ namespace Hotfix.Framework.Network
 		public Action<NetworkChannelBase, ENetworkErrorCode, SocketError, string> m_NetworkChannelError;
 
 		/// <summary>
-		/// 获取网络频道名称。
-		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
 		/// 获取网络频道所使用的 Socket。
 		/// </summary>
 		public INetworkSocket Socket => m_Socket;
@@ -140,12 +135,10 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道基类的新实例。
 		/// </summary>
-		/// <param name="name">网络频道名称。</param>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		protected NetworkChannelBase(string name, INetworkChannelHelper networkChannelHelper, int rpcTimeout)
+		protected NetworkChannelBase(INetworkChannelHelper networkChannelHelper, int rpcTimeout)
 		{
-			Name                          = name ?? string.Empty;
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
 			m_NetworkChannelHelper        = networkChannelHelper;
 			m_HeartBeatInterval           = DEFAULT_HEART_BEAT_INTERVAL;

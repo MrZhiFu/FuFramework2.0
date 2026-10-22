@@ -63,27 +63,27 @@ IHeartBeatMessage → 心跳消息
 
 ### 4.1 NetworkModule
 
-网络管理模块，继承自 `ModuleBase`，是网络系统的统一入口。
+网络管理模块，继承自 `ModuleBase`，是网络系统的统一入口。**单频道模型**：模块直接持有唯一网络频道，业务侧通过 `Call`/`Send` 门面收发消息，无需感知频道对象与频道名。
 
 **核心属性：**
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
 | `Instance` | `NetworkModule` | 模块单例 |
-| `NetworkChannelCount` | `int` | 网络频道数量 |
+| `Channel` | `INetworkChannel` | 当前网络频道（未创建时为 `null`） |
 
 **核心方法：**
 
 ```csharp
-// 创建网络频道
-INetworkChannel CreateNetworkChannel(string channelName, INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
+// 频道生命周期（单频道模型：模块内唯一，传输由编译宏在创建时决定 TCP/WS）
+INetworkChannel CreateChannel(INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
+bool DestroyChannel()
+void Connect(Uri address, object userData = null)   // 转发频道 Connect
+void Close()                                        // 转发频道 Close（可重连）
 
-// 获取/销毁频道
-bool HasNetworkChannel(string channelName)
-INetworkChannel GetNetworkChannel(string channelName)
-INetworkChannel[] GetAllNetworkChannels()
-void GetAllNetworkChannels(List<INetworkChannel> results)
-bool DestroyNetworkChannel(string channelName)
+// 消息收发门面（业务侧日常入口，无需感知频道对象）
+UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)   // RPC：Req→Resp 编译期配对
+void Send<T>(T messageObject)                                                  // 单向：发完即忘
 ```
 
 ### 4.2 INetworkChannel
@@ -222,20 +222,10 @@ using Hotfix.Framework.Network;
 
 public class NetworkExample
 {
-    private NetworkModule m_networkModule;
-    private INetworkChannel m_channel;
-
     public void Init()
     {
-        m_networkModule = ModuleManager.GetModule<NetworkModule>();
-
-        // 创建网络频道（TCP）
-        var helper = new DefaultNetworkChannelHelper();
-        m_channel = m_networkModule.CreateNetworkChannel(
-            "GameChannel",
-            helper,
-            rpcTimeout: 5000
-        );
+        // 创建网络频道（模块内唯一；传输由编译宏在创建时决定 TCP/WS）
+        NetworkModule.Instance.CreateChannel(new DefaultNetworkChannelHelper(), rpcTimeout: 5000);
 
         // 注册消息处理器（使用 ProtoMessageHandlerRegistry）
         ProtoMessageHandlerRegistry.Add(new LoginMessageHandler());
@@ -244,11 +234,12 @@ public class NetworkExample
 
     public void Connect()
     {
-        // TCP 连接
-        m_channel.Connect(new Uri("tcp://127.0.0.1:8888"));
+        // 连接服务器（转发频道 Connect；WebGL 平台底层自动使用 WebSocket 实现）
+        NetworkModule.Instance.Connect(new Uri("tcp://127.0.0.1:8888"));
 
-        // WebSocket 连接
-        // m_channel.Connect(new Uri("ws://127.0.0.1:8888/ws"));
+        // 日常收发：业务侧只写这两行
+        // var resp = await NetworkModule.Instance.Call(new ReqBagInfo());
+        // NetworkModule.Instance.Send(moveNotify);
     }
 }
 ```
@@ -403,7 +394,7 @@ Network/
 
 1. **主线程限制**：网络回调（数据包消息与 Connected/Closed/Error 生命周期事件）均在主线程执行——
    Socket 回调线程只入队，主线程 channel.Update 排水后触发；消息处理器中避免阻塞操作
-2. **生命周期事件的销毁语义**：频道销毁（DestroyNetworkChannel 内部会调频道 Dispose）后 Update 不再被调用，未派发的生命周期事件将随频道对象一并丢弃（不入池、无泄漏）
+2. **生命周期事件的销毁语义**：频道销毁（DestroyChannel 内部会调频道 Dispose）后 Update 不再被调用，未派发的生命周期事件将随频道对象一并丢弃（不入池、无泄漏）
 3. **消息序列化**：消息类必须有无参构造函数，且字段必须可序列化
 4. **内存管理**：接收缓冲区大小需根据消息大小合理配置
 5. **心跳间隔**：根据服务器配置设置合理的心跳间隔（通常 5-30 秒）
@@ -417,7 +408,7 @@ Network/
    分别对应编译宏 `ENABLE_NETWORK_REQ_LOG` / `ENABLE_NETWORK_RSP_LOG`（Editor 类：`NetworkLogScriptingDefineSymbols`）
 2. **日志效果**：开启后每收/发一条消息打印 `消息ID、UniqueId、消息内容(Json)`
 3. **过滤高频消息**（如心跳、移动同步）：调用
-   `channel.SetIgnoreLogNetworkIds(sendIds, receiveIds)` 传入要忽略打印的消息 ID 列表
+   `NetworkModule.Instance.Channel.SetIgnoreLogNetworkIds(sendIds, receiveIds)` 传入要忽略打印的消息 ID 列表
    （传 null 清空对应列表；两列表独立，null 安全）
 
 > 注意：宏变更会触发全量重编译，团队协作时不要长期开启；日志在主线程输出，高频包建议配合忽略列表使用。

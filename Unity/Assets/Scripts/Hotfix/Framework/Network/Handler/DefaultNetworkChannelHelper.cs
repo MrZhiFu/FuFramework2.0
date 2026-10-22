@@ -90,7 +90,7 @@ namespace Hotfix.Framework.Network
 		///     「后注册覆盖」，而编译产物中基类排在派生类之后，框架扫描的结果是**基类生效**
 		///     （基类 Handler() 仅抛 NotImplementedException）。
 		///     此前运行期之所以正常，是因为游戏侧 WinPlayerList.OnBtnLoginClick 在
-		///     CreateNetworkChannel（内部即触发本方法）之后又手动注册了一次该派生类。
+		///     CreateChannel（内部即触发本方法）之后又手动注册了一次该派生类。
 		///     现由生成物 Generated/ProtoMessageRegistry.g.cs 登记装配委托，在本方法之后追加注册
 		///     框架外的具体处理器（见 <see cref="AddCustomHandlerRegistrar"/>），
 		///     使框架侧自洽、不再依赖游戏侧的手动补注册；最终生效者仍是游戏侧实现（后注册者生效）。
@@ -250,7 +250,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogInfo($"网络连接成功......{ne.NetworkChannel.Name}");
+			FuLogger.LogInfo("网络连接成功");
 		}
 
 		/// <summary>
@@ -261,7 +261,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogInfo($"网络连接关闭......{ne.NetworkChannel.Name}");
+			FuLogger.LogInfo("网络连接关闭");
 		}
 
 		/// <summary>
@@ -272,7 +272,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogWarning($"网络频道 '{ne.NetworkChannel.Name}' 心跳连续丢失 {ne.MissCount} 次。");
+			FuLogger.LogWarning($"网络心跳连续丢失 {ne.MissCount} 次。");
 		}
 
 		/// <summary>
@@ -283,7 +283,7 @@ namespace Hotfix.Framework.Network
 		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogError($"网络频道 '{ne.NetworkChannel.Name}' 发生错误，错误码：'{ne.ErrorCode}'，错误消息：'{ne.ErrorMessage}'。");
+			FuLogger.LogError($"网络错误，错误码：'{ne.ErrorCode}'，错误消息：'{ne.ErrorMessage}'。");
 			ne.NetworkChannel.Close();
 		}
 	}

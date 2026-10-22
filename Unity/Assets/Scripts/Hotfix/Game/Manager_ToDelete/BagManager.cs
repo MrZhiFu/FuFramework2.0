@@ -60,7 +60,7 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// </summary>
 		public async UniTask RequestGetBagInfoAsync()
 		{
-			var respBagInfo = await NetworkModule.Instance.GetNetworkChannel("network").Call(new ReqBagInfo());
+			var respBagInfo = await NetworkModule.Instance.Call(new ReqBagInfo());
 			if (respBagInfo.ErrorCode != default)
 			{
 				return;
@@ -79,7 +79,7 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// <param name="count">道具数量</param>
 		public async UniTask RequestUseItemAsync(int itemId, long count = 1)
 		{
-			var respUseItem = await NetworkModule.Instance.GetNetworkChannel("network").Call(new ReqUseItem() { ItemId = itemId, Count = count });
+			var respUseItem = await NetworkModule.Instance.Call(new ReqUseItem() { ItemId = itemId, Count = count });
 			if (respUseItem.ErrorCode != default)
 			{
 				return;
