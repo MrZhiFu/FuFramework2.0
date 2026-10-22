@@ -32,7 +32,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 接收包头处理器
 		/// </summary>
-		public IPacketReceiveHeaderHandler PacketHeader { get; private set; }
+		public DefaultPacketReceiveHeaderHandler PacketHeader { get; private set; }
 
 		/// <summary>
 		/// 接收数据流
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="targetLength">目标长度</param>
 		/// <param name="packetHeader">接收包头处理器</param>
-		public void Reset(int targetLength, IPacketReceiveHeaderHandler packetHeader)
+		public void Reset(int targetLength, DefaultPacketReceiveHeaderHandler packetHeader)
 		{
 			if (targetLength < 0) throw new InvalidOperationException("目标长度无效。");
 

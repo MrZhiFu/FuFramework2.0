@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 网络频道帮助器（负责装配处理器与序列化收发包）
 		/// </summary>
-		protected readonly INetworkChannelHelper m_NetworkChannelHelper;
+		protected readonly DefaultNetworkChannelHelper m_NetworkChannelHelper;
 
 		/// <summary>
 		/// 网络Socket 对象
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		protected NetworkChannelBase(INetworkChannelHelper networkChannelHelper, int rpcTimeout)
+		protected NetworkChannelBase(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout)
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
 			m_NetworkChannelHelper        = networkChannelHelper;

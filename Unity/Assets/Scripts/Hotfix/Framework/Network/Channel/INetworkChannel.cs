@@ -23,74 +23,74 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息发送包头处理器
 		/// </summary>
-		IPacketSendHeaderHandler PacketSendHeaderHandler { get; }
+		DefaultPacketSendHeaderHandler PacketSendHeaderHandler { get; }
 
 		/// <summary>
 		/// 消息发送内容处理器
 		/// </summary>
-		IPacketSendBodyHandler PacketSendBodyHandler { get; }
+		DefaultPacketSendBodyHandler PacketSendBodyHandler { get; }
 
 		/// <summary>
 		/// 心跳消息处理器
 		/// </summary>
-		IPacketHeartBeatHandler PacketHeartBeatHandler { get; }
+		DefaultPacketHeartBeatHandler PacketHeartBeatHandler { get; }
 
 		/// <summary>
 		/// 消息接收包头处理器
 		/// </summary>
-		IPacketReceiveHeaderHandler PacketReceiveHeaderHandler { get; }
+		DefaultPacketReceiveHeaderHandler PacketReceiveHeaderHandler { get; }
 
 		/// <summary>
 		/// 消息接收内容处理器
 		/// </summary>
-		IPacketReceiveBodyHandler PacketReceiveBodyHandler { get; }
+		DefaultPacketReceiveBodyHandler PacketReceiveBodyHandler { get; }
 
 		/// <summary>
 		/// 消息压缩处理器
 		/// </summary>
-		IMessageCompressHandler MessageCompressHandler { get; }
+		DefaultMessageCompressHandler MessageCompressHandler { get; }
 
 		/// <summary>
 		/// 注册消息压缩处理器
 		/// </summary>
 		/// <param name="handler">处理器对象</param>
-		void RegisterMessageCompressHandler(IMessageCompressHandler handler);
+		void RegisterMessageCompressHandler(DefaultMessageCompressHandler handler);
 
 		/// <summary>
 		/// 注册消息解压处理器
 		/// </summary>
 		/// <param name="handler">处理器对象</param>
-		void RegisterMessageDecompressHandler(IMessageDecompressHandler handler);
+		void RegisterMessageDecompressHandler(DefaultMessageDecompressHandler handler);
 
 		/// <summary>
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">处理器对象</param>
-		void RegisterHandler(IPacketSendHeaderHandler handler);
+		void RegisterHandler(DefaultPacketSendHeaderHandler handler);
 
 		/// <summary>
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">处理器对象。</param>
-		void RegisterHandler(IPacketSendBodyHandler handler);
+		void RegisterHandler(DefaultPacketSendBodyHandler handler);
 
 		/// <summary>
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">处理器对象。</param>
-		void RegisterHandler(IPacketReceiveHeaderHandler handler);
+		void RegisterHandler(DefaultPacketReceiveHeaderHandler handler);
 
 		/// <summary>
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">处理器对象。</param>
-		void RegisterHandler(IPacketReceiveBodyHandler handler);
+		void RegisterHandler(DefaultPacketReceiveBodyHandler handler);
 
 		/// <summary>
 		/// 注册网络消息心跳处理函数，用于处理心跳消息
 		/// </summary>
 		/// <param name="handler">处理器对象</param>
-		void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler);
+		void RegisterHeartBeatHandler(DefaultPacketHeartBeatHandler handler);
 
 		/// <summary>
 		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。

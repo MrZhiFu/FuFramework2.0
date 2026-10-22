@@ -8,7 +8,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
-- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[MessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
+- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
 - **显式装配包处理器**：`DefaultNetworkChannelHelper` 直接装配框架自带的 7 个处理器，不再反射扫描程序集；自定义处理器须通过 `AddCustomHandlerRegistrar` 或重写 `RegisterCustomHandlers` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
@@ -30,7 +30,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 │  │  - RPC 状态管理                                      │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  INetworkChannelHelper (频道辅助器)                  │   │
+│  │  DefaultNetworkChannelHelper (频道辅助器)             │   │
 │  │  - 包头/包体序列化与反序列化                          │   │
 │  │  - 消息压缩/解压                                     │   │
 │  │  - 心跳包构建与识别                                   │   │
@@ -76,7 +76,7 @@ IHeartBeatMessage → 心跳消息
 
 ```csharp
 // 频道生命周期（单频道模型：模块内唯一，传输由编译宏在创建时决定 TCP/WS）
-INetworkChannel CreateChannel(INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
+INetworkChannel CreateChannel(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
 bool DestroyChannel()
 void Connect(Uri address, object userData = null)   // 转发频道 Connect
 void Close()                                        // 转发频道 Close（可重连）
@@ -122,34 +122,36 @@ public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/ProtoMessageRegistry.g.cs` 中的
 `ProtoMessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
 
-**方式二：用户处理方法 —— 方法级别 `[MessageHandler(typeof(消息类型), nameof(方法名))]`**
+**方式二：用户处理方法 —— 方法级别 `[NotifyMessageHandler(typeof(消息类型), nameof(方法名))]`**
 
 ```csharp
-public sealed class BagManager : Singleton<BagManager>, IMessageHandler
+public sealed class BagManager : Singleton<BagManager>, INotifyMessageHandler
 {
-    [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
-    internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
+    [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(OnNotifyBagInfoChanged))]
+    internal void OnNotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
 }
 ```
+
+> 命名惯例：处理方法用 `On` 前缀（如 `OnNotifyBagInfoChanged`）——方法名表达**处理动作**，与消息类型名区分。
 
 生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**直接委托**：
 
 ```csharp
-new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChanged",
-    static (handler, message) => ((BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)),
+new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "OnNotifyBagInfoChanged",
+    static (handler, message) => ((BagManager)handler).OnNotifyBagInfoChanged((NotifyBagInfoChanged)message)),
 ```
 
 运行时 `ProtoMessageHandlerRegistry.Add(this)` 只做「绑定委托」，**不查找方法、不使用任何反射**
 （无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）。
 
-> **可见性契约（重要）**：由于生成物直接调用该方法，`[MessageHandler]` 标注的方法
+> **可见性契约（重要）**：由于生成物直接调用该方法，`[NotifyMessageHandler]` 标注的方法
 > **必须是 `internal` 或 `public`**（默认的 `private` 会导致生成脚本**报错并中止**，
 > 报错信息会指出文件、行号与方法名）。方法参数类型必须与 `typeof(...)` 声明的消息类型一致。
 > 生成物位于同程序集 `Hotfix.Framework.Network`，故 `internal` 即可。
 
 > **重要**：新增 / 删除协议消息、修改消息ID 后，运行**一键脚本**
 > `Protobuf/Proto2CsExport-All.bat`（Windows；先导出 C# 再生成注册表）或 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`（macOS/Linux）。
-> 若只新增 `[MessageHandler]` 方法（未动 proto），跑 `Protobuf/gen-proto-registry.bat` 即可。
+> 若只新增 `[NotifyMessageHandler]` 方法（未动 proto），跑 `Protobuf/gen-proto-registry.bat` 即可。
 > 否则注册表与实际代码不一致（未登记的处理器类型会在运行时报错日志）。
 
 **包处理器装配（`DefaultNetworkChannelHelper`）**
@@ -189,19 +191,19 @@ DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
 | `ReceiveState` | 接收状态管理：MemoryStream + 包解析 |
 | `RpcState` | RPC 状态管理：等待回复字典 + 超时 |
 
-### 4.6 包处理接口
+### 4.6 包处理器
 
-接口与默认实现同住 `Handler/`（接口在 `Handler/Interface/`，实现在 `Handler/` 根）：
+处理器为具体类（各自只有单一实现，接口已按「只保留真多态」原则缩减；推送宿主契约见 `Interface/INotifyMessageHandler`）：
 
-| 接口 | 说明 |
+| 类 | 说明 |
 |------|------|
-| `IPacketSendHeaderHandler` | 发送包头处理器 |
-| `IPacketReceiveHeaderHandler` | 接收包头处理器 |
-| `IPacketSendBodyHandler` | 发送包体处理器（序列化） |
-| `IPacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
-| `IPacketHeartBeatHandler` | 心跳包处理器 |
-| `IMessageCompressHandler` | 消息压缩接口 |
-| `IMessageDecompressHandler` | 消息解压接口 |
+| `DefaultPacketSendHeaderHandler` | 发送包头处理器（游戏侧可派生覆盖，如心跳） |
+| `DefaultPacketReceiveHeaderHandler` | 接收包头处理器 |
+| `DefaultPacketSendBodyHandler` | 发送包体处理器（序列化） |
+| `DefaultPacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
+| `DefaultPacketHeartBeatHandler` | 心跳包处理器 |
+| `DefaultMessageCompressHandler` | 消息压缩处理器 |
+| `DefaultMessageDecompressHandler` | 消息解压处理器 |
 
 ### 4.7 网络事件
 
@@ -305,17 +307,17 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 
 ## 6. 目录结构
 
-> 组织原则：**接口跟随实现放置**（`Channel/`、`Socket/`、`Handler/` 内各自同居接口与实现），
-> 消息层独立（`MessageBase/`、`Interface/`），注册设施与生成物集中（`Register/`）。
+> 组织原则：**真多态的接口跟随实现同居**（`Channel/`、`Socket/`），
+> 消息契约与处理器契约接口集中于 `Interface/`，包处理器为具体类（`Handler/`），
+> 消息基类独立（`MessageBase/`），注册设施与生成物集中（`Register/`）。
 > 全模块统一命名空间 `Hotfix.Framework.Network`，目录仅为物理分组。
 
 ```text
 Network/
 ├── NetworkModule.cs                                  # 网络管理模块（字段/生命周期/事件转发）
-├── NetworkModule.API.cs                              # 对外公共 API（频道创建/查询/销毁）
+├── NetworkModule.API.cs                              # 对外公共 API（单频道门面：创建/连接/收发/销毁）
 ├── Channel/                                          # 网络频道（接口与实现同居，internal）
 │   ├── INetworkChannel.cs                            # 网络频道接口
-│   ├── INetworkChannelHelper.cs                      # 频道辅助器接口
 │   ├── NetworkChannelBase.cs                         # 网络频道基类
 │   ├── SystemTcpNetworkChannel.cs                    # TCP 频道实现
 │   └── WebSocketNetworkChannel.cs                    # WebSocket 频道实现
@@ -323,17 +325,7 @@ Network/
 │   ├── INetworkSocket.cs                             # 网络套接字接口
 │   ├── SystemNetSocket.cs                            # TCP 套接字实现
 │   └── WebSocketNetSocket.cs                         # WebSocket 套接字实现
-├── Handler/                                          # 包处理器（接口 + 默认实现）
-│   ├── Interface/                                    # 包处理器接口
-│   │   ├── IPacketSendHeaderHandler.cs               # 发送包头处理器接口
-│   │   ├── IPacketReceiveHeaderHandler.cs            # 接收包头处理器接口
-│   │   ├── IPacketSendBodyHandler.cs                 # 发送包体处理器接口
-│   │   ├── IPacketReceiveBodyHandler.cs              # 接收包体处理器接口
-│   │   ├── IPacketHeartBeatHandler.cs                # 心跳包处理器接口
-│   │   ├── IMessageCompressHandler.cs                # 消息压缩接口
-│   │   ├── IMessageDecompressHandler.cs              # 消息解压接口
-│   │   ├── IMessageHandler.cs                        # 消息处理器标记接口
-│   │   └── IPacketHandler.cs                         # 包处理器标记接口
+├── Handler/                                          # 包处理器（具体类，单实现不设接口）
 │   ├── DefaultNetworkChannelHelper.cs                # 默认频道辅助器（装配 7 个处理器）
 │   ├── DefaultPacketSendHeaderHandler.cs             # 发送包头处理器
 │   ├── DefaultPacketReceiveHeaderHandler.cs          # 接收包头处理器
@@ -342,20 +334,21 @@ Network/
 │   ├── DefaultPacketHeartBeatHandler.cs              # 心跳处理器（兜底基类，可被游戏侧覆盖）
 │   ├── DefaultMessageCompressHandler.cs              # 压缩处理器
 │   └── DefaultMessageDecompressHandler.cs            # 解压处理器
-├── Interface/                                        # 消息标记接口
+├── Interface/                                        # 消息契约接口（含 [NotifyMessageHandler] 体系）
 │   ├── IRequestMessage.cs                            # 请求消息接口
 │   ├── IResponseMessage.cs                           # 响应消息接口
 │   ├── INotifyMessage.cs                             # 推送消息接口
-│   └── IHeartBeatMessage.cs                          # 心跳消息接口
+│   ├── IHeartBeatMessage.cs                          # 心跳消息接口
+│   └── INotifyMessageHandler.cs                            # 消息处理器接口（业务模块实现）
 ├── MessageBase/                                      # 消息基类
 │   ├── MessageObject.cs                              # 消息基类（含 UniqueId）
 │   └── MessageHttpObject.cs                          # HTTP 消息包装基类
 ├── Attribute/                                        # 声明用特性（供生成脚本扫描）
-│   ├── MessageHandlerAttribute.cs                    # 消息处理器特性（方法须 internal/public）
+│   ├── NotifyMessageHandlerAttribute.cs                    # 消息处理器特性（方法须 internal/public）
 │   └── MessageTypeHandlerAttribute.cs                # 消息类型处理器特性
 ├── Register/                                         # 注册设施 + 生成物
 │   ├── ProtoMessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
-│   ├── MessageHandlerRegistry.cs                     # 消息处理方法注册表（[MessageHandler] 绑定/派发）
+│   ├── MessageHandlerRegistry.cs                     # 消息处理方法注册表（[NotifyMessageHandler] 绑定/派发）
 │   └── AutoGen/
 │       └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 ├── State/                                            # 频道内部状态（internal）

@@ -6,7 +6,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息解压处理
 	/// </summary>
-	public sealed class DefaultMessageDecompressHandler : IMessageDecompressHandler, IPacketHandler
+	public sealed class DefaultMessageDecompressHandler
 	{
 		/// <summary>
 		/// 解压处理

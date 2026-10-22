@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Network
 	///     2. 显式装配包和包处理函数（不再反射扫描程序集，见 <see cref="RegisterDefaultHandlers"/>）。
 	///     3. 发送默认的包和包处理函数。
 	/// </summary>
-	public class DefaultNetworkChannelHelper : INetworkChannelHelper, IReference
+	public class DefaultNetworkChannelHelper
 	{
 		/// <summary>
 		/// 网络频道
@@ -229,17 +229,6 @@ namespace Hotfix.Framework.Network
 		{
 			source.NotNull(nameof(source));
 			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
-		}
-
-		/// <summary>
-		/// 重置帮助器状态
-		/// </summary>
-		public void Clear()
-		{
-			// 仅重置字段：本类型始终由 new 直接构造、从不经引用池获取，Clear 不会被引用池调用。
-			// 原实现在此调用 m_networkChannel?.Close()（带副作用的“清理”）与引用池 Clear 的纯重置约定不符，故移除；
-			// 频道的关闭由 NetworkChannelBase.Dispose 等频道自身生命周期负责。
-			m_networkChannel = null;
 		}
 
 		/// <summary>

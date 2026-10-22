@@ -5,7 +5,7 @@
 //     生成命令（proto 变更，一键：先导出 C# 再生成注册表）：
 //               Protobuf/Proto2CsExport-All.bat  (Windows)
 //               Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh  (macOS/Linux)
-//               仅新增 [MessageHandler] / 调整框架外包处理器时：
+//               仅新增 [NotifyMessageHandler] / 调整框架外包处理器时：
 //               Protobuf/gen-proto-registry.bat  (Windows) / bash Protobuf/gen-proto-registry.sh
 //
 //     上述脚本必须重新运行，否则运行时注册表会与实际代码不一致。
@@ -76,7 +76,7 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
+        /// 注册用户 [NotifyMessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
         /// 共 1 个类型。
         /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
         /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
@@ -85,8 +85,8 @@ namespace Hotfix.Framework.Network
         {
             ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(Hotfix.Game.Manager_ToDelete.BagManager), new[]
             {
-                new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "NotifyBagInfoChanged",
-                    static (handler, message) => ((Hotfix.Game.Manager_ToDelete.BagManager)handler).NotifyBagInfoChanged((NotifyBagInfoChanged)message)),
+                new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "OnNotifyBagInfoChanged",
+                    static (handler, message) => ((Hotfix.Game.Manager_ToDelete.BagManager)handler).OnNotifyBagInfoChanged((NotifyBagInfoChanged)message)),
             });
         }
 
@@ -109,7 +109,7 @@ namespace Hotfix.Framework.Network
 
             DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
             {
-                // IPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs
+                // DefaultPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs
                 channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
             });
         }

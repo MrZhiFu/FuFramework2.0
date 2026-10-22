@@ -34,14 +34,14 @@ namespace Hotfix.Framework.Network
 		protected readonly FuLinkedList<MessageObject> m_executionMessageLinkedList = new();
 
 		/// <summary>
-		/// 消息派发时复用的处理器列表，避免每收一包都新建 List 造成 GC。
+		/// 推送派发时复用的处理器特性列表，避免每收一包都新建 List 造成 GC。
 		/// </summary>
-		private readonly List<MessageHandlerAttribute> m_handlerBuffer = new(8);
+		private readonly List<NotifyMessageHandlerAttribute> m_notifyHandlerBuffer = new(8);
 
 		/// <summary>
 		/// 复用列表是否正在使用中（用于处理派发重入，重入时回退为新建列表）。
 		/// </summary>
-		private bool m_handlerBufferBusy;
+		private bool m_notifyHandlerBufferBusy;
 
 		/// <summary>
 		/// 处理接收到的消息
@@ -86,18 +86,18 @@ namespace Hotfix.Framework.Network
 		{
 			// 处理器列表会被复制到复用缓冲区后再派发：派发期间用户代码可能注册/注销处理器，
 			// 直接遍历内部列表会抛 InvalidOperationException；复用缓冲区避免每包分配 List。
-			var                           reuseBuffer = !m_handlerBufferBusy;
-			List<MessageHandlerAttribute> handlers;
+			var                           reuseBuffer = !m_notifyHandlerBufferBusy;
+			List<NotifyMessageHandlerAttribute> handlers;
 			if (reuseBuffer)
 			{
-				m_handlerBufferBusy = true;
-				handlers            = m_handlerBuffer;
+				m_notifyHandlerBufferBusy = true;
+				handlers                  = m_notifyHandlerBuffer;
 				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
 			}
 			else
 			{
 				// 重入时不能复用缓冲区，退化为新建列表。
-				handlers = new List<MessageHandlerAttribute>(8);
+				handlers = new List<NotifyMessageHandlerAttribute>(8);
 				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
 			}
 
@@ -121,7 +121,7 @@ namespace Hotfix.Framework.Network
 				if (reuseBuffer)
 				{
 					handlers.Clear();
-					m_handlerBufferBusy = false;
+					m_notifyHandlerBufferBusy = false;
 				}
 			}
 		}
@@ -146,7 +146,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="header">已解析的包头</param>
 		/// <returns>包体长度</returns>
 		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
-		protected static int ValidateAndGetPacketBodyLength(IPacketReceiveHeaderHandler header)
+		protected static int ValidateAndGetPacketBodyLength(DefaultPacketReceiveHeaderHandler header)
 		{
 			var packetLength = header.PacketLength;
 			var headerLength = header.PacketHeaderLength;

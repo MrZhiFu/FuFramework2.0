@@ -5,7 +5,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认心跳包处理
 	/// </summary>
-	public class DefaultPacketHeartBeatHandler : IPacketHeartBeatHandler, IPacketHandler
+	public class DefaultPacketHeartBeatHandler
 	{
 		/// <summary>
 		/// 每次心跳的间隔

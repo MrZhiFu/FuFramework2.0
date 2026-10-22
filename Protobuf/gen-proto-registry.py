@@ -14,26 +14,25 @@ gen-proto-registry.py
        -> [MessageTypeHandler(消息ID)] + 类名 + 是否实现 IRequestMessage / IResponseMessage /
           INotifyMessage / IHeartBeatMessage
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
-       -> [MessageHandler(typeof(消息类型), nameof(方法名))]（用户消息处理方法）
+       -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户消息处理方法）
           连同**所在类型**与方法可见性一起解析，产出**直接委托**：
               new ProtoMessageHandlerMethod(typeof(X), "OnX",
                   static (handler, message) => ((Ns.Handler)handler).OnX((X)message))
           可见性契约：目标方法必须为 internal 或 public，否则**报错并中止生成**
           （生成物位于同程序集，需要能直接调用该方法）。
-       -> 实现 IMessageHandler 的类型（用于区分「已登记但无处理方法」与「未登记」）
+       -> 实现 INotifyMessageHandler 的类型（用于区分「已登记但无处理方法」与「未登记」）
     3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Handler/）
-       -> 框架外「具体（非抽象）」的包处理器实现：实现 IPacketReceiveHeaderHandler /
-          IPacketReceiveBodyHandler / IPacketSendHeaderHandler / IPacketSendBodyHandler /
-          IPacketHeartBeatHandler / IMessageCompressHandler / IMessageDecompressHandler，
-          且（与原扫描一致）实现标记接口 IPacketHandler。
-          接口判定包含继承链，因此「派生自框架基类」的实现（如
+       -> 框架外「具体（非抽象）」的包处理器实现：继承 DefaultPacketReceiveHeaderHandler /
+          DefaultPacketReceiveBodyHandler / DefaultPacketSendHeaderHandler / DefaultPacketSendBodyHandler /
+          DefaultPacketHeartBeatHandler / DefaultMessageCompressHandler / DefaultMessageDecompressHandler 之一。
+          判定沿继承链匹配框架具体基类（处理器接口已删除），因此「派生自框架基类」的实现（如
           Hotfix.Game.Network.PacketHeartBeatHandler : DefaultPacketHeartBeatHandler）
           也能被正确识别并注册为心跳处理器（后注册覆盖框架基类）。
 
 背景（项目铁律 4：运行时杜绝反射）：
     原实现于启动时通过 Assembly.GetTypes() 扫描全部已加载程序集，读取特性构建
     「消息ID <-> 类型」映射，并用 MakeGenericMethod + CreateDelegate 构造强类型委托；
-    用户 [MessageHandler] 方法靠 GetMethods + GetCustomAttribute 发现；
+    用户 [NotifyMessageHandler] 方法靠 GetMethods + GetCustomAttribute 发现；
     包处理器同样靠扫描 + Activator.CreateInstance 发现。本脚本把这些工作全部前移到生成期，
     产出静态注册表与直接委托，运行时只做字典写入 / 绑定 / 显式装配，**零反射**。
 
@@ -43,7 +42,7 @@ gen-proto-registry.py
           Windows      : Protobuf/Proto2CsExport-All.bat
           macOS/Linux  : Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh
       若手动分步：先 Protobuf/Proto2CsExport_Client.bat，再本脚本。
-  * 仅新增 [MessageHandler] 方法 / 调整框架外包处理器（未动 proto）：
+  * 仅新增 [NotifyMessageHandler] 方法 / 调整框架外包处理器（未动 proto）：
       直接运行本脚本即可：
           Windows      : Protobuf/gen-proto-registry.bat
           macOS/Linux  : bash Protobuf/gen-proto-registry.sh
@@ -94,13 +93,13 @@ RE_CLASS_DECL_ANY = re.compile(
     re.MULTILINE,
 )
 
-# [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
+# [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
 RE_MSG_HANDLER_ATTR = re.compile(
-    r"\[\s*MessageHandler\s*\(\s*typeof\s*\(\s*([\w\.]+)\s*\)\s*,\s*"
+    r"\[\s*NotifyMessageHandler\s*\(\s*typeof\s*\(\s*([\w\.]+)\s*\)\s*,\s*"
     r"(?:nameof\s*\(\s*([\w\.]+)\s*\)|\"([^\"]+)\")\s*\)\s*\]"
 )
 
-# 方法声明（用于读取 [MessageHandler] 目标的可见性与首参类型）
+# 方法声明（用于读取 [NotifyMessageHandler] 目标的可见性与首参类型）
 RE_METHOD_DECL = re.compile(
     r"^\s*(?P<mods>(?:(?:public|internal|protected|private|static|virtual|override|sealed|"
     r"async|extern|unsafe|partial|new|readonly)\s+)*)"
@@ -117,19 +116,19 @@ IFACE_RESPONSE = "IResponseMessage"
 IFACE_NOTIFY = "INotifyMessage"
 IFACE_HEARTBEAT = "IHeartBeatMessage"
 
-# 包处理器接口（顺序 = 原扫描的 else-if 优先级；
-# 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致）
+# 包处理器基类（顺序 = 原扫描的 else-if 优先级；
+# 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致。
+# 判定沿继承链匹配「框架具体处理器基类」——处理器接口已删除，单实现策略点直接用具体类。）
 PACKET_INTERFACE_ORDER = [
-    ("IPacketReceiveHeaderHandler", "channel.RegisterHandler((IPacketReceiveHeaderHandler)new {fq}());"),
-    ("IPacketReceiveBodyHandler", "channel.RegisterHandler((IPacketReceiveBodyHandler)new {fq}());"),
-    ("IPacketSendHeaderHandler", "channel.RegisterHandler((IPacketSendHeaderHandler)new {fq}());"),
-    ("IPacketSendBodyHandler", "channel.RegisterHandler((IPacketSendBodyHandler)new {fq}());"),
-    ("IPacketHeartBeatHandler", "channel.RegisterHeartBeatHandler(new {fq}());"),
-    ("IMessageCompressHandler", "channel.RegisterMessageCompressHandler(new {fq}());"),
-    ("IMessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
+    ("DefaultPacketReceiveHeaderHandler", "channel.RegisterHandler(new {fq}());"),
+    ("DefaultPacketReceiveBodyHandler", "channel.RegisterHandler(new {fq}());"),
+    ("DefaultPacketSendHeaderHandler", "channel.RegisterHandler(new {fq}());"),
+    ("DefaultPacketSendBodyHandler", "channel.RegisterHandler(new {fq}());"),
+    ("DefaultPacketHeartBeatHandler", "channel.RegisterHeartBeatHandler(new {fq}());"),
+    ("DefaultMessageCompressHandler", "channel.RegisterMessageCompressHandler(new {fq}());"),
+    ("DefaultMessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
 ]
 PACKET_INTERFACE_NAMES = set(n for n, _ in PACKET_INTERFACE_ORDER)
-PACKET_MARKER_INTERFACE = "IPacketHandler"
 
 KIND_NONE = "EMessageKind.None"
 
@@ -148,7 +147,7 @@ def strip_comments(text: str) -> str:
     """把 // 行注释、/* */ 块注释（含 /// XML 文档注释）替换为等长空白。
 
     等长替换保证字符偏移与行号不变，后续 enclosing_* 等定位仍然有效。
-    目的：避免把「文档注释/示例代码里写到的 [MessageHandler(...)]」当成真实声明
+    目的：避免把「文档注释/示例代码里写到的 [NotifyMessageHandler(...)]」当成真实声明
     （本脚本自身的类注释里就有这种示例）。
     已知边界：不解析插值字符串 `$"{...}"` 中的嵌套引号。
     """
@@ -406,7 +405,7 @@ def scan_class_index():
 
 
 # ---------------------------------------------------------------------------
-# 3. 扫描 [MessageHandler] 方法：产出直接委托
+# 3. 扫描 [NotifyMessageHandler] 方法：产出直接委托
 # ---------------------------------------------------------------------------
 
 
@@ -438,7 +437,7 @@ def scan_message_handler_methods(by_name):
             type_name = enclosing_type_name(text, m.start())
             if type_name is None:
                 warnings.append(
-                    "%s: 第 %d 行的 [MessageHandler] 未能定位所属类型，已跳过。" % (rel, line)
+                    "%s: 第 %d 行的 [NotifyMessageHandler] 未能定位所属类型，已跳过。" % (rel, line)
                 )
                 continue
 
@@ -448,7 +447,7 @@ def scan_message_handler_methods(by_name):
             decl = RE_METHOD_DECL.search(text, m.end())
             if decl is None or decl.group("name") != method_name:
                 errors.append(
-                    "%s: 第 %d 行 [MessageHandler(..., %s)] 之后未找到同名方法声明，"
+                    "%s: 第 %d 行 [NotifyMessageHandler(..., %s)] 之后未找到同名方法声明，"
                     "无法生成直接委托。请确认方法紧跟在特性之后。"
                     % (rel, line, method_name)
                 )
@@ -463,11 +462,11 @@ def scan_message_handler_methods(by_name):
                 )
                 continue
 
-            # --- 参数类型自检：应与 [MessageHandler] 声明的消息类型一致 ---
+            # --- 参数类型自检：应与 [NotifyMessageHandler] 声明的消息类型一致 ---
             param = simple_name(decl.group("param") or "")
             if param != message_type:
                 warnings.append(
-                    "%s: 第 %d 行的方法 %s.%s 首参类型为 '%s'，与 [MessageHandler] 声明的消息类型 '%s' 不一致；"
+                    "%s: 第 %d 行的方法 %s.%s 首参类型为 '%s'，与 [NotifyMessageHandler] 声明的消息类型 '%s' 不一致；"
                     "生成的直接委托会据此做强制转换，若无法编译请核对（原实现会在注册期抛异常）。"
                     % (rel, line, type_name, method_name, param or "(无)", message_type)
                 )
@@ -502,7 +501,7 @@ def scan_message_handler_methods(by_name):
 
 
 def scan_message_handler_types():
-    """返回所有实现 IMessageHandler 的类型（含无 [MessageHandler] 方法的类型）。"""
+    """返回所有实现 INotifyMessageHandler 的类型（含无 [NotifyMessageHandler] 方法的类型）。"""
     results = set()
     for path in iter_cs_files(HOTFIX_ROOT):
         if is_generated_output(path):
@@ -549,7 +548,7 @@ def scan_external_packet_handlers(decls, by_name):
         result = set()
         for base in decl["bases"]:
             bn = simple_name(base)
-            if bn in PACKET_INTERFACE_NAMES or bn == PACKET_MARKER_INTERFACE:
+            if bn in PACKET_INTERFACE_NAMES:
                 result.add(bn)
             else:
                 result |= resolve_ifaces(bn, seen)
@@ -574,7 +573,7 @@ def scan_external_packet_handlers(decls, by_name):
         best = 0
         for base in decl["bases"]:
             bn = simple_name(base)
-            if bn in PACKET_INTERFACE_NAMES or bn == PACKET_MARKER_INTERFACE:
+            if bn in PACKET_INTERFACE_NAMES:
                 continue
             if bn in by_name:
                 best = max(best, 1 + class_depth(bn, seen))
@@ -599,14 +598,6 @@ def scan_external_packet_handlers(decls, by_name):
                 hit = (iface_name, template)
                 break
         if hit is None:
-            continue
-
-        if PACKET_MARKER_INTERFACE not in ifaces:
-            # 与原扫描的 `IsImplWithInterface(IPacketHandler)` 前置条件一致
-            warnings.append(
-                "%s: 类型 %s 实现了 %s 但未实现标记接口 %s，原扫描同样会跳过（已保留原行为）。"
-                % (decl["file"], decl["name"], hit[0], PACKET_MARKER_INTERFACE)
-            )
             continue
 
         fq = ("%s.%s" % (decl["namespace"], decl["name"])) if decl["namespace"] else decl["name"]
@@ -636,7 +627,7 @@ HEADER = """// <auto-generated>
 //     生成命令（proto 变更，一键：先导出 C# 再生成注册表）：
 //               Protobuf/Proto2CsExport-All.bat  (Windows)
 //               Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh  (macOS/Linux)
-//               仅新增 [MessageHandler] / 调整框架外包处理器时：
+//               仅新增 [NotifyMessageHandler] / 调整框架外包处理器时：
 //               Protobuf/gen-proto-registry.bat  (Windows) / bash Protobuf/gen-proto-registry.sh
 //
 //     上述脚本必须重新运行，否则运行时注册表会与实际代码不一致。
@@ -682,7 +673,7 @@ namespace Hotfix.Framework.Network
 {message_registrations}        }}
 
         /// <summary>
-        /// 注册用户 [MessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
+        /// 注册用户 [NotifyMessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
         /// 共 {handler_type_count} 个类型。
         /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
         /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
@@ -751,7 +742,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
             )
         lines.append("            });\n")
 
-    # 已实现 IMessageHandler 但无 [MessageHandler] 方法：登记空清单，
+    # 已实现 INotifyMessageHandler 但无 [NotifyMessageHandler] 方法：登记空清单，
     # 使 ProtoMessageHandlerRegistry 能区分「已登记无处理方法」与「未登记（需重新生成）」。
     for (ns, type_name) in sorted(handler_types):
         if (ns, type_name) in handlers:
@@ -762,7 +753,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
             "            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(%s), Array.Empty<ProtoMessageHandlerMethod>());\n"
             % full_name
         )
-    handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 IMessageHandler 实现类型。\n"
+    handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 INotifyMessageHandler 实现类型。\n"
 
     # ---- 框架外包处理器注册 ----
     if external_handlers:

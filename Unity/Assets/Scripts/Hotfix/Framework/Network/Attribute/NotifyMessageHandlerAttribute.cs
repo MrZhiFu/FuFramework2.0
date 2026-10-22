@@ -8,12 +8,14 @@ using AOT.Framework.Extension;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络非RPC返回消息处理器属性定义（**声明用**）。
+	/// 推送（Notify）消息处理方法特性（**声明用**）。
+	/// 仅服务服务器推送：目标方法的消息类型必须实现 INotifyMessage（构造期校验）；
+	/// Resp 响应由 Call 的 await 经 RPC 配对消费，不进入消息派发，因此 Req/Resp 类型不可标注本特性。
 	///
 	/// 说明（项目铁律 4：运行时杜绝反射）：
 	///     本特性只用于在源码里「声明」某个方法要处理某个消息类型，供生成脚本
 	///     <c>Protobuf/gen-proto-registry.py</c> 扫描。运行期的注册与派发完全不再读取特性、不再查找方法：
-	///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 会为每个 [MessageHandler] 方法直接产出
+	///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 会为每个 [NotifyMessageHandler] 方法直接产出
 	///     强类型委托，由 <see cref="ProtoMessageHandlerRegistry.Add"/> 绑定到本类的实例上。
 	///     因此运行时不存在 <c>GetMethods</c> / <c>IsDefined</c> / <c>GetCustomAttribute</c> /
 	///     <c>CreateDelegate</c> / <c>MethodInfo.Invoke</c>。
@@ -25,15 +27,15 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	/// <example>
 	/// <code>
-	/// public sealed class BagManager : Singleton&lt;BagManager&gt;, IMessageHandler
+	/// public sealed class BagManager : Singleton&lt;BagManager&gt;, INotifyMessageHandler
 	/// {
-	///     [MessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
-	///     internal void NotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
+	///     [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(OnNotifyBagInfoChanged))]
+	///     internal void OnNotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
 	/// }
 	/// </code>
 	/// </example>
 	[AttributeUsage(AttributeTargets.Method)]
-	public class MessageHandlerAttribute : Attribute
+	public class NotifyMessageHandlerAttribute : Attribute
 	{
 		/// <summary>
 		/// 单个方法允许积压的最大未处理消息数量，防止消息队列无界增长。
@@ -53,14 +55,14 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息处理器
 		/// </summary>
-		private IMessageHandler m_messageHandler;
+		private INotifyMessageHandler m_messageHandler;
 
 		/// <summary>
 		/// 已绑定的消息处理委托。
 		/// 由生成物直接产出（形如 <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>），
 		/// 注册阶段一次性绑定，收包阶段直接调用，全程无反射。
 		/// </summary>
-		private Action<IMessageHandler, MessageObject> m_invokeDelegate;
+		private Action<INotifyMessageHandler, MessageObject> m_invokeDelegate;
 
 		/// <summary>
 		/// 消息处理对象队列
@@ -72,7 +74,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="message">注册的消息对象。需要继承MessageObject和实现INotifyMessage</param>
 		/// <param name="invokeMethodName">执行的方法名称。建议使用nameof标记当前的函数</param>
-		public MessageHandlerAttribute(Type message, string invokeMethodName)
+		public NotifyMessageHandlerAttribute(Type message, string invokeMethodName)
 		{
 			message.NotNull(nameof(message));
 			invokeMethodName.NotNullOrEmpty(nameof(invokeMethodName));
@@ -94,20 +96,20 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 注册的处理对象实例（用于显式比对，避免依赖 Attribute 的引用相等性）
 		/// </summary>
-		internal IMessageHandler TargetHandler => m_messageHandler;
+		internal INotifyMessageHandler TargetHandler => m_messageHandler;
 
 		/// <summary>
 		/// 绑定处理对象与生成物产出的强类型委托。
 		/// 由 <see cref="ProtoMessageHandlerRegistry.Add"/> 调用；不再做任何方法查找。
 		/// </summary>
-		/// <param name="messageHandler">消息处理对象实例</param>
+		/// <param name="NotifyMessageHandler">消息处理对象实例</param>
 		/// <param name="invokeDelegate">生成物产出的直接委托</param>
-		internal void Bind(IMessageHandler messageHandler, Action<IMessageHandler, MessageObject> invokeDelegate)
+		internal void Bind(INotifyMessageHandler NotifyMessageHandler, Action<INotifyMessageHandler, MessageObject> invokeDelegate)
 		{
 			MessageType.NotNull(nameof(MessageType));
-			messageHandler.NotNull(nameof(messageHandler));
+			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
 			invokeDelegate.NotNull(nameof(invokeDelegate));
-			m_messageHandler = messageHandler;
+			m_messageHandler = NotifyMessageHandler;
 			m_invokeDelegate = invokeDelegate;
 		}
 

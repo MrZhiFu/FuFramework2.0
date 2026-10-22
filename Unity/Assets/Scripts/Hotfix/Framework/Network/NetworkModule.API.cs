@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="networkChannelHelper">网络频道辅助器（负责装配包处理器）。</param>
 		/// <param name="rpcTimeout">RPC超时时间，默认5000毫秒。</param>
 		/// <returns>要创建的网络频道。</returns>
-		public INetworkChannel CreateChannel(INetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
+		public INetworkChannel CreateChannel(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
 		{
 			networkChannelHelper.NotNull(nameof(networkChannelHelper));
 			if (m_networkChannel != null)

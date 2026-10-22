@@ -8,7 +8,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息发送头部处理器
 	/// </summary>
-	public class DefaultPacketSendHeaderHandler : IPacketSendHeaderHandler, IPacketHandler
+	public class DefaultPacketSendHeaderHandler
 	{
 		/// <summary>
 		/// 网络包长度(4字节)
@@ -92,7 +92,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageBodyBuffer">消息序列化完的二进制数组</param>
 		/// <typeparam name="T">消息类型</typeparam>
 		/// <returns>是否序列化成功</returns>
-		public bool Handler<T>(T messageObject, IMessageCompressHandler messageCompressHandler, MemoryStream destination,
+		public bool Handler<T>(T messageObject, DefaultMessageCompressHandler messageCompressHandler, MemoryStream destination,
 		                       out byte[] messageBodyBuffer) where T : MessageObject
 		{
 			m_offset = 0;

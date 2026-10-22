@@ -19,43 +19,43 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息发送包头处理器
 		/// </summary>
-		public IPacketSendHeaderHandler PacketSendHeaderHandler { get; private set; }
+		public DefaultPacketSendHeaderHandler PacketSendHeaderHandler { get; private set; }
 
 		/// <summary>
 		/// 消息发送内容处理器
 		/// </summary>
-		public IPacketSendBodyHandler PacketSendBodyHandler { get; private set; }
+		public DefaultPacketSendBodyHandler PacketSendBodyHandler { get; private set; }
 
 		/// <summary>
 		/// 消息接收包头处理器
 		/// </summary>
-		public IPacketReceiveHeaderHandler PacketReceiveHeaderHandler { get; private set; }
+		public DefaultPacketReceiveHeaderHandler PacketReceiveHeaderHandler { get; private set; }
 
 		/// <summary>
 		/// 心跳消息处理器
 		/// </summary>
-		public IPacketHeartBeatHandler PacketHeartBeatHandler { get; private set; }
+		public DefaultPacketHeartBeatHandler PacketHeartBeatHandler { get; private set; }
 
 		/// <summary>
 		/// 消息接收内容处理器
 		/// </summary>
-		public IPacketReceiveBodyHandler PacketReceiveBodyHandler { get; private set; }
+		public DefaultPacketReceiveBodyHandler PacketReceiveBodyHandler { get; private set; }
 
 		/// <summary>
 		/// 消息压缩处理器
 		/// </summary>
-		public IMessageCompressHandler MessageCompressHandler { get; private set; }
+		public DefaultMessageCompressHandler MessageCompressHandler { get; private set; }
 
 		/// <summary>
 		/// 消息解压处理器（仅子类解压时使用，不对外暴露）
 		/// </summary>
-		protected IMessageDecompressHandler MessageDecompressHandler { get; private set; }
+		protected DefaultMessageDecompressHandler MessageDecompressHandler { get; private set; }
 
 		/// <summary>
 		/// 注册消息压缩处理器
 		/// </summary>
 		/// <param name="handler">处理器对象,当设置为空的时候，不启用消息压缩</param>
-		public void RegisterMessageCompressHandler(IMessageCompressHandler handler)
+		public void RegisterMessageCompressHandler(DefaultMessageCompressHandler handler)
 		{
 			MessageCompressHandler = handler;
 		}
@@ -64,7 +64,7 @@ namespace Hotfix.Framework.Network
 		/// 注册消息解压处理器
 		/// </summary>
 		/// <param name="handler">处理器对象,当设置为空的时候，不启用消息解压</param>
-		public void RegisterMessageDecompressHandler(IMessageDecompressHandler handler)
+		public void RegisterMessageDecompressHandler(DefaultMessageDecompressHandler handler)
 		{
 			MessageDecompressHandler = handler;
 		}
@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Network
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">要注册的网络消息包处理函数。</param>
-		public void RegisterHandler(IPacketSendHeaderHandler handler)
+		public void RegisterHandler(DefaultPacketSendHeaderHandler handler)
 		{
 			handler.NotNull(nameof(handler));
 			PacketSendHeaderHandler = handler;
@@ -84,7 +84,7 @@ namespace Hotfix.Framework.Network
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">要注册的网络消息包处理函数。</param>
-		public void RegisterHandler(IPacketSendBodyHandler handler)
+		public void RegisterHandler(DefaultPacketSendBodyHandler handler)
 		{
 			handler.NotNull(nameof(handler));
 			PacketSendBodyHandler = handler;
@@ -94,7 +94,7 @@ namespace Hotfix.Framework.Network
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">要注册的网络消息包处理函数。</param>
-		public void RegisterHandler(IPacketReceiveHeaderHandler handler)
+		public void RegisterHandler(DefaultPacketReceiveHeaderHandler handler)
 		{
 			handler.NotNull(nameof(handler));
 			PacketReceiveHeaderHandler = handler;
@@ -104,7 +104,7 @@ namespace Hotfix.Framework.Network
 		/// 注册网络消息包处理函数。
 		/// </summary>
 		/// <param name="handler">要注册的网络消息包处理函数。</param>
-		public void RegisterHandler(IPacketReceiveBodyHandler handler)
+		public void RegisterHandler(DefaultPacketReceiveBodyHandler handler)
 		{
 			handler.NotNull(nameof(handler));
 			PacketReceiveBodyHandler = handler;
@@ -114,7 +114,7 @@ namespace Hotfix.Framework.Network
 		/// 注册网络消息心跳处理函数，用于处理心跳消息
 		/// </summary>
 		/// <param name="handler">要注册的网络消息包处理函数</param>
-		public void RegisterHeartBeatHandler(IPacketHeartBeatHandler handler)
+		public void RegisterHeartBeatHandler(DefaultPacketHeartBeatHandler handler)
 		{
 			handler.NotNull(nameof(handler));
 			PacketHeartBeatHandler = handler;

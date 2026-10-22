@@ -15,12 +15,12 @@ namespace Hotfix.Framework.Network
 	public readonly struct ProtoMessageHandlerMethod
 	{
 		/// <summary>
-		/// [MessageHandler] 声明的消息类型。
+		/// [NotifyMessageHandler] 声明的消息类型。
 		/// </summary>
 		public Type MessageType { get; }
 
 		/// <summary>
-		/// [MessageHandler] 声明的方法名。仅用于日志与去重比对，不参与方法查找。
+		/// [NotifyMessageHandler] 声明的方法名。仅用于日志与去重比对，不参与方法查找。
 		/// </summary>
 		public string MethodName { get; }
 
@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Network
 		/// 生成期产出的直接委托，形如
 		/// <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>。
 		/// </summary>
-		public Action<IMessageHandler, MessageObject> Invoke { get; }
+		public Action<INotifyMessageHandler, MessageObject> Invoke { get; }
 
 		/// <summary>
 		/// 创建消息处理方法描述
@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageType">消息类型</param>
 		/// <param name="methodName">处理方法名</param>
 		/// <param name="invoke">生成期产出的直接委托</param>
-		public ProtoMessageHandlerMethod(Type messageType, string methodName, Action<IMessageHandler, MessageObject> invoke)
+		public ProtoMessageHandlerMethod(Type messageType, string methodName, Action<INotifyMessageHandler, MessageObject> invoke)
 		{
 			MessageType = messageType;
 			MethodName  = methodName;
@@ -48,34 +48,34 @@ namespace Hotfix.Framework.Network
 	/// 协议消息处理帮助类
 	///
 	/// 说明（项目铁律 4：运行时杜绝反射）：
-	///     「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」原先通过
+	///     「消息处理对象类型 -&gt; 其 [NotifyMessageHandler] 方法清单」原先通过
 	///     <c>Type.GetMethods</c> + <c>MethodInfo.GetCustomAttribute</c> 在注册时读取特性获得，
 	///     现改由生成期扫描源码产出的静态表提供（生成脚本 Protobuf/gen-proto-registry.py）：
 	///     生成物直接产出**强类型委托**，注册时仅做绑定，运行期零反射
 	///     （无 GetMethods / IsDefined / GetCustomAttribute / CreateDelegate / MethodInfo.Invoke）。
-	///     新增 [MessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
+	///     新增 [NotifyMessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
 	/// </summary>
 	public static class ProtoMessageHandlerRegistry
 	{
 		/// <summary>
 		/// 消息处理器字典, Key为消息类型, Value为消息处理器列表
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, List<MessageHandlerAttribute>> sr_messageHandlerDictionary = new();
+		private static readonly ConcurrentDictionary<Type, List<NotifyMessageHandlerAttribute>> sr_messageHandlerDictionary = new();
 
 		/// <summary>
-		/// 「消息处理对象类型 -&gt; 其 [MessageHandler] 方法清单」静态表（由生成物写入）。
+		/// 「消息处理对象类型 -&gt; 其 [NotifyMessageHandler] 方法清单」静态表（由生成物写入）。
 		/// 说明：仅在启动期 NetworkModule.OnInit 内写入一次，之后只读；
 		/// 仍使用 ConcurrentDictionary 以容忍 Add/Remove 与初始化并发的极端情况。
 		/// </summary>
 		private static readonly ConcurrentDictionary<Type, ProtoMessageHandlerMethod[]> sr_handlerMethodRegistry = new();
 
 		/// <summary>
-		/// 登记某个消息处理对象类型的 [MessageHandler] 方法清单。由生成物调用。
-		/// 说明：无 [MessageHandler] 方法的 IMessageHandler 实现类型也会被登记为空清单，
+		/// 登记某个消息处理对象类型的 [NotifyMessageHandler] 方法清单。由生成物调用。
+		/// 说明：无 [NotifyMessageHandler] 方法的 INotifyMessageHandler 实现类型也会被登记为空清单，
 		/// 以便 <see cref="Add"/> 能区分「已登记但无处理方法」与「未登记（需重新生成）」。
 		/// </summary>
 		/// <param name="handlerType">消息处理对象类型</param>
-		/// <param name="methods">该类型上的 [MessageHandler] 方法清单</param>
+		/// <param name="methods">该类型上的 [NotifyMessageHandler] 方法清单</param>
 		internal static void RegisterHandlerType(Type handlerType, ProtoMessageHandlerMethod[] methods)
 		{
 			handlerType.NotNull(nameof(handlerType));
@@ -85,11 +85,11 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 增加消息处理器
 		/// </summary>
-		/// <param name="messageHandler">消息接收对象</param>
-		public static void Add(IMessageHandler messageHandler)
+		/// <param name="NotifyMessageHandler">消息接收对象</param>
+		public static void Add(INotifyMessageHandler NotifyMessageHandler)
 		{
-			messageHandler.NotNull(nameof(messageHandler));
-			var type = messageHandler.GetType();
+			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
+			var type = NotifyMessageHandler.GetType();
 
 			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
 			{
@@ -109,29 +109,29 @@ namespace Hotfix.Framework.Network
 					continue;
 				}
 
-				var list = sr_messageHandlerDictionary.GetOrAdd(entry.MessageType, static _ => new List<MessageHandlerAttribute>(8));
+				var list = sr_messageHandlerDictionary.GetOrAdd(entry.MessageType, static _ => new List<NotifyMessageHandlerAttribute>(8));
 
-				if (ContainsHandler(list, messageHandler, entry.MethodName))
+				if (ContainsHandler(list, NotifyMessageHandler, entry.MethodName))
 				{
 					FuLogger.LogError("重复注册消息处理器：" + type.FullName + "->" + entry.MethodName);
 					continue;
 				}
 
 				// 绑定生成期产出的强类型委托：运行期不再查找方法、不再构造委托。
-				var messageHandlerAttribute = new MessageHandlerAttribute(entry.MessageType, entry.MethodName);
-				messageHandlerAttribute.Bind(messageHandler, entry.Invoke);
-				list.Add(messageHandlerAttribute);
+				var NotifyMessageHandlerAttribute = new NotifyMessageHandlerAttribute(entry.MessageType, entry.MethodName);
+				NotifyMessageHandlerAttribute.Bind(NotifyMessageHandler, entry.Invoke);
+				list.Add(NotifyMessageHandlerAttribute);
 			}
 		}
 
 		/// <summary>
 		/// 移除消息处理器
 		/// </summary>
-		/// <param name="messageHandler">消息接收对象</param>
-		public static void Remove(IMessageHandler messageHandler)
+		/// <param name="NotifyMessageHandler">消息接收对象</param>
+		public static void Remove(INotifyMessageHandler NotifyMessageHandler)
 		{
-			messageHandler.NotNull(nameof(messageHandler));
-			var type = messageHandler.GetType();
+			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
+			var type = NotifyMessageHandler.GetType();
 
 			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
 			{
@@ -151,12 +151,12 @@ namespace Hotfix.Framework.Network
 				}
 
 				// 以 (处理对象实例, 方法名) 显式比对：两处信息都由生成表提供，
-				// 不依赖 Attribute 实例的引用相等性（MessageHandlerAttribute 未重写 Equals）。
+				// 不依赖 Attribute 实例的引用相等性（NotifyMessageHandlerAttribute 未重写 Equals）。
 				var removed = false;
 				for (var j = list.Count - 1; j >= 0; j--)
 				{
 					var exist = list[j];
-					if (!ReferenceEquals(exist.TargetHandler, messageHandler)) continue;
+					if (!ReferenceEquals(exist.TargetHandler, NotifyMessageHandler)) continue;
 					if (exist.InvokeMethodName != entry.MethodName) continue;
 
 					list.RemoveAt(j);
@@ -179,11 +179,11 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 判断列表中是否已注册了同一处理对象上的同一方法
 		/// </summary>
-		private static bool ContainsHandler(List<MessageHandlerAttribute> list, IMessageHandler messageHandler, string invokeMethodName)
+		private static bool ContainsHandler(List<NotifyMessageHandlerAttribute> list, INotifyMessageHandler NotifyMessageHandler, string invokeMethodName)
 		{
 			foreach (var exist in list)
 			{
-				if (!ReferenceEquals(exist.TargetHandler, messageHandler)) continue;
+				if (!ReferenceEquals(exist.TargetHandler, NotifyMessageHandler)) continue;
 				if (exist.InvokeMethodName != invokeMethodName) continue;
 				return true;
 			}
@@ -196,7 +196,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="messageType">消息类型</param>
 		/// <param name="destination">调用方提供的复用列表，会被先清空</param>
-		internal static void GetHandlers(Type messageType, List<MessageHandlerAttribute> destination)
+		internal static void GetHandlers(Type messageType, List<NotifyMessageHandlerAttribute> destination)
 		{
 			destination.Clear();
 			if (sr_messageHandlerDictionary.TryGetValue(messageType, out var list) && list != null)
