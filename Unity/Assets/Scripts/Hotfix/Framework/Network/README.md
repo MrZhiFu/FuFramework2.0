@@ -146,6 +146,21 @@ ProtoMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
 （无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）；
 宿主实例在首次推送时才被触达（惰性）。
 
+**推送派发阀门（基线未就绪窗口期）**
+
+推送多为增量更新，依赖业务先建立数据基线（如登录后先 `Call` 全量背包，之后的增量推送才有意义）。
+若服务器在基线建立前就可能推送，用阀门保护：
+
+```csharp
+NetworkModule.Instance.SuspendNotifyDispatch();                  // 连接后、拉取基线前：推送进缓冲队列（保持到达顺序）
+var bag = await NetworkModule.Instance.Call(new ReqBagInfo());   // 建立基线
+NetworkModule.Instance.ResumeNotifyDispatch();                   // 基线就绪：按序回放缓冲
+NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切换账号：丢弃旧会话推送（防串号）
+```
+
+缓冲上限 1024 条（超出丢弃最旧并警告）；回放中可再次挂起（剩余留在队列）。
+心跳回包不参与业务派发（由注册表心跳类型集合在派发前截流）。
+
 > **可见性契约（重要）**：由于生成物直接调用该方法，`[NotifyMessageHandler]` 标注的方法
 > **必须是 `internal` 或 `public`**（默认的 `private` 会导致生成脚本**报错并中止**，
 > 报错信息会指出文件、行号与方法名）。方法参数类型必须与 `typeof(...)` 声明的消息类型一致。

@@ -55,6 +55,9 @@ namespace Hotfix.Framework.Network
 
 				try
 				{
+					// 心跳回包是保活侧信道，不参与业务派发（类型判定来自注册表心跳集合）
+					if (ProtoMessageIdRegistry.IsHeartbeat(messageObject.GetType())) continue;
+
 					// 执行RPC匹配
 					if (m_rpcState.TryReply(messageObject)) continue;
 

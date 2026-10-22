@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Network
 			networkChannel.m_NetworkChannelClosed        += OnNetworkChannelClosed;
 			networkChannel.m_NetworkChannelMissHeartBeat += OnNetworkChannelMissHeartBeat;
 			networkChannel.m_NetworkChannelError         += OnNetworkChannelError;
-			m_networkChannel = networkChannel;
+			m_networkChannel                             =  networkChannel;
 			return networkChannel;
 		}
 
@@ -59,7 +59,7 @@ namespace Hotfix.Framework.Network
 			if (m_networkChannel == null) return false;
 
 			var networkChannel = m_networkChannel;
-			m_networkChannel = null;
+			m_networkChannel                             =  null;
 			networkChannel.m_NetworkChannelConnected     -= OnNetworkChannelConnected;
 			networkChannel.m_NetworkChannelClosed        -= OnNetworkChannelClosed;
 			networkChannel.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
@@ -69,18 +69,29 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
+		/// 获取当前频道；未创建时抛出明确异常（区别于空引用异常）。
+		/// </summary>
+		private NetworkChannelBase GetChannel()
+		{
+			if (m_networkChannel == null)
+			{
+				throw new InvalidOperationException("[NetworkModule]网络频道未创建，请先 CreateChannel。");
+			}
+
+			return m_networkChannel;
+		}
+
+		/// <summary>
 		/// 连接服务器（转发当前频道 Connect；频道须已创建）。
 		/// </summary>
 		/// <param name="address">服务器地址。</param>
 		/// <param name="userData">用户自定义数据（随连接成功事件回传）。</param>
-		public void Connect(Uri address, object userData = null)
-			=> RequireChannel().Connect(address, userData);
+		public void Connect(Uri address, object userData = null) => GetChannel().Connect(address, userData);
 
 		/// <summary>
 		/// 关闭连接（可重连，转发当前频道 Close）。频道未创建时静默。
 		/// </summary>
-		public void Close()
-			=> m_networkChannel?.Close();
+		public void Close() => m_networkChannel?.Close();
 
 		#endregion
 
@@ -94,28 +105,33 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageObject">请求消息对象。</param>
 		/// <returns>服务器响应消息；响应类型与 TResponse 不符时抛出异常。</returns>
 		public UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject) where TResponse : MessageObject, IResponseMessage
-			=> RequireChannel().Call(messageObject);
+			=> GetChannel().Call(messageObject);
 
 		/// <summary>
 		/// 向服务器单向发送消息（发完即忘，转发当前频道 Send）。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
 		/// <param name="messageObject">要发送的消息包。</param>
-		public void Send<T>(T messageObject) where T : MessageObject
-			=> RequireChannel().Send(messageObject);
+		public void Send<T>(T messageObject) where T : MessageObject => GetChannel().Send(messageObject);
 
 		/// <summary>
-		/// 获取当前频道；未创建时抛出明确异常（区别于空引用异常）。
+		/// 挂起推送派发：此后到达的推送进入缓冲队列（保持到达顺序，上限 1024 条，超出丢弃最旧并警告）。
+		/// 用于「连接已建立但业务基线未就绪」的窗口期——推送多为增量更新，
+		/// 在登录/重连流程拉取全量数据前挂起，拉取完成后调 <see cref="ResumeNotifyDispatch"/> 按序回放。
+		/// 幂等：已挂起时重复调用无副作用。
 		/// </summary>
-		private NetworkChannelBase RequireChannel()
-		{
-			if (m_networkChannel == null)
-			{
-				throw new InvalidOperationException("[NetworkModule]网络频道未创建，请先 CreateChannel。");
-			}
+		public void SuspendNotifyDispatch() => ProtoMessageHandlerRegistry.SuspendDispatch();
 
-			return m_networkChannel;
-		}
+		/// <summary>
+		/// 恢复推送派发并按到达顺序回放缓冲队列。
+		/// 幂等：未挂起时调用无副作用。回放过程中可再次挂起（此时剩余消息留在队列）。
+		/// </summary>
+		public void ResumeNotifyDispatch() => ProtoMessageHandlerRegistry.ResumeDispatch();
+
+		/// <summary>
+		/// 清空推送缓冲队列（不派发）。用于登出/切换账号时丢弃旧会话的推送，防止串号。
+		/// </summary>
+		public void ClearNotifyBuffer() => ProtoMessageHandlerRegistry.ClearBuffer();
 
 		#endregion
 	}

@@ -68,7 +68,7 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
         ├─ TryRemove(resp.UniqueId) 在挂起表找配对
         ├─ 配上 → data.Reply(resp) → UniTaskCompletionSource.TrySetResult → await 恢复
         │        → m_rpcEndHandler；若 ErrorCode≠0 → m_rpcErrorCodeHandler
-        └─ 没配上 → DispatchMessage（当普通推送走 [MessageHandler]）
+        └─ 没配上 → DispatchMessage（当普通推送走 [NotifyMessageHandler]）
         ↓
    await 恢复：return resp as RespLogin → 调用方拿到响应 ✅
 ```
@@ -89,7 +89,7 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
 
 ```csharp
 if (m_RpcState.TryReply(messageObject)) continue;   // 配上了 → 不再派发
-DispatchMessage(messageObject);                     // 没配上 → 当 [MessageHandler] 普通推送
+DispatchMessage(messageObject);                     // 没配上 → 当 [NotifyMessageHandler] 普通推送
 ```
 落到 `DispatchMessage` 的三种情况：① 根本不是 `IResponseMessage`；② 是响应但挂起表里没有配对（服务器主动推送）；③ 迟到的 RPC 响应（请求已超时/断线，响应晚到无人认领）。
 
@@ -108,7 +108,7 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 
 - 每个异步链必须有**生命周期所有者**：这个 `Call` 的调用方（登录窗口）负责 try/catch 接手异常，而不是放任 await 悬着。
 - fire-and-forget 起步请 `.Forget()`；**不要**在 RPC 里做"等等等 + 不取消"的长等待——断线那下 `Cancel` 就是给你兜底的。
-- 响应也同时是普通消息？可以：同一个消息既能被 RPC 认领（TryReply 命中），配不上也能被 `[MessageHandler]` 订阅处理。
+- 响应能同时被 `[NotifyMessageHandler]` 订阅吗？**不能**：特性构造期校验消息必须实现 `INotifyMessage`，Resp 类型挂不上（Resp 的消费者是 `Call` 的 await）。Resp 配不上对（无宿主等待）时会在派发链上查无绑定、警告后丢弃。
 
 ---
 
