@@ -14,13 +14,14 @@ gen-proto-registry.py
        -> [MessageTypeHandler(消息ID)] + 类名 + 是否实现 IRequestMessage / IResponseMessage /
           INotifyMessage / IHeartBeatMessage
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
-       -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户消息处理方法）
-          连同**所在类型**与方法可见性一起解析，产出**直接委托**：
-              new ProtoMessageHandlerMethod(typeof(X), "OnX",
-                  static (handler, message) => ((Ns.Handler)handler).OnX((X)message))
+       -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户推送处理方法）
+          连同**所在类型**与方法可见性一起解析，产出**静态捕获宿主的直接委托**：
+              ProtoMessageHandlerRegistry.BindNotify(typeof(X),
+                  static message => Ns.Handler.Instance.OnX((X)message))
           可见性契约：目标方法必须为 internal 或 public，否则**报错并中止生成**
           （生成物位于同程序集，需要能直接调用该方法）。
-       -> 实现 INotifyMessageHandler 的类型（用于区分「已登记但无处理方法」与「未登记」）
+          宿主契约：所在类型必须继承 Singleton<T> 或提供 static Instance
+          （声明即生效，业务侧无手动注册步骤；宿主实例在首次推送时才被触达）。
     3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Handler/）
        -> 框架外「具体（非抽象）」的包处理器实现：继承 DefaultPacketReceiveHeaderHandler /
           DefaultPacketReceiveBodyHandler / DefaultPacketSendHeaderHandler / DefaultPacketSendBodyHandler /
@@ -413,9 +414,9 @@ def scan_message_handler_methods(by_name):
     """返回 (handlers, message_type_namespaces, errors, warnings, registered_type_names)。
 
     handlers: dict[(namespace, type)] -> list of dict(message_type, method_name, invoke)
-      invoke 为生成期产出的直接委托表达式：
-          static (handler, message) => ((Ns.Handler)handler).OnX((X)message)
-    errors: 可见性/定位问题（非空则中止生成）
+      invoke 为生成期产出的直接委托表达式（静态捕获宿主 static Instance）：
+          static message => Ns.Handler.Instance.OnX((X)message)
+    errors: 可见性/定位/宿主可达问题（非空则中止生成）
     """
     handlers = {}
     message_type_namespaces = set()
@@ -483,7 +484,24 @@ def scan_message_handler_methods(by_name):
                 )
 
             handler_fq = ("%s.%s" % (ns, type_name)) if ns else type_name
-            invoke = "static (handler, message) => ((%s)handler).%s((%s)message)" % (
+
+            # 宿主可达校验（声明即生效）：委托静态捕获宿主 static Instance，
+            # 宿主必须继承 Singleton<T> 或显式提供 static Instance 成员，否则中止生成。
+            host_decl = by_name.get(type_name)
+            host_reachable = False
+            if host_decl is not None:
+                host_reachable = any(simple_name(b) == "Singleton" for b in host_decl["bases"])
+                if not host_reachable and host_decl.get("path"):
+                    host_text = read_code(host_decl["path"])
+                    host_reachable = re.search(r"\bstatic\s+[\w<>\[\],\.\s]+?\bInstance\b", host_text) is not None
+            if not host_reachable:
+                errors.append(
+                    "%s: 推送宿主 %s 未找到可达实例（需继承 Singleton<T> 或提供 static Instance），"
+                    "无法产出静态绑定委托。" % (rel, type_name)
+                )
+                continue
+
+            invoke = "static message => %s.Instance.%s((%s)message)" % (
                 handler_fq,
                 method_name,
                 message_type,
@@ -498,20 +516,6 @@ def scan_message_handler_methods(by_name):
             )
 
     return handlers, message_type_namespaces, errors, warnings
-
-
-def scan_message_handler_types():
-    """返回所有实现 INotifyMessageHandler 的类型（含无 [NotifyMessageHandler] 方法的类型）。"""
-    results = set()
-    for path in iter_cs_files(HOTFIX_ROOT):
-        if is_generated_output(path):
-            continue
-        text = read_code(path)
-        for decl in RE_CLASS_DECL.finditer(text):
-            if re.search(r"\bIMessageHandler\b", decl.group(2)) is None:
-                continue
-            results.add((enclosing_namespace(text, decl.start()), decl.group(1)))
-    return results
 
 
 # ---------------------------------------------------------------------------
@@ -660,7 +664,7 @@ namespace Hotfix.Framework.Network
         internal static void RegisterAll()
         {{
             RegisterMessageIds();
-            RegisterMessageHandlerMethods();
+            RegisterNotifyHandlers();
             RegisterExternalPacketHandlers();
         }}
 
@@ -673,12 +677,12 @@ namespace Hotfix.Framework.Network
 {message_registrations}        }}
 
         /// <summary>
-        /// 注册用户 [NotifyMessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
-        /// 共 {handler_type_count} 个类型。
-        /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
-        /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
+        /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
+        /// 共 {handler_entry_count} 条绑定，来自 {handler_type_count} 个宿主类型。
+        /// 委托形如 static message =&gt; Handler.Instance.OnX((X)message)：
+        /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
-        private static void RegisterMessageHandlerMethods()
+        private static void RegisterNotifyHandlers()
         {{
 {handler_registrations}        }}
 
@@ -705,7 +709,7 @@ namespace Hotfix.Framework.Network
 """
 
 
-def build_output(messages, proto_namespaces, message_type_namespaces, handlers, handler_types, external_handlers):
+def build_output(messages, proto_namespaces, message_type_namespaces, handlers, external_handlers):
     # ---- using ----
     ns_list = sorted(set(proto_namespaces) | set(message_type_namespaces))
     if not ns_list:
@@ -723,37 +727,23 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
 
-    # ---- 消息处理方法注册（直接委托）----
+    # ---- 推送处理绑定（静态捕获宿主 static Instance，声明即生效）----
     lines = []
     registered_types = []
+    handler_entry_count = 0
     for (ns, type_name) in sorted(handlers.keys()):
         entries = handlers[(ns, type_name)]
         full_name = ("%s.%s" % (ns, type_name)) if ns else type_name
         registered_types.append((ns, type_name))
-        lines.append(
-            "            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(%s), new[]\n            {\n"
-            % full_name
-        )
+        lines.append("            // %s\n" % full_name)
         for entry in entries:
+            handler_entry_count += 1
             lines.append(
-                '                new ProtoMessageHandlerMethod(typeof(%s), "%s",\n'
-                "                    %s),\n"
-                % (entry["message_type"], entry["method_name"], entry["invoke"])
+                "            ProtoMessageHandlerRegistry.BindNotify(typeof(%s),\n"
+                "                %s);\n"
+                % (entry["message_type"], entry["invoke"])
             )
-        lines.append("            });\n")
-
-    # 已实现 INotifyMessageHandler 但无 [NotifyMessageHandler] 方法：登记空清单，
-    # 使 ProtoMessageHandlerRegistry 能区分「已登记无处理方法」与「未登记（需重新生成）」。
-    for (ns, type_name) in sorted(handler_types):
-        if (ns, type_name) in handlers:
-            continue
-        full_name = ("%s.%s" % (ns, type_name)) if ns else type_name
-        registered_types.append((ns, type_name))
-        lines.append(
-            "            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(%s), Array.Empty<ProtoMessageHandlerMethod>());\n"
-            % full_name
-        )
-    handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 INotifyMessageHandler 实现类型。\n"
+    handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 [NotifyMessageHandler] 推送处理方法。\n"
 
     # ---- 框架外包处理器注册 ----
     if external_handlers:
@@ -776,6 +766,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         proto_usings=proto_usings,
         message_count=len(messages),
         handler_type_count=len(registered_types),
+        handler_entry_count=handler_entry_count,
         external_handler_count=len(external_handlers),
         message_registrations=message_registrations,
         handler_registrations=handler_registrations,
@@ -825,7 +816,6 @@ def main() -> int:
     messages, proto_namespaces, proto_warnings = scan_proto_messages()
     decls, by_name = scan_class_index()
     handlers, msg_ns, handler_errors, handler_warnings = scan_message_handler_methods(by_name)
-    handler_types = scan_message_handler_types()
     external_handlers, external_warnings = scan_external_packet_handlers(decls, by_name)
 
     errors = validate(messages) + handler_errors
@@ -840,7 +830,7 @@ def main() -> int:
         return 1
 
     content = build_output(
-        messages, proto_namespaces, msg_ns, handlers, handler_types, external_handlers
+        messages, proto_namespaces, msg_ns, handlers, external_handlers
     )
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
@@ -848,11 +838,11 @@ def main() -> int:
         fp.write(content)
 
     print(
-        "[gen-proto-registry] 已生成 %s（消息 %d 条，消息处理器类型 %d 个，框架外包处理器 %d 个）"
+        "[gen-proto-registry] 已生成 %s（消息 %d 条，推送宿主 %d 个，框架外包处理器 %d 个）"
         % (
             OUTPUT_REL,
             len(messages),
-            len(set(handlers.keys()) | handler_types),
+            len(handlers.keys()),
             len(external_handlers),
         )
     )

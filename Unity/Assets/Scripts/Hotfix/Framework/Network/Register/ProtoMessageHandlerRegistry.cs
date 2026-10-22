@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
@@ -8,206 +7,65 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 用户消息处理方法的登记项（由生成物 <c>ProtoMessageRegistry</c> 填充）。
-	/// 说明：持有的是**生成期产出的直接委托**，不再持有方法名 / MethodInfo，
-	/// 因此运行期无需按名字查找方法，也不存在任何反射。
-	/// </summary>
-	public readonly struct ProtoMessageHandlerMethod
-	{
-		/// <summary>
-		/// [NotifyMessageHandler] 声明的消息类型。
-		/// </summary>
-		public Type MessageType { get; }
-
-		/// <summary>
-		/// [NotifyMessageHandler] 声明的方法名。仅用于日志与去重比对，不参与方法查找。
-		/// </summary>
-		public string MethodName { get; }
-
-		/// <summary>
-		/// 生成期产出的直接委托，形如
-		/// <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>。
-		/// </summary>
-		public Action<INotifyMessageHandler, MessageObject> Invoke { get; }
-
-		/// <summary>
-		/// 创建消息处理方法描述
-		/// </summary>
-		/// <param name="messageType">消息类型</param>
-		/// <param name="methodName">处理方法名</param>
-		/// <param name="invoke">生成期产出的直接委托</param>
-		public ProtoMessageHandlerMethod(Type messageType, string methodName, Action<INotifyMessageHandler, MessageObject> invoke)
-		{
-			MessageType = messageType;
-			MethodName  = methodName;
-			Invoke      = invoke;
-		}
-	}
-
-	/// <summary>
-	/// 协议消息处理帮助类
-	///
+	/// 推送（Notify）处理器注册表。
 	/// 说明（项目铁律 4：运行时杜绝反射）：
-	///     「消息处理对象类型 -&gt; 其 [NotifyMessageHandler] 方法清单」原先通过
-	///     <c>Type.GetMethods</c> + <c>MethodInfo.GetCustomAttribute</c> 在注册时读取特性获得，
-	///     现改由生成期扫描源码产出的静态表提供（生成脚本 Protobuf/gen-proto-registry.py）：
-	///     生成物直接产出**强类型委托**，注册时仅做绑定，运行期零反射
-	///     （无 GetMethods / IsDefined / GetCustomAttribute / CreateDelegate / MethodInfo.Invoke）。
-	///     新增 [NotifyMessageHandler] 方法后必须重新运行生成脚本，否则会记录错误日志且该处理器不生效。
+	///     「消息类型 → 处理委托」由生成脚本 Protobuf/gen-proto-registry.py 产出静态绑定代码
+	///     （ProtoMessageRegistry.g.cs 的 RegisterNotifyHandlers），在 NetworkModule.OnInit 的
+	///     RegisterAll 中一次性写入本表。委托为 static 闭包，直接捕获宿主的 static Instance
+	///     （惰性触达：宿主实例在首次推送时才被创建），运行期零反射。
+	///     业务侧只需在方法上标注 [NotifyMessageHandler]——声明即生效，无手动注册步骤；
+	///     新增/修改标注方法后必须重新运行生成脚本。
 	/// </summary>
 	public static class ProtoMessageHandlerRegistry
 	{
 		/// <summary>
-		/// 消息处理器字典, Key为消息类型, Value为消息处理器列表
+		/// 推送处理委托表：Key 为消息类型，Value 为该类型的全部处理委托（声明顺序）。
+		/// 仅启动期 RegisterAll 写入一次、之后只读，派发在主线程——普通 Dictionary 即可。
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, List<NotifyMessageHandlerAttribute>> sr_messageHandlerDictionary = new();
+		private static readonly Dictionary<Type, List<Action<MessageObject>>> sr_notifyHandlers = new();
 
 		/// <summary>
-		/// 「消息处理对象类型 -&gt; 其 [NotifyMessageHandler] 方法清单」静态表（由生成物写入）。
-		/// 说明：仅在启动期 NetworkModule.OnInit 内写入一次，之后只读；
-		/// 仍使用 ConcurrentDictionary 以容忍 Add/Remove 与初始化并发的极端情况。
+		/// 绑定一条推送处理委托。由生成物 RegisterNotifyHandlers 调用（每条 [NotifyMessageHandler] 方法一条）。
 		/// </summary>
-		private static readonly ConcurrentDictionary<Type, ProtoMessageHandlerMethod[]> sr_handlerMethodRegistry = new();
-
-		/// <summary>
-		/// 登记某个消息处理对象类型的 [NotifyMessageHandler] 方法清单。由生成物调用。
-		/// 说明：无 [NotifyMessageHandler] 方法的 INotifyMessageHandler 实现类型也会被登记为空清单，
-		/// 以便 <see cref="Add"/> 能区分「已登记但无处理方法」与「未登记（需重新生成）」。
-		/// </summary>
-		/// <param name="handlerType">消息处理对象类型</param>
-		/// <param name="methods">该类型上的 [NotifyMessageHandler] 方法清单</param>
-		internal static void RegisterHandlerType(Type handlerType, ProtoMessageHandlerMethod[] methods)
+		/// <param name="messageType">推送消息类型</param>
+		/// <param name="handler">生成期产出的静态绑定委托</param>
+		internal static void BindNotify(Type messageType, Action<MessageObject> handler)
 		{
-			handlerType.NotNull(nameof(handlerType));
-			sr_handlerMethodRegistry[handlerType] = methods ?? Array.Empty<ProtoMessageHandlerMethod>();
+			messageType.NotNull(nameof(messageType));
+			handler.NotNull(nameof(handler));
+
+			if (!sr_notifyHandlers.TryGetValue(messageType, out var list))
+			{
+				list = new List<Action<MessageObject>>(4);
+				sr_notifyHandlers[messageType] = list;
+			}
+
+			list.Add(handler);
 		}
 
 		/// <summary>
-		/// 增加消息处理器
+		/// 尝试将一条推送消息派发给已绑定的处理委托。
+		/// 单个委托的异常就地隔离（记录后继续后续委托），不影响同消息的其他处理者。
 		/// </summary>
-		/// <param name="NotifyMessageHandler">消息接收对象</param>
-		public static void Add(INotifyMessageHandler NotifyMessageHandler)
+		/// <param name="message">推送消息</param>
+		/// <returns>是否存在绑定（无绑定返回 false，由调用方记录日志）。</returns>
+		internal static bool TryDispatch(MessageObject message)
 		{
-			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
-			var type = NotifyMessageHandler.GetType();
+			if (!sr_notifyHandlers.TryGetValue(message.GetType(), out var list)) return false;
 
-			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
+			for (var i = 0; i < list.Count; i++)
 			{
-				FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-				                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
-				return;
-			}
-
-			for (var i = 0; i < registeredMethods.Length; i++)
-			{
-				var entry = registeredMethods[i];
-
-				if (entry.Invoke == null)
+				try
 				{
-					FuLogger.LogError("生成注册表中的处理委托为空：" + type.FullName + "->" + entry.MethodName +
-					                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
-					continue;
+					list[i](message);
 				}
-
-				var list = sr_messageHandlerDictionary.GetOrAdd(entry.MessageType, static _ => new List<NotifyMessageHandlerAttribute>(8));
-
-				if (ContainsHandler(list, NotifyMessageHandler, entry.MethodName))
+				catch (Exception e)
 				{
-					FuLogger.LogError("重复注册消息处理器：" + type.FullName + "->" + entry.MethodName);
-					continue;
-				}
-
-				// 绑定生成期产出的强类型委托：运行期不再查找方法、不再构造委托。
-				var NotifyMessageHandlerAttribute = new NotifyMessageHandlerAttribute(entry.MessageType, entry.MethodName);
-				NotifyMessageHandlerAttribute.Bind(NotifyMessageHandler, entry.Invoke);
-				list.Add(NotifyMessageHandlerAttribute);
-			}
-		}
-
-		/// <summary>
-		/// 移除消息处理器
-		/// </summary>
-		/// <param name="NotifyMessageHandler">消息接收对象</param>
-		public static void Remove(INotifyMessageHandler NotifyMessageHandler)
-		{
-			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
-			var type = NotifyMessageHandler.GetType();
-
-			if (!sr_handlerMethodRegistry.TryGetValue(type, out var registeredMethods))
-			{
-				FuLogger.LogError("消息处理对象类型未在生成的注册表中：" + type.FullName +
-				                  "，请重新运行 Protobuf/Proto2CsExport-All.bat 后再试");
-				return;
-			}
-
-			for (var i = 0; i < registeredMethods.Length; i++)
-			{
-				var entry = registeredMethods[i];
-
-				if (!sr_messageHandlerDictionary.TryGetValue(entry.MessageType, out var list) || list == null)
-				{
-					FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + entry.MethodName);
-					continue;
-				}
-
-				// 以 (处理对象实例, 方法名) 显式比对：两处信息都由生成表提供，
-				// 不依赖 Attribute 实例的引用相等性（NotifyMessageHandlerAttribute 未重写 Equals）。
-				var removed = false;
-				for (var j = list.Count - 1; j >= 0; j--)
-				{
-					var exist = list[j];
-					if (!ReferenceEquals(exist.TargetHandler, NotifyMessageHandler)) continue;
-					if (exist.InvokeMethodName != entry.MethodName) continue;
-
-					list.RemoveAt(j);
-					removed = true;
-				}
-
-				if (!removed)
-				{
-					FuLogger.LogError("未找到消息处理器：" + type.FullName + "->" + entry.MethodName);
-					continue;
-				}
-
-				if (list.Count <= 0)
-				{
-					sr_messageHandlerDictionary.TryRemove(entry.MessageType, out _);
+					FuLogger.LogFatal(e);
 				}
 			}
-		}
 
-		/// <summary>
-		/// 判断列表中是否已注册了同一处理对象上的同一方法
-		/// </summary>
-		private static bool ContainsHandler(List<NotifyMessageHandlerAttribute> list, INotifyMessageHandler NotifyMessageHandler, string invokeMethodName)
-		{
-			foreach (var exist in list)
-			{
-				if (!ReferenceEquals(exist.TargetHandler, NotifyMessageHandler)) continue;
-				if (exist.InvokeMethodName != invokeMethodName) continue;
-				return true;
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// 获取消息处理器，并复制到调用方提供的复用列表中。
-		/// </summary>
-		/// <param name="messageType">消息类型</param>
-		/// <param name="destination">调用方提供的复用列表，会被先清空</param>
-		internal static void GetHandlers(Type messageType, List<NotifyMessageHandlerAttribute> destination)
-		{
-			destination.Clear();
-			if (sr_messageHandlerDictionary.TryGetValue(messageType, out var list) && list != null)
-			{
-				// 复制到调用方缓冲区：派发期间用户代码可能注册/注销处理器，
-				// 直接遍历内部列表会抛 InvalidOperationException。
-				destination.AddRange(list);
-				return;
-			}
-
-			FuLogger.LogWarning("没有找到消息处理器消息类型：" + messageType.Name);
+			return true;
 		}
 	}
 }

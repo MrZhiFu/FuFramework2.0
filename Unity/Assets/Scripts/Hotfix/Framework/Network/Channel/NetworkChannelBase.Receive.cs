@@ -34,16 +34,6 @@ namespace Hotfix.Framework.Network
 		protected readonly FuLinkedList<MessageObject> m_executionMessageLinkedList = new();
 
 		/// <summary>
-		/// 推送派发时复用的处理器特性列表，避免每收一包都新建 List 造成 GC。
-		/// </summary>
-		private readonly List<NotifyMessageHandlerAttribute> m_notifyHandlerBuffer = new(8);
-
-		/// <summary>
-		/// 复用列表是否正在使用中（用于处理派发重入，重入时回退为新建列表）。
-		/// </summary>
-		private bool m_notifyHandlerBufferBusy;
-
-		/// <summary>
 		/// 处理接收到的消息
 		/// </summary>
 		private void ProcessReceivedMessage()
@@ -79,50 +69,15 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 将消息派发给已注册的消息处理器
+		/// 将推送消息派发给已绑定的处理委托（声明即生效，无手动注册；单个委托异常就地隔离）
 		/// </summary>
-		/// <param name="messageObject">消息对象</param>
+		/// <param name="messageObject">推送消息对象</param>
 		private void DispatchMessage(MessageObject messageObject)
 		{
-			// 处理器列表会被复制到复用缓冲区后再派发：派发期间用户代码可能注册/注销处理器，
-			// 直接遍历内部列表会抛 InvalidOperationException；复用缓冲区避免每包分配 List。
-			var                           reuseBuffer = !m_notifyHandlerBufferBusy;
-			List<NotifyMessageHandlerAttribute> handlers;
-			if (reuseBuffer)
+			// 委托表仅在启动期 RegisterAll 写入一次、之后只读，运行期无增删，无需快照缓冲。
+			if (!ProtoMessageHandlerRegistry.TryDispatch(messageObject))
 			{
-				m_notifyHandlerBufferBusy = true;
-				handlers                  = m_notifyHandlerBuffer;
-				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
-			}
-			else
-			{
-				// 重入时不能复用缓冲区，退化为新建列表。
-				handlers = new List<NotifyMessageHandlerAttribute>(8);
-				ProtoMessageHandlerRegistry.GetHandlers(messageObject.GetType(), handlers);
-			}
-
-			try
-			{
-				foreach (var handler in handlers)
-				{
-					handler.SetMessageObject(messageObject);
-					try
-					{
-						handler.Invoke();
-					}
-					catch (Exception e)
-					{
-						FuLogger.LogFatal(e);
-					}
-				}
-			}
-			finally
-			{
-				if (reuseBuffer)
-				{
-					handlers.Clear();
-					m_notifyHandlerBufferBusy = false;
-				}
+				FuLogger.LogWarning($"没有找到消息处理器的消息类型：{messageObject.GetType().Name}");
 			}
 		}
 

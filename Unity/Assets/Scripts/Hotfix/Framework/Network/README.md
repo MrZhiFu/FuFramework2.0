@@ -125,7 +125,7 @@ public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 **方式二：用户处理方法 —— 方法级别 `[NotifyMessageHandler(typeof(消息类型), nameof(方法名))]`**
 
 ```csharp
-public sealed class BagManager : Singleton<BagManager>, INotifyMessageHandler
+public sealed class BagManager : Singleton<BagManager>   // 声明即生效：无需实现接口、无需手动注册
 {
     [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(OnNotifyBagInfoChanged))]
     internal void OnNotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
@@ -133,16 +133,18 @@ public sealed class BagManager : Singleton<BagManager>, INotifyMessageHandler
 ```
 
 > 命名惯例：处理方法用 `On` 前缀（如 `OnNotifyBagInfoChanged`）——方法名表达**处理动作**，与消息类型名区分。
+> **宿主契约**：所在类型必须继承 `Singleton<T>` 或提供 `static Instance`（生成器校验，不满足则中止生成）。
 
-生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**直接委托**：
+生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**静态绑定委托**（直接捕获宿主实例）：
 
 ```csharp
-new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "OnNotifyBagInfoChanged",
-    static (handler, message) => ((BagManager)handler).OnNotifyBagInfoChanged((NotifyBagInfoChanged)message)),
+ProtoMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
+    static message => BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)message));
 ```
 
-运行时 `ProtoMessageHandlerRegistry.Add(this)` 只做「绑定委托」，**不查找方法、不使用任何反射**
-（无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）。
+绑定在 `NetworkModule.OnInit` 的 `RegisterAll` 中一次性完成，**不查找方法、不使用任何反射**
+（无 `GetMethods` / `IsDefined` / `GetCustomAttribute` / `CreateDelegate` / `MethodInfo.Invoke`）；
+宿主实例在首次推送时才被触达（惰性）。
 
 > **可见性契约（重要）**：由于生成物直接调用该方法，`[NotifyMessageHandler]` 标注的方法
 > **必须是 `internal` 或 `public`**（默认的 `private` 会导致生成脚本**报错并中止**，
@@ -152,7 +154,7 @@ new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "OnNotifyBagInfoChan
 > **重要**：新增 / 删除协议消息、修改消息ID 后，运行**一键脚本**
 > `Protobuf/Proto2CsExport-All.bat`（Windows；先导出 C# 再生成注册表）或 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`（macOS/Linux）。
 > 若只新增 `[NotifyMessageHandler]` 方法（未动 proto），跑 `Protobuf/gen-proto-registry.bat` 即可。
-> 否则注册表与实际代码不一致（未登记的处理器类型会在运行时报错日志）。
+> 否则注册表与实际代码不一致（未绑定的推送消息会在运行时打警告日志并被丢弃）。
 
 **包处理器装配（`DefaultNetworkChannelHelper`）**
 

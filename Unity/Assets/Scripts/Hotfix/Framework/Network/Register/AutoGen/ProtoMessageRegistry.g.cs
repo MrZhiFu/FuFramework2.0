@@ -40,7 +40,7 @@ namespace Hotfix.Framework.Network
         internal static void RegisterAll()
         {
             RegisterMessageIds();
-            RegisterMessageHandlerMethods();
+            RegisterNotifyHandlers();
             RegisterExternalPacketHandlers();
         }
 
@@ -76,18 +76,16 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册用户 [NotifyMessageHandler] 方法所属类型及其 (消息类型, 直接委托) 清单。
-        /// 共 1 个类型。
-        /// 委托形如 static (handler, message) =&gt; ((Handler)handler).OnX((X)message)：
-        /// 直接调用目标方法，运行时无反射、无按名查找、无 MethodInfo.Invoke。
+        /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
+        /// 共 1 条绑定，来自 1 个宿主类型。
+        /// 委托形如 static message =&gt; Handler.Instance.OnX((X)message)：
+        /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
-        private static void RegisterMessageHandlerMethods()
+        private static void RegisterNotifyHandlers()
         {
-            ProtoMessageHandlerRegistry.RegisterHandlerType(typeof(Hotfix.Game.Manager_ToDelete.BagManager), new[]
-            {
-                new ProtoMessageHandlerMethod(typeof(NotifyBagInfoChanged), "OnNotifyBagInfoChanged",
-                    static (handler, message) => ((Hotfix.Game.Manager_ToDelete.BagManager)handler).OnNotifyBagInfoChanged((NotifyBagInfoChanged)message)),
-            });
+            // Hotfix.Game.Manager_ToDelete.BagManager
+            ProtoMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
+                static message => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)message));
         }
 
         /// <summary>

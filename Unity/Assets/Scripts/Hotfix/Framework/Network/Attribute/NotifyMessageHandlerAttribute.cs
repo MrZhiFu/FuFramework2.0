@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Log;
 using AOT.Framework.Extension;
 
 // ReSharper disable once CheckNamespace
@@ -11,12 +9,14 @@ namespace Hotfix.Framework.Network
 	/// 推送（Notify）消息处理方法特性（**声明用**）。
 	/// 仅服务服务器推送：目标方法的消息类型必须实现 INotifyMessage（构造期校验）；
 	/// Resp 响应由 Call 的 await 经 RPC 配对消费，不进入消息派发，因此 Req/Resp 类型不可标注本特性。
+	/// 声明即生效：生成脚本扫描本特性产出静态绑定委托（宿主经 static Instance 捕获），
+	/// 业务侧无需实现接口、无需手动注册。
 	///
 	/// 说明（项目铁律 4：运行时杜绝反射）：
 	///     本特性只用于在源码里「声明」某个方法要处理某个消息类型，供生成脚本
 	///     <c>Protobuf/gen-proto-registry.py</c> 扫描。运行期的注册与派发完全不再读取特性、不再查找方法：
-	///     生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 会为每个 [NotifyMessageHandler] 方法直接产出
-	///     强类型委托，由 <see cref="ProtoMessageHandlerRegistry.Add"/> 绑定到本类的实例上。
+	///     生成物 <c>Register/AutoGen/ProtoMessageRegistry.g.cs</c> 会为每个 [NotifyMessageHandler] 方法直接产出
+	///     静态绑定委托，在 NetworkModule.OnInit 的 RegisterAll 中写入注册表。
 	///     因此运行时不存在 <c>GetMethods</c> / <c>IsDefined</c> / <c>GetCustomAttribute</c> /
 	///     <c>CreateDelegate</c> / <c>MethodInfo.Invoke</c>。
 	///
@@ -27,7 +27,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	/// <example>
 	/// <code>
-	/// public sealed class BagManager : Singleton&lt;BagManager&gt;, INotifyMessageHandler
+	/// public sealed class BagManager : Singleton&lt;BagManager&gt;
 	/// {
 	///     [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(OnNotifyBagInfoChanged))]
 	///     internal void OnNotifyBagInfoChanged(NotifyBagInfoChanged msg) { /* ... */ }
@@ -38,47 +38,25 @@ namespace Hotfix.Framework.Network
 	public class NotifyMessageHandlerAttribute : Attribute
 	{
 		/// <summary>
-		/// 单个方法允许积压的最大未处理消息数量，防止消息队列无界增长。
-		/// </summary>
-		private const int MAX_QUEUED_MESSAGE_COUNT = 256;
-
-		/// <summary>
-		/// 消息对象
+		/// [NotifyMessageHandler] 声明的消息类型。
 		/// </summary>
 		public Type MessageType { get; }
 
 		/// <summary>
-		/// 执行的方法名称（仅用于日志与去重比对，不参与任何反射查找）
+		/// 执行的方法名称（仅用于生成物注释与日志，不参与任何反射查找）
 		/// </summary>
-		private readonly string m_invokeMethodName;
+		public string MethodName { get; }
 
 		/// <summary>
-		/// 消息处理器
+		/// 网络消息处理器特性
 		/// </summary>
-		private INotifyMessageHandler m_messageHandler;
-
-		/// <summary>
-		/// 已绑定的消息处理委托。
-		/// 由生成物直接产出（形如 <c>static (handler, message) =&gt; ((BagManager)handler).OnX((X)message)</c>），
-		/// 注册阶段一次性绑定，收包阶段直接调用，全程无反射。
-		/// </summary>
-		private Action<INotifyMessageHandler, MessageObject> m_invokeDelegate;
-
-		/// <summary>
-		/// 消息处理对象队列
-		/// </summary>
-		private readonly Queue<MessageObject> m_messageObjects = new();
-
-		/// <summary>
-		/// 网络消息处理器
-		/// </summary>
-		/// <param name="message">注册的消息对象。需要继承MessageObject和实现INotifyMessage</param>
-		/// <param name="invokeMethodName">执行的方法名称。建议使用nameof标记当前的函数</param>
+		/// <param name="message">要处理的消息类型。需要继承 MessageObject 并实现 INotifyMessage</param>
+		/// <param name="invokeMethodName">执行的方法名称。建议使用 nameof 标记当前的函数</param>
 		public NotifyMessageHandlerAttribute(Type message, string invokeMethodName)
 		{
 			message.NotNull(nameof(message));
 			invokeMethodName.NotNullOrEmpty(nameof(invokeMethodName));
-			m_invokeMethodName = invokeMethodName;
+			MethodName = invokeMethodName;
 			if (message.BaseType != typeof(MessageObject))
 				throw new ArgumentException("message必须继承:" + nameof(MessageObject));
 
@@ -86,69 +64,6 @@ namespace Hotfix.Framework.Network
 				throw new ArgumentException($"message:{message.FullName}必须实现:" + nameof(INotifyMessage));
 
 			MessageType = message;
-		}
-
-		/// <summary>
-		/// 注册时的方法名（仅用于日志与去重比对）
-		/// </summary>
-		internal string InvokeMethodName => m_invokeMethodName;
-
-		/// <summary>
-		/// 注册的处理对象实例（用于显式比对，避免依赖 Attribute 的引用相等性）
-		/// </summary>
-		internal INotifyMessageHandler TargetHandler => m_messageHandler;
-
-		/// <summary>
-		/// 绑定处理对象与生成物产出的强类型委托。
-		/// 由 <see cref="ProtoMessageHandlerRegistry.Add"/> 调用；不再做任何方法查找。
-		/// </summary>
-		/// <param name="NotifyMessageHandler">消息处理对象实例</param>
-		/// <param name="invokeDelegate">生成物产出的直接委托</param>
-		internal void Bind(INotifyMessageHandler NotifyMessageHandler, Action<INotifyMessageHandler, MessageObject> invokeDelegate)
-		{
-			MessageType.NotNull(nameof(MessageType));
-			NotifyMessageHandler.NotNull(nameof(NotifyMessageHandler));
-			invokeDelegate.NotNull(nameof(invokeDelegate));
-			m_messageHandler = NotifyMessageHandler;
-			m_invokeDelegate = invokeDelegate;
-		}
-
-		/// <summary>
-		/// 设置消息对象
-		/// </summary>
-		/// <param name="messageObject">消息对象</param>
-		public void SetMessageObject(MessageObject messageObject)
-		{
-			messageObject.NotNull(nameof(messageObject));
-			if (m_messageObjects.Count >= MAX_QUEUED_MESSAGE_COUNT)
-			{
-				// 队列无界会导致内存持续增长（例如处理函数持续失败时），
-				// 这里丢弃最旧的一条，保证积压有上限。
-				FuLogger.LogWarning($"消息处理队列已满({MAX_QUEUED_MESSAGE_COUNT})，丢弃最旧消息。方法：{m_invokeMethodName}");
-				m_messageObjects.Dequeue();
-			}
-
-			m_messageObjects.Enqueue(messageObject);
-		}
-
-		/// <summary>
-		/// 转发队列中的一条消息到绑定的处理方法
-		/// </summary>
-		internal void Invoke()
-		{
-			if (m_messageObjects.Count <= 0)
-			{
-				FuLogger.LogWarning($"没有消息对象转发到方法：{m_invokeMethodName}");
-				return;
-			}
-
-			// 先出队再处理：处理过程中抛异常时消息不会残留在队列里造成无界堆积。
-			var messageObject = m_messageObjects.Dequeue();
-
-			if (m_invokeDelegate == null)
-				throw new ArgumentNullException(nameof(m_invokeDelegate), $"未绑定处理委托：{m_invokeMethodName}.请确认是否注册成功");
-
-			m_invokeDelegate(m_messageHandler, messageObject);
 		}
 	}
 }

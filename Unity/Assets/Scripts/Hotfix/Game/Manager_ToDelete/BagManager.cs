@@ -14,7 +14,7 @@ namespace Hotfix.Game.Manager_ToDelete
 	/// <summary>
 	/// 背包 管理器
 	/// </summary>
-	public sealed class BagManager : Singleton<BagManager>, INotifyMessageHandler
+	public sealed class BagManager : Singleton<BagManager>
 	{
 		private readonly Dictionary<int, BagItem> m_itemDic = new Dictionary<int, BagItem>();
 
@@ -117,22 +117,6 @@ namespace Hotfix.Game.Manager_ToDelete
 			}
 
 			return result;
-		}
-
-		/// <summary>
-		/// 由于是单例对象。所以在初始化的时候自动调用一次注册消息
-		/// </summary>
-		public BagManager()
-		{
-			Register();
-		}
-
-		/// <summary>
-		/// 注册消息。请勿多次调用
-		/// </summary>
-		public void Register()
-		{
-			ProtoMessageHandlerRegistry.Add(this);
 		}
 	}
 }
