@@ -57,50 +57,6 @@ namespace Hotfix.Framework.Network
 		private static readonly object sr_externalPacketHandlerRegistrarsLock = new();
 
 		/// <summary>
-		/// 显式注册一个自定义包处理器装配委托。
-		/// 委托会在每个频道 Initialize 时、框架默认处理器装配完成之后被调用。
-		/// </summary>
-		/// <param name="registrar">装配委托，参数为待装配的网络频道</param>
-		public static void RegisterExternalPacketHandler(Action<INetworkChannel> registrar)
-		{
-			registrar.NotNull(nameof(registrar));
-			lock (sr_externalPacketHandlerRegistrarsLock)
-			{
-				sr_externalPacketHandlerList.Add(registrar);
-			}
-		}
-
-		/// <summary>
-		/// 装配框架自带的默认包处理器。
-		///
-		/// 说明（项目铁律 4）：原实现由反射扫描全部已加载程序集发现 IPacketHandler 实现并逐个实例化，
-		/// 现改为显式列出。下表即原扫描结果中的框架侧实现类（框架外的实现由生成物追加注册并覆盖，见下）：
-		///     发送包头 → 0
-		///     发送包体 → 0
-		///     接收包头 → 0
-		///     接收包体 → 0
-		///     压缩    → MessageCompressHandler
-		///     解压    → MessageDecompressHandler
-		///
-		/// 心跳处理器**不在默认装配中**：心跳消息 ReqHeartBeat 是 Game 层的 proto 生成物，框架无法构造，
-		/// 由生成物 RegisterExternalPacketHandler 注册游戏侧 PacketHeartBeatHandler
-		/// （其基类 0 为 abstract，编译期强制游戏侧实现）。
-		/// </summary>
-		private void RegisterHandlers()
-		{
-			var channel = m_networkChannel;
-
-			channel.RegisterPacketSendHeaderHandler(new PacketSendHeaderHandler());
-			channel.RegisterPacketSendBodyHandler(new PacketSendBodyHandler());
-			
-			channel.RegisterPacketReceiveHeaderHandler(new PacketReceiveHeaderHandler());
-			channel.RegisterPacketReceiveBodyHandler(new PacketReceiveBodyHandler());
-			
-			channel.RegisterMessageCompressHandler(new MessageCompressHandler());
-			channel.RegisterMessageDecompressHandler(new MessageDecompressHandler());
-		}
-
-		/// <summary>
 		/// 初始化网络频道帮助器。
 		/// </summary>
 		/// <param name="netChannel"></param>
@@ -136,6 +92,50 @@ namespace Hotfix.Framework.Network
 			Event.Unsubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
 			Event.Unsubscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 			m_networkChannel = null;
+		}
+
+		/// <summary>
+		/// 装配框架自带的默认包处理器。
+		///
+		/// 说明（项目铁律 4）：原实现由反射扫描全部已加载程序集发现 IPacketHandler 实现并逐个实例化，
+		/// 现改为显式列出。下表即原扫描结果中的框架侧实现类（框架外的实现由生成物追加注册并覆盖，见下）：
+		///     发送包头 → 0
+		///     发送包体 → 0
+		///     接收包头 → 0
+		///     接收包体 → 0
+		///     压缩    → MessageCompressHandler
+		///     解压    → MessageDecompressHandler
+		///
+		/// 心跳处理器**不在默认装配中**：心跳消息 ReqHeartBeat 是 Game 层的 proto 生成物，框架无法构造，
+		/// 由生成物 RegisterExternalPacketHandler 注册游戏侧 PacketHeartBeatHandler
+		/// （其基类 0 为 abstract，编译期强制游戏侧实现）。
+		/// </summary>
+		private void RegisterHandlers()
+		{
+			var channel = m_networkChannel;
+
+			channel.RegisterPacketSendHeaderHandler(new PacketSendHeaderHandler());
+			channel.RegisterPacketSendBodyHandler(new PacketSendBodyHandler());
+
+			channel.RegisterPacketReceiveHeaderHandler(new PacketReceiveHeaderHandler());
+			channel.RegisterPacketReceiveBodyHandler(new PacketReceiveBodyHandler());
+
+			channel.RegisterMessageCompressHandler(new MessageCompressHandler());
+			channel.RegisterMessageDecompressHandler(new MessageDecompressHandler());
+		}
+
+		/// <summary>
+		/// 显式注册一个自定义包处理器装配委托。
+		/// 委托会在每个频道 Initialize 时、框架默认处理器装配完成之后被调用。
+		/// </summary>
+		/// <param name="registrar">装配委托，参数为待装配的网络频道</param>
+		public static void RegisterExternalPacketHandler(Action<INetworkChannel> registrar)
+		{
+			registrar.NotNull(nameof(registrar));
+			lock (sr_externalPacketHandlerRegistrarsLock)
+			{
+				sr_externalPacketHandlerList.Add(registrar);
+			}
 		}
 
 		/// <summary>

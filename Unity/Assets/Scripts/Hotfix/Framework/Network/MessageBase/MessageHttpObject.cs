@@ -26,7 +26,9 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 消息体字节（JSON 序列化时忽略）
 		/// </summary>
-		[JsonIgnore] [ProtoMember(3)] public byte[] Body { get; set; }
+		[JsonIgnore]
+		[ProtoMember(3)]
+		public byte[] Body { get; set; }
 
 		/// <summary>
 		/// 序列化为 JSON 字符串
