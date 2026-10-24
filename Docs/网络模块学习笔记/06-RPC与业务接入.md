@@ -126,7 +126,7 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 ### 答案
 
 1. 消息 ID 是发货渠道，同类型共用 → 靠它配对会错配（两条同类型请求拿同一个响应）；`UniqueId` 是每实例唯一单号 → 挂起表 key 各不同，能同时挂 N 条同类型请求、各配各的。
-2. 从响应信封的侧信道读回：收包时 `MessageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId)`（`SystemTcpNetworkChannel.ProcessPackBody`）。服务器在响应信封里回显了请求的同一个 UniqueId，客户端读回来赋给响应的 MessageObject，`TryReply` 就能拿它去挂起表配对。proto 里没有这个字段（`[JsonIgnore]`），它只活在自定义包头里。
+2. 从响应信封的侧信道读回：收包时 `MessageObject.SetUniqueId(PacketReceiveHeaderHandler.UniqueId)`（`SystemTcpNetworkChannel.ProcessPackBody`）。服务器在响应信封里回显了请求的同一个 UniqueId，客户端读回来赋给响应的 MessageObject，`TryReply` 就能拿它去挂起表配对。proto 里没有这个字段（`[JsonIgnore]`），它只活在自定义包头里。与 `UpdateUniqueId()`（发侧生成新号）分工：一个生成、一个还原，方法名各自对应方向。
 3. `Clear()` 只清登记表，不清每个挂起的 Task——`await` 仍悬在未完成状态，调用方永久醒不来（还要泄漏一坨继续堆栈）。`Cancel()` 对每个挂起 `TrySetException(OperationCanceledException)` → await 抛出取消异常，调用方 catch 后走重连提示。
 4. **先 `TryReply`，配上了 `continue`；配不上才 `DispatchMessage`**。落到后者的三种情况：不是 IResponseMessage；是响应但挂起表无配对（主动推送）；迟到的 RPC 响应（请求已超时/断线）。
 5. RPC = 远程过程调用。① 你把"请服务器干一件事"变成一条消息发过去；② 然后空手 await，等它回信；③ 收到回信把它当"返回值"用——整个过程像在调用一个本地函数。

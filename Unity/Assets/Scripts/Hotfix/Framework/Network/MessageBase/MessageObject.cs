@@ -24,14 +24,14 @@ namespace Hotfix.Framework.Network
 		protected MessageObject() => UpdateUniqueId();
 
 		/// <summary>
-		/// 更新唯一编号
+		/// 生成新的唯一编号（发包侧取新号供 RPC 配对；构造时自动调用，心跳等复用实例每次发送前刷新）
 		/// </summary>
 		public void UpdateUniqueId() => UniqueId = Utility.IdGenerator.GetNextUniqueIntId();
 
 		/// <summary>
-		/// 设置唯一编号
+		/// 设置唯一编号（收包侧从包头侧信道还原请求号，供 RPC 配对）
 		/// </summary>
-		public void SetUpdateUniqueId(int uniqueId) => UniqueId = uniqueId;
+		internal void SetUniqueId(int uniqueId) => UniqueId = uniqueId;
 
 		/// <summary>
 		/// 序列化为 JSON 字符串

@@ -316,7 +316,7 @@ namespace Hotfix.Framework.Network
 					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, PacketReceiveHeaderHandler.Id, out var msgObj);
 					if (processSuccess)
 					{
-						msgObj.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
+						msgObj.SetUniqueId(PacketReceiveHeaderHandler.UniqueId);
 					}
 
 #if ENABLE_NETWORK_RSP_LOG

@@ -95,7 +95,7 @@ namespace Hotfix.Framework.Network
 
 		#endregion
 
-		#region 消息收发门面
+		#region 消息发送
 
 		/// <summary>
 		/// 向服务器发起 RPC 调用：发送请求并挂起等待响应（转发当前频道 Call；
