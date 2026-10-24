@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		public WebSocketNetworkChannel(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
+		public WebSocketNetworkChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
 
 		/// <summary>
 		/// WebSocket 的 URL 由底层客户端自行解析，无需在这里做 DNS 解析。

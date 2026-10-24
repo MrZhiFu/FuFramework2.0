@@ -29,7 +29,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		public SystemTcpNetworkChannel(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
+		public SystemTcpNetworkChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
 
 		/// <summary>
 		/// 连接到远程主机。

@@ -488,7 +488,7 @@ def scan_external_packet_handlers(decls, by_name):
     """返回 (handlers, warnings)。
 
     handlers: list of dict(fq, name, iface, register, file, depth)
-      * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 DefaultNetworkChannelHelper
+      * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 NetworkChannelHelper
         显式装配，见 RegisterDefaultHandlers）。
       * 只取具体类型（跳过 abstract / static）。
       * 接口判定含继承链，故「派生自框架基类」的游戏侧实现同样能被识别。
@@ -652,7 +652,7 @@ namespace Hotfix.Framework.Network
         /// 共 {external_handler_count} 个。
         ///
         /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
-        /// <c>DefaultNetworkChannelHelper.Initialize</c> 中，且位于
+        /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
         /// <c>RegisterDefaultHandlers()</c>（框架自带 7 个处理器）之后，
         /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
         /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 DefaultPacketHeartBeatHandler）。
@@ -709,7 +709,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     # ---- 框架外包处理器注册 ----
     if external_handlers:
         lines = [
-            "            DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>\n",
+            "            NetworkChannelHelper.AddCustomHandlerRegistrar(channel =>\n",
             "            {\n",
         ]
         for h in external_handlers:

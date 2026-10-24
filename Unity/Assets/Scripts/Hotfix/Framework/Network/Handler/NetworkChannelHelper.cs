@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Network
 	///     2. 显式装配包和包处理函数（不再反射扫描程序集，见 <see cref="RegisterDefaultHandlers"/>）。
 	///     3. 发送默认的包和包处理函数。
 	/// </summary>
-	public class DefaultNetworkChannelHelper
+	public class NetworkChannelHelper
 	{
 		/// <summary>
 		/// 网络频道
@@ -42,10 +42,9 @@ namespace Hotfix.Framework.Network
 		/// 说明（项目铁律 4：运行时杜绝反射）：
 		///     原实现通过 <c>UtilityAOT.Assembly.GetTypes()</c> 扫描全部已加载程序集 + 接口判断 +
 		///     <c>Activator.CreateInstance</c> 来发现并创建包处理器，现已改为
-		///     「显式装配框架自带的 7 个处理器」（见 <see cref="RegisterDefaultHandlers"/>）。
-		///     因此，**新增自定义处理器必须显式注册**，不再靠反射扫描自动发现：
-		///         1) 调用 <see cref="AddCustomHandlerRegistrar"/> 注册装配委托；或
-		///         2) 派生本类并重写 <see cref="RegisterCustomHandlers"/>。
+		///     「显式装配框架自带的 6 个处理器」（见 <see cref="RegisterDefaultHandlers"/>）。
+		///     因此，**新增自定义处理器必须显式注册**（调用 <see cref="AddCustomHandlerRegistrar"/>），
+		///     不再靠反射扫描自动发现。
 		///     处理器实例按频道创建（处理器内部各自持有解析状态，不能跨频道共享）。
 		///
 		/// 仅限启动期调用，之后不再变更。
@@ -80,20 +79,12 @@ namespace Hotfix.Framework.Network
 		///     接收包体 → DefaultPacketReceiveBodyHandler
 		///     发送包头 → DefaultPacketSendHeaderHandler
 		///     发送包体 → DefaultPacketSendBodyHandler
-		///     心跳    → DefaultPacketHeartBeatHandler（兜底，可被框架外实现覆盖）
 		///     压缩    → DefaultMessageCompressHandler
 		///     解压    → DefaultMessageDecompressHandler
 		///
-		/// 心跳处理器：此处装配的是框架基类 DefaultPacketHeartBeatHandler，仅作为**兜底默认**。
-		///     原实现靠反射扫描，会同时命中基类与该基类的游戏侧派生类
-		///     Hotfix.Game.Network.PacketHeartBeatHandler；由于 RegisterHeartBeatHandler 是
-		///     「后注册覆盖」，而编译产物中基类排在派生类之后，框架扫描的结果是**基类生效**
-		///     （基类 Handler() 仅抛 NotImplementedException）。
-		///     此前运行期之所以正常，是因为游戏侧 WinPlayerList.OnBtnLoginClick 在
-		///     CreateChannel（内部即触发本方法）之后又手动注册了一次该派生类。
-		///     现由生成物 Register/AutoGen/MessageRegistry.g.cs 登记装配委托，在本方法之后追加注册
-		///     框架外的具体处理器（见 <see cref="AddCustomHandlerRegistrar"/>），
-		///     使框架侧自洽、不再依赖游戏侧的手动补注册；最终生效者仍是游戏侧实现（后注册者生效）。
+		/// 心跳处理器**不在默认装配中**：心跳消息 ReqHeartBeat 是 Game 层的 proto 生成物，框架无法构造，
+		/// 由生成物 AddCustomHandlerRegistrar 注册游戏侧 PacketHeartBeatHandler
+		/// （其基类 DefaultPacketHeartBeatHandler 为 abstract，编译期强制游戏侧实现）。
 		/// </summary>
 		protected virtual void RegisterDefaultHandlers()
 		{
@@ -103,16 +94,9 @@ namespace Hotfix.Framework.Network
 			channel.RegisterHandler(new DefaultPacketReceiveBodyHandler());
 			channel.RegisterHandler(new DefaultPacketSendHeaderHandler());
 			channel.RegisterHandler(new DefaultPacketSendBodyHandler());
-			channel.RegisterHeartBeatHandler(new DefaultPacketHeartBeatHandler());
 			channel.RegisterMessageCompressHandler(new DefaultMessageCompressHandler());
 			channel.RegisterMessageDecompressHandler(new DefaultMessageDecompressHandler());
 		}
-
-		/// <summary>
-		/// 自定义处理器装配钩子。派生类可重写以补充或替换包处理器。
-		/// 在框架默认处理器装配之后调用。
-		/// </summary>
-		protected virtual void RegisterCustomHandlers() { }
 
 		/// <summary>
 		/// 初始化网络频道帮助器。
@@ -122,10 +106,9 @@ namespace Hotfix.Framework.Network
 		{
 			m_networkChannel = netChannel;
 
-			// 显式装配包处理器：框架默认 7 个 → 派生类钩子 → 显式注册的自定义委托。
+			// 显式装配包处理器：框架默认 6 个 → 显式注册的自定义委托（含生成物注册的游戏心跳）。
 			// 新增自定义处理器必须显式注册，不再依赖反射扫描程序集。
 			RegisterDefaultHandlers();
-			RegisterCustomHandlers();
 
 			lock (sr_customHandlerRegistrarsLock)
 			{
