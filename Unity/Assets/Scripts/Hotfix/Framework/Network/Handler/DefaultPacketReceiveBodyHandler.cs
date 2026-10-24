@@ -18,7 +18,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>是否解析成功</returns>
 		public bool Handler<T>(byte[] source, int messageId, out T msgObj) where T : MessageObject
 		{
-			var messageType = MessageIdRegistry.GetRespTypeById(messageId);
+			var messageType = MessageIdRegistry.GetTypeById(messageId);
 			msgObj = (T)SerializerHelper.Deserialize(source, messageType);
 			return true;
 		}

@@ -7,7 +7,7 @@ namespace Hotfix.Framework.Network
 	/// 消息 ID 标记特性（**声明用**）：标注在协议消息类上，声明该类的协议号（消息 ID）。
 	///
 	/// 消费者：
-	///     发送侧反查 ID 写包头（GetReqMessageIdByType）；接收侧正查类型反序列化（GetRespTypeById）。
+	///     发送侧反查 ID 写包头（GetIdByType）；接收侧正查类型反序列化（GetTypeById）。
 	///
 	/// 使用边界（重要）：
 	///     本特性只应出现在 proto 生成物上（Game/AutoGen/Proto/，由 ProtoExport 输出）——

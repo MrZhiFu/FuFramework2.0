@@ -39,7 +39,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 挂起期间的推送缓冲队列（保持到达顺序）。
 		/// </summary>
-		private static readonly Queue<MessageObject> sr_bufferedNotifies = new();
+		private static readonly Queue<MessageObject> sr_bufferedNotifyQueue = new();
 
 		/// <summary>
 		/// 挂起推送派发：此后到达的推送进入缓冲队列（保持到达顺序）。
@@ -61,9 +61,9 @@ namespace Hotfix.Framework.Network
 			s_dispatchSuspended = false;
 
 			// 按到达顺序回放；回放中若业务再次挂起（处理逻辑里调 Suspend），立即停止，剩余留在队列。
-			while (sr_bufferedNotifies.Count > 0 && !s_dispatchSuspended)
+			while (sr_bufferedNotifyQueue.Count > 0 && !s_dispatchSuspended)
 			{
-				DispatchInternal(sr_bufferedNotifies.Dequeue());
+				DispatchInternal(sr_bufferedNotifyQueue.Dequeue());
 			}
 		}
 
@@ -72,7 +72,7 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public static void ClearBuffer()
 		{
-			sr_bufferedNotifies.Clear();
+			sr_bufferedNotifyQueue.Clear();
 		}
 
 		/// <summary>
@@ -106,14 +106,14 @@ namespace Hotfix.Framework.Network
 
 			if (s_dispatchSuspended)
 			{
-				if (sr_bufferedNotifies.Count >= MAX_BUFFERED_NOTIFY_COUNT)
+				if (sr_bufferedNotifyQueue.Count >= MAX_BUFFERED_NOTIFY_COUNT)
 				{
 					// 丢弃最旧一条：无界积压（内存）比丢推送更危险，丢弃时有警告可查。
 					FuLogger.LogWarning($"推送缓冲队列已满({MAX_BUFFERED_NOTIFY_COUNT})，丢弃最旧一条。请检查是否忘记恢复推送派发。");
-					sr_bufferedNotifies.Dequeue();
+					sr_bufferedNotifyQueue.Dequeue();
 				}
 
-				sr_bufferedNotifies.Enqueue(msgObj);
+				sr_bufferedNotifyQueue.Enqueue(msgObj);
 				return true;
 			}
 

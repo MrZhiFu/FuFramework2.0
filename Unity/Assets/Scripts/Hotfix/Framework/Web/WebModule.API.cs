@@ -205,7 +205,7 @@ namespace Hotfix.Framework.Web
 			if (messageObjectHttp.IsNull() || messageObjectHttp.Id == default)
 				throw new InvalidOperationException($"响应消息头解析失败（消息为空或 Id 无效）: {url}");
 
-			var messageType = MessageIdRegistry.GetRespTypeById(messageObjectHttp.Id);
+			var messageType = MessageIdRegistry.GetTypeById(messageObjectHttp.Id);
 			if (messageType != typeof(T))
 			{
 				throw new InvalidOperationException($"响应消息类型不匹配: 期望 '{typeof(T).FullName}', 实际 '{messageType?.FullName ?? "未知"}'");

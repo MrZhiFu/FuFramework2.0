@@ -97,7 +97,7 @@ namespace Hotfix.Framework.Network
 		{
 			m_offset = 0;
 			var messageType = msgObj.GetType();
-			Id                = MessageIdRegistry.GetReqMessageIdByType(messageType);
+			Id                = MessageIdRegistry.GetIdByType(messageType);
 			messageBodyBuffer = SerializerHelper.Serialize(msgObj);
 			if (messageCompressHandler != null && messageBodyBuffer.Length > LimitCompressLength)
 			{
