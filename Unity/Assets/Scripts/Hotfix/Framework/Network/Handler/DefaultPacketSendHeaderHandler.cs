@@ -113,7 +113,7 @@ namespace Hotfix.Framework.Network
 			PacketLength = (uint)(PacketHeaderLength + messageLength);
 
 			m_cachedByte.WriteUInt(PacketLength, ref m_offset);                                               // 数据包总大小
-			m_cachedByte.WriteByte((byte)(MessageIdRegistry.IsHeartbeat(messageType) ? 1 : 4), ref m_offset); // 消息操作类型
+			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset);                // 消息操作类型
 			m_cachedByte.WriteByte((byte)(IsZip ? 1 : 0),                                      ref m_offset); // 消息压缩标记
 			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                                             // 消息编号
 			m_cachedByte.WriteInt(Id,              ref m_offset);                                             // 消息ID

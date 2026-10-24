@@ -120,7 +120,7 @@ public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 ```
 
 生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/MessageRegistry.g.cs` 中的
-`MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
+`MessageIdRegistry.Register<ReqBagInfo>(6553610)`。
 
 **方式二：用户处理方法 —— 方法级别 `[NotifyMessageHandler(typeof(消息类型), nameof(方法名))]`**
 
@@ -159,7 +159,7 @@ NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切�
 ```
 
 缓冲上限 1024 条（超出丢弃最旧并警告）；回放中可再次挂起（剩余留在队列）。
-心跳回包不参与业务派发（由注册表心跳类型集合在派发前截流）。
+心跳回包不参与业务派发（is IHeartBeatMessage 接口判定，在派发前截流）。
 
 > **可见性契约（重要）**：由于生成物直接调用该方法，`[NotifyMessageHandler]` 标注的方法
 > **必须是 `internal` 或 `public`**（默认的 `private` 会导致生成脚本**报错并中止**，

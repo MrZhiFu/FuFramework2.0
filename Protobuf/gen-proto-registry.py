@@ -11,8 +11,7 @@ gen-proto-registry.py
 
 扫描来源：
     1. <Unity>/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs
-       -> [MessageId(消息ID)] + 类名 + 是否实现 IRequestMessage / IResponseMessage /
-          INotifyMessage / IHeartBeatMessage
+       -> [MessageId(消息ID)] + 类名
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户推送处理方法）
           连同**所在类型**与方法可见性一起解析，产出**静态捕获宿主的直接委托**：
@@ -111,12 +110,6 @@ RE_METHOD_DECL = re.compile(
 RE_NAMESPACE = re.compile(r"^\s*namespace\s+([\w\.]+)", re.MULTILINE)
 RE_TYPE_DECL = re.compile(r"\b(?:class|struct)\s+(\w+)")
 
-# 消息接口 -> 语义
-IFACE_REQUEST = "IRequestMessage"
-IFACE_RESPONSE = "IResponseMessage"
-IFACE_NOTIFY = "INotifyMessage"
-IFACE_HEARTBEAT = "IHeartBeatMessage"
-
 # 包处理器基类（顺序 = 原扫描的 else-if 优先级；
 # 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致。
 # 判定沿继承链匹配「框架具体处理器基类」——处理器接口已删除，单实现策略点直接用具体类。）
@@ -130,8 +123,6 @@ PACKET_INTERFACE_ORDER = [
     ("DefaultMessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
 ]
 PACKET_INTERFACE_NAMES = set(n for n, _ in PACKET_INTERFACE_ORDER)
-
-KIND_NONE = "EMessageKind.None"
 
 
 # ---------------------------------------------------------------------------
@@ -334,41 +325,11 @@ def scan_proto_messages():
                 continue
 
             type_name = decl.group(1)
-            bases = decl.group(2)
-
-            def has(iface: str) -> bool:
-                return re.search(r"\b%s\b" % iface, bases) is not None
-
-            is_heartbeat = has(IFACE_HEARTBEAT)
-
-            # 复刻原实现的优先级：Request > Response > Notify（命中即 continue）
-            if has(IFACE_REQUEST):
-                primary = "EMessageKind.Request"
-            elif has(IFACE_RESPONSE):
-                primary = "EMessageKind.Response"
-            elif has(IFACE_NOTIFY):
-                primary = "EMessageKind.Notify"
-            else:
-                primary = KIND_NONE
-
-            parts = []
-            if primary != KIND_NONE:
-                parts.append(primary)
-            if is_heartbeat:
-                parts.append("EMessageKind.HeartBeat")
-            kind_flags = " | ".join(parts) if parts else KIND_NONE
-
-            if primary == KIND_NONE and not is_heartbeat:
-                warnings.append(
-                    "%s: 类型 %s 带 [MessageId(%d)] 但未实现任何消息接口，"
-                    "原实现同样不会注册（已保留原行为）。" % (rel, type_name, message_id)
-                )
 
             messages.append(
                 {
                     "id": message_id,
                     "type": type_name,
-                    "kind": kind_flags,
                     "file": rel,
                 }
             )
@@ -722,8 +683,8 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     lines = []
     for msg in messages:
         lines.append(
-            "            MessageIdRegistry.Register<%s>(%d, %s);\n"
-            % (msg["type"], msg["id"], msg["kind"])
+            "            MessageIdRegistry.Register<%s>(%d);\n"
+            % (msg["type"], msg["id"])
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
 
