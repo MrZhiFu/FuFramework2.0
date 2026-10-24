@@ -94,9 +94,9 @@ namespace Hotfix.Framework.Network
         ///
         /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
         /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
-        /// <c>RegisterDefaultHandlers()</c>（框架自带 7 个处理器）之后，
+        /// <c>RegisterHandlers()</c>（框架自带 6 个处理器）之后，
         /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
-        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 DefaultPacketHeartBeatHandler）。
+        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 PacketHeartBeatHandlerBase）。
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
@@ -105,9 +105,9 @@ namespace Hotfix.Framework.Network
             if (s_ExternalPacketHandlersRegistered) return;
             s_ExternalPacketHandlersRegistered = true;
 
-            NetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
+            NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
             {
-                // DefaultPacketHeartBeatHandler	Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs
+                // PacketHeartBeatHandlerBase	Unity/Assets/Scripts/Hotfix/Game/Network/PacketHeartBeatHandler.cs
                 channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
             });
         }

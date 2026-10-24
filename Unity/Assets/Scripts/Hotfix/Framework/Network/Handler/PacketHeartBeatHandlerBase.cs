@@ -15,9 +15,9 @@ namespace Hotfix.Framework.Network
 	///     2. 派生类的类型锚点：生成器沿继承链识别游戏侧实现并注册。
 	///
 	/// 装配：框架默认装配**不包含**心跳（没有默认实现可装），
-	/// 由生成物 MessageRegistry.g.cs 的 AddCustomHandlerRegistrar 注册游戏侧实现。
+	/// 由生成物 MessageRegistry.g.cs 的 RegisterExternalPacketHandler 注册游戏侧实现。
 	/// </summary>
-	public abstract class DefaultPacketHeartBeatHandler
+	public abstract class PacketHeartBeatHandlerBase
 	{
 		/// <summary>
 		/// 每次心跳的间隔

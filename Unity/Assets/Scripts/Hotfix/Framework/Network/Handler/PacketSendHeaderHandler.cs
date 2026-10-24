@@ -8,7 +8,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息发送头部处理器
 	/// </summary>
-	public class DefaultPacketSendHeaderHandler
+	public class PacketSendHeaderHandler
 	{
 		/// <summary>
 		/// 网络包长度(4字节)
@@ -76,7 +76,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 创建发送包头处理器，并计算包头总长度
 		/// </summary>
-		public DefaultPacketSendHeaderHandler()
+		public PacketSendHeaderHandler()
 		{
 			// 4 + 1 + 1 + 4 + 4 = 14 字节
 			PacketHeaderLength = NET_PACKET_LENGTH + NET_OPERATION_TYPE_LENGTH + NET_ZIP_FLAG_LENGTH + NET_UNIQUE_ID_LENGTH + NET_CMD_ID_LENGTH;
@@ -92,13 +92,15 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageBodyBuffer">消息序列化完的二进制数组</param>
 		/// <typeparam name="T">消息类型</typeparam>
 		/// <returns>是否序列化成功</returns>
-		public bool Handler<T>(T msgObj, DefaultMessageCompressHandler messageCompressHandler, MemoryStream destination,
+		public bool Handler<T>(T msgObj, MessageCompressHandler messageCompressHandler, MemoryStream destination,
 		                       out byte[] messageBodyBuffer) where T : MessageObject
 		{
 			m_offset = 0;
 			var messageType = msgObj.GetType();
+
 			Id                = MessageIdRegistry.GetIdByType(messageType);
 			messageBodyBuffer = SerializerHelper.Serialize(msgObj);
+
 			if (messageCompressHandler != null && messageBodyBuffer.Length > LimitCompressLength)
 			{
 				IsZip             = true;
@@ -112,11 +114,11 @@ namespace Hotfix.Framework.Network
 			var messageLength = messageBodyBuffer.Length;
 			PacketLength = (uint)(PacketHeaderLength + messageLength);
 
-			m_cachedByte.WriteUInt(PacketLength, ref m_offset);                                               // 数据包总大小
-			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset);                // 消息操作类型
-			m_cachedByte.WriteByte((byte)(IsZip ? 1 : 0),                                      ref m_offset); // 消息压缩标记
-			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                                             // 消息编号
-			m_cachedByte.WriteInt(Id,              ref m_offset);                                             // 消息ID
+			m_cachedByte.WriteUInt(PacketLength, ref m_offset);                                // 数据包总大小
+			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset); // 消息操作类型
+			m_cachedByte.WriteByte((byte)(IsZip ? 1 : 0),                       ref m_offset); // 消息压缩标记
+			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                              // 消息编号
+			m_cachedByte.WriteInt(Id,              ref m_offset);                              // 消息ID
 			destination.Write(m_cachedByte, 0, PacketHeaderLength);
 			return true;
 		}

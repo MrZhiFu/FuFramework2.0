@@ -6,7 +6,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息发送内容处理器
 	/// </summary>
-	public sealed class DefaultPacketSendBodyHandler
+	public sealed class PacketSendBodyHandler
 	{
 		/// <summary>
 		/// 处理发送包体：将消息体字节写入发送流

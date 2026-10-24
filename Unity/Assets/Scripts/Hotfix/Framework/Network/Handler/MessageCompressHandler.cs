@@ -4,9 +4,9 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 默认消息压缩处理
+	/// 消息压缩处理
 	/// </summary>
-	public sealed class DefaultMessageCompressHandler
+	public sealed class MessageCompressHandler
 	{
 		/// <summary>
 		/// 压缩处理

@@ -9,7 +9,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
 - **特性声明 + 生成期注册**：`[MessageId]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
-- **显式装配包处理器**：`NetworkChannelHelper` 直接装配框架自带的 6 个处理器，不再反射扫描程序集；自定义处理器须通过 `AddCustomHandlerRegistrar` 显式注册
+- **显式装配包处理器**：`NetworkChannelHelper` 直接装配框架自带的 6 个处理器，不再反射扫描程序集；自定义处理器须通过 `RegisterExternalPacketHandler` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
 - **异步 RPC**：基于 `UniTask` 的异步 RPC 调用，支持超时机制
@@ -93,7 +93,6 @@ void Send<T>(T msgObj)                                                  // 单�
 ```csharp
 public interface INetworkChannel
 {
-    string Name { get; }
     bool Connected { get; }
 
     // 连接管理
@@ -174,14 +173,14 @@ NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切�
 **包处理器装配（`NetworkChannelHelper`）**
 
 框架自带的 6 个包处理器（接收包头/包体、发送包头/包体、压缩、解压）由
-`RegisterDefaultHandlers()` 显式装配，不再反射扫描 `IPacketHandler` 实现。
+`RegisterHandlers()` 显式装配，不再反射扫描 `IPacketHandler` 实现。
 **心跳不在默认装配中**：心跳消息是 Game 层的 proto 生成物，框架无法构造——
-由生成物注册游戏侧 `PacketHeartBeatHandler`（基类 `DefaultPacketHeartBeatHandler` 为 abstract，编译期强制游戏侧实现）。
+由生成物注册游戏侧 `PacketHeartBeatHandler`（基类 `PacketHeartBeatHandlerBase` 为 abstract，编译期强制游戏侧实现）。
 需要替换或补充处理器时：
 
 ```csharp
 // 1) 静态注册入口（对所有 NetworkChannelHelper 生效，建议启动期调用一次）
-NetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
+NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 {
     channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
 });
@@ -215,13 +214,13 @@ NetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
 
 | 类 | 说明 |
 |------|------|
-| `DefaultPacketSendHeaderHandler` | 发送包头处理器（游戏侧可派生覆盖，如心跳） |
-| `DefaultPacketReceiveHeaderHandler` | 接收包头处理器 |
-| `DefaultPacketSendBodyHandler` | 发送包体处理器（序列化） |
-| `DefaultPacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
-| `DefaultPacketHeartBeatHandler` | 心跳处理器基类（abstract，构造由游戏侧实现） |
-| `DefaultMessageCompressHandler` | 消息压缩处理器 |
-| `DefaultMessageDecompressHandler` | 消息解压处理器 |
+| `PacketSendHeaderHandler` | 发送包头处理器（游戏侧可派生覆盖，如心跳） |
+| `PacketReceiveHeaderHandler` | 接收包头处理器 |
+| `PacketSendBodyHandler` | 发送包体处理器（序列化） |
+| `PacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
+| `PacketHeartBeatHandlerBase` | 心跳处理器基类（abstract，构造由游戏侧 `PacketHeartBeatHandler` 实现） |
+| `MessageCompressHandler` | 消息压缩处理器 |
+| `MessageDecompressHandler` | 消息解压处理器 |
 
 ### 4.7 网络事件
 
@@ -325,7 +324,7 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 
 ## 6. 目录结构
 
-> 组织原则：**真多态的接口跟随实现同居**（`Channel/`、`Socket/`），
+> 组织原则：**真多态的接口跟随实现同居**（`Channel/`、`Socket/`，频道辅助器同属频道层），
 > 消息契约与处理器契约接口集中于 `Interface/`，包处理器为具体类（`Handler/`），
 > 消息基类独立（`MessageBase/`），注册设施与生成物集中（`Register/`）。
 > 全模块统一命名空间 `Hotfix.Framework.Network`，目录仅为物理分组。
@@ -337,6 +336,7 @@ Network/
 ├── Channel/                                          # 网络频道（接口与实现同居，internal）
 │   ├── INetworkChannel.cs                            # 网络频道接口
 │   ├── NetworkChannelBase.cs                         # 网络频道基类
+│   ├── NetworkChannelHelper.cs                       # 频道辅助器（装配 6 个处理器；心跳由生成物注册）
 │   ├── SystemTcpNetworkChannel.cs                    # TCP 频道实现
 │   └── WebSocketNetworkChannel.cs                    # WebSocket 频道实现
 ├── Socket/                                           # 网络套接字（接口与实现同居，internal）
@@ -344,14 +344,13 @@ Network/
 │   ├── SystemNetSocket.cs                            # TCP 套接字实现
 │   └── WebSocketNetSocket.cs                         # WebSocket 套接字实现
 ├── Handler/                                          # 包处理器（具体类，单实现不设接口）
-│   ├── NetworkChannelHelper.cs                # 频道辅助器（装配 6 个处理器；心跳由生成物注册）
-│   ├── DefaultPacketSendHeaderHandler.cs             # 发送包头处理器
-│   ├── DefaultPacketReceiveHeaderHandler.cs          # 接收包头处理器
-│   ├── DefaultPacketSendBodyHandler.cs               # 发送包体处理器
-│   ├── DefaultPacketReceiveBodyHandler.cs            # 接收包体处理器
-│   ├── DefaultPacketHeartBeatHandler.cs              # 心跳处理器基类（abstract）
-│   ├── DefaultMessageCompressHandler.cs              # 压缩处理器
-│   └── DefaultMessageDecompressHandler.cs            # 解压处理器
+│   ├── PacketSendHeaderHandler.cs             # 发送包头处理器
+│   ├── PacketReceiveHeaderHandler.cs          # 接收包头处理器
+│   ├── PacketSendBodyHandler.cs               # 发送包体处理器
+│   ├── PacketReceiveBodyHandler.cs            # 接收包体处理器
+│   ├── PacketHeartBeatHandlerBase.cs              # 心跳处理器基类（abstract）
+│   ├── MessageCompressHandler.cs              # 压缩处理器
+│   └── MessageDecompressHandler.cs            # 解压处理器
 ├── Interface/                                        # 消息契约接口（含 [NotifyMessageHandler] 体系）
 │   ├── IRequestMessage.cs                            # 请求消息接口
 │   ├── IResponseMessage.cs                           # 响应消息接口
@@ -364,7 +363,7 @@ Network/
 │   ├── NotifyMessageHandlerAttribute.cs              # 消息处理器特性（方法须 internal/public）
 │   └── MessageIdAttribute.cs                         # 消息 ID 标记特性
 ├── Register/                                         # 注册设施 + 生成物
-│   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
+│   ├── MessageIdRegistry.cs                          # 消息 ID ↔ 类型 注册表
 │   ├── NotifyMessageHandlerRegistry.cs               # 推送处理注册表（[NotifyMessageHandler] 绑定/派发）
 │   └── AutoGen/
 │       └── MessageRegistry.g.cs                      # 自动生成：消息与方法注册表 + 委托分派（勿手改）

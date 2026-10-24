@@ -6,7 +6,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息接收内容处理器
 	/// </summary>
-	public sealed class DefaultPacketReceiveBodyHandler
+	public sealed class PacketReceiveBodyHandler
 	{
 		/// <summary>
 		/// 处理接收包体：按消息 ID 反序列化出消息对象

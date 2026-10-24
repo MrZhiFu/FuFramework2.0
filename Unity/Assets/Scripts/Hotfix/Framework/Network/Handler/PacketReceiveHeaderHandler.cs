@@ -6,7 +6,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 默认消息接收头处理器
 	/// </summary>
-	public sealed class DefaultPacketReceiveHeaderHandler
+	public sealed class PacketReceiveHeaderHandler
 	{
 		/// <summary>
 		/// 网络包长度

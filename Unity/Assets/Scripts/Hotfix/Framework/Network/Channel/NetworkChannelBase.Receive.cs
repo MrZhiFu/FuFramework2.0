@@ -104,7 +104,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="header">已解析的包头</param>
 		/// <returns>包体长度</returns>
 		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
-		protected static int ValidateAndGetPacketBodyLength(DefaultPacketReceiveHeaderHandler header)
+		protected static int ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler header)
 		{
 			var packetLength = header.PacketLength;
 			var headerLength = header.PacketHeaderLength;

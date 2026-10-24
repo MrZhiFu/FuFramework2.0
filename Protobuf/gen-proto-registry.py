@@ -22,12 +22,12 @@ gen-proto-registry.py
           宿主契约：所在类型必须继承 Singleton<T> 或提供 static Instance
           （声明即生效，业务侧无手动注册步骤；宿主实例在首次推送时才被触达）。
     3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Handler/）
-       -> 框架外「具体（非抽象）」的包处理器实现：继承 DefaultPacketReceiveHeaderHandler /
-          DefaultPacketReceiveBodyHandler / DefaultPacketSendHeaderHandler / DefaultPacketSendBodyHandler /
-          DefaultPacketHeartBeatHandler / DefaultMessageCompressHandler / DefaultMessageDecompressHandler 之一。
+       -> 框架外「具体（非抽象）」的包处理器实现：继承 PacketReceiveHeaderHandler /
+          PacketReceiveBodyHandler / PacketSendHeaderHandler / PacketSendBodyHandler /
+          PacketHeartBeatHandlerBase / MessageCompressHandler / MessageDecompressHandler 之一。
           判定沿继承链匹配框架具体基类（处理器接口已删除），因此「派生自框架基类」的实现（如
-          Hotfix.Game.Network.PacketHeartBeatHandler : DefaultPacketHeartBeatHandler）
-          也能被正确识别并注册为心跳处理器（后注册覆盖框架基类）。
+          Hotfix.Game.Network.PacketHeartBeatHandler : PacketHeartBeatHandlerBase）
+          也能被正确识别并注册为心跳处理器（游戏侧实现是唯一装配，基类 abstract 不参与默认装配）。
 
 背景（项目铁律 4：运行时杜绝反射）：
     原实现于启动时通过 Assembly.GetTypes() 扫描全部已加载程序集，读取特性构建
@@ -114,13 +114,13 @@ RE_TYPE_DECL = re.compile(r"\b(?:class|struct)\s+(\w+)")
 # 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致。
 # 判定沿继承链匹配「框架具体处理器基类」——处理器接口已删除，单实现策略点直接用具体类。）
 PACKET_INTERFACE_ORDER = [
-    ("DefaultPacketReceiveHeaderHandler", "channel.RegisterHandler(new {fq}());"),
-    ("DefaultPacketReceiveBodyHandler", "channel.RegisterHandler(new {fq}());"),
-    ("DefaultPacketSendHeaderHandler", "channel.RegisterHandler(new {fq}());"),
-    ("DefaultPacketSendBodyHandler", "channel.RegisterHandler(new {fq}());"),
-    ("DefaultPacketHeartBeatHandler", "channel.RegisterHeartBeatHandler(new {fq}());"),
-    ("DefaultMessageCompressHandler", "channel.RegisterMessageCompressHandler(new {fq}());"),
-    ("DefaultMessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
+    ("PacketReceiveHeaderHandler", "channel.RegisterPacketReceiveHeaderHandler(new {fq}());"),
+    ("PacketReceiveBodyHandler", "channel.RegisterPacketReceiveBodyHandler(new {fq}());"),
+    ("PacketSendHeaderHandler", "channel.RegisterPacketSendHeaderHandler(new {fq}());"),
+    ("PacketSendBodyHandler", "channel.RegisterPacketSendBodyHandler(new {fq}());"),
+    ("PacketHeartBeatHandlerBase", "channel.RegisterHeartBeatHandler(new {fq}());"),
+    ("MessageCompressHandler", "channel.RegisterMessageCompressHandler(new {fq}());"),
+    ("MessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
 ]
 PACKET_INTERFACE_NAMES = set(n for n, _ in PACKET_INTERFACE_ORDER)
 
@@ -344,7 +344,7 @@ def scan_proto_messages():
 
 
 def scan_class_index():
-    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 声明（首次出现优先）。"""
+    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 同名声明列表（派生类与基类可能同名，如 PacketHeartBeatHandler）。"""
     decls = []
     by_name = {}
     for path in iter_cs_files(HOTFIX_ROOT):
@@ -362,7 +362,7 @@ def scan_class_index():
                 "namespace": enclosing_namespace(text, m.start()),
             }
             decls.append(decl)
-            by_name.setdefault(decl["name"], decl)
+            by_name.setdefault(decl["name"], []).append(decl)
     return decls, by_name
 
 
@@ -434,9 +434,11 @@ def scan_message_handler_methods(by_name):
                 )
 
             # --- 解析消息类型所在命名空间（生成物据此补 using）---
-            msg_decl = by_name.get(message_type)
-            if msg_decl is not None and msg_decl["namespace"]:
-                message_type_namespaces.add(msg_decl["namespace"])
+            msg_decls = by_name.get(message_type, [])
+            for msg_decl in msg_decls:
+                if msg_decl["namespace"]:
+                    message_type_namespaces.add(msg_decl["namespace"])
+                    break
             else:
                 warnings.append(
                     "%s: 第 %d 行的消息类型 %s 未在热更源码中定位到声明，"
@@ -448,13 +450,17 @@ def scan_message_handler_methods(by_name):
 
             # 宿主可达校验（声明即生效）：委托静态捕获宿主 static Instance，
             # 宿主必须继承 Singleton<T> 或显式提供 static Instance 成员，否则中止生成。
-            host_decl = by_name.get(type_name)
+            # 同名声明逐一校验（任一可达即可）——派生类可能与框架基类同名。
             host_reachable = False
-            if host_decl is not None:
-                host_reachable = any(simple_name(b) == "Singleton" for b in host_decl["bases"])
-                if not host_reachable and host_decl.get("path"):
+            for host_decl in by_name.get(type_name, []):
+                if any(simple_name(b) == "Singleton" for b in host_decl["bases"]):
+                    host_reachable = True
+                    break
+                if host_decl.get("path"):
                     host_text = read_code(host_decl["path"])
-                    host_reachable = re.search(r"\bstatic\s+[\w<>\[\],\.\s]+?\bInstance\b", host_text) is not None
+                    if re.search(r"\bstatic\s+[\w<>\[\],\.\s]+?\bInstance\b", host_text):
+                        host_reachable = True
+                        break
             if not host_reachable:
                 errors.append(
                     "%s: 推送宿主 %s 未找到可达实例（需继承 Singleton<T> 或提供 static Instance），"
@@ -489,7 +495,7 @@ def scan_external_packet_handlers(decls, by_name):
 
     handlers: list of dict(fq, name, iface, register, file, depth)
       * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 NetworkChannelHelper
-        显式装配，见 RegisterDefaultHandlers）。
+        显式装配，见 RegisterHandlers）。
       * 只取具体类型（跳过 abstract / static）。
       * 接口判定含继承链，故「派生自框架基类」的游戏侧实现同样能被识别。
       * 每个类型只按 PACKET_INTERFACE_ORDER 的首个命中接口注册一次，与原扫描的 else-if 一致。
@@ -506,17 +512,14 @@ def scan_external_packet_handlers(decls, by_name):
             return set()
         seen.add(name)
 
-        decl = by_name.get(name)
-        if decl is None:
-            return set()
-
         result = set()
-        for base in decl["bases"]:
-            bn = simple_name(base)
-            if bn in PACKET_INTERFACE_NAMES:
-                result.add(bn)
-            else:
-                result |= resolve_ifaces(bn, seen)
+        for decl in by_name.get(name, []):
+            for base in decl["bases"]:
+                bn = simple_name(base)
+                if bn in PACKET_INTERFACE_NAMES:
+                    result.add(bn)
+                else:
+                    result |= resolve_ifaces(bn, seen)
         iface_memo[name] = result
         return result
 
@@ -531,17 +534,14 @@ def scan_external_packet_handlers(decls, by_name):
             return 0
         seen.add(name)
 
-        decl = by_name.get(name)
-        if decl is None:
-            return 0
-
         best = 0
-        for base in decl["bases"]:
-            bn = simple_name(base)
-            if bn in PACKET_INTERFACE_NAMES:
-                continue
-            if bn in by_name:
-                best = max(best, 1 + class_depth(bn, seen))
+        for decl in by_name.get(name, []):
+            for base in decl["bases"]:
+                bn = simple_name(base)
+                if bn in PACKET_INTERFACE_NAMES:
+                    continue
+                if bn in by_name:
+                    best = max(best, 1 + class_depth(bn, seen))
         depth_memo[name] = best
         return best
 
@@ -653,9 +653,9 @@ namespace Hotfix.Framework.Network
         ///
         /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
         /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
-        /// <c>RegisterDefaultHandlers()</c>（框架自带 7 个处理器）之后，
+        /// <c>RegisterHandlers()</c>（框架自带 6 个处理器）之后，
         /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
-        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 DefaultPacketHeartBeatHandler）。
+        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 PacketHeartBeatHandlerBase）。
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
@@ -709,7 +709,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     # ---- 框架外包处理器注册 ----
     if external_handlers:
         lines = [
-            "            NetworkChannelHelper.AddCustomHandlerRegistrar(channel =>\n",
+            "            NetworkChannelHelper.RegisterExternalPacketHandler(channel =>\n",
             "            {\n",
         ]
         for h in external_handlers:
