@@ -177,7 +177,7 @@ namespace Hotfix.Framework.Web
 		/// 发送 Pb POST 请求，负责序列化、发送、接收、反序列化全过程。
 		/// </summary>
 		/// <param name="url">目标服务器的 URL 地址。</param>
-		/// <param name="message">要发送的消息对象，必须继承自 MessageObject。</param>
+		/// <param name="msgObj">要发送的消息对象，必须继承自 MessageObject。</param>
 		/// <param name="token">调用方取消令牌。</param>
 		/// <typeparam name="T">返回的数据类型，必须继承自 MessageObject 并且实现 IResponseMessage 接口。</typeparam>
 		/// <returns>反序列化后的响应数据，成功时恒非 null。</returns>
@@ -186,9 +186,9 @@ namespace Hotfix.Framework.Web
 		/// <see cref="InvalidOperationException"/>；网络错误/超时抛 <see cref="TimeoutException"/> 或通用异常；
 		/// 调用方取消抛 <see cref="OperationCanceledException"/>。调用方应 try-catch 或交由上层统一处理。
 		/// </remarks>
-		public async UniTask<T> Post<T>(string url, MessageObject message, CancellationToken token) where T : MessageObject, IResponseMessage
+		public async UniTask<T> Post<T>(string url, MessageObject msgObj, CancellationToken token) where T : MessageObject, IResponseMessage
 		{
-			var webBufferResult = await PostPbReq(url, message, token);
+			var webBufferResult = await PostPbReq(url, msgObj, token);
 			if (webBufferResult.IsNull())
 				throw new InvalidOperationException($"Web 请求未返回结果: {url}");
 
@@ -205,7 +205,7 @@ namespace Hotfix.Framework.Web
 			if (messageObjectHttp.IsNull() || messageObjectHttp.Id == default)
 				throw new InvalidOperationException($"响应消息头解析失败（消息为空或 Id 无效）: {url}");
 
-			var messageType = ProtoMessageIdRegistry.GetRespTypeById(messageObjectHttp.Id);
+			var messageType = MessageIdRegistry.GetRespTypeById(messageObjectHttp.Id);
 			if (messageType != typeof(T))
 			{
 				throw new InvalidOperationException($"响应消息类型不匹配: 期望 '{typeof(T).FullName}', 实际 '{messageType?.FullName ?? "未知"}'");

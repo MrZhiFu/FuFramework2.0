@@ -7,17 +7,17 @@ gen-proto-registry.py
 扫描协议生成物与热更源码，产出「协议消息注册表」（纯静态、零运行时反射）。
 
 产出文件：
-    Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/ProtoMessageRegistry.g.cs
+    Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.g.cs
 
 扫描来源：
     1. <Unity>/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs
-       -> [MessageTypeHandler(消息ID)] + 类名 + 是否实现 IRequestMessage / IResponseMessage /
+       -> [MessageId(消息ID)] + 类名 + 是否实现 IRequestMessage / IResponseMessage /
           INotifyMessage / IHeartBeatMessage
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户推送处理方法）
           连同**所在类型**与方法可见性一起解析，产出**静态捕获宿主的直接委托**：
-              ProtoMessageHandlerRegistry.BindNotify(typeof(X),
-                  static message => Ns.Handler.Instance.OnX((X)message))
+              NotifyMessageHandlerRegistry.BindNotify(typeof(X),
+                  static msgObj => Ns.Handler.Instance.OnX((X)msgObj))
           可见性契约：目标方法必须为 internal 或 public，否则**报错并中止生成**
           （生成物位于同程序集，需要能直接调用该方法）。
           宿主契约：所在类型必须继承 Singleton<T> 或提供 static Instance
@@ -67,7 +67,7 @@ HOTFIX_ROOT = os.path.join(UNITY_ROOT, "Assets", "Scripts", "Hotfix")
 PROTO_DIR = os.path.join(HOTFIX_ROOT, "Game", "AutoGen", "Proto")
 NETWORK_HANDLER_DIR = os.path.join(HOTFIX_ROOT, "Framework", "Network", "Handler")
 OUTPUT_PATH = os.path.join(
-    HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "ProtoMessageRegistry.g.cs"
+    HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "MessageRegistry.g.cs"
 )
 OUTPUT_REL = os.path.relpath(OUTPUT_PATH, REPO_ROOT).replace("\\", "/")
 
@@ -79,8 +79,8 @@ DEFAULT_PROTO_NAMESPACE = "Hotfix.Game.Proto"
 # 正则
 # ---------------------------------------------------------------------------
 
-# [MessageTypeHandler(6553610)] 之后紧跟 public sealed class X : Base, IRequestMessage
-RE_MSG_TYPE_ATTR = re.compile(r"\[\s*MessageTypeHandler\s*\(\s*(\d+)\s*\)\s*\]")
+# [MessageId(6553610)] 之后紧跟 public sealed class X : Base, IRequestMessage
+RE_MSG_TYPE_ATTR = re.compile(r"\[\s*MessageId\s*\(\s*(\d+)\s*\)\s*\]")
 RE_CLASS_DECL = re.compile(
     r"^\s*(?:public|internal|sealed|abstract|static|\s)*\b(?:class|struct)\s+(\w+)\s*(?:<[^>]*>)?\s*:\s*([^\r\n{]+)",
     re.MULTILINE,
@@ -328,7 +328,7 @@ def scan_proto_messages():
             decl = RE_CLASS_DECL.search(text, attr.end())
             if decl is None:
                 warnings.append(
-                    "%s: [MessageTypeHandler(%d)] 之后未找到类声明，已跳过。"
+                    "%s: [MessageId(%d)] 之后未找到类声明，已跳过。"
                     % (rel, message_id)
                 )
                 continue
@@ -360,7 +360,7 @@ def scan_proto_messages():
 
             if primary == KIND_NONE and not is_heartbeat:
                 warnings.append(
-                    "%s: 类型 %s 带 [MessageTypeHandler(%d)] 但未实现任何消息接口，"
+                    "%s: 类型 %s 带 [MessageId(%d)] 但未实现任何消息接口，"
                     "原实现同样不会注册（已保留原行为）。" % (rel, type_name, message_id)
                 )
 
@@ -415,7 +415,7 @@ def scan_message_handler_methods(by_name):
 
     handlers: dict[(namespace, type)] -> list of dict(message_type, method_name, invoke)
       invoke 为生成期产出的直接委托表达式（静态捕获宿主 static Instance）：
-          static message => Ns.Handler.Instance.OnX((X)message)
+          static msgObj => Ns.Handler.Instance.OnX((X)message)
     errors: 可见性/定位/宿主可达问题（非空则中止生成）
     """
     handlers = {}
@@ -501,7 +501,7 @@ def scan_message_handler_methods(by_name):
                 )
                 continue
 
-            invoke = "static message => %s.Instance.%s((%s)message)" % (
+            invoke = "static msgObj => %s.Instance.%s((%s)msgObj)" % (
                 handler_fq,
                 method_name,
                 message_type,
@@ -650,7 +650,7 @@ namespace Hotfix.Framework.Network
     /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法（直接委托）」，
     /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性、不再查找方法。
     /// </summary>
-    internal static class ProtoMessageRegistry
+    internal static class MessageRegistry
     {{
         /// <summary>
         /// 框架外包处理器的注册是否已执行（NetworkModule.OnInit 失败重试时避免重复追加委托）。
@@ -679,7 +679,7 @@ namespace Hotfix.Framework.Network
         /// <summary>
         /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
         /// 共 {handler_entry_count} 条绑定，来自 {handler_type_count} 个宿主类型。
-        /// 委托形如 static message =&gt; Handler.Instance.OnX((X)message)：
+        /// 委托形如 static msgObj =&gt; Handler.Instance.OnX((X)msgObj)：
         /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterNotifyHandlers()
@@ -722,7 +722,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     lines = []
     for msg in messages:
         lines.append(
-            "            ProtoMessageIdRegistry.Register<%s>(%d, %s);\n"
+            "            MessageIdRegistry.Register<%s>(%d, %s);\n"
             % (msg["type"], msg["id"], msg["kind"])
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
@@ -739,7 +739,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         for entry in entries:
             handler_entry_count += 1
             lines.append(
-                "            ProtoMessageHandlerRegistry.BindNotify(typeof(%s),\n"
+                "            NotifyMessageHandlerRegistry.BindNotify(typeof(%s),\n"
                 "                %s);\n"
                 % (entry["message_type"], entry["invoke"])
             )

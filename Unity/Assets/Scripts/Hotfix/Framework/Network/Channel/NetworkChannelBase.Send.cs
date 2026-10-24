@@ -39,10 +39,10 @@ namespace Hotfix.Framework.Network
 		/// 详细说明与示例见 <see cref="INetworkChannel.Send{T}"/>。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
-		/// <param name="messageObject">要发送的消息包。</param>
-		public void Send<T>(T messageObject) where T : MessageObject
+		/// <param name="msgObj">要发送的消息包。</param>
+		public void Send<T>(T msgObj) where T : MessageObject
 		{
-			messageObject.NotNull(nameof(messageObject));
+			msgObj.NotNull(nameof(msgObj));
 			if (m_Socket == null)
 			{
 				const string errorMessage = "Socket为null，无法发送消息包。";
@@ -54,7 +54,7 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			if (!PActive)
+			if (!IsOpen)
 			{
 				const string errorMessage = "网络频道未激活(未连接至服务器)，无法发送消息包。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
@@ -65,7 +65,7 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			if (messageObject == null)
+			if (msgObj == null)
 			{
 				const string errorMessage = "消息包无效。";
 				if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
@@ -78,7 +78,7 @@ namespace Hotfix.Framework.Network
 
 			lock (m_SendPacketPool)
 			{
-				m_SendPacketPool.AddLast(messageObject);
+				m_SendPacketPool.AddLast(msgObj);
 			}
 		}
 
@@ -99,20 +99,20 @@ namespace Hotfix.Framework.Network
 				// 处理待发送的消息对象，直到遇到错误或发送完毕为止。
 				while (m_SendPacketPool.First != null)
 				{
-					var  messageObject = m_SendPacketPool.First.Value;
+					var  msgObj = m_SendPacketPool.First.Value;
 					bool serializeResult;
 					try
 					{
 						// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
-						serializeResult = ProcessSendMessage(messageObject);
+						serializeResult = ProcessSendMessage(msgObj);
 
 #if ENABLE_NETWORK_REQ_LOG
-						DebugSendLog(messageObject);
+						DebugSendLog(msgObj);
 #endif
 					}
 					catch (Exception exception)
 					{
-						PActive = false;
+						IsOpen = false;
 						if (m_NetworkChannelError == null) throw;
 						var socketException = exception as SocketException;
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
@@ -147,12 +147,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
 		/// </summary>
-		/// <param name="messageObject">消息对象</param>
+		/// <param name="msgObj">消息对象</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		protected virtual bool ProcessSendMessage(MessageObject messageObject)
+		protected virtual bool ProcessSendMessage(MessageObject msgObj)
 		{
-			var serializeResult = m_NetworkChannelHelper.SerializePacketHeader(messageObject, m_SendState.Stream, out var messageBodyBuffer);
+			var serializeResult = m_NetworkChannelHelper.SerializePacketHeader(msgObj, m_SendState.Stream, out var messageBodyBuffer);
 			if (serializeResult)
 			{
 				serializeResult = m_NetworkChannelHelper.SerializePacketBody(messageBodyBuffer, m_SendState.Stream);
@@ -169,13 +169,13 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送调试日志（仅 ENABLE_NETWORK_REQ_LOG 宏开启时输出）
 		/// </summary>
-		/// <param name="messageObject">已发送的消息对象</param>
-		protected void DebugSendLog(MessageObject messageObject)
+		/// <param name="msgObj">已发送的消息对象</param>
+		protected void DebugSendLog(MessageObject msgObj)
 		{
 #if ENABLE_NETWORK_REQ_LOG
 			if (!m_IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
 			{
-				FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{messageObject.UniqueId},{messageObject.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(messageObject)}");
+				FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{msgObj.UniqueId},{msgObj.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

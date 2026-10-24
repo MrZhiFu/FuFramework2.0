@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Network
 			var missHeartBeatCount = 0;
 			lock (m_HeartBeatLock)
 			{
-				if (m_Socket == null || !PActive) return;
+				if (m_Socket == null || !IsOpen) return;
 
 				m_HeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
 				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)

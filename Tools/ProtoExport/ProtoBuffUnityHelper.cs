@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace FuFramework.ProtoExport
 {
@@ -57,7 +57,7 @@ namespace FuFramework.ProtoExport
                         var parentClass = operationCodeInfo.IsRequest && !string.IsNullOrEmpty(operationCodeInfo.PairResponseName)
                             ? $"{operationCodeInfo.ParentClass}<{operationCodeInfo.PairResponseName}>"
                             : operationCodeInfo.ParentClass;
-                        sb.AppendLine($"\t[MessageTypeHandler({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"\t[MessageId({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
                         sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {parentClass}");
                     }
 

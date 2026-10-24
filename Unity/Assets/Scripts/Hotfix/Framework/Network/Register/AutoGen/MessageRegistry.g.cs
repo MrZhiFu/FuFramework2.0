@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Network
     /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法（直接委托）」，
     /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性、不再查找方法。
     /// </summary>
-    internal static class ProtoMessageRegistry
+    internal static class MessageRegistry
     {
         /// <summary>
         /// 框架外包处理器的注册是否已执行（NetworkModule.OnInit 失败重试时避免重复追加委托）。
@@ -50,29 +50,29 @@ namespace Hotfix.Framework.Network
         /// </summary>
         private static void RegisterMessageIds()
         {
-            ProtoMessageIdRegistry.Register<ReqHeartBeat>(655370, EMessageKind.Request | EMessageKind.HeartBeat);
-            ProtoMessageIdRegistry.Register<NotifyHeartBeat>(655371, EMessageKind.Notify | EMessageKind.HeartBeat);
-            ProtoMessageIdRegistry.Register<NotifyServerFullyLoaded>(655372, EMessageKind.Notify);
-            ProtoMessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespBagInfo>(6553611, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqUseItem>(6553612, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespUseItem>(6553613, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqAddItem>(6553614, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespAddItem>(6553615, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqRemoveItem>(6553616, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespRemoveItem>(6553617, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<NotifyBagItem>(6553618, EMessageKind.Notify);
-            ProtoMessageIdRegistry.Register<NotifyBagInfoChanged>(6553619, EMessageKind.Notify);
-            ProtoMessageIdRegistry.Register<ReqLogin>(19660810, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespLogin>(19660811, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqPlayerCreate>(19660812, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespPlayerCreate>(19660813, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqPlayerList>(19660814, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespPlayerList>(19660815, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<ReqPlayerLogin>(19660816, EMessageKind.Request);
-            ProtoMessageIdRegistry.Register<RespPlayerLogin>(19660817, EMessageKind.Response);
-            ProtoMessageIdRegistry.Register<NotifyErrorCode>(19660818, EMessageKind.Notify);
-            ProtoMessageIdRegistry.Register<NotifyPrompt>(19660819, EMessageKind.Notify);
+            MessageIdRegistry.Register<ReqHeartBeat>(655370, EMessageKind.Request | EMessageKind.HeartBeat);
+            MessageIdRegistry.Register<NotifyHeartBeat>(655371, EMessageKind.Notify | EMessageKind.HeartBeat);
+            MessageIdRegistry.Register<NotifyServerFullyLoaded>(655372, EMessageKind.Notify);
+            MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request);
+            MessageIdRegistry.Register<RespBagInfo>(6553611, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqUseItem>(6553612, EMessageKind.Request);
+            MessageIdRegistry.Register<RespUseItem>(6553613, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqAddItem>(6553614, EMessageKind.Request);
+            MessageIdRegistry.Register<RespAddItem>(6553615, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqRemoveItem>(6553616, EMessageKind.Request);
+            MessageIdRegistry.Register<RespRemoveItem>(6553617, EMessageKind.Response);
+            MessageIdRegistry.Register<NotifyBagItem>(6553618, EMessageKind.Notify);
+            MessageIdRegistry.Register<NotifyBagInfoChanged>(6553619, EMessageKind.Notify);
+            MessageIdRegistry.Register<ReqLogin>(19660810, EMessageKind.Request);
+            MessageIdRegistry.Register<RespLogin>(19660811, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqPlayerCreate>(19660812, EMessageKind.Request);
+            MessageIdRegistry.Register<RespPlayerCreate>(19660813, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqPlayerList>(19660814, EMessageKind.Request);
+            MessageIdRegistry.Register<RespPlayerList>(19660815, EMessageKind.Response);
+            MessageIdRegistry.Register<ReqPlayerLogin>(19660816, EMessageKind.Request);
+            MessageIdRegistry.Register<RespPlayerLogin>(19660817, EMessageKind.Response);
+            MessageIdRegistry.Register<NotifyErrorCode>(19660818, EMessageKind.Notify);
+            MessageIdRegistry.Register<NotifyPrompt>(19660819, EMessageKind.Notify);
         }
 
         /// <summary>
@@ -84,8 +84,8 @@ namespace Hotfix.Framework.Network
         private static void RegisterNotifyHandlers()
         {
             // Hotfix.Game.Manager_ToDelete.BagManager
-            ProtoMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
-                static message => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)message));
+            NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
+                static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj));
         }
 
         /// <summary>

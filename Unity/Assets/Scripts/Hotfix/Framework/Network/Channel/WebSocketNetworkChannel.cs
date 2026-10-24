@@ -33,7 +33,6 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道的新实例。
 		/// </summary>
-		/// <param name="name">网络频道名称。</param>
 		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
 		public WebSocketNetworkChannel(DefaultNetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
@@ -118,19 +117,19 @@ namespace Hotfix.Framework.Network
 
 				while (m_SendPacketPool.First != null)
 				{
-					var messageObject = m_SendPacketPool.First.Value;
+					var msgObj = m_SendPacketPool.First.Value;
 
 					bool serializeResult;
 					try
 					{
-						serializeResult = ProcessSendMessage(messageObject);
+						serializeResult = ProcessSendMessage(msgObj);
 #if ENABLE_NETWORK_REQ_LOG
-						DebugSendLog(messageObject);
+						DebugSendLog(msgObj);
 #endif
 					}
 					catch (Exception exception)
 					{
-						PActive = false;
+						IsOpen = false;
 						if (m_NetworkChannelError == null) throw;
 						var socketException = exception as SocketException;
 						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
@@ -165,14 +164,14 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理发送消息对象
 		/// </summary>
-		/// <param name="messageObject">消息对象</param>
+		/// <param name="msgObj">消息对象</param>
 		/// <returns></returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		protected override bool ProcessSendMessage(MessageObject messageObject)
+		protected override bool ProcessSendMessage(MessageObject msgObj)
 		{
 			if (IsClose())
 			{
-				PActive = false;
+				IsOpen = false;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.SocketError,
 				                      socketError: SocketError.Disconnecting,
@@ -180,7 +179,7 @@ namespace Hotfix.Framework.Network
 				return false;
 			}
 
-			var serializeResult = base.ProcessSendMessage(messageObject);
+			var serializeResult = base.ProcessSendMessage(msgObj);
 			if (serializeResult)
 			{
 				var webSocketClientNetSocket = (WebSocketNetSocket)m_Socket;
@@ -221,7 +220,7 @@ namespace Hotfix.Framework.Network
 			catch (OperationCanceledException)
 			{
 				m_IsConnecting = false;
-				PActive        = false;
+				IsOpen         = false;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.ConnectError,
 				                      socketError: SocketError.TimedOut,
@@ -264,7 +263,7 @@ namespace Hotfix.Framework.Network
 			}
 			catch (Exception exception)
 			{
-				PActive = false;
+				IsOpen = false;
 				if (m_NetworkChannelError == null) throw;
 				var socketException = exception as SocketException;
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
@@ -279,7 +278,7 @@ namespace Hotfix.Framework.Network
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();
 			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
 			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, connectState.UserData);
-			PActive = true;
+			IsOpen = true;
 		}
 
 		/// <summary>
@@ -314,14 +313,14 @@ namespace Hotfix.Framework.Network
 					}
 
 					// 反序列化数据
-					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, PacketReceiveHeaderHandler.Id, out var messageObject);
+					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, PacketReceiveHeaderHandler.Id, out var msgObj);
 					if (processSuccess)
 					{
-						messageObject.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
+						msgObj.SetUpdateUniqueId(PacketReceiveHeaderHandler.UniqueId);
 					}
 
 #if ENABLE_NETWORK_RSP_LOG
-					DebugReceiveLog(messageObject);
+					DebugReceiveLog(msgObj);
 #endif
 					if (!processSuccess)
 					{
@@ -335,9 +334,9 @@ namespace Hotfix.Framework.Network
 					}
 
 					// 将收到的消息加入到链表最后（与主线程消费互斥）
-					lock (m_ExecutionMessageLock)
+					lock (m_handleMsgLock)
 					{
-						m_executionMessageLinkedList.AddLast(messageObject);
+						m_waitingHandleMsgLkList.AddLast(msgObj);
 					}
 				}
 				else

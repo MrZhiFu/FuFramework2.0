@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace FuFramework.ProtoExport
 {
@@ -63,7 +63,7 @@ namespace FuFramework.ProtoExport
                     }
                     else
                     {
-                        sb.AppendLine($"    [MessageTypeHandler({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"    [MessageId({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
                         sb.AppendLine($"    public sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                     }
 

@@ -32,7 +32,7 @@ Protobuf/
 | **`Proto2CsExport-All.bat`** | 客户端导出 → 服务端导出 → 生成注册表（**串行，任一失败即中止**） | **改了 proto，平时只跑这一个** |
 | `Proto2CsExport_Client.bat` / `.sh` | 仅导出客户端 C# | 只想单独看/更新客户端 |
 | `Proto2CsExport_Server.bat` / `.sh` | 仅导出服务端 C# | 只想单独更新服务端 |
-| `gen-proto-registry.bat` / `.sh` | 仅生成协议消息注册表（不碰 proto C#） | **没动 proto**，只新增/改了 `[MessageHandler]` 方法 |
+| `gen-proto-registry.bat` / `.sh` | 仅生成协议消息注册表（不碰 proto C#） | **没动 proto**，只新增/改了 `[NotifyMessageHandler]` 方法 |
 
 **免交互参数**：`Proto2CsExport-All.bat` 与 `gen-proto-registry.bat` 支持传任意参数（惯例用 `ci`）跳过结尾的 `pause`，便于 CI / 脚本串联：
 
@@ -59,7 +59,7 @@ Protobuf\Proto2CsExport-All.bat
 1. 回 Unity 让它**重新导入**（会重新生成 `AutoGen/Proto/*.cs.meta`，见下方「注意事项」）；
 2. 提交三样产出物（见 §4）。
 
-### 3.2 只新增了 `[MessageHandler]` 方法（没动 proto）
+### 3.2 只新增了 `[NotifyMessageHandler]` 方法（没动 proto）
 
 ```bat
 Protobuf\gen-proto-registry.bat
@@ -81,9 +81,9 @@ bash Protobuf/gen-proto-registry.sh
 
 | 产出 | 路径 | 说明 |
 |---|---|---|
-| 客户端 C# | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs` | 命名空间 `Hotfix.Game.Proto`；类上带 `[MessageTypeHandler(消息ID)]` |
+| 客户端 C# | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs` | 命名空间 `Hotfix.Game.Proto`；类上带 `[MessageId(消息ID)]` |
 | 服务端 C# | `Server/FuFramework.Proto/Proto/` | 命名空间 `FuFramework.Proto.Proto` |
-| **协议消息注册表** | `Unity/Assets/Scripts/Hotfix/Framework/Network/Generated/ProtoMessageRegistry.g.cs` | 自动生成，**勿手改**；把「消息 ID ↔ 类型」和「消息处理委托」在**编译期**固化，使网络模块**运行时不使用反射** |
+| **协议消息注册表** | `Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.g.cs` | 自动生成，**勿手改**；把「消息 ID ↔ 类型」和「消息处理委托」在**编译期**固化，使网络模块**运行时不使用反射** |
 
 > 消息 ID 规则：`ID = (option module << 16) | 序号`。例如 `Bag`（module=100）首个消息为 `6553600 + 10 = 6553610`。
 >
@@ -104,7 +104,7 @@ bash Protobuf/gen-proto-registry.sh
 3. **`.bat` 必须保持纯 ASCII**：`cmd.exe` 按系统 ANSI 代码页（中文 Windows 为 **936/GBK**）解析 `.bat`，
    写入非 ASCII（如中文注释）会导致字节错位、**命令解析失败**。修改 `.bat` 时请勿加中文。
 
-4. **`[MessageHandler]` 方法的可见性契约**：生成物会**直接调用**被标注的方法，故该方法必须是
+4. **`[NotifyMessageHandler]` 方法的可见性契约**：生成物会**直接调用**被标注的方法，故该方法必须是
    `internal` 或 `public`；`private` 会在生成期**报错并中止**（报错中指出文件、行号、方法名）。
 
 5. **`Proto2CsExport_Client/Server.bat` 用相对路径 `cd ../Tools/ProtoExport/...`**：

@@ -137,16 +137,16 @@ public static class MessageProtoHelper
 			Type[] types = assemblies[i].GetTypes();
 			foreach (Type type in types)
 			{
-				if (!(type.GetCustomAttribute(typeof(MessageTypeHandlerAttribute)) is MessageTypeHandlerAttribute messageTypeHandlerAttribute))
+				if (!(type.GetCustomAttribute(typeof(MessageIdAttribute)) is MessageIdAttribute MessageIdAttribute))
 				{
 					continue;
 				}
-				if (!AllMessageDictionary.TryAdd(messageTypeHandlerAttribute.MessageId, type))
+				if (!AllMessageDictionary.TryAdd(MessageIdAttribute.MessageId, type))
 				{
-					RequestDictionary.TryGetValue(messageTypeHandlerAttribute.MessageId, out var value);
-					throw new AlreadyArgumentException($"消息Id重复==>当前ID:{messageTypeHandlerAttribute.MessageId},已有ID类型:{value.FullName}");
+					RequestDictionary.TryGetValue(MessageIdAttribute.MessageId, out var value);
+					throw new AlreadyArgumentException($"消息Id重复==>当前ID:{MessageIdAttribute.MessageId},已有ID类型:{value.FullName}");
 				}
-				OperationType.TryAdd(type, messageTypeHandlerAttribute.OperationType);
+				OperationType.TryAdd(type, MessageIdAttribute.OperationType);
 				if (type.IsImplWithInterface(typeof(IHeartBeatMessage)))
 				{
 					if (HeartBeatList.Contains(type))
@@ -160,16 +160,16 @@ public static class MessageProtoHelper
 				}
 				if (type.IsImplWithInterface(typeof(IRequestMessage)))
 				{
-					if (!RequestDictionary.TryAdd(messageTypeHandlerAttribute.MessageId, type))
+					if (!RequestDictionary.TryAdd(MessageIdAttribute.MessageId, type))
 					{
-						RequestDictionary.TryGetValue(messageTypeHandlerAttribute.MessageId, out var value2);
-						throw new AlreadyArgumentException($"请求Id重复==>当前ID:{messageTypeHandlerAttribute.MessageId},已有ID类型:{value2.FullName}");
+						RequestDictionary.TryGetValue(MessageIdAttribute.MessageId, out var value2);
+						throw new AlreadyArgumentException($"请求Id重复==>当前ID:{MessageIdAttribute.MessageId},已有ID类型:{value2.FullName}");
 					}
 				}
-				else if ((type.IsImplWithInterface(typeof(IResponseMessage)) || type.IsImplWithInterface(typeof(INotifyMessage))) && !ResponseDictionary.TryAdd(messageTypeHandlerAttribute.MessageId, type))
+				else if ((type.IsImplWithInterface(typeof(IResponseMessage)) || type.IsImplWithInterface(typeof(INotifyMessage))) && !ResponseDictionary.TryAdd(MessageIdAttribute.MessageId, type))
 				{
-					ResponseDictionary.TryGetValue(messageTypeHandlerAttribute.MessageId, out var value3);
-					throw new AlreadyArgumentException($"返回Id重复==>当前ID:{messageTypeHandlerAttribute.MessageId},已有ID类型:{value3.FullName}");
+					ResponseDictionary.TryGetValue(MessageIdAttribute.MessageId, out var value3);
+					throw new AlreadyArgumentException($"返回Id重复==>当前ID:{MessageIdAttribute.MessageId},已有ID类型:{value3.FullName}");
 				}
 			}
 		}

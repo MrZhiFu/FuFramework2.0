@@ -138,20 +138,19 @@ namespace Hotfix.Framework.Network
 		/// 详细说明与示例见 <see cref="INetworkChannel.Call{TResponse}"/>。
 		/// </summary>
 		/// <typeparam name="TResponse">响应消息类型，从请求实现的 IRequestMessage&lt;TResponse&gt; 自动推断。</typeparam>
-		/// <param name="messageObject">请求消息对象（须为生成器产出的、实现映射接口的 Req 消息）。</param>
+		/// <param name="msgObj">请求消息对象（须为生成器产出的、实现映射接口的 Req 消息）。</param>
 		/// <returns>服务器响应消息；响应类型与 TResponse 不符时抛出异常（而非返回 null）。</returns>
-		public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)
+		public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj)
 			where TResponse : MessageObject, IResponseMessage
 		{
-			messageObject.NotNull(nameof(messageObject));
+			msgObj.NotNull(nameof(msgObj));
 			// 生成器产出的 Req 消息均为 MessageObject 子类；显式转换以便复用发送管线与 RPC 登记。
-			var request = (MessageObject)messageObject;
-			Send(request);
-			var result = await m_rpcState.Call(request);
+			Send((MessageObject)msgObj);
+			var result = await m_rpcState.Call((MessageObject)msgObj);
 			if (result is TResponse response) return response;
 
 			// 编译期已锁定 Req→Resp 配对，此处只可能因服务器回包类型异常触发——显式失败优于原 as 的静默 null。
-			throw new InvalidOperationException($"RPC 响应类型不匹配。请求:{request.GetType().Name}, 期望响应:{typeof(TResponse).Name}, 实际:{result?.GetType().Name ?? "null"}");
+			throw new InvalidOperationException($"RPC 响应类型不匹配。请求:{msgObj.GetType().Name}, 期望响应:{typeof(TResponse).Name}, 实际:{result?.GetType().Name ?? "null"}");
 		}
 
 		/// <summary>

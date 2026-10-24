@@ -33,7 +33,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求背包数据")]
-    [MessageTypeHandler(6553610)]
+    [MessageId(6553610)]
     public sealed class ReqBagInfo : MessageObject, IRequestMessage
     {
     }
@@ -43,7 +43,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("背包数据响应")]
-    [MessageTypeHandler(6553611)]
+    [MessageId(6553611)]
     public sealed class RespBagInfo : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -67,7 +67,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求使用道具")]
-    [MessageTypeHandler(6553612)]
+    [MessageId(6553612)]
     public sealed class ReqUseItem : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -90,7 +90,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("使用道具响应")]
-    [MessageTypeHandler(6553613)]
+    [MessageId(6553613)]
     public sealed class RespUseItem : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -120,7 +120,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求增加道具")]
-    [MessageTypeHandler(6553614)]
+    [MessageId(6553614)]
     public sealed class ReqAddItem : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -137,7 +137,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("增加道具响应")]
-    [MessageTypeHandler(6553615)]
+    [MessageId(6553615)]
     public sealed class RespAddItem : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -161,7 +161,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求减少道具")]
-    [MessageTypeHandler(6553616)]
+    [MessageId(6553616)]
     public sealed class ReqRemoveItem : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -178,7 +178,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("减少道具响应")]
-    [MessageTypeHandler(6553617)]
+    [MessageId(6553617)]
     public sealed class RespRemoveItem : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -202,7 +202,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("单个道具变化通知")]
-    [MessageTypeHandler(6553618)]
+    [MessageId(6553618)]
     public sealed class NotifyBagItem : MessageObject, INotifyMessage
     {
         /// <summary>
@@ -232,7 +232,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("背包数据变化通知")]
-    [MessageTypeHandler(6553619)]
+    [MessageId(6553619)]
     public sealed class NotifyBagInfoChanged : MessageObject, INotifyMessage
     {
         /// <summary>

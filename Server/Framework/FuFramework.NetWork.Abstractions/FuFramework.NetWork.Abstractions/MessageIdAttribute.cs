@@ -3,10 +3,10 @@ using System;
 namespace FuFramework.NetWork.Abstractions;
 
 /// <summary>
-/// 消息类型处理器标记
+/// 消息 ID 标记
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public class MessageTypeHandlerAttribute : Attribute
+public class MessageIdAttribute : Attribute
 {
 	/// <summary>
 	/// 消息ID
@@ -29,11 +29,11 @@ public class MessageTypeHandlerAttribute : Attribute
 	public MessageOperationType OperationType { get; }
 
 	/// <summary>
-	/// 构造消息类型处理器
+	/// 构造消息 ID 标记
 	/// </summary>
 	/// <param name="messageId">消息ID</param>
 	/// <param name="operationType">消息类型</param>
-	public MessageTypeHandlerAttribute(int messageId, MessageOperationType operationType = MessageOperationType.None)
+	public MessageIdAttribute(int messageId, MessageOperationType operationType = MessageOperationType.None)
 	{
 		OperationType = operationType;
 		MessageId = messageId;

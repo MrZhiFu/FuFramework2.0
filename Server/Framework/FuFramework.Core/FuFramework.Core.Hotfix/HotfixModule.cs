@@ -286,12 +286,12 @@ internal sealed class HotfixModule
 			LogHelper.Error("重复注册消息TCP处理器 类型:[" + type.FullName + "]");
 			return false;
 		}
-		MessageTypeHandlerAttribute messageTypeHandlerAttribute = (MessageTypeHandlerAttribute)messageMappingAttribute.MessageType.GetCustomAttribute(typeof(MessageTypeHandlerAttribute), inherit: true);
-		if (messageTypeHandlerAttribute == null)
+		MessageIdAttribute MessageIdAttribute = (MessageIdAttribute)messageMappingAttribute.MessageType.GetCustomAttribute(typeof(MessageIdAttribute), inherit: true);
+		if (MessageIdAttribute == null)
 		{
 			return false;
 		}
-		int messageId = messageTypeHandlerAttribute.MessageId;
+		int messageId = MessageIdAttribute.MessageId;
 		if (!_tcpHandlerMap.TryAdd(messageId, type))
 		{
 			LogHelper.Error($"重复注册消息TCP处理器:[{messageId}] 消息:[{type}]");

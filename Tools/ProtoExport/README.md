@@ -31,7 +31,7 @@ dotnet ProtoExport.dll --mode unity --inputPath ./Protobuf/Proto --outputPath ./
 
 | 模式 | 生成器 | 产出 |
 |---|---|---|
-| `Unity` | `ProtoBuffUnityHelper` | 客户端 C#（消息类 `… : MessageObject, IRequestMessage/IResponseMessage/INotifyMessage`，类上带 `[MessageTypeHandler(消息ID)]`） |
+| `Unity` | `ProtoBuffUnityHelper` | 客户端 C#（消息类 `… : MessageObject, IRequestMessage/IResponseMessage/INotifyMessage`，类上带 `[MessageId(消息ID)]`） |
 | `Server` | `ProtoBuffServerHelper` | 服务端 C# |
 
 > 选实现用 `GetTypes` + `Activator.CreateInstance` 反射 —— 这是**构建期工具**，不属于运行时热更代码，**不受项目铁律 4（运行时禁反射）约束**。

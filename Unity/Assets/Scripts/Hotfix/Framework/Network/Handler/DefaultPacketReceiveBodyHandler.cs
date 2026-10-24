@@ -13,13 +13,13 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="source">包体原始字节</param>
 		/// <param name="messageId">消息 ID</param>
-		/// <param name="messageObject">输出：反序列化得到的消息对象</param>
+		/// <param name="msgObj">输出：反序列化得到的消息对象</param>
 		/// <typeparam name="T">目标消息类型</typeparam>
 		/// <returns>是否解析成功</returns>
-		public bool Handler<T>(byte[] source, int messageId, out T messageObject) where T : MessageObject
+		public bool Handler<T>(byte[] source, int messageId, out T msgObj) where T : MessageObject
 		{
-			var messageType = ProtoMessageIdRegistry.GetRespTypeById(messageId);
-			messageObject = (T)SerializerHelper.Deserialize(source, messageType);
+			var messageType = MessageIdRegistry.GetRespTypeById(messageId);
+			msgObj = (T)SerializerHelper.Deserialize(source, messageType);
 			return true;
 		}
 	}

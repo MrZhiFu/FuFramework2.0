@@ -47,10 +47,10 @@ namespace Hotfix.Framework.Network
 	///     2. 记录心跳消息类型集合。
 	///
 	/// 说明（项目铁律 4）：注册数据不再通过运行时扫描程序集 + 读取特性获得，
-	/// 而是由生成物 <c>Generated/ProtoMessageRegistry.g.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
+	/// 而是由生成物 <c>Register/AutoGen/MessageRegistry.g.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
 	/// 生成脚本：<c>Protobuf/gen-proto-registry.py</c>。
 	/// </summary>
-	public static class ProtoMessageIdRegistry
+	public static class MessageIdRegistry
 	{
 		/// <summary>
 		/// 请求消息：消息ID &lt;-&gt; 类型
@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Network
 
 			if ((kind & EMessageKind.HeartBeat) != 0)
 			{
-				if (!sr_heartBeatTypes.Add(type)) 
+				if (!sr_heartBeatTypes.Add(type))
 					throw new InvalidOperationException($"心跳消息重复==>类型:{type.FullName}");
 			}
 

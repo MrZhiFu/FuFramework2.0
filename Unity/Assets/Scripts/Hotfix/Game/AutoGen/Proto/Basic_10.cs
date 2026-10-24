@@ -9,7 +9,7 @@ namespace Hotfix.Game.Proto
 	/// 请求心跳
 	/// </summary>
 	[ProtoContract]
-	[MessageTypeHandler(655370)]
+	[MessageId(655370)]
 	public sealed class ReqHeartBeat : MessageObject, IRequestMessage, IHeartBeatMessage
 	{
 		/// <summary>
@@ -24,7 +24,7 @@ namespace Hotfix.Game.Proto
 	/// 服务器通知心跳结果，因为有些业务需要对心跳结果做处理所以不做成RPC的方式处理
 	/// </summary>
 	[ProtoContract]
-	[MessageTypeHandler(655371)]
+	[MessageId(655371)]
 	public sealed class NotifyHeartBeat : MessageObject, INotifyMessage, IHeartBeatMessage
 	{
 		/// <summary>
@@ -39,7 +39,7 @@ namespace Hotfix.Game.Proto
 	/// 通知客户端服务器人数已达上限
 	/// </summary>
 	[ProtoContract]
-	[MessageTypeHandler(655372)]
+	[MessageId(655372)]
 	public sealed class NotifyServerFullyLoaded : MessageObject, INotifyMessage
 	{
 	}

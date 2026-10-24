@@ -8,7 +8,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
-- **特性声明 + 生成期注册**：`[MessageTypeHandler]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
+- **特性声明 + 生成期注册**：`[MessageId]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
 - **显式装配包处理器**：`DefaultNetworkChannelHelper` 直接装配框架自带的 7 个处理器，不再反射扫描程序集；自定义处理器须通过 `AddCustomHandlerRegistrar` 或重写 `RegisterCustomHandlers` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
@@ -82,8 +82,8 @@ void Connect(Uri address, object userData = null)   // 转发频道 Connect
 void Close()                                        // 转发频道 Close（可重连）
 
 // 消息收发门面（业务侧日常入口，无需感知频道对象）
-UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)   // RPC：Req→Resp 编译期配对
-void Send<T>(T messageObject)                                                  // 单向：发完即忘
+UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj)   // RPC：Req→Resp 编译期配对
+void Send<T>(T msgObj)                                                  // 单向：发完即忘
 ```
 
 ### 4.2 INetworkChannel
@@ -101,8 +101,8 @@ public interface INetworkChannel
     void Close();
 
     // 消息发送
-    void Send<T>(T messageObject) where T : MessageObject;                  // 单向消息（发完即忘）
-    UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject)  // RPC 调用（Req→Resp 编译期配对）
+    void Send<T>(T msgObj) where T : MessageObject;                  // 单向消息（发完即忘）
+    UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj)  // RPC 调用（Req→Resp 编译期配对）
         where TResponse : MessageObject, IResponseMessage;
 }
 ```
@@ -111,16 +111,16 @@ public interface INetworkChannel
 
 协议消息与消息处理方法的注册数据全部由生成脚本产出，不再于运行时扫描程序集 / 读取特性。
 
-**方式一：协议消息 —— 类级别 `[MessageTypeHandler(消息ID)]`**
+**方式一：协议消息 —— 类级别 `[MessageId(消息ID)]`**
 
 ```csharp
 [ProtoContract]
-[MessageTypeHandler(6553610)]
+[MessageId(6553610)]
 public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 ```
 
-生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/ProtoMessageRegistry.g.cs` 中的
-`ProtoMessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
+生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/MessageRegistry.g.cs` 中的
+`MessageIdRegistry.Register<ReqBagInfo>(6553610, EMessageKind.Request)`。
 
 **方式二：用户处理方法 —— 方法级别 `[NotifyMessageHandler(typeof(消息类型), nameof(方法名))]`**
 
@@ -138,8 +138,8 @@ public sealed class BagManager : Singleton<BagManager>   // 声明即生效：�
 生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**静态绑定委托**（直接捕获宿主实例）：
 
 ```csharp
-ProtoMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
-    static message => BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)message));
+NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
+    static msgObj => BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj));
 ```
 
 绑定在 `NetworkModule.OnInit` 的 `RegisterAll` 中一次性完成，**不查找方法、不使用任何反射**
@@ -210,7 +210,7 @@ DefaultNetworkChannelHelper.AddCustomHandlerRegistrar(channel =>
 
 ### 4.6 包处理器
 
-处理器为具体类（各自只有单一实现，接口已按「只保留真多态」原则缩减；推送宿主契约见 `Interface/INotifyMessageHandler`）：
+处理器为具体类（各自只有单一实现，接口已按「只保留真多态」原则缩减；推送宿主契约见 `NotifyMessageHandlerRegistry`（声明即生效））：
 
 | 类 | 说明 |
 |------|------|
@@ -246,9 +246,9 @@ public class NetworkExample
         // 创建网络频道（模块内唯一；传输由编译宏在创建时决定 TCP/WS）
         NetworkModule.Instance.CreateChannel(new DefaultNetworkChannelHelper(), rpcTimeout: 5000);
 
-        // 注册消息处理器（使用 ProtoMessageHandlerRegistry）
-        ProtoMessageHandlerRegistry.Add(new LoginMessageHandler());
-        ProtoMessageHandlerRegistry.Add(new GameMessageHandler());
+        // 注册消息处理器（使用 NotifyMessageHandlerRegistry）
+        NotifyMessageHandlerRegistry.Add(new LoginMessageHandler());
+        NotifyMessageHandlerRegistry.Add(new GameMessageHandler());
     }
 
     public void Connect()
@@ -355,19 +355,18 @@ Network/
 │   ├── IRequestMessage.cs                            # 请求消息接口
 │   ├── IResponseMessage.cs                           # 响应消息接口
 │   ├── INotifyMessage.cs                             # 推送消息接口
-│   ├── IHeartBeatMessage.cs                          # 心跳消息接口
-│   └── INotifyMessageHandler.cs                            # 消息处理器接口（业务模块实现）
+│   └── IHeartBeatMessage.cs                          # 心跳消息接口
 ├── MessageBase/                                      # 消息基类
 │   ├── MessageObject.cs                              # 消息基类（含 UniqueId）
 │   └── MessageHttpObject.cs                          # HTTP 消息包装基类
 ├── Attribute/                                        # 声明用特性（供生成脚本扫描）
-│   ├── NotifyMessageHandlerAttribute.cs                    # 消息处理器特性（方法须 internal/public）
-│   └── MessageTypeHandlerAttribute.cs                # 消息类型处理器特性
+│   ├── NotifyMessageHandlerAttribute.cs              # 消息处理器特性（方法须 internal/public）
+│   └── MessageIdAttribute.cs                         # 消息 ID 标记特性
 ├── Register/                                         # 注册设施 + 生成物
-│   ├── ProtoMessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
-│   ├── MessageHandlerRegistry.cs                     # 消息处理方法注册表（[NotifyMessageHandler] 绑定/派发）
+│   ├── MessageIdRegistry.cs                          # 消息 ID / 心跳 / 类型 注册表
+│   ├── NotifyMessageHandlerRegistry.cs               # 推送处理注册表（[NotifyMessageHandler] 绑定/派发）
 │   └── AutoGen/
-│       └── ProtoMessageRegistry.g.cs                 # 自动生成：消息与方法注册表 + 委托分派（勿手改）
+│       └── MessageRegistry.g.cs                      # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 ├── State/                                            # 频道内部状态（internal）
 │   ├── ConnectState.cs                               # 连接状态
 │   ├── HeartBeatState.cs                             # 心跳状态

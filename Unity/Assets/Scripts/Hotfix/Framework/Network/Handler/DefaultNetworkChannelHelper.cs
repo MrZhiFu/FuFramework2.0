@@ -91,7 +91,7 @@ namespace Hotfix.Framework.Network
 		///     （基类 Handler() 仅抛 NotImplementedException）。
 		///     此前运行期之所以正常，是因为游戏侧 WinPlayerList.OnBtnLoginClick 在
 		///     CreateChannel（内部即触发本方法）之后又手动注册了一次该派生类。
-		///     现由生成物 Generated/ProtoMessageRegistry.g.cs 登记装配委托，在本方法之后追加注册
+		///     现由生成物 Register/AutoGen/MessageRegistry.g.cs 登记装配委托，在本方法之后追加注册
 		///     框架外的具体处理器（见 <see cref="AddCustomHandlerRegistrar"/>），
 		///     使框架侧自洽、不再依赖游戏侧的手动补注册；最终生效者仍是游戏侧实现（后注册者生效）。
 		/// </summary>
@@ -176,18 +176,18 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 序列化发送包头
 		/// </summary>
-		/// <param name="messageObject">待发送的消息对象</param>
+		/// <param name="msgObj">待发送的消息对象</param>
 		/// <param name="destination">包头写入目标流</param>
 		/// <param name="messageBodyBuffer">输出：待发送的消息体缓冲区</param>
 		/// <returns>是否序列化成功</returns>
-		public bool SerializePacketHeader<T>(T messageObject, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
+		public bool SerializePacketHeader<T>(T msgObj, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
 			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
-			messageObject.NotNull(nameof(messageObject));
+			msgObj.NotNull(nameof(msgObj));
 			destination.NotNull(nameof(destination));
 
-			return m_networkChannel.PacketSendHeaderHandler.Handler(messageObject, m_networkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
+			return m_networkChannel.PacketSendHeaderHandler.Handler(msgObj, m_networkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
 		}
 
 		/// <summary>
@@ -223,12 +223,12 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="source">包体原始字节</param>
 		/// <param name="messageId">消息 ID</param>
-		/// <param name="messageObject">输出：反序列化得到的消息对象</param>
+		/// <param name="msgObj">输出：反序列化得到的消息对象</param>
 		/// <returns>是否解析成功</returns>
-		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject messageObject)
+		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject msgObj)
 		{
 			source.NotNull(nameof(source));
-			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out messageObject);
+			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out msgObj);
 		}
 
 		/// <summary>

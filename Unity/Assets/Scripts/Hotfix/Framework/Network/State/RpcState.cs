@@ -58,13 +58,13 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理 RPC 回复消息：按 UniqueId 配对等待中的请求并唤醒其 await。
 		/// </summary>
-		/// <param name="message">要处理的消息对象，必须实现IResponseMessage接口。</param>
+		/// <param name="msgObj">要处理的消息对象，必须实现IResponseMessage接口。</param>
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
-		public bool TryReply(MessageObject message)
+		public bool TryReply(MessageObject msgObj)
 		{
 			// 非响应消息（Notify/Req）直接跳过配对
-			if (message is not IResponseMessage responseMessage) return false;
-			if (!m_waitingReplyDict.TryRemove(message.UniqueId, out var rpcMessageData)) return false;
+			if (msgObj is not IResponseMessage responseMessage) return false;
+			if (!m_waitingReplyDict.TryRemove(msgObj.UniqueId, out var rpcMessageData)) return false;
 
 			rpcMessageData.Reply(responseMessage);
 			return true;
@@ -75,17 +75,17 @@ namespace Hotfix.Framework.Network
 		/// 此方法会发送一个请求消息并返回一个任务，任务将在收到响应时完成。
 		/// 可能会引发超时异常。
 		/// </summary>
-		/// <param name="messageObject">要发送的消息对象，必须实现IRequestMessage接口。</param>
+		/// <param name="msgObj">要发送的消息对象，必须实现IRequestMessage接口。</param>
 		/// <returns>返回一个任务，该任务在收到响应时完成，并返回IResponseMessage。</returns>
-		public UniTask<IResponseMessage> Call(MessageObject messageObject)
+		public UniTask<IResponseMessage> Call(MessageObject msgObj)
 		{
-			if (m_waitingReplyDict.TryGetValue(messageObject.UniqueId, out var existing))
+			if (m_waitingReplyDict.TryGetValue(msgObj.UniqueId, out var existing))
 			{
 				return existing.Task;
 			}
 
-			var rpcMessageData = RpcMessageData.Create(messageObject as IRequestMessage, m_rpcTimeout);
-			m_waitingReplyDict.TryAdd(messageObject.UniqueId, rpcMessageData);
+			var rpcMessageData = RpcMessageData.Create(msgObj as IRequestMessage, m_rpcTimeout);
+			m_waitingReplyDict.TryAdd(msgObj.UniqueId, rpcMessageData);
 			return rpcMessageData.Task;
 		}
 

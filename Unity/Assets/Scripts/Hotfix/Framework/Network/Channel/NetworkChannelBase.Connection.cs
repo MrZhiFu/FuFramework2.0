@@ -71,12 +71,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 在线程池解析域名，随后在主线程完成连接流程。
 		/// </summary>
-		/// <param name="address">远程主机地址</param>
+		/// <param name="uri">远程主机地址</param>
 		/// <param name="userData">用户自定义数据</param>
-		private async UniTaskVoid ResolveHostAsync(Uri address, object userData)
+		private async UniTaskVoid ResolveHostAsync(Uri uri, object userData)
 		{
-			var host = address.Host;
-			var port = address.Port;
+			var host = uri.Host;
+			var port = uri.Port;
 			try
 			{
 				var ipHost = await UniTask.RunOnThreadPool(() => Utility.Net.GetHostIPv4(host));

@@ -29,14 +29,18 @@ namespace Hotfix.Framework.Network
 		private bool m_disposed;
 
 		/// <summary>
-		/// 关闭流程的专用锁对象（替代原先的 lock(this)，避免与外部对频道实例的加锁产生交叉锁序）。
+		/// 关闭流程的专用锁对象
 		/// </summary>
 		private readonly object m_closeLock = new();
 
 		/// <summary>
-		/// 网络频道是否已激活(已连接至服务器)
+		/// 会话闸门：频道当前是否开放（可收发消息）。
+		/// 置位点：连接成功事件处置时 true；收发/序列化出错、Close 后 false。
+		/// 与 <see cref="Connected"/> 的分工：Connected 是 Socket 物理连接状态；
+		/// IsOpen 是上层判活的业务闸门——收发出错后、物理连接断开前，
+		/// 存在「Connected 仍为 true 但 IsOpen 已为 false」的窗口，此窗口内拒绝再发消息。
 		/// </summary>
-		protected bool PActive { get; set; }
+		protected bool IsOpen { get; set; }
 
 		/// <summary>
 		/// 频道生命周期事件类型。
@@ -50,12 +54,12 @@ namespace Hotfix.Framework.Network
 			/// 连接成功事件
 			/// </summary>
 			Connected,
-			
+
 			/// <summary>
 			/// 连接关闭事件
 			/// </summary>
 			Closed,
-			
+
 			/// <summary>
 			/// 网络错误事件
 			/// </summary>
@@ -96,7 +100,7 @@ namespace Hotfix.Framework.Network
 
 		/// <summary>
 		/// 生命周期事件队列：Socket 回调线程入队，主线程 Update 排水后触发。
-		/// 互斥复用 m_ExecutionMessageLock（与数据包接收队列同族：接收线程生产、主线程消费）。
+		/// 互斥复用 m_handleMsgLock（与数据包接收队列同族：接收线程生产、主线程消费）。
 		/// 排水位置在 Update 活跃检查之前——保证 Close() 后入队的 Closed 事件必达。
 		/// 频道销毁后 Update 不再被调，未派发事件随本对象一并回收（丢弃，无泄漏）。
 		/// </summary>
@@ -148,7 +152,7 @@ namespace Hotfix.Framework.Network
 			m_ReceiveState                = new ReceiveState();
 			m_HeartBeatState              = new HeartBeatState();
 			m_rpcState                    = new RpcState(rpcTimeout);
-			PActive                       = false;
+			IsOpen                        = false;
 			m_IsConnecting                = false;
 			m_disposed                    = false;
 			m_NetworkChannelConnected     = null;
@@ -166,16 +170,16 @@ namespace Hotfix.Framework.Network
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		public virtual void Update(float deltaTime, float unscaledDeltaTime)
 		{
-			// 先排水生命周期事件，再做活跃检查：频道 Close 后 PActive=false，若排水在检查之后，
+			// 先排水生命周期事件，再做活跃检查：频道 Close 后 IsOpen=false，若排水在检查之后，
 			// 已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
 			DrainLifecycleEvents();
 
-			if (m_Socket == null || !PActive) return;
+			if (m_Socket == null || !IsOpen) return;
 
 			ProcessSend();
 			ProcessReceive();
 
-			if (m_Socket == null || !PActive) return;
+			if (m_Socket == null || !IsOpen) return;
 
 			ProcessHeartBeat(unscaledDeltaTime);
 			ProcessReceivedMessage();
@@ -191,7 +195,7 @@ namespace Hotfix.Framework.Network
 			lock (m_closeLock)
 			{
 				if (m_Socket == null) return;
-				PActive = false;
+				IsOpen = false;
 
 				try
 				{
@@ -218,7 +222,7 @@ namespace Hotfix.Framework.Network
 
 			// 断线/销毁时终结所有挂起的 RPC 请求，否则 await 会永久悬挂。
 			m_rpcState.Dispose();
-			lock (m_ExecutionMessageLock) m_executionMessageLinkedList.Clear();
+			lock (m_handleMsgLock) m_waitingHandleMsgLkList.Clear();
 		}
 
 		/// <summary>
@@ -255,7 +259,7 @@ namespace Hotfix.Framework.Network
 				m_ErrorMessage = errorMessage,
 			};
 
-			lock (m_ExecutionMessageLock)
+			lock (m_handleMsgLock)
 			{
 				m_lifecycleEventQueue.Enqueue(lifecycleEvent);
 			}
@@ -271,7 +275,7 @@ namespace Hotfix.Framework.Network
 			while (true)
 			{
 				LifecycleEvent lifecycleEvent;
-				lock (m_ExecutionMessageLock)
+				lock (m_handleMsgLock)
 				{
 					if (m_lifecycleEventQueue.Count == 0) break;
 					lifecycleEvent = m_lifecycleEventQueue.Dequeue();

@@ -102,17 +102,17 @@ namespace Hotfix.Framework.Network
 		/// Req→Resp 编译期配对与响应类型推断同频道接口，业务侧无需感知频道）。
 		/// </summary>
 		/// <typeparam name="TResponse">响应消息类型，从请求实现的 IRequestMessage&lt;TResponse&gt; 自动推断。</typeparam>
-		/// <param name="messageObject">请求消息对象。</param>
+		/// <param name="msgObj">请求消息对象。</param>
 		/// <returns>服务器响应消息；响应类型与 TResponse 不符时抛出异常。</returns>
-		public UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> messageObject) where TResponse : MessageObject, IResponseMessage
-			=> GetChannel().Call(messageObject);
+		public UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj) where TResponse : MessageObject, IResponseMessage
+			=> GetChannel().Call(msgObj);
 
 		/// <summary>
 		/// 向服务器单向发送消息（发完即忘，转发当前频道 Send）。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
-		/// <param name="messageObject">要发送的消息包。</param>
-		public void Send<T>(T messageObject) where T : MessageObject => GetChannel().Send(messageObject);
+		/// <param name="msgObj">要发送的消息包。</param>
+		public void Send<T>(T msgObj) where T : MessageObject => GetChannel().Send(msgObj);
 
 		/// <summary>
 		/// 挂起推送派发：此后到达的推送进入缓冲队列（保持到达顺序，上限 1024 条，超出丢弃最旧并警告）。
@@ -120,18 +120,18 @@ namespace Hotfix.Framework.Network
 		/// 在登录/重连流程拉取全量数据前挂起，拉取完成后调 <see cref="ResumeNotifyDispatch"/> 按序回放。
 		/// 幂等：已挂起时重复调用无副作用。
 		/// </summary>
-		public void SuspendNotifyDispatch() => ProtoMessageHandlerRegistry.SuspendDispatch();
+		public void SuspendNotifyDispatch() => NotifyMessageHandlerRegistry.SuspendDispatch();
 
 		/// <summary>
 		/// 恢复推送派发并按到达顺序回放缓冲队列。
 		/// 幂等：未挂起时调用无副作用。回放过程中可再次挂起（此时剩余消息留在队列）。
 		/// </summary>
-		public void ResumeNotifyDispatch() => ProtoMessageHandlerRegistry.ResumeDispatch();
+		public void ResumeNotifyDispatch() => NotifyMessageHandlerRegistry.ResumeDispatch();
 
 		/// <summary>
 		/// 清空推送缓冲队列（不派发）。用于登出/切换账号时丢弃旧会话的推送，防止串号。
 		/// </summary>
-		public void ClearNotifyBuffer() => ProtoMessageHandlerRegistry.ClearBuffer();
+		public void ClearNotifyBuffer() => NotifyMessageHandlerRegistry.ClearBuffer();
 
 		#endregion
 	}

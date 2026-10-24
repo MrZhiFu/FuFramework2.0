@@ -93,22 +93,22 @@ namespace Hotfix.Framework.Web
 		/// Pb POST 请求入队（公共 API 核心）。
 		/// </summary>
 		/// <param name="url">请求 URL。</param>
-		/// <param name="message">消息对象。</param>
+		/// <param name="msgObj">消息对象。</param>
 		/// <param name="token">调用方取消令牌。</param>
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>返回 WebBufferResult 类型的异步任务。</returns>
-		private UniTask<WebBufferResult> PostPbReq(string url, MessageObject message, CancellationToken token, object userData = null)
+		private UniTask<WebBufferResult> PostPbReq(string url, MessageObject msgObj, CancellationToken token, object userData = null)
 		{
 			m_scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
 			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 			url = NormalizeURL(url, null);
-			var id = ProtoMessageIdRegistry.GetReqMessageIdByType(message.GetType());
+			var id = MessageIdRegistry.GetReqMessageIdByType(msgObj.GetType());
 			var messageHttpObject = new MessageHttpObject
 			{
 				Id       = id,
-				UniqueId = message.UniqueId,
-				Body     = SerializerHelper.Serialize(message),
+				UniqueId = msgObj.UniqueId,
+				Body     = SerializerHelper.Serialize(msgObj),
 			};
 			var sendData = SerializerHelper.Serialize(messageHttpObject);
 			var webData  = new WebPbData(url, sendData, uniTaskCompletionSource, token, userData);
@@ -118,7 +118,7 @@ namespace Hotfix.Framework.Web
 			{
 				try
 				{
-					webData.DebugRequestBody = JsonConvert.SerializeObject(message);
+					webData.DebugRequestBody = JsonConvert.SerializeObject(msgObj);
 				}
 				catch
 				{
