@@ -157,6 +157,9 @@ public sealed class BagManager : Singleton<BagManager>   // 声明即生效：�
 
 > 命名惯例：处理方法用 `On` 前缀（如 `OnNotifyBagInfoChanged`）——方法名表达**处理动作**，与消息类型名区分。
 > **宿主契约**：所在类型必须继承 `Singleton<T>` 或提供 `static Instance`（生成器校验，不满足则中止生成）。
+>
+> **多宿主 & 优先级**：同一消息可被多个管理器各自监听；有模块间数据依赖时用 `Priority` 命名参数控制执行顺序（数字小者先，同优先级保持声明顺序）：
+> `[NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(OnX), Priority = 5)]`（默认 0）。改 `Priority` 后需重跑推送注册表（守卫比对键含优先级）。
 
 生成脚本扫描 `Assets/Scripts/Hotfix/**/*.cs`，为每个方法产出**静态绑定委托**（直接捕获宿主实例）：
 

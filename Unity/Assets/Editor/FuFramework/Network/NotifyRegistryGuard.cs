@@ -27,11 +27,11 @@ namespace FuFramework.Editor.Network
 		/// <summary>业务源码扫描根（跳过 AutoGen）</summary>
 		private const string HotfixRoot = "Assets/Scripts/Hotfix";
 
-		/// <summary>业务源码里的声明：[NotifyMessageHandler(typeof(X), nameof(Y))]</summary>
-		private static readonly Regex sr_declPattern = new(@"\[NotifyMessageHandler\(typeof\((\w+)\),\s*nameof\((\w+)\)\)", RegexOptions.Compiled);
+		/// <summary>业务源码里的声明：[NotifyMessageHandler(typeof(X), nameof(Y)[, Priority = N])]</summary>
+		private static readonly Regex sr_declPattern = new(@"\[NotifyMessageHandler\(typeof\((\w+)\),\s*nameof\((\w+)\)(?:,\s*Priority\s*=\s*(-?\d+))?\)", RegexOptions.Compiled);
 
-		/// <summary>生成物里的绑定：BindNotify(typeof(X), static msgObj => Ns.Class.Y((X)msgObj))</summary>
-		private static readonly Regex sr_bindPattern = new(@"BindNotify\(typeof\((\w+)\),\s*static\s+\w+\s*=>\s*[\w.]+\.(\w+)\(", RegexOptions.Compiled);
+		/// <summary>生成物里的绑定：BindNotify(typeof(X), static msgObj => Ns.Class.Y((X)msgObj)[, priority: N]);</summary>
+		private static readonly Regex sr_bindPattern = new(@"BindNotify\(typeof\((\w+)\),\s*static\s+\w+\s*=>\s*[\w.]+\.(\w+)\([^;]*?(?:,\s*priority:\s*(\d+))?\);", RegexOptions.Compiled);
 
 		static NotifyRegistryGuard()
 		{
@@ -91,11 +91,12 @@ namespace FuFramework.Editor.Network
 				return false;
 			}
 
-			// 生成物侧：BindNotify 对计数（同键可出现多次——多宿主监听同一消息）
+			// 生成物侧：BindNotify 对计数（键含优先级——改 Priority 数值也会被识别为差异；同键可出现多次——多宿主监听同一消息）
 			var bindings = new Dictionary<string, int>();
 			foreach (Match match in sr_bindPattern.Matches(File.ReadAllText(genFullPath)))
 			{
-				AddOrUpdate(bindings, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
+				var priority = match.Groups[3].Success ? match.Groups[3].Value : "0";
+				AddOrUpdate(bindings, $"{match.Groups[1].Value}.{match.Groups[2].Value}:P{priority}");
 			}
 
 			// 业务侧：声明对计数（跳过 AutoGen 生成物自身；剥离行注释——防止 XML doc / 注释里的示例被当作真实声明）
@@ -119,7 +120,8 @@ namespace FuFramework.Editor.Network
 
 				foreach (Match match in sr_declPattern.Matches(code.ToString()))
 				{
-					AddOrUpdate(declarations, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
+					var priority = match.Groups[3].Success ? match.Groups[3].Value : "0";
+					AddOrUpdate(declarations, $"{match.Groups[1].Value}.{match.Groups[2].Value}:P{priority}");
 				}
 			}
 

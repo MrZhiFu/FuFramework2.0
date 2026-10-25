@@ -85,7 +85,9 @@ namespace Hotfix.Framework.Network
         {
             // Hotfix.Game.Manager_ToDelete.BagManager
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
-                static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj));
+                static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj),
+                priority: 0);
+            NotifyMessageHandlerRegistry.SortByPriority();
         }
 
         /// <summary>

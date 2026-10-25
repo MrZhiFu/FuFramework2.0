@@ -41,28 +41,19 @@ namespace FuFramework.Editor.Network
 		/// 导出 Proto — 客户端
 		/// </summary>
 		[MenuItem("FuFramework/网络/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
-		public static void ExportProtoClient()
-		{
-			ExportProto(EExportTarget.Client);
-		}
+		public static void ExportProtoClient() => ExportProto(EExportTarget.Client);
 
 		/// <summary>
 		/// 导出 Proto — 服务端
 		/// </summary>
 		[MenuItem("FuFramework/网络/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
-		public static void ExportProtoServer()
-		{
-			ExportProto(EExportTarget.Server);
-		}
+		public static void ExportProtoServer() => ExportProto(EExportTarget.Server);
 
 		/// <summary>
 		/// 导出 Proto — 全部（客户端 + 服务端）
 		/// </summary>
 		[MenuItem("FuFramework/网络/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
-		public static void ExportProtoAll()
-		{
-			ExportProto(EExportTarget.All);
-		}
+		public static void ExportProtoAll() => ExportProto(EExportTarget.All);
 
 		/// <summary>
 		/// 重新生成推送注册表：执行 gen-proto-registry 脚本（扫描 [NotifyMessageHandler] 产出 BindNotify 绑定），

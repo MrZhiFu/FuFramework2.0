@@ -124,7 +124,8 @@ def load_message_ids():
 # [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
 RE_MSG_HANDLER_ATTR = re.compile(
     r"\[\s*NotifyMessageHandler\s*\(\s*typeof\s*\(\s*([\w\.]+)\s*\)\s*,\s*"
-    r"(?:nameof\s*\(\s*([\w\.]+)\s*\)|\"([^\"]+)\")\s*\)\s*\]"
+    r"(?:nameof\s*\(\s*([\w\.]+)\s*\)|\"([^\"]+)\")\s*"
+    r"(?:,\s*Priority\s*=\s*(-?\d+))?\s*\)\s*\]"
 )
 
 # 方法声明（用于读取 [NotifyMessageHandler] 目标的可见性与首参类型）
@@ -431,6 +432,7 @@ def scan_message_handler_methods(by_name):
         for m in RE_MSG_HANDLER_ATTR.finditer(text):
             message_type = simple_name(m.group(1))
             method_name = m.group(2) or m.group(3)
+            priority = int(m.group(4) or 0)  # Priority 命名参数（未声明 = 0）
             line = text.count("\n", 0, m.start()) + 1
 
             type_name = enclosing_type_name(text, m.start())
@@ -515,6 +517,7 @@ def scan_message_handler_methods(by_name):
                 {
                     "message_type": message_type,
                     "method_name": method_name,
+                    "priority": priority,
                     "invoke": invoke,
                 }
             )
@@ -738,9 +741,12 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
             handler_entry_count += 1
             lines.append(
                 "            NotifyMessageHandlerRegistry.BindNotify(typeof(%s),\n"
-                "                %s);\n"
-                % (entry["message_type"], entry["invoke"])
+                "                %s,\n"
+                "                priority: %d);\n"
+                % (entry["message_type"], entry["invoke"], entry["priority"])
             )
+    # 全部绑定写入后按优先级升序稳定排序一次（此后派发只读、零排序开销）
+    lines.append("            NotifyMessageHandlerRegistry.SortByPriority();\n")
     handler_registrations = "".join(lines) if lines else "            // 未扫描到任何 [NotifyMessageHandler] 推送处理方法。\n"
 
     # ---- 框架外包处理器注册 ----

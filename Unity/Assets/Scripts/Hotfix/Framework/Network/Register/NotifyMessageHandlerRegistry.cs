@@ -31,10 +31,10 @@ namespace Hotfix.Framework.Network
 		private static bool s_dispatchSuspended;
 
 		/// <summary>
-		/// 推送处理委托表：Key 为消息类型，Value 为该类型的全部处理委托（声明顺序）。
+		/// 推送处理委托表：Key 为消息类型，Value 为该类型的全部处理委托（含优先级，派发前已按优先级升序排好）。
 		/// 仅启动期 RegisterAll 写入一次、之后只读，派发在主线程——普通 Dictionary 即可。
 		/// </summary>
-		private static readonly Dictionary<Type, List<Action<MessageObject>>> sr_notifyHandlerDict = new();
+		private static readonly Dictionary<Type, List<HandlerEntry>> sr_notifyHandlerDict = new();
 
 		/// <summary>
 		/// 挂起期间的推送缓冲队列（保持到达顺序）。
@@ -80,18 +80,43 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="messageType">推送消息类型</param>
 		/// <param name="handler">生成期产出的静态绑定委托</param>
-		internal static void BindNotify(Type messageType, Action<MessageObject> handler)
+		/// <param name="priority">派发优先级（升序，小者先；同一消息的多个处理者按此相对排序）。</param>
+		internal static void BindNotify(Type messageType, Action<MessageObject> handler, int priority = 0)
 		{
 			messageType.NotNull(nameof(messageType));
 			handler.NotNull(nameof(handler));
 
 			if (!sr_notifyHandlerDict.TryGetValue(messageType, out var list))
 			{
-				list                              = new List<Action<MessageObject>>(4);
+				list                              = new List<HandlerEntry>(4);
 				sr_notifyHandlerDict[messageType] = list;
 			}
 
-			list.Add(handler);
+			// Index = 声明顺序：同优先级时保持声明的先后（稳定排序）。
+			list.Add(new HandlerEntry(handler, priority, list.Count));
+		}
+
+		/// <summary>
+		/// 按优先级升序稳定排序全部处理者列表（同优先级保持声明顺序）。
+		/// 由生成物 RegisterNotifyHandlers 在全部 BindNotify 之后调用一次；此后只读、派发零排序开销。
+		/// </summary>
+		internal static void SortByPriority()
+		{
+			foreach (var pair in sr_notifyHandlerDict)
+			{
+				pair.Value.Sort(CompareEntries);
+			}
+		}
+
+		/// <summary>优先级升序；同优先级按声明顺序（Index）。</summary>
+		private static int CompareEntries(HandlerEntry a, HandlerEntry b)
+		{
+			if (a.Priority != b.Priority)
+			{
+				return a.Priority - b.Priority;
+			}
+
+			return a.Index - b.Index;
 		}
 
 		/// <summary>
@@ -127,16 +152,31 @@ namespace Hotfix.Framework.Network
 		private static void DispatchInternal(MessageObject msgObj)
 		{
 			var list = sr_notifyHandlerDict[msgObj.GetType()];
-			foreach (var handler in list)
+			foreach (var entry in list)
 			{
 				try
 				{
-					handler(msgObj);
+					entry.Handler(msgObj);
 				}
 				catch (Exception e)
 				{
 					FuLogger.LogFatal(e);
 				}
+			}
+		}
+
+		/// <summary>单条推送处理委托（含优先级与声明顺序索引）。只读存于表中，派发只取 Handler。</summary>
+		private readonly struct HandlerEntry
+		{
+			public readonly Action<MessageObject> Handler;
+			public readonly int Priority;
+			public readonly int Index;
+
+			public HandlerEntry(Action<MessageObject> handler, int priority, int index)
+			{
+				Handler  = handler;
+				Priority = priority;
+				Index    = index;
 			}
 		}
 	}

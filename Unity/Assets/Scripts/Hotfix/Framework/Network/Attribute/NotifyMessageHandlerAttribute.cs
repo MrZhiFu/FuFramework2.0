@@ -48,6 +48,12 @@ namespace Hotfix.Framework.Network
 		public string MethodName { get; }
 
 		/// <summary>
+		/// 派发优先级：同一消息的多个处理者按数字**升序**执行（小者先，解决模块间数据依赖）。
+		/// 默认 0；同优先级保持声明顺序。仅影响同消息多处理者的相对顺序，不改变消息到达顺序。
+		/// </summary>
+		public int Priority { get; set; }
+
+		/// <summary>
 		/// 网络消息处理器特性
 		/// </summary>
 		/// <param name="message">要处理的消息类型。需要继承 MessageObject 并实现 INotifyMessage</param>
