@@ -52,7 +52,7 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 不强制使用WebSocket网络。
 		/// </summary>
-		[MenuItem("FuFramework/网络类型设置/不强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_NO_FORCE_WEBSOCKET)]
+		[MenuItem("FuFramework/网络/网络类型设置/不强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_NO_FORCE_WEBSOCKET)]
 		public static void DisableForceWebSocketNetwork()
 		{
 			ScriptingDefineSymbols.RemoveScriptingDefineSymbol(FORCE_ENABLE_WEB_SOCKET_SYMBOL);
@@ -61,7 +61,7 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 强制使用WebSocket网络。
 		/// </summary>
-		[MenuItem("FuFramework/网络类型设置/强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_FORCE_WEBSOCKET)]
+		[MenuItem("FuFramework/网络/网络类型设置/强制使用WebSocket网络", false, FuMenuPriority.NETWORK_TYPE_FORCE_WEBSOCKET)]
 		public static void EnableForceWebSocketNetwork()
 		{
 			ScriptingDefineSymbols.AddScriptingDefineSymbol(FORCE_ENABLE_WEB_SOCKET_SYMBOL);
