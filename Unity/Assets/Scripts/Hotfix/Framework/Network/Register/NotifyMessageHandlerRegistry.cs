@@ -21,6 +21,40 @@ namespace Hotfix.Framework.Network
 	public static class NotifyMessageHandlerRegistry
 	{
 		/// <summary>
+		/// 单条推送处理委托条目，承载「派发委托」与「相对执行顺序」两项信息。
+		/// 只读：仅启动期由 <see cref="BindNotify"/> 写入；全部写入后经 <see cref="SortByPriority"/> 一次排序，
+		/// 此后派发（<see cref="DispatchInternal"/>）只按序取 <see cref="Handler"/> 调用，零排序开销。
+		/// 相对顺序 = (Priority 升序, Index 升序)：先按业务声明的优先级，同优先级保持声明先后（稳定）。
+		/// </summary>
+		private readonly struct HandlerEntry
+		{
+			/// <summary>
+			/// 生成期产出的静态绑定委托（static msgObj => Host.Instance.OnX((X)msgObj)）。
+			/// 直接捕获宿主 static Instance，宿主实例在首次推送时才被触达（惰性），运行期零反射。
+			/// </summary>
+			public readonly Action<MessageObject> Handler;
+
+			/// <summary>
+			/// 派发优先级：同一消息的多个处理者按升序执行（数字小者先）。
+			/// 来源为 [NotifyMessageHandler(..., Priority = N)]，未声明时为 0。
+			/// </summary>
+			public readonly int Priority;
+
+			/// <summary>
+			/// 声明顺序索引（BindNotify 调用序 = 生成物书写序 = 文件扫描序）：
+			/// 同优先级的处理者按此保持声明的先后，保证排序稳定。
+			/// </summary>
+			public readonly int Index;
+
+			public HandlerEntry(Action<MessageObject> handler, int priority, int index)
+			{
+				Handler  = handler;
+				Priority = priority;
+				Index    = index;
+			}
+		}
+
+		/// <summary>
 		/// 缓冲队列上限：达到后丢弃最旧一条并警告，防止业务忘记恢复导致无界积压。
 		/// </summary>
 		private const int MAX_BUFFERED_NOTIFY_COUNT = 1024;
@@ -162,21 +196,6 @@ namespace Hotfix.Framework.Network
 				{
 					FuLogger.LogFatal(e);
 				}
-			}
-		}
-
-		/// <summary>单条推送处理委托（含优先级与声明顺序索引）。只读存于表中，派发只取 Handler。</summary>
-		private readonly struct HandlerEntry
-		{
-			public readonly Action<MessageObject> Handler;
-			public readonly int Priority;
-			public readonly int Index;
-
-			public HandlerEntry(Action<MessageObject> handler, int priority, int index)
-			{
-				Handler  = handler;
-				Priority = priority;
-				Index    = index;
 			}
 		}
 	}
