@@ -1,0 +1,9 @@
+package TestOptional;
+option module = 891;
+
+message ReqA
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+  optional string Remark = 2; // 备注（proto3 显式 presence）
+}

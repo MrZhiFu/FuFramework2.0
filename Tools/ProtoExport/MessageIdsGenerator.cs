@@ -111,11 +111,18 @@ internal static class MessageIdsGenerator
 
     /// <summary>
     /// 生成 MessageIds.md 抓包速查表（生成物，勿手改）：按模块分组的 ID↔语义名对照，落在 proto 目录的上级（Protobuf/）。
+    /// 仅在主流程（输入目录名为 Proto 且其父目录含 Proto2CsExport-All.bat）时落盘——fixture 等其他输入目录一律跳过，防止向任意父目录写文件。
     /// </summary>
     public static void GenerateLookupTable(List<MessageInfoList> messageInfoLists, string protoInputPath)
     {
         var protoDir = Path.GetFullPath(protoInputPath);
-        var outputPath = Path.Combine(Path.GetDirectoryName(protoDir) ?? ".", "MessageIds.md");
+        var parentDir = Path.GetDirectoryName(protoDir);
+        if (Path.GetFileName(protoDir) != "Proto" || parentDir == null || !File.Exists(Path.Combine(parentDir, "Proto2CsExport-All.bat")))
+        {
+            return;
+        }
+
+        var outputPath = Path.Combine(parentDir, "MessageIds.md");
         var sb = new StringBuilder();
         sb.AppendLine("# 消息 ID 速查表");
         sb.AppendLine();

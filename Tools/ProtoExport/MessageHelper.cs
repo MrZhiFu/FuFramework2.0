@@ -230,8 +230,9 @@ public static partial class MessageHelper
                     continue;
                 }
 
-                // message 级 option 行（如 option opcode = 10;）：提取到消息信息上，不作为字段解析
-                if (line.TrimStart().StartsWith("option"))
+                // message 级 option 行（如 option opcode = 10;）：提取到消息信息上，不作为字段解析。
+                // 注意必须匹配 "option "（后跟空白）——proto3 的 optional 字段前缀恰以 option 开头，误吞会静默丢字段。
+                if (line.TrimStart().StartsWith("option "))
                 {
                     Match opcodeMatch = Regex.Match(line, OpcodePattern, RegexOptions.Singleline);
                     if (opcodeMatch.Success)
