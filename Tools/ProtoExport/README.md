@@ -57,7 +57,7 @@ void Post(List<MessageInfoList> all, string outputPath);                  // 全
 - 每条 Req/Resp/Notify 消息体内必须写 `option opcode = N;`（取值 [10, 65535]），缺失或越界**导出报错中止**；
 - 非消息 DTO（如 `PlayerInfo`）**禁止**标注 option opcode（不占消息号），标注即报错；
 - 同文件内 opcode 重复、模块号/模块名跨文件重复、`(module, opcode)` 跨文件冲突均在 `Post()` 阶段报错中止；
-- 导出物额外生成 `MessageIds.g.cs`（`MessageModule` 枚举 + 语义常量，行尾注释带数值）与
+- 导出物额外生成 `MessageIds.gen.cs`（`MessageModule` 枚举 + 语义常量，行尾注释带数值）与
   `Protobuf/MessageIds.md` 抓包速查表——均勿手改。
 
 例：`User_300.proto` 的 `ReqUserLogin`（`option opcode = 10;`）→ `(300 << 16) + 10 = 19660810`，

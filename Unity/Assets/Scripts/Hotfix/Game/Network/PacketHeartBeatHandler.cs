@@ -10,7 +10,7 @@ namespace Hotfix.Game.Network
 	/// Framework 层不引用 Game，框架无法构造心跳包，必须由本类提供构造
 	/// （基类 PacketHeartBeatHandlerBase 为 abstract，漏实现活不过编译；
 	/// 基类以 Base 后缀命名，为本类让出 PacketHeartBeatHandler 名称并消除全限定消歧）。
-	/// 注册：由生成物 MessageRegistry.g.cs 的 RegisterExternalPacketHandler 自动装配，无需手动注册。
+	/// 注册：由生成物 MessageRegistry.gen.cs 的 RegisterExternalPacketHandler 自动装配，无需手动注册。
 	/// 复用单个 ReqHeartBeat 实例：心跳包内容每次仅覆盖 Timestamp/UniqueId，避免重复分配。
 	/// </summary>
 	public sealed class PacketHeartBeatHandler : PacketHeartBeatHandlerBase

@@ -28,7 +28,7 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// </summary>
 		/// <param name="msg"></param>
 		/// <remarks>
-		/// 可见性契约：生成物 Register/AutoGen/MessageRegistry.g.cs 会为 [NotifyMessageHandler] 方法生成
+		/// 可见性契约：生成物 Register/AutoGen/MessageRegistry.gen.cs 会为 [NotifyMessageHandler] 方法生成
 		/// 直接委托（<c>((BagManager)handler).OnNotifyBagInfoChanged((NotifyBagInfoChanged)message)</c>），
 		/// 因此本方法必须是 internal 或 public（不能是 private / protected），否则生成脚本会报错。
 		/// 详见 Framework/Network/README.md「消息注册」章节。

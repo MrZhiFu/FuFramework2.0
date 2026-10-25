@@ -6,12 +6,13 @@ using System.Text.RegularExpressions;
 namespace FuFramework.ProtoExport;
 
 /// <summary>
-/// 汇总生成 MessageIds.g.cs（生成物，勿手改）：模块号枚举 + 消息 ID 语义常量。
+/// 汇总生成 MessageIds.gen.cs（生成物，勿手改）：模块号枚举 + 消息 ID 语义常量。
 /// 常量值 = (module << 16) + opcode，行尾注释保留数值供脚本与人工速查。
 /// 落盘在输出目录的平行 MessageIds/ 子目录，与协议类导出物区分（且不随协议目录整删重建，meta 稳定）。
 /// </summary>
 internal static class MessageIdsGenerator
-{    /// <summary>
+{
+    /// <summary>
     /// 全局唯一性校验：(module, opcode) 跨文件唯一；module 号与去号模块名每文件唯一。违反即报错中止。
     /// </summary>
     public static void ValidateGlobalUniqueness(List<MessageInfoList> messageInfoLists)
@@ -108,7 +109,7 @@ internal static class MessageIdsGenerator
 
         sb.AppendLine("\t}");
         sb.AppendLine("}");
-        File.WriteAllText(Path.Combine(idsDirectory, "MessageIds.g.cs"), sb.ToString(), Encoding.UTF8);
+        File.WriteAllText(Path.Combine(idsDirectory, "MessageIds.gen.cs"), sb.ToString(), Encoding.UTF8);
     }
 
     /// <summary>

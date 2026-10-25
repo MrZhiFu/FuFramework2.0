@@ -1,5 +1,5 @@
 #!/bin/bash
-# 生成协议消息注册表（Framework/Network/Generated/ProtoMessageRegistry.g.cs）
+# 生成协议消息注册表（Framework/Network/Generated/ProtoMessageRegistry.gen.cs）
 # proto 变更或新增 [MessageHandler] 方法后必须重新运行本脚本。
 
 # 切换目录，-P 选项是用来处理符号链接的

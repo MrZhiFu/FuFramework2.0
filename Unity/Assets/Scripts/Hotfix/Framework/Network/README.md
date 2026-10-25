@@ -142,7 +142,7 @@ public interface INetworkChannel
 public sealed class ReqBagInfo : MessageObject, IRequestMessage { }
 ```
 
-生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/MessageRegistry.g.cs` 中的
+生成脚本扫描 `Game/AutoGen/Proto/*.cs`，产出 `Register/AutoGen/MessageRegistry.gen.cs` 中的
 `MessageIdRegistry.Register<ReqBagInfo>(6553610)`。
 
 **方式二：用户处理方法 —— 方法级别 `[NotifyMessageHandler(typeof(消息类型), nameof(方法名))]`**
@@ -390,7 +390,7 @@ Network/
 │   ├── MessageIdRegistry.cs                          # 消息 ID ↔ 类型 注册表
 │   ├── NotifyMessageHandlerRegistry.cs               # 推送处理注册表（[NotifyMessageHandler] 绑定/派发）
 │   └── AutoGen/
-│       └── MessageRegistry.g.cs                      # 自动生成：消息与方法注册表 + 委托分派（勿手改）
+│       └── MessageRegistry.gen.cs                      # 自动生成：消息与方法注册表 + 委托分派（勿手改）
 ├── State/                                            # 频道内部状态（internal）
 │   ├── ConnectState.cs                               # 连接状态
 │   ├── HeartBeatState.cs                             # 心跳状态

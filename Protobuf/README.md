@@ -83,7 +83,7 @@ bash Protobuf/gen-proto-registry.sh
 |---|---|---|
 | 客户端 C# | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs` | 命名空间 `Hotfix.Game.Proto`；类上带 `[MessageId(消息ID)]` |
 | 服务端 C# | `Server/FuFramework.Proto/Proto/` | 命名空间 `FuFramework.Proto.Proto` |
-| **协议消息注册表** | `Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.g.cs` | 自动生成，**勿手改**；把「消息 ID ↔ 类型」和「消息处理委托」在**编译期**固化，使网络模块**运行时不使用反射** |
+| **协议消息注册表** | `Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.gen.cs` | 自动生成，**勿手改**；把「消息 ID ↔ 类型」和「消息处理委托」在**编译期**固化，使网络模块**运行时不使用反射** |
 
 > 消息 ID 规则：`ID = (option module << 16) | 序号`。例如 `Bag`（module=100）首个消息为 `6553600 + 10 = 6553610`。
 >

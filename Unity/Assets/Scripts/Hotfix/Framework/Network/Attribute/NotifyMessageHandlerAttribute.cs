@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Network
 	/// 说明（项目铁律 4：运行时杜绝反射）：
 	///     本特性只用于在源码里「声明」某个方法要处理某个消息类型，供生成脚本
 	///     <c>Protobuf/gen-proto-registry.py</c> 扫描。运行期的注册与派发完全不再读取特性、不再查找方法：
-	///     生成物 <c>Register/AutoGen/MessageRegistry.g.cs</c> 会为每个 [NotifyMessageHandler] 方法直接产出
+	///     生成物 <c>Register/AutoGen/MessageRegistry.gen.cs</c> 会为每个 [NotifyMessageHandler] 方法直接产出
 	///     静态绑定委托，在 NetworkModule.OnInit 的 RegisterAll 中写入注册表。
 	///     因此运行时不存在 <c>GetMethods</c> / <c>IsDefined</c> / <c>GetCustomAttribute</c> /
 	///     <c>CreateDelegate</c> / <c>MethodInfo.Invoke</c>。

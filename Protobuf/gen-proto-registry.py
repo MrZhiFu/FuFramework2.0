@@ -7,12 +7,12 @@ gen-proto-registry.py
 扫描协议生成物与热更源码，产出「协议消息注册表」（纯静态、零运行时反射）。
 
 产出文件：
-    Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.g.cs
+    Unity/Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.gen.cs
 
 扫描来源：
     1. <Unity>/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs
        -> [MessageId(MessageIds.<模块>.<消息>)] + 类名
-       （标识符经同目录 MessageIds.g.cs 查表还原数值；查表失败报错中止）
+       （标识符经同目录 MessageIds.gen.cs 查表还原数值；查表失败报错中止）
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户推送处理方法）
           连同**所在类型**与方法可见性一起解析，产出**静态捕获宿主的直接委托**：
@@ -67,7 +67,7 @@ HOTFIX_ROOT = os.path.join(UNITY_ROOT, "Assets", "Scripts", "Hotfix")
 PROTO_DIR = os.path.join(HOTFIX_ROOT, "Game", "AutoGen", "Proto")
 NETWORK_HANDLER_DIR = os.path.join(HOTFIX_ROOT, "Framework", "Network", "Handler")
 OUTPUT_PATH = os.path.join(
-    HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "MessageRegistry.g.cs"
+    HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "MessageRegistry.gen.cs"
 )
 OUTPUT_REL = os.path.relpath(OUTPUT_PATH, REPO_ROOT).replace("\\", "/")
 
@@ -95,16 +95,16 @@ RE_CLASS_DECL_ANY = re.compile(
 )
 
 def load_message_ids():
-    """解析导出物 MessageIds.g.cs，建立 常量路径 -> 数值 映射（如 MessageIds.User.ReqUserLogin -> 19660810）。
+    """解析导出物 MessageIds.gen.cs，建立 常量路径 -> 数值 映射（如 MessageIds.User.ReqUserLogin -> 19660810）。
 
     常量行格式：public const int ReqUserLogin = ((int)MessageModule.User << 16) + 10; // 19660810
     数值取自行尾注释（导出器保证与算式一致）。注意必须用 read_text——read_code 会剥注释。
     文件位于导出目录的平行 MessageIds/ 子目录（与协议类导出物分离）。
     """
-    path = os.path.join(os.path.dirname(PROTO_DIR), "MessageIds", "MessageIds.g.cs")
+    path = os.path.join(os.path.dirname(PROTO_DIR), "MessageIds", "MessageIds.gen.cs")
     if not os.path.isfile(path):
         raise SystemExit(
-            "[错误] 未找到 MessageIds.g.cs：%s —— 请先跑 Proto2CsExport-All.bat ci" % path
+            "[错误] 未找到 MessageIds.gen.cs：%s —— 请先跑 Proto2CsExport-All.bat ci" % path
         )
     text = read_text(path)
     table = {}
@@ -117,7 +117,7 @@ def load_message_ids():
         elif module and module != "MessageIds":
             table["MessageIds.%s.%s" % (module, m.group(2))] = int(m.group(3))
     if not table:
-        raise SystemExit("[错误] MessageIds.g.cs 中未解析到任何常量：%s" % path)
+        raise SystemExit("[错误] MessageIds.gen.cs 中未解析到任何常量：%s" % path)
     return table
 
 
@@ -348,7 +348,7 @@ def scan_proto_messages():
             message_expr = attr.group(1)
             if message_expr not in message_ids_table:
                 raise SystemExit(
-                    "[错误] %s: [MessageId(%s)] 在 MessageIds.g.cs 中无对应常量——请重跑 Proto2CsExport-All.bat ci"
+                    "[错误] %s: [MessageId(%s)] 在 MessageIds.gen.cs 中无对应常量——请重跑 Proto2CsExport-All.bat ci"
                     % (rel, message_expr)
                 )
             message_id = message_ids_table[message_expr]
