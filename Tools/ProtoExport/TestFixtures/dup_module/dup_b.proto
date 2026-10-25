@@ -1,0 +1,8 @@
+package TestDupModB;
+option module = 901;
+
+message ReqQ
+{
+  option opcode = 11;
+  int32 Id = 1; // 标识
+}

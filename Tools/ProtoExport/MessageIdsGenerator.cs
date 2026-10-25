@@ -11,6 +11,43 @@ namespace FuFramework.ProtoExport;
 /// </summary>
 internal static class MessageIdsGenerator
 {
+    /// <summary>
+    /// 全局唯一性校验：(module, opcode) 跨文件唯一；module 号与去号模块名每文件唯一。违反即报错中止。
+    /// </summary>
+    public static void ValidateGlobalUniqueness(List<MessageInfoList> messageInfoLists)
+    {
+        var opcodeOwners = new Dictionary<(int Module, int Opcode), (string File, string Message)>();
+        var moduleOwners = new Dictionary<int, string>();
+        var nameOwners = new HashSet<string>();
+        foreach (var messageInfoList in messageInfoLists)
+        {
+            var moduleName = GetModuleName(messageInfoList.FileName);
+            if (!moduleOwners.TryAdd(messageInfoList.Module, messageInfoList.FileName))
+            {
+                throw new Exception($"模块号 [{messageInfoList.Module}] 重复：{moduleOwners[messageInfoList.Module]} 与 {messageInfoList.FileName}");
+            }
+
+            if (!nameOwners.Add(moduleName))
+            {
+                throw new Exception($"模块名 [{moduleName}] 重复：{messageInfoList.FileName} 与其他文件去号后同名");
+            }
+
+            foreach (var operationCodeInfo in messageInfoList.Infos)
+            {
+                if (!operationCodeInfo.IsMessage)
+                {
+                    continue;
+                }
+
+                var key = (messageInfoList.Module, operationCodeInfo.Opcode);
+                if (!opcodeOwners.TryAdd(key, (messageInfoList.FileName, operationCodeInfo.Name)))
+                {
+                    throw new Exception($"(module, opcode) [{messageInfoList.Module},{operationCodeInfo.Opcode}] 跨文件冲突：{opcodeOwners[key].File}/{opcodeOwners[key].Message} 与 {messageInfoList.FileName}/{operationCodeInfo.Name}");
+                }
+            }
+        }
+    }
+
     public static void Generate(List<MessageInfoList> messageInfoLists, string outputPath, string namespaceName)
     {
         var sb = new StringBuilder();

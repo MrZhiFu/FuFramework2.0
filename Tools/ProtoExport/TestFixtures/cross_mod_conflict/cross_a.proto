@@ -1,0 +1,8 @@
+package TestCrossA;
+option module = 900;
+
+message ReqX
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+}

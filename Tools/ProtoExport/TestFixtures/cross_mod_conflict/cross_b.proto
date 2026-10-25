@@ -1,0 +1,8 @@
+package TestCrossB;
+option module = 900;
+
+message ReqY
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+}

@@ -116,6 +116,7 @@ namespace FuFramework.ProtoExport
 
         public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath, string protoInputPath, string outputPath, string namespaceName)
         {
+            MessageIdsGenerator.ValidateGlobalUniqueness(operationCodeInfo);
             MessageIdsGenerator.Generate(operationCodeInfo, outputPath, namespaceName);
         }
     }
