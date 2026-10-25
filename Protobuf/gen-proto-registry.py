@@ -11,7 +11,8 @@ gen-proto-registry.py
 
 扫描来源：
     1. <Unity>/Assets/Scripts/Hotfix/Game/AutoGen/Proto/*.cs
-       -> [MessageId(消息ID)] + 类名
+       -> [MessageId(MessageIds.<模块>.<消息>)] + 类名
+       （标识符经同目录 MessageIds.g.cs 查表还原数值；查表失败报错中止）
     2. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> [NotifyMessageHandler(typeof(消息类型), nameof(方法名))]（用户推送处理方法）
           连同**所在类型**与方法可见性一起解析，产出**静态捕获宿主的直接委托**：

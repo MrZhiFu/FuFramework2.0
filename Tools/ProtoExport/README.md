@@ -46,13 +46,22 @@ void Post(List<MessageInfoList> all, string outputPath);                  // 全
 ## 3. 消息 ID 规则
 
 `MessageHelper` 用正则提取每个 proto 的 `option module = N;`（须在 `short` 范围内），
-消息 ID 按**声明顺序**从 `10` 起递增：
+消息号（opcode）由每条消息**显式锚定**（2026-10-25 起，不再按声明顺序隐式分配）：
 
 ```
-消息ID = (module << 16) + opcode        // opcode 从 10 开始，每个消息 +1
+消息ID = (module << 16) + opcode        // opcode 由消息体内 option opcode = N; 显式声明
 ```
 
-例：`Bag`（`option module = 100;`）的第一个消息 → `6553600 + 10 = 6553610`。
+规则：
+
+- 每条 Req/Resp/Notify 消息体内必须写 `option opcode = N;`（取值 [10, 65535]），缺失或越界**导出报错中止**；
+- 非消息 DTO（如 `PlayerInfo`）**禁止**标注 option opcode（不占消息号），标注即报错；
+- 同文件内 opcode 重复、模块号/模块名跨文件重复、`(module, opcode)` 跨文件冲突均在 `Post()` 阶段报错中止；
+- 导出物额外生成 `MessageIds.g.cs`（`MessageModule` 枚举 + 语义常量，行尾注释带数值）与
+  `Protobuf/MessageIds.md` 抓包速查表——均勿手改。
+
+例：`User_300.proto` 的 `ReqUserLogin`（`option opcode = 10;`）→ `(300 << 16) + 10 = 19660810`，
+生成常量 `MessageIds.User.ReqUserLogin`，消息特性写作 `[MessageId(MessageIds.User.ReqUserLogin)]`。
 
 ## 4. 关键行为（使用前必读）
 
