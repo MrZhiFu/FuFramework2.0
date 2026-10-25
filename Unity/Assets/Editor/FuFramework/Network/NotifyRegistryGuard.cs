@@ -13,7 +13,8 @@ namespace FuFramework.Editor.Network
 	/// 推送绑定注册表过期守卫：每次编译前比对「业务源码里的 [NotifyMessageHandler] 声明」与
 	/// 「生成物 MessageRegistry.gen.cs 里的 BindNotify 绑定」，不一致即报错提示重跑生成脚本。
 	/// 解决"新增推送监听后忘跑 gen-proto-registry → 该推送运行时静默失效"的坑。
-	/// 比对键为（消息类型名, 方法名）二元组，不涉及宿主全名解析——宿主可达性错误由生成脚本自身报错拦截。
+	/// 比对键为（消息类型名, 方法名）二元组并**按出现次数计数比对**——支持多宿主监听同一消息
+	/// （含不同宿主同名方法的场景），键不含宿主全名（宿主可达性错误由生成脚本自身报错拦截）。
 	/// 手动入口（重新生成 / 校验）在 ProtoImporter 的"网络"菜单下。
 	/// </summary>
 	[InitializeOnLoad]
@@ -49,8 +50,8 @@ namespace FuFramework.Editor.Network
 				return;
 			}
 
-			var missingText = missingInGen.Count > 0 ? "\n  缺少绑定（新增未生成）："  + string.Join("、", missingInGen) : string.Empty;
-			var staleText   = staleInGen.Count   > 0 ? "\n  多余绑定（已删除未清理）：" + string.Join("、", staleInGen)   : string.Empty;
+			var missingText = missingInGen.Count > 0 ? "\n  缺少绑定（新增未生成）："  + FormatCounts(missingInGen) : string.Empty;
+			var staleText   = staleInGen.Count   > 0 ? "\n  多余绑定（已删除未清理）：" + FormatCounts(staleInGen)   : string.Empty;
 			Debug.LogError(
 			               "[推送注册表过期] 业务源码的 [NotifyMessageHandler] 与 MessageRegistry.gen.cs 不一致："
 			               + missingText + staleText
@@ -77,11 +78,11 @@ namespace FuFramework.Editor.Network
 			Debug.LogError($"[推送注册表过期] 缺少绑定 {missingInGen.Count} 条、多余绑定 {staleInGen.Count} 条，请运行菜单 FuFramework/网络/重新生成推送注册表。");
 		}
 
-		/// <summary>执行比对：missingInGen=业务有声明而生成物缺绑定；staleInGen=生成物有绑定而业务已无声明。</summary>
-		private static bool TryCompare(out HashSet<string> missingInGen, out HashSet<string> staleInGen)
+		/// <summary>执行比对（键按出现次数计数）：missingInGen=业务声明多于生成物绑定（差值）；staleInGen=生成物绑定多于业务声明（差值）。</summary>
+		private static bool TryCompare(out Dictionary<string, int> missingInGen, out Dictionary<string, int> staleInGen)
 		{
-			missingInGen = new HashSet<string>();
-			staleInGen   = new HashSet<string>();
+			missingInGen = new Dictionary<string, int>();
+			staleInGen   = new Dictionary<string, int>();
 			var genFullPath = Path.GetFullPath(GenFilePath);
 			if (!File.Exists(genFullPath))
 			{
@@ -89,15 +90,15 @@ namespace FuFramework.Editor.Network
 				return false;
 			}
 
-			// 生成物侧：BindNotify 对集合
-			var bindings = new HashSet<string>();
+			// 生成物侧：BindNotify 对计数（同键可出现多次——多宿主监听同一消息）
+			var bindings = new Dictionary<string, int>();
 			foreach (Match match in sr_bindPattern.Matches(File.ReadAllText(genFullPath)))
 			{
-				bindings.Add($"{match.Groups[1].Value}.{match.Groups[2].Value}");
+				AddOrUpdate(bindings, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
 			}
 
-			// 业务侧：声明对集合（跳过 AutoGen 生成物自身）
-			var declarations   = new HashSet<string>();
+			// 业务侧：声明对计数（跳过 AutoGen 生成物自身）
+			var declarations   = new Dictionary<string, int>();
 			var hotfixFullPath = Path.GetFullPath(HotfixRoot);
 			foreach (var file in Directory.EnumerateFiles(hotfixFullPath, "*.cs", SearchOption.AllDirectories))
 			{
@@ -108,27 +109,60 @@ namespace FuFramework.Editor.Network
 
 				foreach (Match match in sr_declPattern.Matches(File.ReadAllText(file)))
 				{
-					declarations.Add($"{match.Groups[1].Value}.{match.Groups[2].Value}");
+					AddOrUpdate(declarations, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
 				}
 			}
 
-			foreach (var declaration in declarations)
+			foreach (var pair in declarations)
 			{
-				if (!bindings.Contains(declaration))
+				if (!bindings.TryGetValue(pair.Key, out var bindingCount))
 				{
-					missingInGen.Add(declaration);
+					missingInGen[pair.Key] = pair.Value;
+				}
+				else if (bindingCount < pair.Value)
+				{
+					missingInGen[pair.Key] = pair.Value - bindingCount;
 				}
 			}
 
-			foreach (var binding in bindings)
+			foreach (var pair in bindings)
 			{
-				if (!declarations.Contains(binding))
+				if (!declarations.TryGetValue(pair.Key, out var declarationCount))
 				{
-					staleInGen.Add(binding);
+					staleInGen[pair.Key] = pair.Value;
+				}
+				else if (declarationCount < pair.Value)
+				{
+					staleInGen[pair.Key] = pair.Value - declarationCount;
 				}
 			}
 
 			return true;
+		}
+
+		/// <summary>键计数累加（同键出现多次时值 +1）。</summary>
+		private static void AddOrUpdate(Dictionary<string, int> dict, string key)
+		{
+			if (dict.TryGetValue(key, out var count))
+			{
+				dict[key] = count + 1;
+			}
+			else
+			{
+				dict[key] = 1;
+			}
+		}
+
+		/// <summary>格式化计数差异条目（如 NotifyBagInfoChanged.OnX(差 1)）。</summary>
+		private static string FormatCounts(Dictionary<string, int> counts)
+		{
+			var parts = new List<string>(counts.Count);
+			foreach (var pair in counts)
+			{
+				parts.Add($"{pair.Key}(差 {pair.Value})");
+			}
+
+			return string.Join("、", parts);
 		}
 	}
 }

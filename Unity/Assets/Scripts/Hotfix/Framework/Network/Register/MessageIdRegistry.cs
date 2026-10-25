@@ -9,7 +9,7 @@ namespace Hotfix.Framework.Network
 	/// 功能：记录「消息ID ↔ 消息类型」的唯一双向映射（Req/Resp/Notify 全部角色共用一张表）。
 	///
 	/// 说明（项目铁律 4）：注册数据不再通过运行时扫描程序集 + 读取特性获得，
-	/// 而是由生成物 <c>Register/AutoGen/MessageRegistry.g.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
+	/// 而是由生成物 <c>Register/AutoGen/MessageRegistry.gen.cs</c> 静态调用 <see cref="Register{T}"/> 写入。
 	/// 生成脚本：<c>Protobuf/gen-proto-registry.py</c>。
 	///
 	/// 合表说明：Req/Resp/Notify 共用同一 ID 编号空间（module &lt;&lt; 16 | 序号），
