@@ -1,0 +1,8 @@
+package TestDto;
+option module = 890;
+
+message SomeDto
+{
+  option opcode = 10;
+  int64 Id = 1; // 玩家ID
+}

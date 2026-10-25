@@ -1,0 +1,14 @@
+package TestDup;
+option module = 889;
+
+message ReqA
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+}
+
+message ReqB
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+}

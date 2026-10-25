@@ -1,0 +1,7 @@
+package TestMissing;
+option module = 888;
+
+message ReqA
+{
+  int32 Id = 1; // 标识
+}

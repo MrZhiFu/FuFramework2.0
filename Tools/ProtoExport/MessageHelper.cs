@@ -63,8 +63,8 @@ public static partial class MessageHelper
 
         ParseComment(proto, packageName, messageInfo.Infos);
 
-        // 消息码排序配对
-        MessageIdHandler(messageInfo.Infos, 10);
+        // 消息号显式锚定校验
+        MessageIdHandler(messageInfo.Infos, packageName, fileName);
 
         // Req→Resp 配对（供客户端生成请求-响应映射接口）
         PairRequestResponse(messageInfo.Infos);
@@ -100,28 +100,27 @@ public static partial class MessageHelper
         }
     }
 
-    private static void MessageIdHandler(List<MessageInfo> operationCodeInfos, int start)
+    /// <summary>
+    /// 消息号显式锚定校验：每条消息必须经 option opcode 显式声明（缺失/越界/同文件重复即报错中止）。
+    /// </summary>
+    private static void MessageIdHandler(List<MessageInfo> operationCodeInfos, string packageName, string fileName)
     {
+        var seenOpcodes = new HashSet<int>();
         foreach (var operationCodeInfo in operationCodeInfos)
         {
-            if (operationCodeInfo.IsMessage)
+            if (!operationCodeInfo.IsMessage)
             {
-                if (operationCodeInfo.Opcode > 0)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                operationCodeInfo.Opcode = start;
-                // if (operationCodeInfo.IsRequest)
-                // {
-                //     operationCodeInfo.ResponseMessage = FindResponse(operationCodeInfos, operationCodeInfo.MessageName);
-                //     if (operationCodeInfo.ResponseMessage != null)
-                //     {
-                //         operationCodeInfo.ResponseMessage.Opcode = operationCodeInfo.Opcode;
-                //     }
-                // }
+            if (operationCodeInfo.Opcode < 10 || operationCodeInfo.Opcode > 65535)
+            {
+                throw new Exception($"[{packageName}/{fileName}] 消息 [{operationCodeInfo.Name}] 缺少 option opcode 或超出范围 [10,65535]");
+            }
 
-                start++;
+            if (!seenOpcodes.Add(operationCodeInfo.Opcode))
+            {
+                throw new Exception($"[{packageName}/{fileName}] 消息 opcode [{operationCodeInfo.Opcode}] 重复（[{operationCodeInfo.Name}] 与已声明消息冲突）");
             }
         }
     }
@@ -237,6 +236,11 @@ public static partial class MessageHelper
                     Match opcodeMatch = Regex.Match(line, OpcodePattern, RegexOptions.Singleline);
                     if (opcodeMatch.Success)
                     {
+                        if (!info.IsMessage)
+                        {
+                            throw new Exception($"[{packageName}] 非消息类型 [{info.Name}] 禁止标注 option opcode（DTO 不占消息号）");
+                        }
+
                         info.Opcode = int.Parse(opcodeMatch.Groups[1].Value);
                     }
 
