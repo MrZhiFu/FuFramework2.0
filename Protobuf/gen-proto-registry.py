@@ -99,8 +99,9 @@ def load_message_ids():
 
     常量行格式：public const int ReqUserLogin = ((int)MessageModule.User << 16) + 10; // 19660810
     数值取自行尾注释（导出器保证与算式一致）。注意必须用 read_text——read_code 会剥注释。
+    文件位于导出目录的平行 MessageIds/ 子目录（与协议类导出物分离）。
     """
-    path = os.path.join(PROTO_DIR, "MessageIds.g.cs")
+    path = os.path.join(os.path.dirname(PROTO_DIR), "MessageIds", "MessageIds.g.cs")
     if not os.path.isfile(path):
         raise SystemExit(
             "[错误] 未找到 MessageIds.g.cs：%s —— 请先跑 Proto2CsExport-All.bat ci" % path

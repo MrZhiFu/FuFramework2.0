@@ -5,15 +5,15 @@ namespace FuFramework.Proto.Proto
 	/// <summary>模块号总表（与 proto 文件 option module 一一对应）</summary>
 	public enum MessageModule
 	{
-		/// <summary>Bag_100（module 100）</summary>
+		/// <summary>Bag（module 100）</summary>
 		Bag = 100,
-		/// <summary>Basic_10（module 10）</summary>
+		/// <summary>Basic（module 10）</summary>
 		Basic = 10,
-		/// <summary>Common_20（module 20）</summary>
+		/// <summary>Common（module 20）</summary>
 		Common = 20,
-		/// <summary>Inner_Basic_2（module 2）</summary>
+		/// <summary>Inner_Basic（module 2）</summary>
 		Inner_Basic = 2,
-		/// <summary>User_300（module 300）</summary>
+		/// <summary>User（module 300）</summary>
 		User = 300,
 	}
 
