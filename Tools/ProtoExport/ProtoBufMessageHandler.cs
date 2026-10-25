@@ -39,6 +39,6 @@ public static class ProtoBufMessageHandler
             ProtoGenerateHelper?.Run(operationCodeInfo, launcherOptions.OutputPath, launcherOptions.NamespaceName);
         }
 
-        ProtoGenerateHelper?.Post(messageInfoLists, launcherOptions.OutputPath);
+        ProtoGenerateHelper?.Post(messageInfoLists, launcherOptions.OutputPath, launcherOptions.InputPath, launcherOptions.OutputPath, launcherOptions.NamespaceName);
     }
 }

@@ -63,7 +63,7 @@ namespace FuFramework.ProtoExport
                     }
                     else
                     {
-                        sb.AppendLine($"    [MessageId({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"    [MessageId(MessageIds.{MessageIdsGenerator.GetModuleName(messageInfoList.FileName)}.{operationCodeInfo.Name})]");
                         sb.AppendLine($"    public sealed class {operationCodeInfo.Name} : MessageObject, {operationCodeInfo.ParentClass}");
                     }
 
@@ -114,8 +114,9 @@ namespace FuFramework.ProtoExport
             File.WriteAllText(messageInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
 
-        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
+        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath, string protoInputPath, string outputPath, string namespaceName)
         {
+            MessageIdsGenerator.Generate(operationCodeInfo, outputPath, namespaceName);
         }
     }
 }

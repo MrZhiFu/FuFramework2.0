@@ -57,7 +57,7 @@ namespace FuFramework.ProtoExport
                         var parentClass = operationCodeInfo.IsRequest && !string.IsNullOrEmpty(operationCodeInfo.PairResponseName)
                             ? $"{operationCodeInfo.ParentClass}<{operationCodeInfo.PairResponseName}>"
                             : operationCodeInfo.ParentClass;
-                        sb.AppendLine($"\t[MessageId({(messageInfoList.Module << 16) + operationCodeInfo.Opcode})]");
+                        sb.AppendLine($"\t[MessageId(MessageIds.{MessageIdsGenerator.GetModuleName(messageInfoList.FileName)}.{operationCodeInfo.Name})]");
                         sb.AppendLine($"\tpublic sealed class {operationCodeInfo.Name} : MessageObject, {parentClass}");
                     }
 
@@ -103,8 +103,9 @@ namespace FuFramework.ProtoExport
             File.WriteAllText(messageInfoList.OutputPath + ".cs", sb.ToString(), Encoding.UTF8);
         }
 
-        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath)
+        public void Post(List<MessageInfoList> operationCodeInfo, string launcherOptionsOutputPath, string protoInputPath, string outputPath, string namespaceName)
         {
+            MessageIdsGenerator.Generate(operationCodeInfo, outputPath, namespaceName);
         }
     }
 }

@@ -61,7 +61,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求账号登录")]
-    [MessageId(19660810)]
+    [MessageId(MessageIds.User.ReqUserLogin)]
     public sealed class ReqUserLogin : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -112,7 +112,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("账号登录响应")]
-    [MessageId(19660811)]
+    [MessageId(MessageIds.User.RespUserLogin)]
     public sealed class RespUserLogin : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -163,7 +163,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求角色创建")]
-    [MessageId(19660812)]
+    [MessageId(MessageIds.User.ReqPlayerCreate)]
     public sealed class ReqPlayerCreate : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -186,7 +186,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("角色创建响应")]
-    [MessageId(19660813)]
+    [MessageId(MessageIds.User.RespPlayerCreate)]
     public sealed class RespPlayerCreate : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -209,7 +209,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求角色列表")]
-    [MessageId(19660814)]
+    [MessageId(MessageIds.User.ReqPlayerList)]
     public sealed class ReqPlayerList : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -225,7 +225,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("角色列表响应")]
-    [MessageId(19660815)]
+    [MessageId(MessageIds.User.RespPlayerList)]
     public sealed class RespPlayerList : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -248,7 +248,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("请求玩家登录")]
-    [MessageId(19660816)]
+    [MessageId(MessageIds.User.ReqPlayerLogin)]
     public sealed class ReqPlayerLogin : MessageObject, IRequestMessage
     {
         /// <summary>
@@ -264,7 +264,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("玩家登录响应")]
-    [MessageId(19660817)]
+    [MessageId(MessageIds.User.RespPlayerLogin)]
     public sealed class RespPlayerLogin : MessageObject, IResponseMessage
     {
         /// <summary>
@@ -301,7 +301,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("错误码通知（每个请求的旁路错误回复）")]
-    [MessageId(19660818)]
+    [MessageId(MessageIds.User.NotifyErrorCode)]
     public sealed class NotifyErrorCode : MessageObject, INotifyMessage
     {
         /// <summary>
@@ -324,7 +324,7 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("提示信息通知")]
-    [MessageId(19660819)]
+    [MessageId(MessageIds.User.NotifyPrompt)]
     public sealed class NotifyPrompt : MessageObject, INotifyMessage
     {
         /// <summary>

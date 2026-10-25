@@ -46,33 +46,11 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 注册「消息ID &lt;-&gt; 类型」映射、心跳类型集合。
-        /// 共 23 条。
+        /// 共 0 条。
         /// </summary>
         private static void RegisterMessageIds()
         {
-            MessageIdRegistry.Register<ReqHeartBeat>(655370);
-            MessageIdRegistry.Register<NotifyHeartBeat>(655371);
-            MessageIdRegistry.Register<NotifyServerFullyLoaded>(655372);
-            MessageIdRegistry.Register<ReqBagInfo>(6553610);
-            MessageIdRegistry.Register<RespBagInfo>(6553611);
-            MessageIdRegistry.Register<ReqUseItem>(6553612);
-            MessageIdRegistry.Register<RespUseItem>(6553613);
-            MessageIdRegistry.Register<ReqAddItem>(6553614);
-            MessageIdRegistry.Register<RespAddItem>(6553615);
-            MessageIdRegistry.Register<ReqRemoveItem>(6553616);
-            MessageIdRegistry.Register<RespRemoveItem>(6553617);
-            MessageIdRegistry.Register<NotifyBagItem>(6553618);
-            MessageIdRegistry.Register<NotifyBagInfoChanged>(6553619);
-            MessageIdRegistry.Register<ReqUserLogin>(19660810);
-            MessageIdRegistry.Register<RespUserLogin>(19660811);
-            MessageIdRegistry.Register<ReqPlayerCreate>(19660812);
-            MessageIdRegistry.Register<RespPlayerCreate>(19660813);
-            MessageIdRegistry.Register<ReqPlayerList>(19660814);
-            MessageIdRegistry.Register<RespPlayerList>(19660815);
-            MessageIdRegistry.Register<ReqPlayerLogin>(19660816);
-            MessageIdRegistry.Register<RespPlayerLogin>(19660817);
-            MessageIdRegistry.Register<NotifyErrorCode>(19660818);
-            MessageIdRegistry.Register<NotifyPrompt>(19660819);
+            // 未扫描到任何协议消息。
         }
 
         /// <summary>

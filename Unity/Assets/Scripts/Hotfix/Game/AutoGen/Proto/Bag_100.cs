@@ -29,7 +29,7 @@ namespace Hotfix.Game.Proto
 	/// 请求背包数据
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553610)]
+	[MessageId(MessageIds.Bag.ReqBagInfo)]
 	public sealed class ReqBagInfo : MessageObject, IRequestMessage<RespBagInfo>
 	{
 	}
@@ -38,7 +38,7 @@ namespace Hotfix.Game.Proto
 	/// 背包数据响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553611)]
+	[MessageId(MessageIds.Bag.RespBagInfo)]
 	public sealed class RespBagInfo : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Hotfix.Game.Proto
 	/// 请求使用道具
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553612)]
+	[MessageId(MessageIds.Bag.ReqUseItem)]
 	public sealed class ReqUseItem : MessageObject, IRequestMessage<RespUseItem>
 	{
 		/// <summary>
@@ -81,7 +81,7 @@ namespace Hotfix.Game.Proto
 	/// 使用道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553613)]
+	[MessageId(MessageIds.Bag.RespUseItem)]
 	public sealed class RespUseItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -108,7 +108,7 @@ namespace Hotfix.Game.Proto
 	/// 请求增加道具
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553614)]
+	[MessageId(MessageIds.Bag.ReqAddItem)]
 	public sealed class ReqAddItem : MessageObject, IRequestMessage<RespAddItem>
 	{
 		/// <summary>
@@ -124,7 +124,7 @@ namespace Hotfix.Game.Proto
 	/// 增加道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553615)]
+	[MessageId(MessageIds.Bag.RespAddItem)]
 	public sealed class RespAddItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Hotfix.Game.Proto
 	/// 请求减少道具
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553616)]
+	[MessageId(MessageIds.Bag.ReqRemoveItem)]
 	public sealed class ReqRemoveItem : MessageObject, IRequestMessage<RespRemoveItem>
 	{
 		/// <summary>
@@ -162,7 +162,7 @@ namespace Hotfix.Game.Proto
 	/// 减少道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553617)]
+	[MessageId(MessageIds.Bag.RespRemoveItem)]
 	public sealed class RespRemoveItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -184,7 +184,7 @@ namespace Hotfix.Game.Proto
 	/// 单个道具变化通知
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553618)]
+	[MessageId(MessageIds.Bag.NotifyBagItem)]
 	public sealed class NotifyBagItem : MessageObject, INotifyMessage
 	{
 		/// <summary>
@@ -211,7 +211,7 @@ namespace Hotfix.Game.Proto
 	/// 背包数据变化通知
 	/// </summary>
 	[ProtoContract]
-	[MessageId(6553619)]
+	[MessageId(MessageIds.Bag.NotifyBagInfoChanged)]
 	public sealed class NotifyBagInfoChanged : MessageObject, INotifyMessage
 	{
 		/// <summary>

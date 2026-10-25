@@ -53,7 +53,7 @@ namespace Hotfix.Game.Proto
 	/// 请求账号登录
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660810)]
+	[MessageId(MessageIds.User.ReqUserLogin)]
 	public sealed class ReqUserLogin : MessageObject, IRequestMessage<RespUserLogin>
 	{
 		/// <summary>
@@ -98,7 +98,7 @@ namespace Hotfix.Game.Proto
 	/// 账号登录响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660811)]
+	[MessageId(MessageIds.User.RespUserLogin)]
 	public sealed class RespUserLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -143,7 +143,7 @@ namespace Hotfix.Game.Proto
 	/// 请求角色创建
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660812)]
+	[MessageId(MessageIds.User.ReqPlayerCreate)]
 	public sealed class ReqPlayerCreate : MessageObject, IRequestMessage<RespPlayerCreate>
 	{
 		/// <summary>
@@ -164,7 +164,7 @@ namespace Hotfix.Game.Proto
 	/// 角色创建响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660813)]
+	[MessageId(MessageIds.User.RespPlayerCreate)]
 	public sealed class RespPlayerCreate : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -185,7 +185,7 @@ namespace Hotfix.Game.Proto
 	/// 请求角色列表
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660814)]
+	[MessageId(MessageIds.User.ReqPlayerList)]
 	public sealed class ReqPlayerList : MessageObject, IRequestMessage<RespPlayerList>
 	{
 		/// <summary>
@@ -200,7 +200,7 @@ namespace Hotfix.Game.Proto
 	/// 角色列表响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660815)]
+	[MessageId(MessageIds.User.RespPlayerList)]
 	public sealed class RespPlayerList : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -221,7 +221,7 @@ namespace Hotfix.Game.Proto
 	/// 请求玩家登录
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660816)]
+	[MessageId(MessageIds.User.ReqPlayerLogin)]
 	public sealed class ReqPlayerLogin : MessageObject, IRequestMessage<RespPlayerLogin>
 	{
 		/// <summary>
@@ -236,7 +236,7 @@ namespace Hotfix.Game.Proto
 	/// 玩家登录响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660817)]
+	[MessageId(MessageIds.User.RespPlayerLogin)]
 	public sealed class RespPlayerLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
@@ -269,7 +269,7 @@ namespace Hotfix.Game.Proto
 	/// 错误码通知（每个请求的旁路错误回复）
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660818)]
+	[MessageId(MessageIds.User.NotifyErrorCode)]
 	public sealed class NotifyErrorCode : MessageObject, INotifyMessage
 	{
 		/// <summary>
@@ -290,7 +290,7 @@ namespace Hotfix.Game.Proto
 	/// 提示信息通知
 	/// </summary>
 	[ProtoContract]
-	[MessageId(19660819)]
+	[MessageId(MessageIds.User.NotifyPrompt)]
 	public sealed class NotifyPrompt : MessageObject, INotifyMessage
 	{
 		/// <summary>
