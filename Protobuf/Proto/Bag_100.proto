@@ -18,17 +18,22 @@ message BagItem
 // ============================================================
 
 // 请求背包数据
-message ReqBagInfo {}
+message ReqBagInfo
+{
+  option opcode = 10;
+}
 
 // 背包数据响应
 message RespBagInfo
 {
+  option opcode = 11;
   map<int32, int64> ItemDic = 1; // 道具字典，key:道具id，value:道具数量
 }
 
 // 请求使用道具
 message ReqUseItem
 {
+  option opcode = 12;
   int32 ItemId = 1; // 道具id
   int64 Count = 2;  // 使用数量
 }
@@ -36,6 +41,7 @@ message ReqUseItem
 // 使用道具响应
 message RespUseItem
 {
+  option opcode = 13;
   int32 ItemId = 1; // 道具id
   int64 Count = 2;  // 使用后剩余的道具数量
 }
@@ -43,24 +49,28 @@ message RespUseItem
 // 请求增加道具
 message ReqAddItem
 {
+  option opcode = 14;
   map<int32, int64> ItemDic = 1; // 增加的道具，key:道具id，value:增加数量
 }
 
 // 增加道具响应
 message RespAddItem
 {
+  option opcode = 15;
   map<int32, int64> ItemDic = 1; // 变化的道具，key:道具id，value:数量
 }
 
 // 请求减少道具
 message ReqRemoveItem
 {
+  option opcode = 16;
   map<int32, int64> ItemDic = 1; // 减少的道具，key:道具id，value:减少数量
 }
 
 // 减少道具响应
 message RespRemoveItem
 {
+  option opcode = 17;
   map<int32, int64> ItemDic = 1; // 变化的道具，key:道具id，value:数量
 }
 
@@ -71,6 +81,7 @@ message RespRemoveItem
 // 单个道具变化通知
 message NotifyBagItem
 {
+  option opcode = 18;
   int32 ItemId = 1; // 道具id
   int64 Count = 2;  // 最终道具数量
   int64 Value = 3;  // 变化的值
@@ -79,5 +90,6 @@ message NotifyBagItem
 // 背包数据变化通知
 message NotifyBagInfoChanged
 {
+  option opcode = 19;
   map<int32, NotifyBagItem> ItemDic = 1; // 变化的道具，key:道具id，value:变化信息
 }

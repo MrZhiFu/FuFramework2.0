@@ -24,6 +24,7 @@ message PlayerInfo
 // 请求账号登录
 message ReqUserLogin
 {
+  option opcode = 10;
   string UserName = 1; // 用户名
   string Platform = 2; // 平台
   int32 SdkType = 3;   // sdk类型
@@ -35,6 +36,7 @@ message ReqUserLogin
 // 账号登录响应
 message RespUserLogin
 {
+  option opcode = 11;
   int32 Code = 1;       // 返回码
   string RoleName = 2;  // 账号名
   int64 Id = 3;         // 账号ID
@@ -45,6 +47,7 @@ message RespUserLogin
 // 请求角色创建
 message ReqPlayerCreate
 {
+  option opcode = 12;
   int64 Id = 1;    // 账号ID
   string Name = 2; // 角色名
 }
@@ -52,30 +55,35 @@ message ReqPlayerCreate
 // 角色创建响应
 message RespPlayerCreate
 {
+  option opcode = 13;
   PlayerInfo PlayerInfo = 1; // 角色信息
 }
 
 // 请求角色列表
 message ReqPlayerList
 {
+  option opcode = 14;
   int64 Id = 1; // 账号ID
 }
 
 // 角色列表响应
 message RespPlayerList
 {
+  option opcode = 15;
   repeated PlayerInfo PlayerList = 1; // 角色列表
 }
 
 // 请求玩家登录
 message ReqPlayerLogin
 {
+  option opcode = 16;
   int64 Id = 1; // 角色ID
 }
 
 // 玩家登录响应
 message RespPlayerLogin
 {
+  option opcode = 17;
   int32 Code = 1;            // 返回码
   int64 CreateTime = 2;      // 创建时间
   PlayerInfo PlayerInfo = 3; // 角色信息
@@ -88,6 +96,7 @@ message RespPlayerLogin
 // 错误码通知（每个请求的旁路错误回复）
 message NotifyErrorCode
 {
+  option opcode = 18;
   int64 ErrCode = 1; // 0:表示无错误
   string Desc = 2;   // 错误描述（不为0时有效）
 }
@@ -95,6 +104,7 @@ message NotifyErrorCode
 // 提示信息通知
 message NotifyPrompt
 {
+  option opcode = 19;
   int32 Type = 1;     // 提示信息类型（1Tip提示，2跑马灯，3插队跑马灯，4弹窗，5弹窗回到登陆，6弹窗退出游戏）
   string Content = 2; // 提示内容
 }
