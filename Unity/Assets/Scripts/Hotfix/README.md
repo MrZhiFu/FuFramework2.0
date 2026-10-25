@@ -29,8 +29,8 @@ public static async UniTask Main()
 `ProtoMessageIdHandler.Init()` 现在**无需程序集参数**：消息 ID ↔ 类型的映射由生成物
 `Framework/Network/Register/AutoGen/MessageRegistry.gen.cs` 在**编译期**固化，不再扫描程序集、
 不再读取特性（故原先用于「标记协议程序集」的 `HotfixProtoHandler` 已删除）。
-proto 变更后请运行**一键脚本** `Protobuf/Proto2CsExport-All.bat`（Windows；先导出 C#、再生成注册表），macOS/Linux 用 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`。
-仅新增 `[MessageHandler]` 方法（未动 proto）时，跑 `Protobuf/gen-proto-registry.bat` 即可。
+proto 变更后请运行 Unity 菜单 **`FuFramework/网络/导出Proto—全部`**（或一键脚本 `Protobuf/Proto2CsExport-All.bat`，Windows；先导出 C#、再生成注册表），macOS/Linux 用 `Protobuf/Proto2CsExport_Client.sh + Proto2CsExport_Server.sh + gen-proto-registry.sh`。
+仅新增 `[NotifyMessageHandler]` 方法（未动 proto）时，跑菜单 **`FuFramework/网络/重新生成推送注册表`**（或 `Protobuf/gen-proto-registry.bat`）即可；忘跑也不会静默失效——编译期守卫（`NotifyRegistryGuard`）会自动报错并指出缺失/多余的绑定。
 
 ## 3. 使用说明
 
@@ -48,10 +48,10 @@ proto 变更后请运行**一键脚本** `Protobuf/Proto2CsExport-All.bat`（Win
 
 ### 3.3 添加协议
 
-1. 定义协议数据结构
-2. 导出协议代码到 `Proto`
-3. 使用 `[MessageHandler]` 处理接收消息
-4. 使用 `Call<T>()` 发送请求
+1. 在 `Protobuf/Proto/<模块>.proto` 中定义消息：文件头写 `option module = N;`，每条 Req/Resp/Notify 消息体内写 `option opcode = M;` 显式锚定（取值 [10, 65535]，缺失导出报错；DTO 禁止标注）
+2. 运行 Unity 菜单 `FuFramework/网络/导出Proto—全部` 导出两端 C# 与语义常量 `MessageIds.gen.cs`
+3. 请求-响应（RPC）：业务侧 `await NetworkModule.Instance.Call(new ReqXxx { ... })`——响应类型自动推断，超时/断线以异常抛出（须捕获）
+4. 服务器推送：业务类上标注 `[NotifyMessageHandler(typeof(NotifyXxx), nameof(OnXxx))]` 声明即生效（宿主须继承 `Singleton<T>` 或提供 `static Instance`，方法 `internal` 以上，方法名用 `On` 前缀）；跑一次 `FuFramework/网络/重新生成推送注册表`，之后由编译期守卫保证不漏
 
 ### 3.4 添加红点
 
