@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -97,7 +98,7 @@ namespace FuFramework.Editor.Network
 				AddOrUpdate(bindings, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
 			}
 
-			// 业务侧：声明对计数（跳过 AutoGen 生成物自身）
+			// 业务侧：声明对计数（跳过 AutoGen 生成物自身；剥离行注释——防止 XML doc / 注释里的示例被当作真实声明）
 			var declarations   = new Dictionary<string, int>();
 			var hotfixFullPath = Path.GetFullPath(HotfixRoot);
 			foreach (var file in Directory.EnumerateFiles(hotfixFullPath, "*.cs", SearchOption.AllDirectories))
@@ -107,7 +108,16 @@ namespace FuFramework.Editor.Network
 					continue;
 				}
 
-				foreach (Match match in sr_declPattern.Matches(File.ReadAllText(file)))
+				var lines = File.ReadAllLines(file);
+				var code  = new StringBuilder(lines.Length * 32);
+				foreach (var line in lines)
+				{
+					var commentIndex = line.IndexOf("//", System.StringComparison.Ordinal);
+					code.Append(commentIndex >= 0 ? line[..commentIndex] : line);
+					code.Append('\n');
+				}
+
+				foreach (Match match in sr_declPattern.Matches(code.ToString()))
 				{
 					AddOrUpdate(declarations, $"{match.Groups[1].Value}.{match.Groups[2].Value}");
 				}
