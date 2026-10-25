@@ -109,6 +109,29 @@ public static class ActorManager
 	}
 
 	/// <summary>
+	/// 将工作投递到指定 Actor 的队列中串行执行并等待完成（跨上下文操作玩家组件/向玩家会话发推送的正确姿势）。
+	/// 背景：Agent 方法默认在调用方线程直接执行（仅带 [Api]/[ThreadSafe] 注解的方法才会由生成的 Wrapper 包装投递），
+	/// 因此 HTTP 网关等「非玩家 Actor 上下文」直调玩家 Agent 会与玩家 Actor 队列内的执行并发——
+	/// 修改共享 State 是数据竞争、写玩家会话是发送乱序。一律经本门面投递进玩家队列。
+	/// checkLock 固定 false：本门面语义就是「跨上下文投递」，不受调试模式 ActorLimit 限流静默丢弃。
+	/// </summary>
+	/// <param name="actorId">玩家 Actor 唯一标识</param>
+	/// <param name="work">要在玩家 Actor 队列内串行执行的工作</param>
+	/// <param name="cancellationToken">取消令牌</param>
+	/// <returns>true=已成功投递并等待完成；false=Actor 已不存在（在线竞态，调用方按「跳过」处理）。</returns>
+	public static async Task<bool> SendAsync(long actorId, Func<Task> work, CancellationToken cancellationToken = default(CancellationToken))
+	{
+		var actor = Get(actorId);
+		if (actor == null)
+		{
+			return false;
+		}
+
+		await actor.SendAsync(work, Actor.TimeOut, checkLock: false, cancellationToken);
+		return true;
+	}
+
+	/// <summary>
 	/// 根据ActorId获取对应Actor中所有激活状态的组件代理对象
 	/// </summary>
 	/// <param name="actorId">要查询的ActorId</param>

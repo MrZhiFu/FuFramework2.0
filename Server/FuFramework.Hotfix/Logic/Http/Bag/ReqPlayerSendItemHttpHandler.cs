@@ -44,9 +44,20 @@ public sealed class ReqPlayerSendItemHttpHandler : BaseHttpHandler
         
         if (playerSession.IsNotNull())
         {
-            // 玩家在线
-            var bagComponentAgent = await ActorManager.GetComponentAgent<BagComponentAgent>(request.RoleId);
-            await bagComponentAgent.UpdateChanged(playerSession.WorkChannel, itemDic);
+            // 玩家在线：将背包变更投递进该玩家的 Actor 队列串行执行。
+            // 不能在 HTTP 线程直调 Agent——UpdateChanged 会改共享 BagState 并向玩家会话写推送，
+            // 直调会与玩家 Actor 队列内的操作并发（数据竞争 + 发送乱序）。投递后与玩家自身操作串行。
+            var delivered = await ActorManager.SendAsync(request.RoleId, async () =>
+            {
+                var bagComponentAgent = await ActorManager.GetComponentAgent<BagComponentAgent>(request.RoleId);
+                await bagComponentAgent.UpdateChanged(playerSession.WorkChannel, itemDic);
+            });
+
+            // Actor 已在投递前被回收（下线竞态）：在线判断到投递之间存在窗口，跳过推送（数据照常落库则不在此分支处理）
+            if (!delivered)
+            {
+                return HttpJsonResult.SuccessString(new ReqPlayerSendItemResponse { Items = itemDic, });
+            }
         }
         else
         {
