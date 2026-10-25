@@ -83,20 +83,35 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 执行登录
+		/// 角色登录进游戏（TCP）：挂起推送派发 → Call(ReqPlayerLogin) 建立全量基线 → 恢复派发 → 打开主界面。
+		/// 与 WinLogin.UserLoginAsync（账号登录，HTTP）分工：账号层管"你是谁"，进游戏层管"建立会话与数据基线"。
 		/// </summary>
-		private async UniTaskVoid LoginAsync()
+		private async UniTaskVoid PlayerLoginAsync()
 		{
-	        // 请求玩家登录
-	        var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
-	        var respPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin);
-	        PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
+			// 挂起推送派发：登录窗口期的增量推送进缓冲（全量基线未建立前不可派发）
+			NetworkModule.Instance.SuspendNotifyDispatch();
+			try
+			{
+				// 请求玩家登录
+				var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
+				var respPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin);
+				PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
 
-	        // 打开主界面
-	        await GlobalModule.UIModule.OpenAsync<WinMain>();
+				// 基线就绪：恢复派发，缓冲推送按到达顺序回放
+				NetworkModule.Instance.ResumeNotifyDispatch();
+			}
+			catch (Exception)
+			{
+				// 登录失败：基线未建立，缓冲中的增量全是脏数据，直接丢弃不回放
+				NetworkModule.Instance.ClearNotifyBuffer();
+				throw;
+			}
 
-	        // 关闭当前界面
-	        GlobalModule.UIModule.Close(this);
+			// 打开主界面
+			await GlobalModule.UIModule.OpenAsync<WinMain>();
+
+			// 关闭当前界面
+			GlobalModule.UIModule.Close(this);
 		}
 
 		/// <summary>
@@ -106,7 +121,7 @@ namespace Hotfix.Game.UI
 		/// <param name="e"></param>
 		private void OnNetworkConnected(object sender, GameEventArgs e)
 		{
-	        LoginAsync().Forget();
+	        PlayerLoginAsync().Forget();
 	        FuLogger.LogInfo(nameof(OnNetworkConnected));
 		}
 
@@ -148,7 +163,7 @@ namespace Hotfix.Game.UI
 			var channel = NetworkModule.Instance.Channel;
 			if (channel is { Connected: true })
 			{
-				LoginAsync().Forget();
+				PlayerLoginAsync().Forget();
 				return;
 			}
 

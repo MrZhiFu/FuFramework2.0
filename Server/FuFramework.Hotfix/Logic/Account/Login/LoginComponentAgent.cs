@@ -7,7 +7,7 @@ namespace FuFramework.Hotfix.Logic.Account.Login;
 
 public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginState>
 {
-    public async Task OnLogin(INetWorkChannel workChannel, ReqLogin reqLogin)
+    public async Task OnUserLogin(INetWorkChannel workChannel, ReqUserLogin reqLogin)
     {
         if (reqLogin.UserName.IsNullOrEmpty() || reqLogin.Password.IsNullOrEmpty())
         {
@@ -19,7 +19,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
             return;
         }
 
-        var loginState = await OwnerComponent.OnLogin(reqLogin);
+        var loginState = await OwnerComponent.OnUserLogin(reqLogin);
         if (loginState == null)
         {
             var accountId = ActorIdGenerator.GetUniqueId();
@@ -27,7 +27,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
         }
 
         // 构建账号登录返回信息
-        var respLogin = new RespLogin
+        var respLogin = new RespUserLogin
         {
             UniqueId = reqLogin.UniqueId,
             Code = loginState.State,

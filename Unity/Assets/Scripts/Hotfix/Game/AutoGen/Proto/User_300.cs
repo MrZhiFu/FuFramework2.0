@@ -54,7 +54,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(19660810)]
-	public sealed class ReqLogin : MessageObject, IRequestMessage<RespLogin>
+	public sealed class ReqUserLogin : MessageObject, IRequestMessage<RespUserLogin>
 	{
 		/// <summary>
 		/// 用户名
@@ -99,7 +99,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(19660811)]
-	public sealed class RespLogin : MessageObject, IResponseMessage
+	public sealed class RespUserLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 返回码

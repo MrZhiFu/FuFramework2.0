@@ -144,7 +144,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>服务器响应消息；响应类型与 TResponse 不符时抛出异常（而非返回 null）。</returns>
 		/// <example>
 		/// <code>
-		/// // 一问一答：响应类型自动推断（示例取自 WinPlayerList.LoginAsync）
+		/// // 一问一答：响应类型自动推断（示例取自 WinPlayerList.PlayerLoginAsync）
 		/// var reqPlayerLogin  = new ReqPlayerLogin { Id = 1 };
 		/// var respPlayerLogin = await channel.Call(reqPlayerLogin);
 		/// PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;

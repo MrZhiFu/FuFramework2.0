@@ -14,48 +14,48 @@ namespace FuFramework.Hotfix.Logic.Http.Player;
 /// <summary>
 /// 账号登录
 /// </summary>
-[HttpMessageMapping(typeof(ReqLoginHttpHandler))]
+[HttpMessageMapping(typeof(ReqUserLoginHttpHandler))]
 [Description("账号登录,仅限前端调用")]
-public sealed class ReqLoginHttpHandler : BaseHttpHandler
+public sealed class ReqUserLoginHttpHandler : BaseHttpHandler
 {
     public override async Task<MessageObject> Action(string ip, string url, Dictionary<string, object> parameters, MessageObject messageObject)
     {
-        var reqLogin = (ReqLogin)messageObject;
-        var respLogin = new RespLogin();
-        if (reqLogin.UserName.IsNullOrEmpty() || reqLogin.Password.IsNullOrEmpty())
+        var reqUserLogin = (ReqUserLogin)messageObject;
+        var respUserLogin = new RespUserLogin();
+        if (reqUserLogin.UserName.IsNullOrEmpty() || reqUserLogin.Password.IsNullOrEmpty())
         {
-            respLogin.ErrorCode = (int)ResultCode.Failed;
+            respUserLogin.ErrorCode = (int)ResultCode.Failed;
             return null;
         }
 
         // MetricsAccountRegister.LoginCounterOptions.Inc();
-        var loginState = await OnLogin(reqLogin);
+        var loginState = await OnUserLogin(reqUserLogin);
 
         if (loginState == null)
         {
             var accountId = ActorIdGenerator.GetUniqueId();
-            loginState = await Register(accountId, reqLogin);
+            loginState = await Register(accountId, reqUserLogin);
         }
 
         // 构建账号登录返回信息
-        respLogin.Code = loginState.State;
-        respLogin.CreateTime = loginState.CreateTime;
-        respLogin.Level = loginState.Level;
-        respLogin.Id = loginState.Id;
-        respLogin.RoleName = loginState.NickName;
-        return respLogin;
+        respUserLogin.Code = loginState.State;
+        respUserLogin.CreateTime = loginState.CreateTime;
+        respUserLogin.Level = loginState.Level;
+        respUserLogin.Id = loginState.Id;
+        respUserLogin.RoleName = loginState.NickName;
+        return respUserLogin;
     }
 
-    public async Task<LoginState> OnLogin(ReqLogin reqLogin)
+    public async Task<LoginState> OnUserLogin(ReqUserLogin reqUserLogin)
     {
         // MetricsAccountRegister.LoginCounterOptions.Inc();
-        return await GameDb.FindAsync<LoginState>(m => m.UserName == reqLogin.UserName && m.Password == reqLogin.Password, false);
+        return await GameDb.FindAsync<LoginState>(m => m.UserName == reqUserLogin.UserName && m.Password == reqUserLogin.Password, false);
     }
 
-    public async Task<LoginState> Register(long accountId, ReqLogin reqLogin)
+    public async Task<LoginState> Register(long accountId, ReqUserLogin reqUserLogin)
     {
         // MetricsAccountRegister.RegisterCounterOptions.Inc();
-        var loginState = new LoginState { Id = accountId, UserName = reqLogin.UserName, Password = reqLogin.Password, };
+        var loginState = new LoginState { Id = accountId, UserName = reqUserLogin.UserName, Password = reqUserLogin.Password, };
         await GameDb.AddOrUpdateAsync(loginState);
         return loginState;
     }

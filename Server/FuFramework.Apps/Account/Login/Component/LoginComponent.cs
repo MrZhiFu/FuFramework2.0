@@ -13,13 +13,13 @@ namespace FuFramework.Apps.Account.Login.Component;
 [ComponentType((ushort)ActorType.Account)]
 public sealed class LoginComponent : StateComponent<LoginState>
 {
-    public async Task<LoginState> OnLogin(ReqLogin reqLogin)
+    public async Task<LoginState> OnUserLogin(ReqUserLogin reqLogin)
     {
         MetricsAccountRegister.LoginCounterOptions.Inc();
         return await GameDb.FindAsync<LoginState>(m => m.UserName == reqLogin.UserName && m.Password == reqLogin.Password);
     }
 
-    public async Task<LoginState> Register(long accountId, ReqLogin reqLogin)
+    public async Task<LoginState> Register(long accountId, ReqUserLogin reqLogin)
     {
         MetricsAccountRegister.RegisterCounterOptions.Inc();
         var loginState = new LoginState { Id = accountId, UserName = reqLogin.UserName, Password = reqLogin.Password, };

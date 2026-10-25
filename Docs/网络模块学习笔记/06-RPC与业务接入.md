@@ -1,7 +1,7 @@
 # 06 · RPC 与业务接入（请求-响应）
 
 > 配套图：[RPC 时序图](../.archify/sequence-rpc-call-20261019-222217/rpc-call.html)
-> 本篇回答：`await channel.Call<RespLogin>(req)` 这三个词**各自在做什么**，响应用什么"钥匙"配回来，超时/断线为什么"必然唤醒"而不是永久悬挂，以及业务侧怎么写才符合铁律 5。
+> 本篇回答：`await channel.Call<RespPlayerLogin>(req)` 这三个词**各自在做什么**，响应用什么"钥匙"配回来，超时/断线为什么"必然唤醒"而不是永久悬挂，以及业务侧怎么写才符合铁律 5。
 
 ---
 
@@ -10,7 +10,7 @@
 **RPC = Remote Procedure Call（远程过程调用）**——把"让服务器干活"伪装成"本地函数调用"：
 
 ```
-你想做的（像调本地函数）：   RespLogin resp = 请服务器登录(账号, 密码);
+你想做的（像调本地函数）：   RespPlayerLogin resp = 请服务器让角色进游戏(角色ID);
 RPC 实际发生的：
   ① 把"请登录"变成一条消息 req 发过去           ← "打电话"
   ② await：我什么都不干，只等回信               ← "等对方回话"
@@ -24,7 +24,7 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
     messageObject.NotNull(nameof(messageObject));
     Send(messageObject);                            // ① 发包（第 2/3 篇全链路）
     var result = await m_RpcState.Call(messageObject);  // ② 挂起表登记 + 等配对
-    return result as TResult;                       // ③ 强转：IResponseMessage → RespLogin
+    return result as TResult;                       // ③ 强转：IResponseMessage → RespPlayerLogin
 }
 ```
 
@@ -58,10 +58,10 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
 ### 3.1 完整时序（见 RPC 时序图）
 
 ```
-业务   await channel.Call<RespLogin>(req)
+业务   await channel.Call<RespPlayerLogin>(req)
            ↓ NetworkChannelBase.Call: Send(req) → RpcState.Call → 挂起表登记（key=req.UniqueId）
         —— 到这里调用方就"悬起"了，什么都不占，等 Task 恢复 ——
-           ↓ 服务器处理，响应 RespLogin 回来 → 收包全链路 → 信封读回 UniqueId
+           ↓ 服务器处理，响应 RespPlayerLogin 回来 → 收包全链路 → 信封读回 UniqueId
 主线程 ProcessReceivedMessage:
    └─ m_RpcState.TryReply(resp)
         ├─ 类型缓存查是不是 IResponseMessage
@@ -70,7 +70,7 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
         │        → m_rpcEndHandler；若 ErrorCode≠0 → m_rpcErrorCodeHandler
         └─ 没配上 → DispatchMessage（当普通推送走 [NotifyMessageHandler]）
         ↓
-   await 恢复：return resp as RespLogin → 调用方拿到响应 ✅
+   await 恢复：return resp as RespPlayerLogin → 调用方拿到响应 ✅
 ```
 
 ### 3.2 三种结局
@@ -79,7 +79,7 @@ public async UniTask<TResult> Call<TResult>(MessageObject messageObject) where T
 
 | 结局 | 触发方 | 机制 | await 表现 |
 |------|--------|------|-----------|
-| 正常响应 | 收包主线程 | `TryReply` → `m_tcs.TrySetResult(resp)` | 恢复返回 RespLogin |
+| 正常响应 | 收包主线程 | `TryReply` → `m_tcs.TrySetResult(resp)` | 恢复返回 RespPlayerLogin |
 | 超时 | `RpcState.Update` 每帧 | 逐项 `IncrementalElapseTime` → 超时 `TrySetException(TimeoutException)` | 抛超时异常 |
 | 断线 | 频道 Close | `RpcState.Dispose` → 每个挂起 `Cancel()` → `TrySetException(OperationCanceledException)` | 抛取消异常 |
 
@@ -98,7 +98,7 @@ DispatchMessage(messageObject);                     // 没配上 → 当 [Notify
 ```csharp
 try
 {
-    var resp = await m_channel.Call<RespLogin>(new ReqLogin { Account = "a", Pwd = "b" });
+    var resp = await NetworkModule.Instance.Call(new ReqPlayerLogin { Id = playerId });
     if (resp.ErrorCode == 0) { /* 进游戏 */ }
     else { /* 弹错误码 */ }
 }
@@ -110,6 +110,37 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 - fire-and-forget 起步请 `.Forget()`；**不要**在 RPC 里做"等等等 + 不取消"的长等待——断线那下 `Cancel` 就是给你兜底的。
 - 响应能同时被 `[NotifyMessageHandler]` 订阅吗？**不能**：特性构造期校验消息必须实现 `INotifyMessage`，Resp 类型挂不上（Resp 的消费者是 `Call` 的 await）。Resp 配不上对（无宿主等待）时会在派发链上查无绑定、警告后丢弃。
 
+### 3.5 登录为什么分两段：HTTP 管账号，TCP 管游戏
+
+业务接入还有一个前置问题：**为什么 `WinLogin`（账号登录）走 HTTP，`WinPlayerList`（进游戏）才走 TCP 频道**？——两种工作的性质根本不同：
+
+| | 账号登录 | 游戏业务 |
+|---|---|---|
+| 模式 | **一次性**：提交凭证 → 拿回结果，结束 | **持续**：服务器持续推增量、双向高频交互 |
+| 状态 | **无状态**：失败了重试即可，没有会话要恢复 | **有状态**：服务器记住"此人在线"、数据在内存 |
+| 频率 | 低频（一人登录一次） | 高频（一局游戏成百上千条消息） |
+| 基础设施 | HTTPS 证书、负载均衡、限流、WAF 全是现成的 | 自定义协议、自己做心跳/加密/重连 |
+| 故障影响 | 登录服挂了**不影响已在线玩家** | 游戏服挂了才影响会话 |
+
+类比：登录 = **买票**（办完就走，售票窗口不够就加窗口）；游戏会话 = **上车**（车一直开着，乘客司机持续互动）。用买票的方式开车、用开车的窗口卖票，都别扭。
+
+服务器印证——账号与玩家是两个独立 App（`Server/FuFramework.Apps/`），两个处理器签名的差别就是全部设计：
+
+- `Account`（HTTP）：`ReqUserLoginHttpHandler.OnUserLogin(ReqUserLogin)` —— 签名**无连接参数**，无状态，谁来查库都一样，扩容 = 加机器；
+- `Player`（TCP）：`PlayerComponentAgent.OnPlayerLogin(INetworkChannel workChannel, ReqPlayerLogin reqLogin)` —— 第一个参数就是**频道**，从此这个人的所有推送都从这条连接出去，**连接即会话**。
+
+如果登录也走 TCP 会失去什么：① 开服登录洪峰挤占游戏服的会话内存（每条连接+运行时数据都是珍贵资源，而无状态的登录服加机器就能扩）；② 故障域黏连（登录服重启/被刷，在线玩家跟着遭殃）；③ HTTPS 防刷限流全要重造轮子；④ 客户端从打开 App 到点进游戏之间，白养一条连接的心跳/重连。
+
+与本篇阀门的呼应：**增量推送只存在于 TCP 会话中**（HTTP 一问一答，不存在"响应没回来时服务器主动推东西"），基线竞态也从 `Call(ReqPlayerLogin)` 才开始存在——所以 `SuspendNotifyDispatch` 挂在 `WinPlayerList.PlayerLoginAsync` 的基线窗口；`WinLogin.UserLoginAsync` 里没有它的位置——那个阶段 `NetworkModule.Channel` 还是 null，TCP 连接要到选完角色才创建。
+
+将来多服/分区时的完整形态（网关分发，proto 已预留 `RespConnectServer` 的 TargetIP/TargetPort）：
+
+```
+HTTP 登录账号 → 服务器告知"该去哪台游戏服" → TCP 连那台 → Call(ReqPlayerLogin) 进游戏
+```
+
+一句话收束：**HTTP 管"你是谁"，TCP 管"你在游戏里发生了什么"**——前者无状态可随意扩缩，后者有状态必须长连，两者各取所长。
+
 ---
 
 ## 四、自测（随学随考）
@@ -117,11 +148,12 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 ### 题目
 
 1. 为什么配对用 `UniqueId` 而不用消息 ID？
-2. 客户端收到的响应 `RespLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
+2. 客户端收到的响应 `RespPlayerLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
 3. 为什么断线必须 `Cancel` 而不是只 `Clear()` 字典？
 4. 同一条响应，`TryReply` 和 `DispatchMessage` 谁先执行？什么时候会落到后者？
 5. "RPC 是远程过程调用" —— 用三句话给一个没听过的人解释。
 6. 业务侧为什么必须捕获 `OperationCanceledException` 与 `TimeoutException`？
+7. 为什么账号登录走 HTTP、进游戏才走 TCP？（说出至少两条 HTTP 承担登录的好处）
 
 ### 答案
 
@@ -131,6 +163,7 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 4. **先 `TryReply`，配上了 `continue`；配不上才 `DispatchMessage`**。落到后者的三种情况：不是 IResponseMessage；是响应但挂起表无配对（主动推送）；迟到的 RPC 响应（请求已超时/断线）。
 5. RPC = 远程过程调用。① 你把"请服务器干一件事"变成一条消息发过去；② 然后空手 await，等它回信；③ 收到回信把它当"返回值"用——整个过程像在调用一个本地函数。
 6. `Call` 的 Task 有三种结局（正常/超时/断线），两处异常路径会以 `TimeoutException`/`OperationCanceledException` 抛给 await；不捕获就可能逃逸到主循环无人处理，或让登录流程卡住。捕获它们才能优雅地上重连提示、清理 UI 状态（这符合铁律 5 的"异步链必须有生命周期所有者"）。
+7. ① 登录是一次性、无状态、低频的凭证交换，HTTP 请求-响应模型天然匹配，且 HTTPS/负载均衡/限流等基础设施现成；② 无状态服务加机器即可扩容，开服登录洪峰不会挤占游戏服的会话内存；③ 故障域隔离：登录服重启/被刷不影响已在线玩家的 TCP 会话。反面印证：推送增量只存在于 TCP 会话，基线竞态只在 TCP 段存在，所以派发阀门只挂 `WinPlayerList.PlayerLoginAsync`。
 
 ---
 
@@ -143,6 +176,6 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 - **03 包头/包体与压缩**：14 字节信封逐字段、int/uint/byte 与占格、大端字节序真相、压缩策略、空消息特例。
 - **04 频道核心**：Update 状态机、发送/接收状态机、心跳保活与断线判定、锁的领地。
 - **05 装配系统**：零反射动机、生成期前移、三张表、internal 可见性、后注册覆盖。
-- **06 RPC**：Call 三合一、UniqueId 侧信道配对、超时/断线必然唤醒、业务写法。
+- **06 RPC**：Call 三合一、UniqueId 侧信道配对、超时/断线必然唤醒、业务写法、账号 HTTP/业务 TCP 双通道分层。
 
 现在，你可以从一个登录按钮讲到一条消息的字节排布、再讲回 `await` 的三种结局——这就是这个网络模块的完整心智模型。

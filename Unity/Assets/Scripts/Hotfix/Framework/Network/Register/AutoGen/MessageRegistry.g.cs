@@ -63,8 +63,8 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<RespRemoveItem>(6553617);
             MessageIdRegistry.Register<NotifyBagItem>(6553618);
             MessageIdRegistry.Register<NotifyBagInfoChanged>(6553619);
-            MessageIdRegistry.Register<ReqLogin>(19660810);
-            MessageIdRegistry.Register<RespLogin>(19660811);
+            MessageIdRegistry.Register<ReqUserLogin>(19660810);
+            MessageIdRegistry.Register<RespUserLogin>(19660811);
             MessageIdRegistry.Register<ReqPlayerCreate>(19660812);
             MessageIdRegistry.Register<RespPlayerCreate>(19660813);
             MessageIdRegistry.Register<ReqPlayerList>(19660814);

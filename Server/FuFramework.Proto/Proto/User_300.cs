@@ -62,7 +62,7 @@ namespace FuFramework.Proto.Proto
     [ProtoContract]
     [System.ComponentModel.Description("请求账号登录")]
     [MessageId(19660810)]
-    public sealed class ReqLogin : MessageObject, IRequestMessage
+    public sealed class ReqUserLogin : MessageObject, IRequestMessage
     {
         /// <summary>
         /// 用户名
@@ -113,7 +113,7 @@ namespace FuFramework.Proto.Proto
     [ProtoContract]
     [System.ComponentModel.Description("账号登录响应")]
     [MessageId(19660811)]
-    public sealed class RespLogin : MessageObject, IResponseMessage
+    public sealed class RespUserLogin : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 返回码

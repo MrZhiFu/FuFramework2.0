@@ -81,7 +81,7 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnLoginClick(EventContext ctx)
 		{
-			LoginAsync().Forget();
+			UserLoginAsync().Forget();
 			// PlayBgm().Forget();
 			// Example: RedDotModule.Instance.RegisterLeaf(ERedDotKey.Bag_Item, () => GetBagRedDotCount(), "BagChanged");
 		}
@@ -111,9 +111,10 @@ namespace Hotfix.Game.UI
 		#endregion
 
 		/// <summary>
-		/// 执行登录
+		/// 账号登录（HTTP）：验证凭证 → 获取角色列表 → 跳转角色界面。
+		/// 与 WinPlayerList.PlayerLoginAsync（角色登录进游戏，TCP）分工：账号层管"你是谁"，进游戏层管"建立会话与数据基线"。
 		/// </summary>
-		private async UniTaskVoid LoginAsync()
+		private async UniTaskVoid UserLoginAsync()
 		{
 			if (txtUsername.text.IsNullOrWhiteSpace() || txtPassword.text.IsNullOrWhiteSpace())
 			{
@@ -122,7 +123,7 @@ namespace Hotfix.Game.UI
 			}
 
 			// 请求登录
-			var req = new ReqLogin
+			var req = new ReqUserLogin
 			{
 				SdkType  = 0,
 				SdkToken = "",
@@ -134,7 +135,7 @@ namespace Hotfix.Game.UI
 
 			try
 			{
-				var respLogin = await WebModule.Instance.Post<RespLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqLogin).ConvertToSnakeCase()}", req, Token);
+				var respLogin = await WebModule.Instance.Post<RespUserLogin>($"http://127.0.0.1:28080/game/api/{nameof(ReqUserLogin).ConvertToSnakeCase()}", req, Token);
 				if (respLogin.ErrorCode > 0)
 				{
 					FuLogger.LogError("登录失败，错误信息:" + respLogin.ErrorCode);

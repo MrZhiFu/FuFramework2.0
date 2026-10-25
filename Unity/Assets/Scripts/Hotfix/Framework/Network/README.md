@@ -59,6 +59,30 @@ IHeartBeatMessage → 心跳消息
 接收: 接收数据 → 解析包头 → 解压 → 反序列化包体 → 消息对象
 ```
 
+### 3.4 双通道分层：账号登录走 HTTP，游戏业务走 TCP
+
+客户端与服务器之间有两条通道，各承载性质不同的工作：
+
+| | 账号登录（`WinLogin`） | 游戏业务（`WinPlayerList` 之后） |
+|---|---|---|
+| 通道 | HTTP（`WebModule.Instance.Post`） | TCP/WS 长连接（`NetworkModule`） |
+| 性质 | 一次性、无状态、低频 | 持续、有状态、高频 |
+| 产物 | token + 角色列表 | 数据基线 + 增量推送 |
+
+服务器对应两个独立应用（故障域与扩缩容分离，见 `Server/FuFramework.Apps/`）：
+
+- `Account`（HTTP）：`ReqUserLoginHttpHandler.OnUserLogin(ReqUserLogin)` —— 处理器**无连接参数**，无状态，扩容 = 加机器；
+- `Player`（TCP）：`PlayerComponentAgent.OnPlayerLogin(INetworkChannel workChannel, ReqPlayerLogin reqLogin)` —— 处理器**携带频道**，连接即会话。
+
+```
+WinLogin（HTTP）:      账号+密码 → token → 角色列表 → WinPlayerList
+WinPlayerList（TCP）:  选角色 → CreateChannel → SuspendNotifyDispatch（挂阀门）
+                       → Call(ReqPlayerLogin) 建立全量基线 → ResumeNotifyDispatch（回放缓冲）→ WinMain
+```
+
+为什么登录不用 TCP：登录洪峰不该挤占游戏服的会话内存（无状态服务加机器即可扩容）；HTTPS 传密码是行业标准；登录服重启不影响在线玩家。一句话：**HTTP 管"你是谁"，TCP 管"你在游戏里发生了什么"**。
+推送增量只存在于 TCP 会话中（HTTP 一问一答不存在推送），因此派发阀门（`SuspendNotifyDispatch`/`ResumeNotifyDispatch`/`ClearNotifyBuffer`）挂载在 `WinPlayerList.PlayerLoginAsync` 的基线窗口，而非 `WinLogin`。
+
 ## 4. 核心类说明
 
 ### 4.1 NetworkModule

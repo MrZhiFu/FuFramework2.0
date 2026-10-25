@@ -22,7 +22,7 @@ message PlayerInfo
 // ============================================================
 
 // 请求账号登录
-message ReqLogin
+message ReqUserLogin
 {
   string UserName = 1; // 用户名
   string Platform = 2; // 平台
@@ -33,7 +33,7 @@ message ReqLogin
 }
 
 // 账号登录响应
-message RespLogin
+message RespUserLogin
 {
   int32 Code = 1;       // 返回码
   string RoleName = 2;  // 账号名
