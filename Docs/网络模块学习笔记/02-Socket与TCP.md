@@ -84,11 +84,11 @@ finally
 
 如果用主线程 `while(true) await socket.ReceiveAsync...`，主线程节奏被**对端**决定而非帧率，游戏主循环被冲乱。而 APM 天然适配"后台连轴转取数据 + 主线程按帧取货"的两线程结构。
 
-**但项目不是排斥 await**——同一处网络里，"连接"这个一次性等待用 `UniTask`（`WebSocketNetSocket.ConnectAsync`, async UniTaskVoid）：
+**但项目不是排斥 await**——同一处网络里，"连接"这个一次性等待用 `UniTask`（`WebSocketNetSocket.ConnectAsync`，签名 `async UniTask ConnectAsync(CancellationToken)`，必传取消令牌）：
 
 | 操作 | 频率 | 线程诉求 | 模型 |
 |------|------|---------|------|
-| 连接 | 一次 | 等一个结果，主线程 await 正合适 | ✅ UniTask |
+| 连接 | 一次 | 等一个结果，主线程 await 正合适 | ✅ UniTask（**仅 WebSocket 连接与 DNS 解析**；TCP 连接同为 APM `BeginConnect`） |
 | 持续收发 | 每包 | 后台连轴转 + 主线程按帧取货 | ✅ APM |
 
 **结论：不是"不用 await"，而是"每一处放对技术"。**（呼应第 1 篇"频道层层抽象"。）
@@ -104,7 +104,7 @@ finally
 | 队列 | 生产者 | 消费者 | 锁 |
 |------|-------|--------|----|
 | `m_SendPacketPool` | 主线程入队发送 | 主线程每帧取货 | `lock(m_SendPacketPool)` |
-| `m_executionMessageLinkedList` | **后台回调** `AddLast` | **主线程** `First/RemoveFirst` | `m_ExecutionMessageLock` |
+| `m_waitingHandleMsgLkList` | **后台回调** `AddLast` | **主线程** `First/RemoveFirst` | `m_handleMsgLock` |
 
 为什么用链表？`AddLast`（尾）与 `RemoveFirst`（头）都是 O(1)；`List` 头部移除是 O(n) 拷贝——热路径每个包各一次入队/出队，链表是刻意选择。
 
@@ -138,11 +138,12 @@ if (m_SendState.Stream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
 ```
 【后台线程池线程】                    【主线程】每帧（Update）
 ReceiveCallback                       DrainLifecycleEvents
-  EndReceive → bytesReceived          if (!PActive) return
+  EndReceive → bytesReceived          if (m_Socket == null || !IsOpen) return
   ReceiveState.Stream 水位推进         ProcessSend()          （从发送队列取货）
   ProcessReceivedBytes：切包/反序列化   ProcessReceive()        （基类占位）
-  lock 里执行链表 .AddLast(完整消息)    ProcessHeartBeat()      （心跳）
-  finally: ReceiveAsync() 续接         ProcessReceivedMessage()（从链表取货派发）
+  lock 里执行链表 .AddLast(完整消息)    m_rpcState.Update()    （RPC 挂起表超时轮询）
+  finally: ReceiveAsync() 续接         ProcessHeartBeat()      （心跳）
+                                       ProcessReceivedMessage()（从链表取货派发）
 ```
 
 **关键**：切包、反序列化**全在后台回调线程**完成；跨线程传的不是字节，而是**解析好的完整消息对象**。主线程只做轻量取货派发。
@@ -157,7 +158,7 @@ ReceiveCallback                       DrainLifecycleEvents
 2. 客户端连发 A=4、B=2、C=6 字节，对端一次 `EndReceive` 返回 `AAAAB`，代表什么？下一次返回 `BCCCCCC`，怎么证明数据没丢没重？
 3. `BeginReceive` 的"等待"是谁在等？为什么不用给每条 Socket 配专职线程？
 4. "APM 是爷爷辈，async/await 是孙子辈"——那本项目为什么还在热路径上用 APM？
-5. `m_executionMessageLinkedList` 的 `AddLast` 和 `RemoveFirst` 分别在哪个线程执行？为什么这里必须加锁？
+5. `m_waitingHandleMsgLkList` 的 `AddLast` 和 `RemoveFirst` 分别在哪个线程执行？为什么这里必须加锁？
 6. `SendCallback` 里为什么 `Position < Length` 时还要继续 `SendAsync()`？（起点若写死 0 会怎样？）
 7. 一帧里`ProcessSend` 的闸门 `Stream.Length > 0` 在防什么？
 
@@ -167,7 +168,7 @@ ReceiveCallback                       DrainLifecycleEvents
 2. `AAAAB` = A 整条 + B 的前 1 字节（粘包 + 半包叠加）；下一次 `BCCCCCC` = B 剩余 1 字节 + C 整条。拼接 `AAAAB + BCCCCCC = AAAA BB CCCCCC`，与发送内容完全一致——证明没丢、没重、没乱序（TCP 的三个承诺没违约）。
 3. **没有人在等**。请求挂到操作系统异步完成机制（IOCP）上，等待期间零线程占用；数据到达后由线程池派一个线程跑回调。专职线程方案在几千连接下栈内存爆炸。
 4. 因为"持续接收"需要一个后台连轴转的循环，而 await 的续体绑线程、Unity 还封送回主线程——await 塞不进"后台持续收 + 主线程按帧取货"的两线程结构。项目对"一次性连接"仍用 UniTask（每处放对技术）。
-5. `AddLast` 在后台回调线程；`RemoveFirst` 在主线程。两个线程同时摸同一个链表会把结构撕坏，故必须用 `m_ExecutionMessageLock` 互斥。
+5. `AddLast` 在后台回调线程；`RemoveFirst` 在主线程。两个线程同时摸同一个链表会把结构撕坏，故必须用 `m_handleMsgLock` 互斥。
 6. 因为 TCP 一次 `Send` 不保证发完（发送缓冲区可能满），`bytesSent` 可能小于剩余量，必须"发一点、看进度、没完续发"。起点若写死 0，前 40 字节会被重复发送 → 接收方按信封长度切包会切出"缝合怪"，消息永久损坏。
 7. 防止两批消息混进同一个 `SendState.Stream`。只有发完（`Position==Length` 触发 `Reset` 把 Length 清零）才能灌下一批；否则两批货混在一个集装箱，对端按 `PacketLength` 切包就全乱套。
 
