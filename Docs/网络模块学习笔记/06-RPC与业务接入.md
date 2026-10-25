@@ -1,6 +1,6 @@
 # 06 · RPC 与业务接入（请求-响应）
 
-> 配套图：[RPC 时序图](../.archify/sequence-rpc-call-20261019-222217/rpc-call.html)
+> 配套图：[RPC 时序图](../../.archify/sequence-rpc-call-20261019-222217/rpc-call.html)
 > 本篇回答：`await NetworkModule.Instance.Call(new ReqPlayerLogin { ... })` 这一句**各自在做什么**，响应用什么"钥匙"配回来，超时/断线为什么"必然唤醒"而不是永久悬挂，以及业务侧怎么写才符合铁律 5。
 
 ---
