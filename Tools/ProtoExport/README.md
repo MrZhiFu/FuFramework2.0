@@ -52,6 +52,10 @@ void Post(List<MessageInfoList> all, string outputPath);                  // 全
 消息ID = (module << 16) + opcode        // opcode 由消息体内 option opcode = N; 显式声明
 ```
 
+位宽语义：`module` 占 int **高 16 位**、`opcode` 占**低 16 位**（取值 ≤ 65535 恰是低位空间）——
+一个 32 位整数劈两半拼合，同时编码“业务域(module)”与“域内命令(opcode)”；
+module 在 short 正域、opcode ∈ [10,65535] 时 `(module, opcode) ↔ ID` 一一对应，无碰撞。
+
 规则：
 
 - 每条 Req/Resp/Notify 消息体内必须写 `option opcode = N;`（取值 [10, 65535]），缺失或越界**导出报错中止**；
