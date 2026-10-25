@@ -175,7 +175,7 @@ namespace Hotfix.Framework.Network
 #if ENABLE_NETWORK_REQ_LOG
 			if (!m_IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
 			{
-				FuLogger.LogInfo($"发送消息 ID:[{PacketSendHeaderHandler.Id},{msgObj.UniqueId},{msgObj.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"发送消息:[{msgObj.GetType().Name}({PacketSendHeaderHandler.Id}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

@@ -131,7 +131,7 @@ namespace Hotfix.Framework.Network
 #if ENABLE_NETWORK_RSP_LOG
 			if (!m_IgnoreReceiveIds.Contains(PacketReceiveHeaderHandler.Id))
 			{
-				FuLogger.LogInfo($"收到消息 ID:[{PacketReceiveHeaderHandler.Id},{msgObj.UniqueId},{msgObj.GetType().Name}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"收到消息:[{msgObj.GetType().Name}({PacketReceiveHeaderHandler.Id}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}
