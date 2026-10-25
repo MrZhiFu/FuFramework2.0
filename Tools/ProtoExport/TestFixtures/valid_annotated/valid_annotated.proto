@@ -1,0 +1,19 @@
+package TestAnno;
+option module = 700;
+
+message ReqPing
+{
+  option opcode = 10;
+  int32 Id = 1; // 标识
+}
+
+message RespPing
+{
+  option opcode = 11;
+  int32 ErrorCode = 1; // 错误码
+}
+
+message PlayerInfo
+{
+  int64 Id = 1; // 玩家ID
+}

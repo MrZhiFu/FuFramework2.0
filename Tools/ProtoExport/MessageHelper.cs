@@ -12,6 +12,7 @@ public static partial class MessageHelper
     private const string CommentPattern = @"//([^\n]*)\n\s*(enum|message)\s+(\w+)\s*{";
     private const string StartPattern = @"option start = (\d+);";
     private const string ModulePattern = @"option module = (-?\d+);";
+    private const string OpcodePattern = @"option opcode = (\d+);";
     private const string PackagePattern = @"package (\w+);";
 
 
@@ -227,6 +228,18 @@ public static partial class MessageHelper
                 if (line.TrimStart().StartsWith("//"))
                 {
                     // 这个字段被注释
+                    continue;
+                }
+
+                // message 级 option 行（如 option opcode = 10;）：提取到消息信息上，不作为字段解析
+                if (line.TrimStart().StartsWith("option"))
+                {
+                    Match opcodeMatch = Regex.Match(line, OpcodePattern, RegexOptions.Singleline);
+                    if (opcodeMatch.Success)
+                    {
+                        info.Opcode = int.Parse(opcodeMatch.Groups[1].Value);
+                    }
+
                     continue;
                 }
 
