@@ -110,7 +110,7 @@ public static class ActorManager
 
 	/// <summary>
 	/// 将工作投递到指定 Actor 的队列中串行执行并等待完成（跨上下文操作玩家组件/向玩家会话发推送的正确姿势）。
-	/// 背景：Agent 方法默认在调用方线程直接执行（仅带 [Api]/[ThreadSafe] 注解的方法才会由生成的 Wrapper 包装投递），
+	/// 背景：Agent 方法默认在调用方线程直接执行（仅带 [Service]/[ThreadSafe] 注解的方法才会由生成的 Wrapper 包装投递），
 	/// 因此 HTTP 网关等「非玩家 Actor 上下文」直调玩家 Agent 会与玩家 Actor 队列内的执行并发——
 	/// 修改共享 State 是数据竞争、写玩家会话是发送乱序。一律经本门面投递进玩家队列。
 	/// checkLock 固定 false：本门面语义就是「跨上下文投递」，不受调试模式 ActorLimit 限流静默丢弃。

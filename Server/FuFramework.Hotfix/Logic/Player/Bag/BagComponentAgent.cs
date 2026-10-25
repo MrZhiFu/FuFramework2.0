@@ -8,6 +8,7 @@ using FuFramework.Apps.Player.Bag.Component;
 using FuFramework.Apps.Player.Bag.Entity;
 using FuFramework.Config;
 using FuFramework.Config.Tables;
+using FuFramework.Core.Abstractions.Attribute;
 
 namespace FuFramework.Hotfix.Logic.Player.Bag;
 
@@ -42,6 +43,11 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// <param name="netWorkChannel"></param>
     /// <param name="itemDic"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// [Service]：跨上下文（如 HTTP 网关）调用本方法时，生成的 Wrapper 会将其投递进所属玩家的 Actor 队列串行执行，
+    /// 与玩家自身背包操作互斥（修数据竞争）并向玩家会话的发送保持顺序。
+    /// </remarks>
+    [Service]
     public async Task UpdateChanged(INetWorkChannel netWorkChannel, Dictionary<int, long> itemDic)
     {
         //将物品添加到背包
