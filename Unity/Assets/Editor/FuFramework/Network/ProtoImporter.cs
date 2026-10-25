@@ -40,7 +40,7 @@ namespace FuFramework.Editor.Network
 		/// <summary>
 		/// 导出 Proto — 客户端
 		/// </summary>
-		[MenuItem("网络/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
+		[MenuItem("FuFramework/网络/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
 		public static void ExportProtoClient()
 		{
 			ExportProto(EExportTarget.Client);
@@ -49,7 +49,7 @@ namespace FuFramework.Editor.Network
 		/// <summary>
 		/// 导出 Proto — 服务端
 		/// </summary>
-		[MenuItem("网络/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
+		[MenuItem("FuFramework/网络/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
 		public static void ExportProtoServer()
 		{
 			ExportProto(EExportTarget.Server);
@@ -58,7 +58,7 @@ namespace FuFramework.Editor.Network
 		/// <summary>
 		/// 导出 Proto — 全部（客户端 + 服务端）
 		/// </summary>
-		[MenuItem("网络/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
+		[MenuItem("FuFramework/网络/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
 		public static void ExportProtoAll()
 		{
 			ExportProto(EExportTarget.All);
@@ -68,7 +68,7 @@ namespace FuFramework.Editor.Network
 		/// 重新生成推送注册表：执行 gen-proto-registry 脚本（扫描 [NotifyMessageHandler] 产出 BindNotify 绑定），
 		/// 完成后刷新资源触发再编译——NotifyRegistryGuard 编译守卫会自动复验一致性。
 		/// </summary>
-		[MenuItem("网络/重新生成推送注册表", false, FuMenuPriority.PROTO_REGISTRY_REGEN)]
+		[MenuItem("FuFramework/网络/重新生成推送注册表", false, FuMenuPriority.PROTO_REGISTRY_REGEN)]
 		public static void RegenerateNotifyRegistry()
 		{
 			var protoDir  = GetProtoPath();
@@ -97,7 +97,7 @@ namespace FuFramework.Editor.Network
 		/// <summary>
 		/// 校验推送注册表一致性：即时比对业务源码 [NotifyMessageHandler] 声明与生成物 BindNotify 绑定（结果输出到控制台）。
 		/// </summary>
-		[MenuItem("网络/校验推送注册表一致性", false, FuMenuPriority.PROTO_REGISTRY_VALIDATE)]
+		[MenuItem("FuFramework/网络/校验推送注册表一致性", false, FuMenuPriority.PROTO_REGISTRY_VALIDATE)]
 		public static void ValidateNotifyRegistry()
 		{
 			NotifyRegistryGuard.ValidateAndReport();

@@ -54,7 +54,7 @@ namespace FuFramework.Editor.Network
 			Debug.LogError(
 			               "[推送注册表过期] 业务源码的 [NotifyMessageHandler] 与 MessageRegistry.gen.cs 不一致："
 			               + missingText + staleText
-			               + "\n请运行菜单 网络/重新生成推送注册表（或 Protobuf/gen-proto-registry.bat），否则这些推送将静默失效（服务器不会补发）。");
+			               + "\n请运行菜单 FuFramework/网络/重新生成推送注册表（或 Protobuf/gen-proto-registry.bat），否则这些推送将静默失效（服务器不会补发）。");
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace FuFramework.Editor.Network
 				return;
 			}
 
-			Debug.LogError($"[推送注册表过期] 缺少绑定 {missingInGen.Count} 条、多余绑定 {staleInGen.Count} 条，请运行菜单 网络/重新生成推送注册表。");
+			Debug.LogError($"[推送注册表过期] 缺少绑定 {missingInGen.Count} 条、多余绑定 {staleInGen.Count} 条，请运行菜单 FuFramework/网络/重新生成推送注册表。");
 		}
 
 		/// <summary>执行比对：missingInGen=业务有声明而生成物缺绑定；staleInGen=生成物有绑定而业务已无声明。</summary>
@@ -85,7 +85,7 @@ namespace FuFramework.Editor.Network
 			var genFullPath = Path.GetFullPath(GenFilePath);
 			if (!File.Exists(genFullPath))
 			{
-				Debug.LogError($"[推送注册表] 生成物不存在：{GenFilePath}——请运行菜单 网络/重新生成推送注册表。");
+				Debug.LogError($"[推送注册表] 生成物不存在：{GenFilePath}——请运行菜单 FuFramework/网络/重新生成推送注册表。");
 				return false;
 			}
 
