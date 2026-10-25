@@ -345,6 +345,16 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		public const int PROTO_EXPORT_ALL = PROTO_BASE + 2;
 
+		/// <summary>
+		/// 重新生成推送注册表。
+		/// </summary>
+		public const int PROTO_REGISTRY_REGEN = PROTO_BASE + 3;
+
+		/// <summary>
+		/// 校验推送注册表一致性。
+		/// </summary>
+		public const int PROTO_REGISTRY_VALIDATE = PROTO_BASE + 4;
+
 		#endregion
 
 		#region 网络类型设置

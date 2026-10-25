@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -7,21 +6,23 @@ using UnityEditor.Compilation;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
+// ReSharper disable once CheckNamespace
 namespace FuFramework.Editor.Network
 {
 	/// <summary>
 	/// 推送绑定注册表过期守卫：每次编译前比对「业务源码里的 [NotifyMessageHandler] 声明」与
 	/// 「生成物 MessageRegistry.gen.cs 里的 BindNotify 绑定」，不一致即报错提示重跑生成脚本。
-	/// 解决"新增推送监听后忘跑 gen-proto-registry.bat → 该推送运行时静默失效"的坑。
+	/// 解决"新增推送监听后忘跑 gen-proto-registry → 该推送运行时静默失效"的坑。
 	/// 比对键为（消息类型名, 方法名）二元组，不涉及宿主全名解析——宿主可达性错误由生成脚本自身报错拦截。
+	/// 手动入口（重新生成 / 校验）在 ProtoImporter 的"网络"菜单下。
 	/// </summary>
 	[InitializeOnLoad]
 	public static class NotifyRegistryGuard
 	{
-		/// <summary>生成物：注册表（gen-proto-registry.py 的输出）</summary>
+		/// <summary>生成物：注册表（gen-proto-registry 的输出）</summary>
 		private const string GenFilePath = "Assets/Scripts/Hotfix/Framework/Network/Register/AutoGen/MessageRegistry.gen.cs";
 
-		/// <summary>业务源码扫描根（跳过 AutoGen 与 Editor）</summary>
+		/// <summary>业务源码扫描根（跳过 AutoGen）</summary>
 		private const string HotfixRoot = "Assets/Scripts/Hotfix";
 
 		/// <summary>业务源码里的声明：[NotifyMessageHandler(typeof(X), nameof(Y))]</summary>
@@ -48,17 +49,18 @@ namespace FuFramework.Editor.Network
 				return;
 			}
 
-			var missingText = missingInGen.Count > 0 ? "\n  缺少绑定（新增未生成）：" + string.Join("、", missingInGen) : string.Empty;
-			var staleText = staleInGen.Count > 0 ? "\n  多余绑定（已删除未清理）：" + string.Join("、", staleInGen) : string.Empty;
+			var missingText = missingInGen.Count > 0 ? "\n  缺少绑定（新增未生成）："  + string.Join("、", missingInGen) : string.Empty;
+			var staleText   = staleInGen.Count   > 0 ? "\n  多余绑定（已删除未清理）：" + string.Join("、", staleInGen)   : string.Empty;
 			Debug.LogError(
-				"[推送注册表过期] 业务源码的 [NotifyMessageHandler] 与 MessageRegistry.gen.cs 不一致："
-				+ missingText + staleText
-				+ "\n请运行菜单 Tools/网络/重新生成推送注册表（或 Protobuf/gen-proto-registry.bat），否则这些推送将静默失效（服务器不会补发）。");
+			               "[推送注册表过期] 业务源码的 [NotifyMessageHandler] 与 MessageRegistry.gen.cs 不一致："
+			               + missingText + staleText
+			               + "\n请运行菜单 网络/重新生成推送注册表（或 Protobuf/gen-proto-registry.bat），否则这些推送将静默失效（服务器不会补发）。");
 		}
 
-		/// <summary>手动校验：立即比对并输出结果（绿色即一致）。</summary>
-		[MenuItem("Tools/网络/校验推送注册表一致性")]
-		private static void ValidateManually()
+		/// <summary>
+		/// 校验并输出结果（ProtoImporter"网络/校验推送注册表一致性"菜单的入口）：一致报绿含绑定条数，不一致报错分列缺失/多余。
+		/// </summary>
+		public static void ValidateAndReport()
 		{
 			if (!TryCompare(out var missingInGen, out var staleInGen))
 			{
@@ -68,57 +70,22 @@ namespace FuFramework.Editor.Network
 
 			if (missingInGen.Count == 0 && staleInGen.Count == 0)
 			{
-				Debug.Log($"<color=green>[推送注册表] 一致：{sr_bindPattern.Matches(File.ReadAllText(GenFilePath)).Count} 条绑定与业务源码声明完全匹配。</color>");
+				Debug.Log($"<color=green>[推送注册表] 一致：{sr_bindPattern.Matches(File.ReadAllText(Path.GetFullPath(GenFilePath))).Count} 条绑定与业务源码声明完全匹配。</color>");
 				return;
 			}
 
-			Debug.LogError($"[推送注册表过期] 缺少绑定 {missingInGen.Count} 条、多余绑定 {staleInGen.Count} 条，请运行 Tools/网络/重新生成推送注册表。");
-		}
-
-		/// <summary>一键重生成：调用 Protobuf/gen-proto-registry.py 并刷新（随后自动再编译，守卫会复验）。</summary>
-		[MenuItem("Tools/网络/重新生成推送注册表")]
-		private static void Regenerate()
-		{
-			var repoRoot = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
-			if (!File.Exists(Path.Combine(repoRoot, "Protobuf", "gen-proto-registry.py")))
-			{
-				Debug.LogError($"[推送注册表] 未找到生成脚本：{Path.Combine(repoRoot, "Protobuf", "gen-proto-registry.py")}");
-				return;
-			}
-
-			var startInfo = new ProcessStartInfo
-			{
-				FileName = "python",
-				Arguments = "Protobuf/gen-proto-registry.py",
-				WorkingDirectory = repoRoot,
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				CreateNoWindow = true,
-			};
-			using var process = Process.Start(startInfo);
-			var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
-			process.WaitForExit(15000);
-
-			if (process.ExitCode != 0)
-			{
-				Debug.LogError($"[推送注册表] 生成脚本失败（退出码 {process.ExitCode}）：\n{output}");
-				return;
-			}
-
-			Debug.Log($"<color=green>[推送注册表] 已重新生成，触发刷新编译。</color>\n{output.TrimEnd()}");
-			AssetDatabase.Refresh();
+			Debug.LogError($"[推送注册表过期] 缺少绑定 {missingInGen.Count} 条、多余绑定 {staleInGen.Count} 条，请运行菜单 网络/重新生成推送注册表。");
 		}
 
 		/// <summary>执行比对：missingInGen=业务有声明而生成物缺绑定；staleInGen=生成物有绑定而业务已无声明。</summary>
 		private static bool TryCompare(out HashSet<string> missingInGen, out HashSet<string> staleInGen)
 		{
 			missingInGen = new HashSet<string>();
-			staleInGen = new HashSet<string>();
+			staleInGen   = new HashSet<string>();
 			var genFullPath = Path.GetFullPath(GenFilePath);
 			if (!File.Exists(genFullPath))
 			{
-				Debug.LogError($"[推送注册表] 生成物不存在：{GenFilePath}——请运行 Tools/网络/重新生成推送注册表。");
+				Debug.LogError($"[推送注册表] 生成物不存在：{GenFilePath}——请运行菜单 网络/重新生成推送注册表。");
 				return false;
 			}
 
@@ -130,7 +97,7 @@ namespace FuFramework.Editor.Network
 			}
 
 			// 业务侧：声明对集合（跳过 AutoGen 生成物自身）
-			var declarations = new HashSet<string>();
+			var declarations   = new HashSet<string>();
 			var hotfixFullPath = Path.GetFullPath(HotfixRoot);
 			foreach (var file in Directory.EnumerateFiles(hotfixFullPath, "*.cs", SearchOption.AllDirectories))
 			{

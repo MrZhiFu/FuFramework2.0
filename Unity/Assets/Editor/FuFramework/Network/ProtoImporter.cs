@@ -5,12 +5,14 @@ using UnityEditor;
 using FuFramework.Core.Editor;
 
 // ReSharper disable once CheckNamespace
-namespace FuFramework.Proto.Editor
+namespace FuFramework.Editor.Network
 {
 	/// <summary>
-	/// Proto 协议导出器。
+	/// Proto 协议导出器（"网络"菜单统一入口）。
 	/// 功能：
-	///     1. 在 Unity Editor 中直接执行 Proto 导出脚本，将 .proto 文件编译为 C# 代码。
+	///     1. 执行 Proto 导出脚本，将 .proto 文件编译为 C# 代码（客户端/服务端/全部）。
+	///     2. 重新生成推送注册表：执行 gen-proto-registry 脚本（NotifyRegistryGuard 编译守卫的手动修复入口）。
+	///     3. 校验推送注册表一致性：即时比对业务声明与生成物绑定（NotifyRegistryGuard 的手动触发）。
 	/// </summary>
 	public static class ProtoImporter
 	{
@@ -38,7 +40,7 @@ namespace FuFramework.Proto.Editor
 		/// <summary>
 		/// 导出 Proto — 客户端
 		/// </summary>
-		[MenuItem("FuFramework/Proto/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
+		[MenuItem("网络/导出Proto—客户端", false, FuMenuPriority.PROTO_EXPORT_CLIENT)]
 		public static void ExportProtoClient()
 		{
 			ExportProto(EExportTarget.Client);
@@ -47,7 +49,7 @@ namespace FuFramework.Proto.Editor
 		/// <summary>
 		/// 导出 Proto — 服务端
 		/// </summary>
-		[MenuItem("FuFramework/Proto/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
+		[MenuItem("网络/导出Proto—服务端", false, FuMenuPriority.PROTO_EXPORT_SERVER)]
 		public static void ExportProtoServer()
 		{
 			ExportProto(EExportTarget.Server);
@@ -56,10 +58,49 @@ namespace FuFramework.Proto.Editor
 		/// <summary>
 		/// 导出 Proto — 全部（客户端 + 服务端）
 		/// </summary>
-		[MenuItem("FuFramework/Proto/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
+		[MenuItem("网络/导出Proto—全部", false, FuMenuPriority.PROTO_EXPORT_ALL)]
 		public static void ExportProtoAll()
 		{
 			ExportProto(EExportTarget.All);
+		}
+
+		/// <summary>
+		/// 重新生成推送注册表：执行 gen-proto-registry 脚本（扫描 [NotifyMessageHandler] 产出 BindNotify 绑定），
+		/// 完成后刷新资源触发再编译——NotifyRegistryGuard 编译守卫会自动复验一致性。
+		/// </summary>
+		[MenuItem("网络/重新生成推送注册表", false, FuMenuPriority.PROTO_REGISTRY_REGEN)]
+		public static void RegenerateNotifyRegistry()
+		{
+			var protoDir  = GetProtoPath();
+			var isWin     = Application.platform == RuntimePlatform.WindowsEditor;
+			var script    = Path.Combine(protoDir, isWin ? "gen-proto-registry.bat" : "gen-proto-registry.sh");
+			var stopwatch = Stopwatch.StartNew();
+
+			if (!File.Exists(script))
+			{
+				EditorUtility.DisplayDialog("失败", $"未找到生成脚本：{script}", "确定");
+				return;
+			}
+
+			if (BatchRunner.RunBatch(script, protoDir))
+			{
+				AssetDatabase.Refresh();
+				AssetDatabase.SaveAssets();
+				EditorUtility.DisplayDialog("成功", $"推送注册表已重新生成，耗时{stopwatch.Elapsed.TotalSeconds:F2}s", "确定");
+			}
+			else
+			{
+				EditorUtility.DisplayDialog("失败", "推送注册表生成失败，请查看控制台日志", "确定");
+			}
+		}
+
+		/// <summary>
+		/// 校验推送注册表一致性：即时比对业务源码 [NotifyMessageHandler] 声明与生成物 BindNotify 绑定（结果输出到控制台）。
+		/// </summary>
+		[MenuItem("网络/校验推送注册表一致性", false, FuMenuPriority.PROTO_REGISTRY_VALIDATE)]
+		public static void ValidateNotifyRegistry()
+		{
+			NotifyRegistryGuard.ValidateAndReport();
 		}
 
 		/// <summary>
