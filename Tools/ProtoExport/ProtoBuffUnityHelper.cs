@@ -107,6 +107,7 @@ namespace FuFramework.ProtoExport
         {
             MessageIdsGenerator.ValidateGlobalUniqueness(operationCodeInfo);
             MessageIdsGenerator.Generate(operationCodeInfo, outputPath, namespaceName);
+            MessageIdsGenerator.GenerateLookupTable(operationCodeInfo, protoInputPath);
         }
     }
 }

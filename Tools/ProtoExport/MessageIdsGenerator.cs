@@ -109,6 +109,41 @@ internal static class MessageIdsGenerator
         File.WriteAllText(Path.Combine(outputPath, "MessageIds.g.cs"), sb.ToString(), Encoding.UTF8);
     }
 
+    /// <summary>
+    /// 生成 MessageIds.md 抓包速查表（生成物，勿手改）：按模块分组的 ID↔语义名对照，落在 proto 目录的上级（Protobuf/）。
+    /// </summary>
+    public static void GenerateLookupTable(List<MessageInfoList> messageInfoLists, string protoInputPath)
+    {
+        var protoDir = Path.GetFullPath(protoInputPath);
+        var outputPath = Path.Combine(Path.GetDirectoryName(protoDir) ?? ".", "MessageIds.md");
+        var sb = new StringBuilder();
+        sb.AppendLine("# 消息 ID 速查表");
+        sb.AppendLine();
+        sb.AppendLine("> 由 ProtoExport 自动生成（勿手改）。消息 ID = (module << 16) + opcode。");
+        sb.AppendLine();
+        foreach (var messageInfoList in messageInfoLists)
+        {
+            sb.AppendLine($"## {GetModuleName(messageInfoList.FileName)}（module {messageInfoList.Module}）");
+            sb.AppendLine();
+            sb.AppendLine("| 消息名 | opcode | 完整 ID |");
+            sb.AppendLine("|---|---|---|");
+            foreach (var operationCodeInfo in messageInfoList.Infos)
+            {
+                if (!operationCodeInfo.IsMessage)
+                {
+                    continue;
+                }
+
+                sb.AppendLine($"| {operationCodeInfo.Name} | {operationCodeInfo.Opcode} | {(messageInfoList.Module << 16) + operationCodeInfo.Opcode} |");
+            }
+
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("> 盲区：module 32766（short.MaxValue-1）段为服务器内置协议 DiscoveryCenter，手写维护，不在本表生成范围。");
+        File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
+    }
+
     /// <summary>模块名 = proto 文件名去掉末尾的 _模块号（User_300 → User，Inner_Basic_2 → Inner_Basic）。</summary>
     public static string GetModuleName(string fileName)
     {
