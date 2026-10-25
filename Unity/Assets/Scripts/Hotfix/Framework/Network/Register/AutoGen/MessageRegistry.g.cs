@@ -46,11 +46,33 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 注册「消息ID &lt;-&gt; 类型」映射、心跳类型集合。
-        /// 共 0 条。
+        /// 共 23 条。
         /// </summary>
         private static void RegisterMessageIds()
         {
-            // 未扫描到任何协议消息。
+            MessageIdRegistry.Register<ReqHeartBeat>(MessageIds.Basic.ReqHeartBeat);
+            MessageIdRegistry.Register<NotifyHeartBeat>(MessageIds.Basic.NotifyHeartBeat);
+            MessageIdRegistry.Register<NotifyServerFullyLoaded>(MessageIds.Basic.NotifyServerFullyLoaded);
+            MessageIdRegistry.Register<ReqBagInfo>(MessageIds.Bag.ReqBagInfo);
+            MessageIdRegistry.Register<RespBagInfo>(MessageIds.Bag.RespBagInfo);
+            MessageIdRegistry.Register<ReqUseItem>(MessageIds.Bag.ReqUseItem);
+            MessageIdRegistry.Register<RespUseItem>(MessageIds.Bag.RespUseItem);
+            MessageIdRegistry.Register<ReqAddItem>(MessageIds.Bag.ReqAddItem);
+            MessageIdRegistry.Register<RespAddItem>(MessageIds.Bag.RespAddItem);
+            MessageIdRegistry.Register<ReqRemoveItem>(MessageIds.Bag.ReqRemoveItem);
+            MessageIdRegistry.Register<RespRemoveItem>(MessageIds.Bag.RespRemoveItem);
+            MessageIdRegistry.Register<NotifyBagItem>(MessageIds.Bag.NotifyBagItem);
+            MessageIdRegistry.Register<NotifyBagInfoChanged>(MessageIds.Bag.NotifyBagInfoChanged);
+            MessageIdRegistry.Register<ReqUserLogin>(MessageIds.User.ReqUserLogin);
+            MessageIdRegistry.Register<RespUserLogin>(MessageIds.User.RespUserLogin);
+            MessageIdRegistry.Register<ReqPlayerCreate>(MessageIds.User.ReqPlayerCreate);
+            MessageIdRegistry.Register<RespPlayerCreate>(MessageIds.User.RespPlayerCreate);
+            MessageIdRegistry.Register<ReqPlayerList>(MessageIds.User.ReqPlayerList);
+            MessageIdRegistry.Register<RespPlayerList>(MessageIds.User.RespPlayerList);
+            MessageIdRegistry.Register<ReqPlayerLogin>(MessageIds.User.ReqPlayerLogin);
+            MessageIdRegistry.Register<RespPlayerLogin>(MessageIds.User.RespPlayerLogin);
+            MessageIdRegistry.Register<NotifyErrorCode>(MessageIds.User.NotifyErrorCode);
+            MessageIdRegistry.Register<NotifyPrompt>(MessageIds.User.NotifyPrompt);
         }
 
         /// <summary>

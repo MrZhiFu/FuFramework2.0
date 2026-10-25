@@ -78,8 +78,8 @@ DEFAULT_PROTO_NAMESPACE = "Hotfix.Game.Proto"
 # 正则
 # ---------------------------------------------------------------------------
 
-# [MessageId(6553610)] 之后紧跟 public sealed class X : Base, IRequestMessage
-RE_MSG_TYPE_ATTR = re.compile(r"\[\s*MessageId\s*\(\s*(\d+)\s*\)\s*\]")
+# [MessageId(MessageIds.User.ReqUserLogin)] 之后紧跟 public sealed class X : Base, IRequestMessage
+RE_MSG_TYPE_ATTR = re.compile(r"\[\s*MessageId\s*\(\s*([\w.]+)\s*\)\s*\]")
 RE_CLASS_DECL = re.compile(
     r"^\s*(?:public|internal|sealed|abstract|static|\s)*\b(?:class|struct)\s+(\w+)\s*(?:<[^>]*>)?\s*:\s*([^\r\n{]+)",
     re.MULTILINE,
@@ -92,6 +92,32 @@ RE_CLASS_DECL_ANY = re.compile(
     r"(?::\s*(?P<bases>[^\r\n{]*))?",
     re.MULTILINE,
 )
+
+def load_message_ids():
+    """解析导出物 MessageIds.g.cs，建立 常量路径 -> 数值 映射（如 MessageIds.User.ReqUserLogin -> 19660810）。
+
+    常量行格式：public const int ReqUserLogin = ((int)MessageModule.User << 16) + 10; // 19660810
+    数值取自行尾注释（导出器保证与算式一致）。注意必须用 read_text——read_code 会剥注释。
+    """
+    path = os.path.join(PROTO_DIR, "MessageIds.g.cs")
+    if not os.path.isfile(path):
+        raise SystemExit(
+            "[错误] 未找到 MessageIds.g.cs：%s —— 请先跑 Proto2CsExport-All.bat ci" % path
+        )
+    text = read_text(path)
+    table = {}
+    module = None
+    for m in re.finditer(
+        r"public\s+static\s+class\s+(\w+)|public\s+const\s+int\s+(\w+)\s*=.*?//\s*(\d+)", text
+    ):
+        if m.group(1):
+            module = m.group(1)
+        elif module and module != "MessageIds":
+            table["MessageIds.%s.%s" % (module, m.group(2))] = int(m.group(3))
+    if not table:
+        raise SystemExit("[错误] MessageIds.g.cs 中未解析到任何常量：%s" % path)
+    return table
+
 
 # [NotifyMessageHandler(typeof(NotifyBagInfoChanged), nameof(NotifyBagInfoChanged))]
 RE_MSG_HANDLER_ATTR = re.compile(
@@ -306,6 +332,8 @@ def scan_proto_messages():
     if not os.path.isdir(PROTO_DIR):
         raise SystemExit("[错误] 未找到 proto 目录：%s" % PROTO_DIR)
 
+    message_ids_table = load_message_ids()
+
     for path in iter_cs_files(PROTO_DIR):
         text = read_code(path)
         rel = os.path.relpath(path, REPO_ROOT).replace("\\", "/")
@@ -315,12 +343,18 @@ def scan_proto_messages():
             namespaces.add(ns)
 
         for attr in RE_MSG_TYPE_ATTR.finditer(text):
-            message_id = int(attr.group(1))
+            message_expr = attr.group(1)
+            if message_expr not in message_ids_table:
+                raise SystemExit(
+                    "[错误] %s: [MessageId(%s)] 在 MessageIds.g.cs 中无对应常量——请重跑 Proto2CsExport-All.bat ci"
+                    % (rel, message_expr)
+                )
+            message_id = message_ids_table[message_expr]
             decl = RE_CLASS_DECL.search(text, attr.end())
             if decl is None:
                 warnings.append(
-                    "%s: [MessageId(%d)] 之后未找到类声明，已跳过。"
-                    % (rel, message_id)
+                    "%s: [MessageId(%s)] 之后未找到类声明，已跳过。"
+                    % (rel, message_expr)
                 )
                 continue
 
@@ -329,6 +363,7 @@ def scan_proto_messages():
             messages.append(
                 {
                     "id": message_id,
+                    "expr": message_expr,
                     "type": type_name,
                     "file": rel,
                 }
@@ -683,8 +718,8 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     lines = []
     for msg in messages:
         lines.append(
-            "            MessageIdRegistry.Register<%s>(%d);\n"
-            % (msg["type"], msg["id"])
+            "            MessageIdRegistry.Register<%s>(%s);\n"
+            % (msg["type"], msg["expr"])
         )
     message_registrations = "".join(lines) if lines else "            // 未扫描到任何协议消息。\n"
 
