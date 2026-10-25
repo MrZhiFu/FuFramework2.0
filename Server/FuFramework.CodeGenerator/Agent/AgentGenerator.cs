@@ -49,11 +49,11 @@ public class AgentGenerator : ISourceGenerator
                     info.Partial = "partial";
                     partialClassCount.TryGetValue(info.Name, out var count);
                     partialClassCount[info.Name] = count + 1;
-                    outFileName = $"{info.Name}{count}.g.cs";
+                    outFileName = $"{info.Name}{count}.gen.cs";
                 }
                 else
                 {
-                    outFileName = $"{info.Name}.g.cs";
+                    outFileName = $"{info.Name}.gen.cs";
                 }
 
                 //处理Using
