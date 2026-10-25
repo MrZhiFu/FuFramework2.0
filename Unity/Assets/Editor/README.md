@@ -23,7 +23,7 @@ Editor/
     │   ├── ProjectSettingEditor.cs         # 编辑器启动时自动统一 PlayerSettings 关键项，并创建 Bundle 所需目录
     │   └── UITextureAssetPostprocessor.cs  # UI 纹理导入自动设置（平台压缩格式、关 Mipmap、关可读）
     ├── Config/                     # 配置表导出（Json / Bin）、配置调试面板
-    ├── Proto/                      # Proto 导出（客户端 / 服务端）
+    ├── Network/                    # 网络编辑器工具：ProtoImporter（Proto 导出 + 推送注册表重生成/校验菜单）、NotifyRegistryGuard（推送注册表编译期过期守卫）
     ├── Localization/               # 多语言 key 清理（生成报告 / 查看报告 / 清理表）
     ├── ModuleSetting/              # GameSetting 资源 Inspector
     ├── Timer/                      # 计时器调试面板（partial 拆分：窗口主体 + Reflection 反射访问）
@@ -43,8 +43,7 @@ Editor/
 | SRDebugger工具 | SRDebugger 开关 |
 | 配置表 | 导出 Json / Bin |
 | 多语言检查 | 报告生成 / 查看 / 清理 |
-| Proto | 客户端 / 服务端 / 全部导出 |
-| 网络类型设置 | WebSocket 强制开关 |
+| 网络 | 导出 Proto（客户端 / 服务端 / 全部）、重新生成 / 校验推送注册表、网络类型设置（WebSocket 强制开关） |
 | 工具类（顶级菜单项） | 代码防裁剪工具、删除本地游戏数据、启动 HttpCDN 服务器 |
 | 调试 | 配置 / 对象池 / 红点 / 引用池 / 事件 / 计时器 / Web 调试面板（仅 Play 模式） |
 
