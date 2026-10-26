@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Network
 		/// 用真实时钟差值推进心跳流逝时长（替代逐帧累加 unscaledDeltaTime）。
 		/// 由主线程 ProcessHeartBeat 每帧调用；挂起期间无调用，回前台首帧的差值即整段挂起时长。
 		/// </summary>
-		public void Update()
+		public void UpdateByRealTime()
 		{
 			var now = Time.realtimeSinceStartup;
 			HeartBeatElapseSeconds     += now - m_lastRealTimeSinceStartup;

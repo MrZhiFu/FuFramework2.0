@@ -55,7 +55,7 @@ namespace Hotfix.Framework.Network
 				if (m_Socket == null || !IsOpen) return;
 
 				// 真实时钟差值推进（非逐帧累加）：挂后台回前台首帧差值即挂起时长，立即补发心跳体检连接
-				m_HeartBeatState.Update();
+				m_HeartBeatState.UpdateByRealTime();
 				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)
 				{
 					sendHeartBeat      = true;
