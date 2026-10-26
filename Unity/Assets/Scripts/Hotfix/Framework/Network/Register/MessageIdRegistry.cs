@@ -28,10 +28,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 清空全部注册数据（供初始化重试使用）。
 		/// </summary>
-		public static void Reset()
-		{
-			sr_messageDict.Clear();
-		}
+		public static void Reset() => sr_messageDict.Clear();
 
 		/// <summary>
 		/// 注册一个协议消息类型。

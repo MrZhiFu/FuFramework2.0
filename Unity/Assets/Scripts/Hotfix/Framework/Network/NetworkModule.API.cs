@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 				throw new InvalidOperationException("[NetworkModule]网络频道已存在，请先 DestroyChannel。");
 			}
 
-#if (ENABLE_GAME_FRAME_X_WEB_SOCKET && UNITY_WEBGL) || FORCE_ENABLE_WEB_SOCKET
+#if UNITY_WEBGL || FORCE_ENABLE_WEB_SOCKET
 			NetworkChannelBase networkChannel = new WebSocketNetworkChannel(networkChannelHelper, rpcTimeout);
 #else
 			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(networkChannelHelper, rpcTimeout);
@@ -54,9 +54,9 @@ namespace Hotfix.Framework.Network
 		/// 内部先置空引用再 Dispose：Dispose 触发的 Closed 事件回调里若再 CreateChannel，模块状态依然一致（消除重入竞态）。
 		/// </summary>
 		/// <returns>是否销毁成功（无频道时返回 false）。</returns>
-		public bool DestroyChannel()
+		public void DestroyChannel()
 		{
-			if (m_networkChannel == null) return false;
+			if (m_networkChannel == null) return;
 
 			var networkChannel = m_networkChannel;
 			m_networkChannel                             =  null;
@@ -65,7 +65,6 @@ namespace Hotfix.Framework.Network
 			networkChannel.m_NetworkChannelMissHeartBeat -= OnNetworkChannelMissHeartBeat;
 			networkChannel.m_NetworkChannelError         -= OnNetworkChannelError;
 			networkChannel.Dispose();
-			return true;
 		}
 
 		/// <summary>
@@ -75,7 +74,7 @@ namespace Hotfix.Framework.Network
 		{
 			if (m_networkChannel == null)
 			{
-				throw new InvalidOperationException("[NetworkModule]网络频道未创建，请先 CreateChannel。");
+				throw new InvalidOperationException("[NetworkModule]网络频道未创建，请先创建网络频道。");
 			}
 
 			return m_networkChannel;

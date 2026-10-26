@@ -11,12 +11,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理发送包体：将消息体字节写入发送流
 		/// </summary>
-		/// <param name="messageBodyBuffer">消息体缓冲区</param>
-		/// <param name="destination">包体写入目标流</param>
+		/// <param name="msgBodyBuffer">消息体缓冲区</param>
+		/// <param name="cacheStream">包体写入目标流</param>
 		/// <returns>是否写入成功</returns>
-		public bool Handler(byte[] messageBodyBuffer, MemoryStream destination)
+		public bool WriteToCacheStream(byte[] msgBodyBuffer, MemoryStream cacheStream)
 		{
-			destination.Write(messageBodyBuffer, 0, messageBodyBuffer.Length);
+			cacheStream.Write(msgBodyBuffer, 0, msgBodyBuffer.Length);
 			return true;
 		}
 	}

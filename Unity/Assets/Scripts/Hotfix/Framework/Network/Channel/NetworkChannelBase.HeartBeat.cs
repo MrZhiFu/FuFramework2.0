@@ -44,8 +44,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理心跳
 		/// </summary>
-		/// <param name="unscaledDeltaTime"></param>
-		private void ProcessHeartBeat(float unscaledDeltaTime)
+		private void ProcessHeartBeat()
 		{
 			if (m_HeartBeatInterval <= 0f) return;
 
@@ -55,7 +54,8 @@ namespace Hotfix.Framework.Network
 			{
 				if (m_Socket == null || !IsOpen) return;
 
-				m_HeartBeatState.HeartBeatElapseSeconds += unscaledDeltaTime;
+				// 真实时钟差值推进（非逐帧累加）：挂后台回前台首帧差值即挂起时长，立即补发心跳体检连接
+				m_HeartBeatState.Update();
 				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)
 				{
 					sendHeartBeat      = true;

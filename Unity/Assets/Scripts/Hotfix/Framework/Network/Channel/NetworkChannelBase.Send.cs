@@ -94,7 +94,7 @@ namespace Hotfix.Framework.Network
 				// 闸门：同一时刻只允许一批消息在途。
 				// ① Stream.Length > 0：上一批还没发完（发完才 Reset 清零），不能再灌新消息，避免两批混在一个流里；
 				// ② 发送队列已空：没有可发的消息。两种情况都无需装货，直接返回（子类据此不会发起新一轮发送）。
-				if (m_SendState.Stream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
+				if (m_SendState.CacheStream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
 
 				// 处理待发送的消息对象，直到遇到错误或发送完毕为止。
 				while (m_SendPacketPool.First != null)
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.Network
 					return false;
 				}
 
-				m_SendState.Stream.Position = 0L;
+				m_SendState.CacheStream.Position = 0L;
 				return true;
 			}
 		}
@@ -152,10 +152,10 @@ namespace Hotfix.Framework.Network
 		/// <exception cref="InvalidOperationException"></exception>
 		protected virtual bool ProcessSendMessage(MessageObject msgObj)
 		{
-			var serializeResult = m_NetworkChannelHelper.SerializePacketHeader(msgObj, m_SendState.Stream, out var messageBodyBuffer);
-			if (serializeResult)
+			var serializeSuccess = m_NetworkChannelHelper.SerializeAndWriteToCacheStream(msgObj, m_SendState.CacheStream, out var msgBodyBuffer);
+			if (serializeSuccess)
 			{
-				serializeResult = m_NetworkChannelHelper.SerializePacketBody(messageBodyBuffer, m_SendState.Stream);
+				serializeSuccess = m_NetworkChannelHelper.WritePacketBodyToCacheStream(msgBodyBuffer, m_SendState.CacheStream);
 			}
 			else
 			{
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.Network
 				throw new InvalidOperationException(errorMessage);
 			}
 
-			return serializeResult;
+			return serializeSuccess;
 		}
 
 		/// <summary>

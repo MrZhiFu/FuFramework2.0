@@ -62,14 +62,14 @@ public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgOb
            ↓ NetworkModule/Channel.Call: Send(req) → RpcState.Call → 挂起表登记（key=req.UniqueId）
         —— 到这里调用方就"悬起"了，什么都不占，等 Task 恢复 ——
            ↓ 服务器处理，响应 RespPlayerLogin 回来 → 收包全链路 → 信封读回 UniqueId → SetUniqueId
-主线程 ProcessReceivedMessage:
+主线程 ProcessReceived:
    ↓ （心跳回包已在此前按 is IHeartBeatMessage 截流，不进业务派发）
    └─ m_rpcState.TryReply(resp)
         ├─ 判断是不是 IResponseMessage（is 模式匹配，无缓存）
         ├─ TryRemove(resp.UniqueId) 在挂起表找配对
         ├─ 配上 → data.Reply(resp) → UniTaskCompletionSource.TrySetResult → await 恢复
         │        （错误码由响应体 Code / NotifyErrorCode 旁路推送承载，无独立回调）
-        └─ 没配上 → DispatchNotifyMessage（当普通推送走 [NotifyMessageHandler]）
+        └─ 没配上 → DispatchNotify（当普通推送走 [NotifyMessageHandler]）
         ↓
    await 恢复：返回强类型 RespPlayerLogin → 调用方拿到响应 ✅
 ```
@@ -90,9 +90,9 @@ public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgOb
 
 ```csharp
 if (m_rpcState.TryReply(messageObject)) continue;   // 配上了 → 不再派发
-DispatchNotifyMessage(messageObject);               // 没配上 → 当 [NotifyMessageHandler] 普通推送
+DispatchNotify(messageObject);               // 没配上 → 当 [NotifyMessageHandler] 普通推送
 ```
-落到 `DispatchNotifyMessage` 的三种情况：① 根本不是 `IResponseMessage`；② 是响应但挂起表里没有配对（服务器主动推送）；③ 迟到的 RPC 响应（请求已超时/断线，响应晚到无人认领）。（顺带一提：RPC 用的是「回包分流」，而登录那段 HTTP/TCP 是「双段分层」——两个"双"字不是一回事，见 3.5。）
+落到 `DispatchNotify` 的三种情况：① 根本不是 `IResponseMessage`；② 是响应但挂起表里没有配对（服务器主动推送）；③ 迟到的 RPC 响应（请求已超时/断线，响应晚到无人认领）。（顺带一提：RPC 用的是「回包分流」，而登录那段 HTTP/TCP 是「双段分层」——两个"双"字不是一回事，见 3.5。）
 
 ### 3.4 业务侧怎么写（铁律 5 的实际应用）
 
@@ -152,7 +152,7 @@ HTTP 登录账号 → 服务器告知"该去哪台游戏服" → TCP 连那台 �
 1. 为什么配对用 `UniqueId` 而不用消息 ID？
 2. 客户端收到的响应 `RespPlayerLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
 3. 为什么断线必须 `Cancel` 而不是只 `Clear()` 字典？
-4. 同一条响应，`TryReply` 和 `DispatchNotifyMessage` 谁先执行？什么时候会落到后者？
+4. 同一条响应，`TryReply` 和 `DispatchNotify` 谁先执行？什么时候会落到后者？
 5. "RPC 是远程过程调用" —— 用三句话给一个没听过的人解释。
 6. 业务侧为什么必须捕获 `OperationCanceledException` 与 `TimeoutException`？
 7. 为什么账号登录走 HTTP、进游戏才走 TCP？（说出至少两条 HTTP 承担登录的好处）
@@ -162,7 +162,7 @@ HTTP 登录账号 → 服务器告知"该去哪台游戏服" → TCP 连那台 �
 1. 消息 ID 是发货渠道，同类型共用 → 靠它配对会错配（两条同类型请求拿同一个响应）；`UniqueId` 是每实例唯一单号 → 挂起表 key 各不同，能同时挂 N 条同类型请求、各配各的。
 2. 从响应信封的侧信道读回：收包时 `MessageObject.SetUniqueId(PacketReceiveHeaderHandler.UniqueId)`（`SystemTcpNetworkChannel.ProcessPackBody`）。服务器在响应信封里回显了请求的同一个 UniqueId，客户端读回来赋给响应的 MessageObject，`TryReply` 就能拿它去挂起表配对。proto 里没有这个字段（`[JsonIgnore]`），它只活在自定义包头里。与 `UpdateUniqueId()`（发侧生成新号）分工：一个生成、一个还原，方法名各自对应方向。
 3. `Clear()` 只清登记表，不清每个挂起的 Task——`await` 仍悬在未完成状态，调用方永久醒不来（还要泄漏一坨继续堆栈）。`Cancel()` 对每个挂起 `TrySetException(OperationCanceledException)` → await 抛出取消异常，调用方 catch 后走重连提示。
-4. **先 `TryReply`，配上了 `continue`；配不上才 `DispatchNotifyMessage`**。落到后者的三种情况：不是 IResponseMessage；是响应但挂起表无配对（主动推送）；迟到的 RPC 响应（请求已超时/断线）。
+4. **先 `TryReply`，配上了 `continue`；配不上才 `DispatchNotify`**。落到后者的三种情况：不是 IResponseMessage；是响应但挂起表无配对（主动推送）；迟到的 RPC 响应（请求已超时/断线）。
 5. RPC = 远程过程调用。① 你把"请服务器干一件事"变成一条消息发过去；② 然后空手 await，等它回信；③ 收到回信把它当"返回值"用——整个过程像在调用一个本地函数。
 6. `Call` 的 Task 有三种结局（正常/超时/断线），两处异常路径会以 `TimeoutException`/`OperationCanceledException` 抛给 await；不捕获就可能逃逸到主循环无人处理，或让登录流程卡住。捕获它们才能优雅地上重连提示、清理 UI 状态（这符合铁律 5 的"异步链必须有生命周期所有者"）。
 7. ① 登录是一次性、无状态、低频的凭证交换，HTTP 请求-响应模型天然匹配，且 HTTPS/负载均衡/限流等基础设施现成；② 无状态服务加机器即可扩容，开服登录洪峰不会挤占游戏服的会话内存；③ 故障域隔离：登录服重启/被刷不影响已在线玩家的 TCP 会话。反面印证：推送增量只存在于 TCP 会话，基线竞态只在 TCP 段存在，所以派发阀门只挂 `WinPlayerList.PlayerLoginAsync`。

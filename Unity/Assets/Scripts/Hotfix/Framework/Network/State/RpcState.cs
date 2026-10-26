@@ -12,6 +12,11 @@ namespace Hotfix.Framework.Network
 	internal sealed class RpcState : IDisposable
 	{
 		/// <summary>
+		/// RPC 超时时间最小值。单位毫秒
+		/// </summary>
+		private const int RPC_TIMEOUT_MIN = 3000;
+
+		/// <summary>
 		/// 等待回复的请求字典（UniqueId → 等待载体 RpcMessageData）
 		/// </summary>
 		private readonly ConcurrentDictionary<long, RpcMessageData> m_waitingReplyDict = new();
@@ -33,7 +38,7 @@ namespace Hotfix.Framework.Network
 		public RpcState(int timeout)
 		{
 			m_rpcTimeout = timeout;
-			if (m_rpcTimeout < 3000)
+			if (m_rpcTimeout < RPC_TIMEOUT_MIN)
 			{
 				throw new ArgumentOutOfRangeException(nameof(timeout), "RPC超时时间不能小于3000毫秒");
 			}
@@ -62,7 +67,6 @@ namespace Hotfix.Framework.Network
 		/// <returns>如果成功处理回复消息，则返回true；否则返回false。</returns>
 		public bool TryReply(MessageObject msgObj)
 		{
-			// 非响应消息（Notify/Req）直接跳过配对
 			if (msgObj is not IResponseMessage responseMessage) return false;
 			if (!m_waitingReplyDict.TryRemove(msgObj.UniqueId, out var rpcMessageData)) return false;
 
@@ -90,11 +94,12 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 逻辑更新，处理计时和超时移除任务
+		/// 逻辑更新，处理消息计时和超时移除消息
 		/// </summary>
 		/// <param name="deltaTime"></param>
 		public void Update(float deltaTime)
 		{
+			// 处理等待回复的消息
 			if (m_waitingReplyDict.Count > 0)
 			{
 				var elapseSecondsTime = (long)(deltaTime * 1000);
@@ -107,6 +112,7 @@ namespace Hotfix.Framework.Network
 				}
 			}
 
+			// 移除超时任务
 			if (m_timeoutReplyIdSet.Count > 0)
 			{
 				foreach (var objectId in m_timeoutReplyIdSet)

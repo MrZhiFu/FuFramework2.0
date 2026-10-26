@@ -22,15 +22,15 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送数据流
 		/// </summary>
-		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
+		public MemoryStream CacheStream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 重置发送数据流
 		/// </summary>
 		public void Reset()
 		{
-			Stream.Position = 0L;
-			Stream.SetLength(0L);
+			CacheStream.Position = 0L;
+			CacheStream.SetLength(0L);
 		}
 
 		/// <summary>
@@ -40,10 +40,10 @@ namespace Hotfix.Framework.Network
 		{
 			if (m_disposed) return;
 
-			if (Stream != null)
+			if (CacheStream != null)
 			{
-				Stream.Dispose();
-				Stream = null;
+				CacheStream.Dispose();
+				CacheStream = null;
 			}
 
 			m_disposed = true;

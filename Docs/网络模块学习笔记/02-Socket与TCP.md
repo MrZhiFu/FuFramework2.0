@@ -110,7 +110,7 @@ finally
 
 ### 3.2 发送侧为什么会"续发"
 
-一条消息先序列化进 `SendState.Stream`（Length=整条字节数，Position 归 0 后开始发）：
+一条消息先序列化进 `SendState.CacheStream`（Length=整条字节数，Position 归 0 后开始发）：
 
 ```
 BeginSend（从 Position 发到 Length）→ 一轮可能只发出去一部分
@@ -125,7 +125,7 @@ SendCallback:  Position += bytesSent
 // 同批只允许一批在途：
 // ① Stream.Length > 0：上一批还没发完（发完才 Reset 清零），不能再灌新消息，避免两批混在一个流里；
 // ② 发送队列已空：没有可发的消息。
-if (m_SendState.Stream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
+if (m_SendState.CacheStream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
 ```
 
 `Length` 与 `Position` 两句人话：
@@ -140,10 +140,9 @@ if (m_SendState.Stream.Length > 0 || m_SendPacketPool.Count <= 0) return false;
 ReceiveCallback                       DrainLifecycleEvents
   EndReceive → bytesReceived          if (m_Socket == null || !IsOpen) return
   ReceiveState.Stream 水位推进         ProcessSend()          （从发送队列取货）
-  ProcessReceivedBytes：切包/反序列化   ProcessReceive()        （基类占位）
-  lock 里执行链表 .AddLast(完整消息)    m_rpcState.Update()    （RPC 挂起表超时轮询）
-  finally: ReceiveAsync() 续接         ProcessHeartBeat()      （心跳）
-                                       ProcessReceivedMessage()（从链表取货派发）
+  ProcessReceivedBytes：切包/反序列化   ProcessHeartBeat()      （心跳）
+  lock 里执行链表 .AddLast(完整消息)    ProcessReceived()      （从链表取货派发）
+  finally: ReceiveAsync() 续接         m_rpcState.Update()    （RPC 挂起表超时轮询）
 ```
 
 **关键**：切包、反序列化**全在后台回调线程**完成；跨线程传的不是字节，而是**解析好的完整消息对象**。主线程只做轻量取货派发。
@@ -170,6 +169,6 @@ ReceiveCallback                       DrainLifecycleEvents
 4. 因为"持续接收"需要一个后台连轴转的循环，而 await 的续体绑线程、Unity 还封送回主线程——await 塞不进"后台持续收 + 主线程按帧取货"的两线程结构。项目对"一次性连接"仍用 UniTask（每处放对技术）。
 5. `AddLast` 在后台回调线程；`RemoveFirst` 在主线程。两个线程同时摸同一个链表会把结构撕坏，故必须用 `m_handleMsgLock` 互斥。
 6. 因为 TCP 一次 `Send` 不保证发完（发送缓冲区可能满），`bytesSent` 可能小于剩余量，必须"发一点、看进度、没完续发"。起点若写死 0，前 40 字节会被重复发送 → 接收方按信封长度切包会切出"缝合怪"，消息永久损坏。
-7. 防止两批消息混进同一个 `SendState.Stream`。只有发完（`Position==Length` 触发 `Reset` 把 Length 清零）才能灌下一批；否则两批货混在一个集装箱，对端按 `PacketLength` 切包就全乱套。
+7. 防止两批消息混进同一个 `SendState.CacheStream`。只有发完（`Position==Length` 触发 `Reset` 把 Length 清零）才能灌下一批；否则两批货混在一个集装箱，对端按 `PacketLength` 切包就全乱套。
 
 > 下一站：那个 14 字节"信封"长什么样、每字节为何存在、以及字节序（网络大端 vs 内存小端）的真相。

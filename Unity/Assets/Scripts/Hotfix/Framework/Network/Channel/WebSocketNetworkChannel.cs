@@ -184,9 +184,9 @@ namespace Hotfix.Framework.Network
 			{
 				var webSocketClientNetSocket = (WebSocketNetSocket)m_Socket;
 
-				var buffer = new byte[m_SendState.Stream.Length];
-				m_SendState.Stream.Seek(0, SeekOrigin.Begin);
-				_ = m_SendState.Stream.Read(buffer, 0, buffer.Length);
+				var buffer = new byte[m_SendState.CacheStream.Length];
+				m_SendState.CacheStream.Seek(0, SeekOrigin.Begin);
+				_ = m_SendState.CacheStream.Read(buffer, 0, buffer.Length);
 
 				webSocketClientNetSocket.Client.SendAsync(buffer);
 			}
@@ -309,7 +309,7 @@ namespace Hotfix.Framework.Network
 					{
 						// 解压
 						MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
-						body = MessageDecompressHandler.Handler(body);
+						body = MessageDecompressHandler.Decompress(body);
 					}
 
 					// 反序列化数据

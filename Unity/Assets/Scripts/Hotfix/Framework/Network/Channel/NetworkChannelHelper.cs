@@ -153,43 +153,43 @@ namespace Hotfix.Framework.Network
 		/// <returns>是否已发起发送</returns>
 		public bool SendHeartBeat()
 		{
-			var message = m_networkChannel.PacketHeartBeatHandler.Handler();
+			var message = m_networkChannel.PacketHeartBeatHandler.CreateHeartBeatReq();
 			m_networkChannel.Send(message);
 			return true;
 		}
 
 		/// <summary>
-		/// 序列化发送包头
+		/// 序列化消息并写入缓存流
 		/// </summary>
 		/// <param name="msgObj">待发送的消息对象</param>
-		/// <param name="destination">包头写入目标流</param>
-		/// <param name="messageBodyBuffer">输出：待发送的消息体缓冲区</param>
+		/// <param name="cacheStream">包头写入目标流</param>
+		/// <param name="msgBodyBuffer">输出：待发送的消息体缓冲区</param>
 		/// <returns>是否序列化成功</returns>
-		public bool SerializePacketHeader<T>(T msgObj, MemoryStream destination, out byte[] messageBodyBuffer) where T : MessageObject
+		public bool SerializeAndWriteToCacheStream<T>(T msgObj, MemoryStream cacheStream, out byte[] msgBodyBuffer) where T : MessageObject
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
 			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
 			msgObj.NotNull(nameof(msgObj));
-			destination.NotNull(nameof(destination));
+			cacheStream.NotNull(nameof(cacheStream));
 
-			return m_networkChannel.PacketSendHeaderHandler.Handler(msgObj, m_networkChannel.MessageCompressHandler, destination, out messageBodyBuffer);
+			return m_networkChannel.PacketSendHeaderHandler.SerializeAndWriteToCacheStream(msgObj, m_networkChannel.MessageCompressHandler, cacheStream, out msgBodyBuffer);
 		}
 
 		/// <summary>
-		/// 序列化发送包体
+		/// 将消息体写入缓存流
 		/// </summary>
-		/// <param name="messageBodyBuffer">消息体缓冲区</param>
-		/// <param name="destination">包体写入目标流</param>
+		/// <param name="msgBodyBuffer">消息体缓冲区</param>
+		/// <param name="cacheStream">包体写入目标流</param>
 		/// <returns>是否序列化成功</returns>
-		public bool SerializePacketBody(byte[] messageBodyBuffer, MemoryStream destination)
+		public bool WritePacketBodyToCacheStream(byte[] msgBodyBuffer, MemoryStream cacheStream)
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
 			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
 			m_networkChannel.PacketSendBodyHandler.NotNull(nameof(m_networkChannel.PacketSendBodyHandler));
-			messageBodyBuffer.NotNull(nameof(messageBodyBuffer));
-			destination.NotNull(nameof(destination));
+			msgBodyBuffer.NotNull(nameof(msgBodyBuffer));
+			cacheStream.NotNull(nameof(cacheStream));
 
-			return m_networkChannel.PacketSendBodyHandler.Handler(messageBodyBuffer, destination);
+			return m_networkChannel.PacketSendBodyHandler.WriteToCacheStream(msgBodyBuffer, cacheStream);
 		}
 
 		/// <summary>
@@ -200,7 +200,7 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
-			return m_networkChannel.PacketReceiveHeaderHandler.Handler(source);
+			return m_networkChannel.PacketReceiveHeaderHandler.Deserialize(source);
 		}
 
 		/// <summary>
@@ -213,7 +213,7 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject msgObj)
 		{
 			source.NotNull(nameof(source));
-			return m_networkChannel.PacketReceiveBodyHandler.Handler(source, messageId, out msgObj);
+			return m_networkChannel.PacketReceiveBodyHandler.Deserialize(source, messageId, out msgObj);
 		}
 
 		/// <summary>

@@ -84,34 +84,33 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 处理消息
+		/// 序列化消息并写入缓存流
 		/// </summary>
 		/// <param name="msgObj">消息对象</param>
 		/// <param name="messageCompressHandler">压缩消息内容处理器</param>
-		/// <param name="destination">缓存流</param>
-		/// <param name="messageBodyBuffer">消息序列化完的二进制数组</param>
+		/// <param name="cacheStream">缓存流</param>
+		/// <param name="msgBodyBuffer">消息序列化完的二进制数组</param>
 		/// <typeparam name="T">消息类型</typeparam>
 		/// <returns>是否序列化成功</returns>
-		public bool Handler<T>(T msgObj, MessageCompressHandler messageCompressHandler, MemoryStream destination,
-		                       out byte[] messageBodyBuffer) where T : MessageObject
+		public bool SerializeAndWriteToCacheStream<T>(T msgObj, MessageCompressHandler messageCompressHandler, MemoryStream cacheStream, out byte[] msgBodyBuffer) where T : MessageObject
 		{
 			m_offset = 0;
 			var messageType = msgObj.GetType();
 
-			Id                = MessageIdRegistry.GetIdByType(messageType);
-			messageBodyBuffer = SerializerHelper.Serialize(msgObj);
+			Id            = MessageIdRegistry.GetIdByType(messageType);
+			msgBodyBuffer = SerializerHelper.Serialize(msgObj);
 
-			if (messageCompressHandler != null && messageBodyBuffer.Length > LimitCompressLength)
+			if (messageCompressHandler != null && msgBodyBuffer.Length > LimitCompressLength)
 			{
-				IsZip             = true;
-				messageBodyBuffer = messageCompressHandler.Handler(messageBodyBuffer);
+				IsZip         = true;
+				msgBodyBuffer = messageCompressHandler.Compress(msgBodyBuffer);
 			}
 			else
 			{
 				IsZip = false;
 			}
 
-			var messageLength = messageBodyBuffer.Length;
+			var messageLength = msgBodyBuffer.Length;
 			PacketLength = (uint)(PacketHeaderLength + messageLength);
 
 			m_cachedByte.WriteUInt(PacketLength, ref m_offset);                                // 数据包总大小
@@ -119,7 +118,7 @@ namespace Hotfix.Framework.Network
 			m_cachedByte.WriteByte((byte)(IsZip ? 1 : 0),                       ref m_offset); // 消息压缩标记
 			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                              // 消息编号
 			m_cachedByte.WriteInt(Id,              ref m_offset);                              // 消息ID
-			destination.Write(m_cachedByte, 0, PacketHeaderLength);
+			cacheStream.Write(m_cachedByte, 0, PacketHeaderLength);
 			return true;
 		}
 	}

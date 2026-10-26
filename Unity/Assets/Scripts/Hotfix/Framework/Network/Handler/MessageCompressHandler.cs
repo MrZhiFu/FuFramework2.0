@@ -13,6 +13,6 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="message">消息未压缩内容</param>
 		/// <returns></returns>
-		public byte[] Handler(byte[] message) => Utility.Zip.Compress(message);
+		public byte[] Compress(byte[] message) => Utility.Zip.Compress(message);
 	}
 }

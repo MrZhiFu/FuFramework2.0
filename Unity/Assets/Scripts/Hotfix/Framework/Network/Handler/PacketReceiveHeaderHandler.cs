@@ -66,11 +66,11 @@ namespace Hotfix.Framework.Network
 
 
 		/// <summary>
-		/// 消息包处理
+		/// 消息包处理。反序列化
 		/// </summary>
 		/// <param name="source"></param>
 		/// <returns></returns>
-		public bool Handler(object source)
+		public bool Deserialize(object source)
 		{
 			if (source is not byte[] reader) return false;
 

@@ -29,7 +29,7 @@ namespace Hotfix.Framework.Network
 		public void UpdateUniqueId() => UniqueId = Utility.IdGenerator.GetNextUniqueIntId();
 
 		/// <summary>
-		/// 设置唯一编号（收包侧从包头侧信道还原请求号，供 RPC 配对）
+		/// 设置唯一编号（收包侧从包头还原请求号，供 RPC 配对）
 		/// </summary>
 		internal void SetUniqueId(int uniqueId) => UniqueId = uniqueId;
 

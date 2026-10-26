@@ -11,8 +11,7 @@ namespace Hotfix.Framework.Network
 	/// 说明（项目铁律 4：运行时杜绝反射）：
 	///     「消息类型 → 处理委托」由生成脚本 Protobuf/gen-proto-registry.py 产出静态绑定代码
 	///     （MessageRegistry.gen.cs 的 RegisterNotifyHandlers），在 NetworkModule.OnInit 的
-	///     RegisterAll 中一次性写入本表。委托为 static 闭包，直接捕获宿主的 static Instance
-	///     （惰性触达：宿主实例在首次推送时才被创建），运行期零反射。
+	///     RegisterAll 中一次性写入本表，运行期零反射。
 	///     业务侧只需在方法上标注 [NotifyMessageHandler]——声明即生效，无手动注册步骤；
 	///     新增/修改标注方法后必须重新运行生成脚本。
 	/// 另提供推送派发阀门（挂起/恢复/清空）：用于「连接已建立但业务基线未就绪」的窗口期——

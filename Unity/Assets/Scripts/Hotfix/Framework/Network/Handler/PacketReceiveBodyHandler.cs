@@ -16,7 +16,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="msgObj">输出：反序列化得到的消息对象</param>
 		/// <typeparam name="T">目标消息类型</typeparam>
 		/// <returns>是否解析成功</returns>
-		public bool Handler<T>(byte[] source, int messageId, out T msgObj) where T : MessageObject
+		public bool Deserialize<T>(byte[] source, int messageId, out T msgObj) where T : MessageObject
 		{
 			var messageType = MessageIdRegistry.GetTypeById(messageId);
 			msgObj = (T)SerializerHelper.Deserialize(source, messageType);

@@ -40,6 +40,42 @@ namespace Hotfix.Framework.Network
 		private readonly Action<string> m_onCloseAction;
 
 		/// <summary>
+		/// 底层 WebSocket 客户端实例
+		/// </summary>
+		public IWebSocket Client => m_client;
+
+		/// <summary>
+		/// 是否已连接
+		/// </summary>
+		public bool IsConnected => m_client.IsConnected;
+
+		/// <summary>
+		/// 是否已关闭
+		/// </summary>
+		public bool IsClosed { get; private set; }
+
+		/// <summary>
+		/// 本地端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
+		/// </summary>
+		public EndPoint LocalEndPoint => null;
+
+		/// <summary>
+		/// 远程端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
+		/// </summary>
+		public EndPoint RemoteEndPoint => null;
+
+		/// <summary>
+		/// 接收缓冲区大小。单位字节
+		/// </summary>
+		public int ReceiveBufferSize { get; set; }
+
+		/// <summary>
+		/// 发送缓冲区大小。单位字节
+		/// </summary>
+		public int SendBufferSize { get; set; }
+
+
+		/// <summary>
 		/// 创建 WebSocket 套接字
 		/// </summary>
 		/// <param name="url">连接地址</param>
@@ -107,8 +143,7 @@ namespace Hotfix.Framework.Network
 			m_isConnecting = false;
 			m_connectTask.TrySetResult(true);
 		}
-
-
+		
 		/// <summary>
 		/// 异步连接远程主机
 		/// </summary>
@@ -126,41 +161,6 @@ namespace Hotfix.Framework.Network
 				throw new SocketException((int)ENetworkErrorCode.ConnectError);
 			}
 		}
-
-		/// <summary>
-		/// 底层 WebSocket 客户端实例
-		/// </summary>
-		public IWebSocket Client => m_client;
-
-		/// <summary>
-		/// 是否已连接
-		/// </summary>
-		public bool IsConnected => m_client.IsConnected;
-
-		/// <summary>
-		/// 是否已关闭
-		/// </summary>
-		public bool IsClosed { get; private set; }
-
-		/// <summary>
-		/// 本地端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
-		/// </summary>
-		public EndPoint LocalEndPoint => null;
-
-		/// <summary>
-		/// 远程端点（IP 地址 + 端口；WebSocket 不提供，恒为 null）
-		/// </summary>
-		public EndPoint RemoteEndPoint => null;
-
-		/// <summary>
-		/// 接收缓冲区大小。单位字节
-		/// </summary>
-		public int ReceiveBufferSize { get; set; }
-
-		/// <summary>
-		/// 发送缓冲区大小。单位字节
-		/// </summary>
-		public int SendBufferSize    { get; set; }
 
 		/// <summary>
 		/// 关闭连接并释放底层客户端（退订回调 + 关闭连接）。

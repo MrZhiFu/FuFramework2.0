@@ -167,22 +167,25 @@ namespace Hotfix.Framework.Network
 		/// 网络频道轮询。
 		/// </summary>
 		/// <param name="deltaTime">帧间隔时间。</param>
-		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-		public virtual void Update(float deltaTime, float unscaledDeltaTime)
+		public virtual void Update(float deltaTime)
 		{
-			// 先排水生命周期事件，再做活跃检查：频道 Close 后 IsOpen=false，若排水在检查之后，
-			// 已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
+			// 先排水生命周期事件，再做活跃检查：频道 Close 后 IsOpen=false，若排水在检查之后，已入队的 Closed 事件将永远滞留队列（Update 不再被有效执行）。
 			DrainLifecycleEvents();
 
 			if (m_Socket == null || !IsOpen) return;
 
+			// 处理发送
 			ProcessSend();
-			ProcessReceive();
-
+			
 			if (m_Socket == null || !IsOpen) return;
 
-			ProcessHeartBeat(unscaledDeltaTime);
-			ProcessReceivedMessage();
+			// 处理心跳
+			ProcessHeartBeat();
+			
+			// 处理接收
+			ProcessReceived();
+			
+			// 驱动RPC逻辑更新，处理消息计时和超时移除消息
 			m_rpcState.Update(deltaTime);
 		}
 

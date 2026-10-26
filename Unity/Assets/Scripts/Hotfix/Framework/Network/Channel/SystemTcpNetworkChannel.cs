@@ -245,7 +245,7 @@ namespace Hotfix.Framework.Network
 			{
 				// 解压
 				MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
-				buffer = MessageDecompressHandler.Handler(buffer);
+				buffer = MessageDecompressHandler.Decompress(buffer);
 			}
 
 			var processSuccess = m_NetworkChannelHelper.DeserializePacketBody(buffer, PacketReceiveHeaderHandler.Id, out var msgObj);
@@ -304,8 +304,8 @@ namespace Hotfix.Framework.Network
 			try
 			{
 				// 每次都是从"进度指针"往后发，所以续发永远不会把已发的字节重发一遍
-				m_systemNetSocket.BeginSend(m_SendState.Stream.GetBuffer(), (int)m_SendState.Stream.Position,
-				                            (int)(m_SendState.Stream.Length - m_SendState.Stream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
+				m_systemNetSocket.BeginSend(m_SendState.CacheStream.GetBuffer(), (int)m_SendState.CacheStream.Position,
+				                            (int)(m_SendState.CacheStream.Length - m_SendState.CacheStream.Position), SocketFlags.None, SendCallback, m_systemNetSocket);
 			}
 			catch (Exception exception)
 			{
@@ -347,10 +347,10 @@ namespace Hotfix.Framework.Network
 			}
 
 			// 发送进度往前推
-			m_SendState.Stream.Position += bytesSent;
+			m_SendState.CacheStream.Position += bytesSent;
 
 			// 如果未发完则续发，否则重置发送状态
-			if (m_SendState.Stream.Position < m_SendState.Stream.Length)
+			if (m_SendState.CacheStream.Position < m_SendState.CacheStream.Length)
 			{
 				SendAsync();
 				return;

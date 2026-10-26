@@ -29,6 +29,15 @@ namespace Hotfix.Framework.Network
 		protected readonly object m_handleMsgLock = new();
 
 		/// <summary>
+		/// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
+		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
+		/// 默认值依据：本项目 proto 未使用 bytes 大字段（仅 repeated/map 的常规消息），
+		/// 实际消息体在 KB 量级，1 MiB 是宽松的健全性上限；若后续协议引入大消息，
+		/// 由具体通道实现（TCP / WebSocket）在合适时机调高本值即可。
+		/// </summary>
+		protected static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
+
+		/// <summary>
 		/// 待处理消息链表（接收线程投递、主线程派发）
 		/// </summary>
 		protected readonly FuLinkedList<MessageObject> m_waitingHandleMsgLkList = new();
@@ -36,7 +45,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 处理接收到的消息
 		/// </summary>
-		private void ProcessReceivedMessage()
+		private void ProcessReceived()
 		{
 			while (true)
 			{
@@ -58,11 +67,11 @@ namespace Hotfix.Framework.Network
 					// 心跳回包是保活侧信道，不参与业务派发（角色由 IHeartBeatMessage 接口自描述）
 					if (msgObj is IHeartBeatMessage) continue;
 
-					// 执行RPC匹配
+					// 执行RPC匹配，如果匹配成功，执行RPC响应；否则派发通知消息。
 					if (m_rpcState.TryReply(msgObj)) continue;
 
-					// 执行通知消息（锁外派发，避免长时间持锁阻塞接收线程）
-					DispatchNotifyMessage(msgObj);
+					// 派发通知消息
+					DispatchNotify(msgObj);
 				}
 				catch (Exception e)
 				{
@@ -75,28 +84,13 @@ namespace Hotfix.Framework.Network
 		/// 将推送消息派发给已绑定的处理委托（声明即生效，无手动注册；单个委托异常就地隔离）
 		/// </summary>
 		/// <param name="msgObj">推送消息对象</param>
-		private void DispatchNotifyMessage(MessageObject msgObj)
+		private void DispatchNotify(MessageObject msgObj)
 		{
-			// 委托表仅在启动期 RegisterAll 写入一次、之后只读，运行期无增删，无需快照缓冲。
 			if (!NotifyMessageHandlerRegistry.TryDispatch(msgObj))
 			{
 				FuLogger.LogWarning($"没有找到消息处理器的消息类型：{msgObj.GetType().Name}");
 			}
 		}
-
-		/// <summary>
-		/// 处理接收数据的占位实现（当前接收在子类回调中直接处理，保留扩展点）
-		/// </summary>
-		protected void ProcessReceive() { }
-
-		/// <summary>
-		/// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
-		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
-		/// 默认值依据：本项目 proto 未使用 bytes 大字段（仅 repeated/map 的常规消息），
-		/// 实际消息体在 KB 量级，1 MiB 是宽松的健全性上限；若后续协议引入大消息，
-		/// 由具体通道实现（TCP / WebSocket）在合适时机调高本值即可。
-		/// </summary>
-		protected static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
 
 		/// <summary>
 		/// 校验包头中的包长度并换算包体长度。

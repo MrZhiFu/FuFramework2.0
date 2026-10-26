@@ -10,12 +10,12 @@ namespace Hotfix.Framework.Network
 	internal sealed class ReceiveState : IDisposable
 	{
 		/// <summary>
-		/// 默认缓冲区长度
+		/// 默认缓冲区长度, 64KB
 		/// </summary>
 		public const int DEFAULT_BUFFER_LENGTH = 1024 * 64;
 
 		/// <summary>
-		/// 默认包头长度
+		/// 默认包头长度, 14字节
 		/// </summary>
 		public const int PACKET_HEADER_LENGTH = 14;
 

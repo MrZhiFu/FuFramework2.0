@@ -16,17 +16,6 @@ namespace Hotfix.Framework.Network
 		private readonly Socket m_socket;
 
 		/// <summary>
-		/// 创建系统套接字
-		/// </summary>
-		/// <param name="ipAddressAddressFamily">地址族</param>
-		/// <param name="socketType">套接字类型</param>
-		/// <param name="protocolType">协议类型</param>
-		public SystemNetSocket(AddressFamily ipAddressAddressFamily, SocketType socketType, ProtocolType protocolType)
-		{
-			m_socket = new Socket(ipAddressAddressFamily, socketType, protocolType);
-		}
-
-		/// <summary>
 		/// 是否已连接
 		/// </summary>
 		public bool IsConnected => m_socket.Connected;
@@ -82,6 +71,17 @@ namespace Hotfix.Framework.Network
 					throw new ArgumentException("发送缓冲区大小无效。", nameof(value));
 				m_socket.SendBufferSize = value;
 			}
+		}
+
+		/// <summary>
+		/// 创建系统套接字
+		/// </summary>
+		/// <param name="ipAddress">地址族</param>
+		/// <param name="socketType">套接字类型</param>
+		/// <param name="protocolType">协议类型</param>
+		public SystemNetSocket(AddressFamily ipAddress, SocketType socketType, ProtocolType protocolType)
+		{
+			m_socket = new Socket(ipAddress, socketType, protocolType);
 		}
 
 		/// <summary>

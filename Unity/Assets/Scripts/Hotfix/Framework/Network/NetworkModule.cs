@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Network
 		public static NetworkModule Instance { get; private set; }
 
 		/// <summary>
-		/// 当前网络频道（模块内唯一；未创建时为 null）。
+		/// 当前网络频道
 		/// </summary>
 		private NetworkChannelBase m_networkChannel;
 
@@ -43,8 +43,7 @@ namespace Hotfix.Framework.Network
 				FuLogger.LogFatal("[NetworkModule] 事件模块不存在!");
 			}
 
-			// 初始化协议注册表
-			// 先 Reset 保证「注册失败后重试」不残留半成品，再由生成物写入全部静态注册数据。
+			// 初始化协议注册表(先 Reset 保证「注册失败后重试」不残留半成品，再由生成物写入全部静态注册数据。)
 			MessageIdRegistry.Reset();
 			MessageRegistry.RegisterAll();
 		}
@@ -56,10 +55,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
-			// 频道未创建时静默跳过（Update 内部有未连接早退守卫）。
-			// 用户代码可能在消息处理器里 CreateChannel/DestroyChannel，
-			// 但单字段无遍历过程，不存在集合失效问题。
-			m_networkChannel?.Update(deltaTime, unscaledDeltaTime);
+			m_networkChannel?.Update(deltaTime);
 		}
 
 		/// <summary>
@@ -67,7 +63,6 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			// 单频道直接走 DestroyChannel（退订 + Dispose + 置空同一入口）。
 			DestroyChannel();
 			Instance = null;
 		}
