@@ -25,7 +25,7 @@ namespace Hotfix.Framework.Network
 		/// 创建网络频道（模块内唯一，重复创建抛异常）。
 		/// 传输实现由编译宏决定：WebGL + WebSocket 宏（或 FORCE_ENABLE_WEB_SOCKET）→ WebSocket，否则 TCP。
 		/// </summary>
-		/// <param name="networkChannelHelper">网络频道辅助器（负责装配包处理器）。</param>
+		/// <param name="networkChannelHelper">网络频道辅助器（信封读写内置）。</param>
 		/// <param name="rpcTimeout">RPC超时时间，默认5000毫秒。</param>
 		/// <returns>要创建的网络频道。</returns>
 		public INetworkChannel CreateChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)

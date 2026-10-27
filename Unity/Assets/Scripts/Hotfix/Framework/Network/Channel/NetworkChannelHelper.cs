@@ -109,16 +109,9 @@ namespace Hotfix.Framework.Network
 		private static EventModule s_event;
 
 		/// <summary>
-		/// 自定义包处理器注册委托集合（显式注册入口）。
-		///
-		/// 说明（项目铁律 4：运行时杜绝反射）：
-		///     原实现通过 <c>UtilityAOT.Assembly.GetTypes()</c> 扫描全部已加载程序集 + 接口判断 +
-		///     <c>Activator.CreateInstance</c> 来发现并创建包处理器，现已改为
-		///     「显式装配框架自带的 6 个处理器」（见 <see cref="RegisterHandlers"/>）。
-		///     因此，**新增自定义处理器必须显式注册**（调用 <see cref="RegisterExternalPacketHandler"/>），
-		///     不再靠反射扫描自动发现。
-		///     处理器实例按频道创建（处理器内部各自持有解析状态，不能跨频道共享）。
-		///
+		/// 外部装配委托集合（显式注册入口；项目铁律 4：不做反射扫描自动发现）。
+		/// 委托在每个频道 Initialize 时调用，实例按频道创建、不可跨频道共享。
+		/// 当前唯一使用者：生成物注册游戏侧心跳提供者（<see cref="RegisterExternalPacketHandler"/>）。
 		/// 仅限启动期调用，之后不再变更。
 		/// </summary>
 		private static readonly List<Action<INetworkChannel>> sr_externalPacketHandlerList = new();
@@ -165,8 +158,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 显式注册一个自定义包处理器装配委托。
-		/// 委托会在每个频道 Initialize 时、框架默认处理器装配完成之后被调用。
+		/// 显式注册一个外部装配委托。委托会在每个频道 Initialize 时被调用。
 		/// </summary>
 		/// <param name="registrar">装配委托，参数为待装配的网络频道</param>
 		public static void RegisterExternalPacketHandler(Action<INetworkChannel> registrar)

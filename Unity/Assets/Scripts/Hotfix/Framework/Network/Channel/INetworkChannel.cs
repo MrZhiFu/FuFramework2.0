@@ -21,14 +21,14 @@ namespace Hotfix.Framework.Network
 		bool Connected { get; }
 
 		/// <summary>
-		/// 心跳消息处理器
+		/// 心跳提供者（游戏侧派生实现，经生成物注册；提供心跳参数与心跳包构造）
 		/// </summary>
 		HeartBeatProviderBase HeartBeatProvider { get; }
 
 		/// <summary>
-		/// 注册网络消息心跳处理函数，用于处理心跳消息
+		/// 注册心跳提供者（覆盖频道默认的心跳间隔与判死阈值）
 		/// </summary>
-		/// <param name="handler">处理器对象</param>
+		/// <param name="handler">心跳提供者对象</param>
 		void RegisterHeartBeatProvider(HeartBeatProviderBase handler);
 
 		/// <summary>
@@ -52,11 +52,9 @@ namespace Hotfix.Framework.Network
 
 		/// <summary>
 		/// 向远程主机单向发送消息包（发完即忘，不等待服务器回复）。
-		/// 说明：
-		///     1. 消息仅加入发送队列，由后续帧的 ProcessSend 异步序列化发出，本方法立即返回；
-		///     2. 不关心服务器是否回复：服务器若回包，将作为一条独立消息走消息分发（DispatchNotifyMessage），与本次发送无程序上的关联；
-		///     3. 适用于无回复预期的通知类消息（聊天发言、移动同步等）；
-		///        需要拿到服务器响应的一问一答消息，请使用 <see cref="Call{TResponse}"/>。
+		/// 消息仅加入发送队列即返回，由后续帧的 ProcessSend 异步序列化发出；
+		/// 服务器若回包，作为一条独立消息走消息分发（DispatchNotify），与本次发送无程序上的关联。
+		/// 适用于无回复预期的通知类消息（聊天发言、移动同步等）；一问一答请用 <see cref="Call{TResponse}"/>。
 		/// </summary>
 		/// <typeparam name="T">消息包类型。</typeparam>
 		/// <param name="msgObj">要发送的消息包。</param>
@@ -70,13 +68,10 @@ namespace Hotfix.Framework.Network
 
 		/// <summary>
 		/// 向远程主机发起 RPC 调用：发送请求并挂起等待服务器响应（内部复用 Send 完成物理发送）。
-		/// 说明：
-		///     1. 请求与响应的配对由编译期（参数类型为 IRequestMessage&lt;TResponse&gt;，TResponse 从请求的映射接口推断，
-		///        传错请求/配错响应均编译不过）与运行期（包头 UniqueId 侧信道，服务器回包时原样带回）共同保证；
-		///     2. 服务器必须回包：超过 RPC 超时时间（创建频道时传入，最小 3000 毫秒）或断线时，
-		///        挂起的等待会以错误/取消结束，不会永久悬挂；
-		///     3. 适用于一问一答的消息（登录、查询等）；
-		///        无回复预期的通知类消息（未生成映射接口），请使用 <see cref="Send{T}"/>。
+		/// 配对由编译期（IRequestMessage&lt;TResponse&gt; 推断响应类型，传错请求/配错响应均编译不过）与
+		/// 运行期（包头 UniqueId 侧信道，服务器回包时原样带回）共同保证；
+		/// 超时或断线时挂起的等待以异常结束，不会永久悬挂。
+		/// 适用于一问一答的消息（登录、查询等）；无回复预期的通知类消息请用 <see cref="Send{T}"/>。
 		/// </summary>
 		/// <typeparam name="TResponse">响应消息类型，从请求实现的 IRequestMessage&lt;TResponse&gt; 自动推断，无需显式指定。</typeparam>
 		/// <param name="msgObj">请求消息对象（须为生成器产出的、实现映射接口的 Req 消息）。</param>

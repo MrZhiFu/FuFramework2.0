@@ -349,8 +349,9 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 ## 6. 目录结构
 
 > 组织原则：**真多态的接口跟随实现同居**（`Channel/`、`Socket/`，频道辅助器同属频道层），
-> 消息契约与处理器契约接口集中于 `Interface/`，包处理器为具体类（`Handler/`），
-> 消息基类独立（`MessageBase/`），注册设施与生成物集中（`Register/`）。
+> 消息契约接口集中于 `Interface/`，消息基类与心跳提供者基类同居 `MessageBase/`
+> （信封读写已内置于 `NetworkChannelHelper`，原包处理器目录 `Handler/` 已删），
+> 注册设施与生成物集中（`Register/`）。
 > 全模块统一命名空间 `Hotfix.Framework.Network`，目录仅为物理分组。
 
 ```text
@@ -360,22 +361,22 @@ Network/
 ├── Channel/                                          # 网络频道（接口与实现同居，internal）
 │   ├── INetworkChannel.cs                            # 网络频道接口
 │   ├── NetworkChannelBase.cs                         # 网络频道基类
-│   ├── NetworkChannelHelper.cs                       # 频道辅助器（装配 6 个处理器；心跳由生成物注册）
+│   ├── NetworkChannelHelper.cs                       # 频道辅助器（信封读写内置 + external 处理器注册循环；心跳由生成物注册）
 │   ├── SystemTcpNetworkChannel.cs                    # TCP 频道实现
 │   └── WebSocketNetworkChannel.cs                    # WebSocket 频道实现
 ├── Socket/                                           # 网络套接字（接口与实现同居，internal）
 │   ├── INetworkSocket.cs                             # 网络套接字接口
 │   ├── SystemNetSocket.cs                            # TCP 套接字实现
 │   └── WebSocketNetSocket.cs                         # WebSocket 套接字实现
-├── HeartBeatProviderBase.cs                # 心跳提供者基类（abstract；游戏侧 HeartBeatProvider 经生成物注册）
 ├── Interface/                                        # 消息契约接口（含 [NotifyMessageHandler] 体系）
 │   ├── IRequestMessage.cs                            # 请求消息接口
 │   ├── IResponseMessage.cs                           # 响应消息接口
 │   ├── INotifyMessage.cs                             # 推送消息接口
 │   └── IHeartBeatMessage.cs                          # 心跳消息接口
-├── MessageBase/                                      # 消息基类
+├── MessageBase/                                      # 消息基类与心跳提供者基类
 │   ├── MessageObject.cs                              # 消息基类（含 UniqueId）
-│   └── MessageHttpObject.cs                          # HTTP 消息包装基类
+│   ├── MessageHttpObject.cs                          # HTTP 消息包装基类
+│   └── HeartBeatProviderBase.cs                      # 心跳提供者基类（abstract；游戏侧 HeartBeatProvider 经生成物注册）
 ├── Attribute/                                        # 声明用特性（供生成脚本扫描）
 │   ├── NotifyMessageHandlerAttribute.cs              # 消息处理器特性（方法须 internal/public）
 │   └── MessageIdAttribute.cs                         # 消息 ID 标记特性

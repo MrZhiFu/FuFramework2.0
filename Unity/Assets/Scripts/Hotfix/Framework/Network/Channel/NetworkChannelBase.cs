@@ -14,7 +14,7 @@ namespace Hotfix.Framework.Network
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
 		/// <summary>
-		/// 网络频道帮助器（负责装配处理器与序列化收发包）
+		/// 网络频道帮助器（信封读写内置，负责序列化收发包）
 		/// </summary>
 		protected readonly NetworkChannelHelper m_NetworkChannelHelper;
 
@@ -269,9 +269,8 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 排水生命周期事件队列：锁内逐条出队、锁外触发（写法同 ProcessReceivedMessage 的出队-派发分离，
+		/// 排水生命周期事件队列：锁内逐条出队、锁外触发（写法同 ProcessReceived 的出队-派发分离，
 		/// handler 内同步 Close 频道只会继续入队，不会破坏本循环）。
-		/// 触发的是现有公共委托字段，NetworkModule 等订阅方零改动。
 		/// </summary>
 		private void DrainLifecycleEvents()
 		{

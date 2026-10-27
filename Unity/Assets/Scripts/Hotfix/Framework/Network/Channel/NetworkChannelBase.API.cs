@@ -7,7 +7,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络频道基类——对外 API 分部：心跳处理器注册、RPC 调用。
+	/// 网络频道基类——对外 API 分部：心跳提供者注册、RPC 调用。
 	/// </summary>
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
@@ -17,14 +17,14 @@ namespace Hotfix.Framework.Network
 		private readonly RpcState m_rpcState;
 
 		/// <summary>
-		/// 心跳消息处理器
+		/// 心跳提供者（游戏侧派生实现，经生成物注册）
 		/// </summary>
 		public HeartBeatProviderBase HeartBeatProvider { get; private set; }
 
 		/// <summary>
-		/// 注册网络消息心跳处理函数，用于处理心跳消息
+		/// 注册心跳提供者（覆盖频道默认的心跳间隔与判死阈值）
 		/// </summary>
-		/// <param name="handler">要注册的网络消息包处理函数</param>
+		/// <param name="handler">心跳提供者对象</param>
 		public void RegisterHeartBeatProvider(HeartBeatProviderBase handler)
 		{
 			handler.NotNull(nameof(handler));

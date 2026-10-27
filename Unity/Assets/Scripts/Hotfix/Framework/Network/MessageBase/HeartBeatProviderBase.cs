@@ -3,7 +3,7 @@
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 心跳包提供者基类（abstract，编译期强制游戏侧实现）。（abstract，编译期强制游戏侧实现）。
+	/// 心跳提供者基类（abstract，编译期强制游戏侧实现）。
 	///
 	/// 说明（依赖方向）：心跳消息 ReqHeartBeat 是 proto 生成物，位于 Game 层——
 	/// Framework 不引用 Game，框架无法构造具体心跳包，因此提供者必须由游戏侧派生实现
