@@ -95,10 +95,8 @@ namespace Hotfix.Framework.Network
         /// 共 1 个。
         ///
         /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
-        /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
-        /// <c>RegisterHandlers()</c>（框架自带 6 个处理器）之后，
-        /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
-        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 HeartBeatProviderBase）。
+        /// <c>NetworkChannelHelper.Initialize</c> 中（信封读写为 helper 内置，无默认装配可覆盖，
+        /// 心跳提供者是当前唯一的外部注册对象）。
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>

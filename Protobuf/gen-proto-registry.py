@@ -527,9 +527,8 @@ def scan_external_packet_handlers(decls, by_name):
     """返回 (handlers, warnings)。
 
     handlers: list of dict(fq, name, iface, register, file, depth)
-      * 排除 Framework/Network/Helper/ 下的框架自带实现（那些由 NetworkChannelHelper
-        显式装配，见 RegisterHandlers）。
-      * 只取具体类型（跳过 abstract / static）。
+      * 只取具体类型（跳过 abstract / static）——框架自带处理器已删（信封读写内置于 helper），
+        本扫描现仅命中游戏侧心跳提供者。
       * 接口判定含继承链，故「派生自框架基类」的游戏侧实现同样能被识别。
       * 每个类型只按 PACKET_INTERFACE_ORDER 的首个命中接口注册一次，与原扫描的 else-if 一致。
       * 排序：继承深度浅的在前（后注册者覆盖），同深度按全名排序，保证幂等且「更具体的实现生效」。
@@ -682,10 +681,8 @@ namespace Hotfix.Framework.Network
         /// 共 {external_handler_count} 个。
         ///
         /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
-        /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
-        /// <c>RegisterHandlers()</c>（框架自带 6 个处理器）之后，
-        /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
-        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 HeartBeatProviderBase）。
+        /// <c>NetworkChannelHelper.Initialize</c> 中（信封读写为 helper 内置，无默认装配可覆盖，
+        /// 心跳提供者是当前唯一的外部注册对象）。
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>

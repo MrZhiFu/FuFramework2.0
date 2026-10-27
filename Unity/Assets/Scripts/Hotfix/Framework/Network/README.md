@@ -242,13 +242,9 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 
 | 类 | 说明 |
 |------|------|
-| `PacketSendHeaderHandler` | 发送包头处理器（游戏侧可派生覆盖，如心跳） |
-| `PacketReceiveHeaderHandler` | 接收包头处理器 |
-| `PacketSendBodyHandler` | 发送包体处理器（序列化） |
-| `PacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
-| `HeartBeatProviderBase` | 心跳提供者基类（abstract，构造由游戏侧 `HeartBeatProvider` 实现） |
-| `MessageCompressHandler` | 消息压缩处理器 |
-| `MessageDecompressHandler` | 消息解压处理器 |
+| `HeartBeatProviderBase` | 心跳提供者基类（abstract，构造由游戏侧 `HeartBeatProvider` 实现；经生成物注册） |
+
+> 信封读写（包头序列化/解析、包体反序列化、压缩判定）已内置于 `NetworkChannelHelper`（原 6 个包处理器类已删）。
 
 ### 4.7 网络事件
 
@@ -371,14 +367,7 @@ Network/
 │   ├── INetworkSocket.cs                             # 网络套接字接口
 │   ├── SystemNetSocket.cs                            # TCP 套接字实现
 │   └── WebSocketNetSocket.cs                         # WebSocket 套接字实现
-├── Handler/                                          # 包处理器（具体类，单实现不设接口）
-│   ├── PacketSendHeaderHandler.cs             # 发送包头处理器
-│   ├── PacketReceiveHeaderHandler.cs          # 接收包头处理器
-│   ├── PacketSendBodyHandler.cs               # 发送包体处理器
-│   ├── PacketReceiveBodyHandler.cs            # 接收包体处理器
-│   ├── HeartBeatProviderBase.cs                # 心跳提供者基类（abstract）
-│   ├── MessageCompressHandler.cs              # 压缩处理器
-│   └── MessageDecompressHandler.cs            # 解压处理器
+├── HeartBeatProviderBase.cs                # 心跳提供者基类（abstract；游戏侧 HeartBeatProvider 经生成物注册）
 ├── Interface/                                        # 消息契约接口（含 [NotifyMessageHandler] 体系）
 │   ├── IRequestMessage.cs                            # 请求消息接口
 │   ├── IResponseMessage.cs                           # 响应消息接口
