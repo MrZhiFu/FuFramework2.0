@@ -173,9 +173,9 @@ namespace Hotfix.Framework.Network
 		protected void DebugSendLog(MessageObject msgObj)
 		{
 #if ENABLE_NETWORK_REQ_LOG
-			if (!m_IgnoreSendIds.Contains(PacketSendHeaderHandler.Id))
+			if (!m_IgnoreSendIds.Contains(m_NetworkChannelHelper.LastSentMessageId))
 			{
-				FuLogger.LogInfo($"发送消息:[{msgObj.GetType().Name}({PacketSendHeaderHandler.Id}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"发送消息:[{msgObj.GetType().Name}({m_NetworkChannelHelper.LastSentMessageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

@@ -22,12 +22,12 @@ gen-proto-registry.py
           （生成物位于同程序集，需要能直接调用该方法）。
           宿主契约：所在类型必须继承 Singleton<T> 或提供 static Instance
           （声明即生效，业务侧无手动注册步骤；宿主实例在首次推送时才被触达）。
-    3. <Unity>/Assets/Scripts/Hotfix/**/*.cs（排除 Framework/Network/Handler/）
+    3. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> 框架外「具体（非抽象）」的包处理器实现：继承 PacketReceiveHeaderHandler /
           PacketReceiveBodyHandler / PacketSendHeaderHandler / PacketSendBodyHandler /
-          PacketHeartBeatHandlerBase / MessageCompressHandler / MessageDecompressHandler 之一。
+          HeartBeatProviderBase / MessageCompressHandler / MessageDecompressHandler 之一。
           判定沿继承链匹配框架具体基类（处理器接口已删除），因此「派生自框架基类」的实现（如
-          Hotfix.Game.Network.PacketHeartBeatHandler : PacketHeartBeatHandlerBase）
+          Hotfix.Game.Network.HeartBeatProvider : HeartBeatProviderBase）
           也能被正确识别并注册为心跳处理器（游戏侧实现是唯一装配，基类 abstract 不参与默认装配）。
 
 背景（项目铁律 4：运行时杜绝反射）：
@@ -65,7 +65,6 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 UNITY_ROOT = os.path.join(REPO_ROOT, "Unity")
 HOTFIX_ROOT = os.path.join(UNITY_ROOT, "Assets", "Scripts", "Hotfix")
 PROTO_DIR = os.path.join(HOTFIX_ROOT, "Game", "AutoGen", "Proto")
-NETWORK_HANDLER_DIR = os.path.join(HOTFIX_ROOT, "Framework", "Network", "Handler")
 OUTPUT_PATH = os.path.join(
     HOTFIX_ROOT, "Framework", "Network", "Register", "AutoGen", "MessageRegistry.gen.cs"
 )
@@ -143,13 +142,7 @@ RE_TYPE_DECL = re.compile(r"\b(?:class|struct)\s+(\w+)")
 # 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致。
 # 判定沿继承链匹配「框架具体处理器基类」——处理器接口已删除，单实现策略点直接用具体类。）
 PACKET_INTERFACE_ORDER = [
-    ("PacketReceiveHeaderHandler", "channel.RegisterPacketReceiveHeaderHandler(new {fq}());"),
-    ("PacketReceiveBodyHandler", "channel.RegisterPacketReceiveBodyHandler(new {fq}());"),
-    ("PacketSendHeaderHandler", "channel.RegisterPacketSendHeaderHandler(new {fq}());"),
-    ("PacketSendBodyHandler", "channel.RegisterPacketSendBodyHandler(new {fq}());"),
-    ("PacketHeartBeatHandlerBase", "channel.RegisterHeartBeatHandler(new {fq}());"),
-    ("MessageCompressHandler", "channel.RegisterMessageCompressHandler(new {fq}());"),
-    ("MessageDecompressHandler", "channel.RegisterMessageDecompressHandler(new {fq}());"),
+    ("HeartBeatProviderBase", "channel.RegisterHeartBeatProvider(new {fq}());"),
 ]
 PACKET_INTERFACE_NAMES = set(n for n, _ in PACKET_INTERFACE_ORDER)
 
@@ -382,7 +375,7 @@ def scan_proto_messages():
 
 
 def scan_class_index():
-    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 同名声明列表（派生类与基类可能同名，如 PacketHeartBeatHandler）。"""
+    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 同名声明列表（派生类与基类可能同名，如 HeartBeatProvider）。"""
     decls = []
     by_name = {}
     for path in iter_cs_files(HOTFIX_ROOT):
@@ -589,9 +582,6 @@ def scan_external_packet_handlers(decls, by_name):
     warnings = []
 
     for decl in decls:
-        if is_under(decl["path"], NETWORK_HANDLER_DIR):
-            continue
-
         if re.search(r"\b(abstract|static)\b", decl["mods"]):
             # 与原扫描一致：跳过抽象类型（静态类不是可实例化的处理器）
             continue
@@ -695,7 +685,7 @@ namespace Hotfix.Framework.Network
         /// <c>NetworkChannelHelper.Initialize</c> 中，且位于
         /// <c>RegisterHandlers()</c>（框架自带 6 个处理器）之后，
         /// 因此按 RegisterXxxHandler 的「后注册覆盖」语义，
-        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 PacketHeartBeatHandlerBase）。
+        /// 框架外实现会覆盖框架默认实现（例如游戏侧心跳实现覆盖框架基类 HeartBeatProviderBase）。
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>

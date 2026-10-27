@@ -21,76 +21,15 @@ namespace Hotfix.Framework.Network
 		bool Connected { get; }
 
 		/// <summary>
-		/// 消息发送包头处理器
-		/// </summary>
-		PacketSendHeaderHandler PacketSendHeaderHandler { get; }
-
-		/// <summary>
-		/// 消息发送内容处理器
-		/// </summary>
-		PacketSendBodyHandler PacketSendBodyHandler { get; }
-
-		/// <summary>
 		/// 心跳消息处理器
 		/// </summary>
-		PacketHeartBeatHandlerBase PacketHeartBeatHandler { get; }
-
-		/// <summary>
-		/// 消息接收包头处理器
-		/// </summary>
-		PacketReceiveHeaderHandler PacketReceiveHeaderHandler { get; }
-
-		/// <summary>
-		/// 消息接收内容处理器
-		/// </summary>
-		PacketReceiveBodyHandler PacketReceiveBodyHandler { get; }
-
-		/// <summary>
-		/// 消息压缩处理器
-		/// </summary>
-		MessageCompressHandler MessageCompressHandler { get; }
-
-		/// <summary>
-		/// 注册消息压缩处理器
-		/// </summary>
-		/// <param name="handler">处理器对象</param>
-		void RegisterMessageCompressHandler(MessageCompressHandler handler);
-
-		/// <summary>
-		/// 注册消息解压处理器
-		/// </summary>
-		/// <param name="handler">处理器对象</param>
-		void RegisterMessageDecompressHandler(MessageDecompressHandler handler);
-
-		/// <summary>
-		/// 注册网络消息包处理函数。
-		/// </summary>
-		/// <param name="handler">处理器对象</param>
-		void RegisterPacketSendHeaderHandler(PacketSendHeaderHandler handler);
-
-		/// <summary>
-		/// 注册网络消息包处理函数。
-		/// </summary>
-		/// <param name="handler">处理器对象。</param>
-		void RegisterPacketSendBodyHandler(PacketSendBodyHandler handler);
-
-		/// <summary>
-		/// 注册网络消息包处理函数。
-		/// </summary>
-		/// <param name="handler">处理器对象。</param>
-		void RegisterPacketReceiveHeaderHandler(PacketReceiveHeaderHandler handler);
-
-		/// <summary>
-		/// 注册网络消息包处理函数。
-		/// </summary>
-		/// <param name="handler">处理器对象。</param>
-		void RegisterPacketReceiveBodyHandler(PacketReceiveBodyHandler handler);
+		HeartBeatProviderBase HeartBeatProvider { get; }
 
 		/// <summary>
 		/// 注册网络消息心跳处理函数，用于处理心跳消息
 		/// </summary>
 		/// <param name="handler">处理器对象</param>
-		void RegisterHeartBeatHandler(PacketHeartBeatHandlerBase handler);
+		void RegisterHeartBeatProvider(HeartBeatProviderBase handler);
 
 		/// <summary>
 		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。

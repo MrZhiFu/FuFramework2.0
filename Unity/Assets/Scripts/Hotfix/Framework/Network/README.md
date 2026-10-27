@@ -9,7 +9,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
 - **特性声明 + 生成期注册**：`[MessageId]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
-- **显式装配包处理器**：`NetworkChannelHelper` 直接装配框架自带的 6 个处理器，不再反射扫描程序集；自定义处理器须通过 `RegisterExternalPacketHandler` 显式注册
+- **信封读写内置 + 显式外部装配**：信封读写（序列化/解析/压缩）内置于 `NetworkChannelHelper`（原 6 个包处理器类已删，`Handler/` 目录退役）；跨层对象（如游戏侧心跳提供者）须通过 `RegisterExternalPacketHandler` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
 - **异步 RPC**：基于 `UniTask` 的异步 RPC 调用，支持超时机制
@@ -197,19 +197,20 @@ NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切�
 > 若只新增 `[NotifyMessageHandler]` 方法（未动 proto），跑 `Protobuf/gen-proto-registry.bat` 即可。
 > 否则注册表与实际代码不一致（未绑定的推送消息会在运行时打警告日志并被丢弃）。
 
-**包处理器装配（`NetworkChannelHelper`）**
+**信封读写与外部装配（`NetworkChannelHelper`）**
 
-框架自带的 6 个包处理器（接收包头/包体、发送包头/包体、压缩、解压）由
-`RegisterHandlers()` 显式装配，不再反射扫描 `IPacketHandler` 实现。
-**心跳不在默认装配中**：心跳消息是 Game 层的 proto 生成物，框架无法构造——
-由生成物注册游戏侧 `PacketHeartBeatHandler`（基类 `PacketHeartBeatHandlerBase` 为 abstract，编译期强制游戏侧实现）。
-需要替换或补充处理器时：
+信封读写（包头序列化写入/解析、包体反序列化、压缩判定）为 helper 的**内置私有实现**——
+历史上它们是 6 个可注册的"包处理器"类（`Handler/` 目录，反射扫描 `IPacketHandler` 起家），
+经动词化重构后仍名存实亡，最终删除目录、逻辑并入 helper（未兑现的替换扩展缝一并移除）。
+**心跳提供者不在框架内**：心跳消息是 Game 层的 proto 生成物，框架无法构造——
+由生成物注册游戏侧 `HeartBeatProvider`（基类 `HeartBeatProviderBase` 为 abstract，编译期强制游戏侧实现）。
+需要补充跨层对象时：
 
 ```csharp
 // 1) 静态注册入口（对所有 NetworkChannelHelper 生效，建议启动期调用一次）
 NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 {
-    channel.RegisterHeartBeatHandler(new Hotfix.Game.Network.PacketHeartBeatHandler());
+    channel.RegisterHeartBeatProvider(new Hotfix.Game.Network.HeartBeatProvider());
 });
 
 ```
@@ -245,7 +246,7 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 | `PacketReceiveHeaderHandler` | 接收包头处理器 |
 | `PacketSendBodyHandler` | 发送包体处理器（序列化） |
 | `PacketReceiveBodyHandler` | 接收包体处理器（反序列化） |
-| `PacketHeartBeatHandlerBase` | 心跳处理器基类（abstract，构造由游戏侧 `PacketHeartBeatHandler` 实现） |
+| `HeartBeatProviderBase` | 心跳提供者基类（abstract，构造由游戏侧 `HeartBeatProvider` 实现） |
 | `MessageCompressHandler` | 消息压缩处理器 |
 | `MessageDecompressHandler` | 消息解压处理器 |
 
@@ -375,7 +376,7 @@ Network/
 │   ├── PacketReceiveHeaderHandler.cs          # 接收包头处理器
 │   ├── PacketSendBodyHandler.cs               # 发送包体处理器
 │   ├── PacketReceiveBodyHandler.cs            # 接收包体处理器
-│   ├── PacketHeartBeatHandlerBase.cs              # 心跳处理器基类（abstract）
+│   ├── HeartBeatProviderBase.cs                # 心跳提供者基类（abstract）
 │   ├── MessageCompressHandler.cs              # 压缩处理器
 │   └── MessageDecompressHandler.cs            # 解压处理器
 ├── Interface/                                        # 消息契约接口（含 [NotifyMessageHandler] 体系）

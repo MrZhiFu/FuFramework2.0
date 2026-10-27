@@ -48,7 +48,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// 与玩家自身背包操作互斥（修数据竞争）并向玩家会话的发送保持顺序。
     /// </remarks>
     [Service]
-    public async Task UpdateChanged(INetWorkChannel netWorkChannel, Dictionary<int, long> itemDic)
+    public virtual async Task UpdateChanged(INetWorkChannel netWorkChannel, Dictionary<int, long> itemDic)
     {
         //将物品添加到背包
         var bagState = OwnerComponent.State;

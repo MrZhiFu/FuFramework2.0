@@ -4,6 +4,7 @@ using System.IO;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
+using ProtoBuf;
 
 
 // ReSharper disable once CheckNamespace
@@ -13,15 +14,86 @@ namespace Hotfix.Framework.Network
 	/// 网络频道帮助器。
 	/// 功能：
 	///     1. 初始化网络频道帮助器。
-	///     2. 显式装配包和包处理函数。
-	///     3. 发送默认的包和包处理函数。
+	///     2. 信封读写：包头的序列化写入（含压缩判定）与解析读取（含接收状态缓存）。
+	///     3. 显式注册外部包处理器装配委托（含生成物注册的游戏心跳）。
 	/// </summary>
 	public class NetworkChannelHelper
 	{
 		/// <summary>
+		/// 包头长度：4(总长) + 1(操作类型) + 1(压缩标记) + 4(UniqueId) + 4(消息ID) = 14 字节
+		/// </summary>
+		private const int PACKET_HEADER_LENGTH = 14;
+
+		/// <summary>
+		/// 消息体超过该长度启用压缩
+		/// </summary>
+		private const int LIMIT_COMPRESS_LENGTH = 512;
+
+		/// <summary>
+		/// 包头缓存字节（避免每次发包重新分配）
+		/// </summary>
+		private readonly byte[] m_cachedByte = new byte[PACKET_HEADER_LENGTH];
+
+		/// <summary>
+		/// 包头缓存的写入偏移
+		/// </summary>
+		private int m_offset;
+
+		/// <summary>
+		/// 当前发送消息的 ID（供发送调试日志读取）
+		/// </summary>
+		private int m_currentSentId;
+
+		/// <summary>
+		/// 当前接收消息的包长（含 14 字节包头）
+		/// </summary>
+		private uint m_receivedPacketLength;
+
+		/// <summary>
+		/// 当前接收消息的 ID（供接收调试日志与包体反序列化读取）
+		/// </summary>
+		private int m_receivedId;
+
+		/// <summary>
+		/// 当前接收消息的 UniqueId（供收包侧还原 RPC 配对单号）
+		/// </summary>
+		private int m_receivedUniqueId;
+
+		/// <summary>
+		/// 当前接收消息的压缩标记
+		/// </summary>
+		private byte m_receivedZipFlag;
+
+		/// <summary>
+		/// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
+		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
+		/// </summary>
+		public static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
+
+		/// <summary>
 		/// 网络频道
 		/// </summary>
 		private INetworkChannel m_networkChannel;
+
+		/// <summary>
+		/// 当前发送消息的 ID（发送调试日志过滤用）
+		/// </summary>
+		public int LastSentMessageId => m_currentSentId;
+
+		/// <summary>
+		/// 当前接收消息的 ID（接收调试日志过滤与包体反序列化用）
+		/// </summary>
+		public int LastReceivedMessageId => m_receivedId;
+
+		/// <summary>
+		/// 当前接收消息的 UniqueId（收包侧还原 RPC 配对单号用）
+		/// </summary>
+		public int LastReceivedUniqueId => m_receivedUniqueId;
+
+		/// <summary>
+		/// 当前接收消息的压缩标记（包体期解压判定用，跨收包批次存活）
+		/// </summary>
+		public byte LastReceivedZipFlag => m_receivedZipFlag;
 
 		/// <summary>
 		/// 获取事件组件。
@@ -64,10 +136,8 @@ namespace Hotfix.Framework.Network
 		{
 			m_networkChannel = netChannel;
 
-			// 显式装配包处理器：框架默认 6 个 → 显式注册的自定义委托（含生成物注册的游戏心跳）。
+			// 显式注册的自定义委托（含生成物注册的游戏心跳）。
 			// 新增自定义处理器必须显式注册，不再依赖反射扫描程序集。
-			RegisterHandlers();
-
 			lock (sr_externalPacketHandlerRegistrarsLock)
 			{
 				foreach (var handler in sr_externalPacketHandlerList)
@@ -92,36 +162,6 @@ namespace Hotfix.Framework.Network
 			Event.Unsubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
 			Event.Unsubscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 			m_networkChannel = null;
-		}
-
-		/// <summary>
-		/// 装配框架自带的默认包处理器。
-		///
-		/// 说明（项目铁律 4）：原实现由反射扫描全部已加载程序集发现 IPacketHandler 实现并逐个实例化，
-		/// 现改为显式列出。下表即原扫描结果中的框架侧实现类（框架外的实现由生成物追加注册并覆盖，见下）：
-		///     发送包头 → 0
-		///     发送包体 → 0
-		///     接收包头 → 0
-		///     接收包体 → 0
-		///     压缩    → MessageCompressHandler
-		///     解压    → MessageDecompressHandler
-		///
-		/// 心跳处理器**不在默认装配中**：心跳消息 ReqHeartBeat 是 Game 层的 proto 生成物，框架无法构造，
-		/// 由生成物 RegisterExternalPacketHandler 注册游戏侧 PacketHeartBeatHandler
-		/// （其基类 0 为 abstract，编译期强制游戏侧实现）。
-		/// </summary>
-		private void RegisterHandlers()
-		{
-			var channel = m_networkChannel;
-
-			channel.RegisterPacketSendHeaderHandler(new PacketSendHeaderHandler());
-			channel.RegisterPacketSendBodyHandler(new PacketSendBodyHandler());
-
-			channel.RegisterPacketReceiveHeaderHandler(new PacketReceiveHeaderHandler());
-			channel.RegisterPacketReceiveBodyHandler(new PacketReceiveBodyHandler());
-
-			channel.RegisterMessageCompressHandler(new MessageCompressHandler());
-			channel.RegisterMessageDecompressHandler(new MessageDecompressHandler());
 		}
 
 		/// <summary>
@@ -153,26 +193,50 @@ namespace Hotfix.Framework.Network
 		/// <returns>是否已发起发送</returns>
 		public bool SendHeartBeat()
 		{
-			var message = m_networkChannel.PacketHeartBeatHandler.CreateHeartBeatReq();
+			var message = m_networkChannel.HeartBeatProvider.CreateHeartBeatReq();
 			m_networkChannel.Send(message);
 			return true;
 		}
 
 		/// <summary>
-		/// 序列化消息并写入缓存流
+		/// 序列化消息并写入缓存流（写 14 字节包头到缓存流，消息体字节经 out 返回由调用方续写）
 		/// </summary>
 		/// <param name="msgObj">待发送的消息对象</param>
 		/// <param name="cacheStream">包头写入目标流</param>
-		/// <param name="msgBodyBuffer">输出：待发送的消息体缓冲区</param>
+		/// <param name="msgBodyBuffer">输出：待发送的消息体缓冲区（超过 512 字节时已压缩）</param>
 		/// <returns>是否序列化成功</returns>
 		public bool SerializeAndWriteToCacheStream<T>(T msgObj, MemoryStream cacheStream, out byte[] msgBodyBuffer) where T : MessageObject
 		{
 			m_networkChannel.NotNull(nameof(m_networkChannel));
-			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
 			msgObj.NotNull(nameof(msgObj));
 			cacheStream.NotNull(nameof(cacheStream));
 
-			return m_networkChannel.PacketSendHeaderHandler.SerializeAndWriteToCacheStream(msgObj, m_networkChannel.MessageCompressHandler, cacheStream, out msgBodyBuffer);
+			m_offset = 0;
+			var messageType = msgObj.GetType();
+
+			m_currentSentId = MessageIdRegistry.GetIdByType(messageType);
+			msgBodyBuffer   = SerializerHelper.Serialize(msgObj);
+
+			byte isZip;
+			if (msgBodyBuffer.Length > LIMIT_COMPRESS_LENGTH)
+			{
+				isZip         = 1;
+				msgBodyBuffer = Utility.Zip.Compress(msgBodyBuffer);
+			}
+			else
+			{
+				isZip = 0;
+			}
+
+			var packetLength = (uint)(PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
+
+			m_cachedByte.WriteUInt(packetLength, ref m_offset);                                // 数据包总大小
+			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset); // 消息操作类型
+			m_cachedByte.WriteByte(isZip,                                       ref m_offset); // 消息压缩标记
+			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                              // 消息编号
+			m_cachedByte.WriteInt(m_currentSentId, ref m_offset);                              // 消息ID
+			cacheStream.Write(m_cachedByte, 0, PACKET_HEADER_LENGTH);
+			return true;
 		}
 
 		/// <summary>
@@ -180,27 +244,64 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="msgBodyBuffer">消息体缓冲区</param>
 		/// <param name="cacheStream">包体写入目标流</param>
-		/// <returns>是否序列化成功</returns>
+		/// <returns>是否写入成功</returns>
 		public bool WritePacketBodyToCacheStream(byte[] msgBodyBuffer, MemoryStream cacheStream)
 		{
-			m_networkChannel.NotNull(nameof(m_networkChannel));
-			m_networkChannel.PacketSendHeaderHandler.NotNull(nameof(m_networkChannel.PacketSendHeaderHandler));
-			m_networkChannel.PacketSendBodyHandler.NotNull(nameof(m_networkChannel.PacketSendBodyHandler));
 			msgBodyBuffer.NotNull(nameof(msgBodyBuffer));
 			cacheStream.NotNull(nameof(cacheStream));
 
-			return m_networkChannel.PacketSendBodyHandler.WriteToCacheStream(msgBodyBuffer, cacheStream);
+			cacheStream.Write(msgBodyBuffer, 0, msgBodyBuffer.Length);
+			return true;
 		}
 
 		/// <summary>
-		/// 反序列化接收包头
+		/// 反序列化接收包头：解析五字段（包长/操作类型/压缩标记/UniqueId/消息ID）并缓存接收状态。
+		/// 操作类型仅推进读取偏移（零消费者），不保留为状态。
 		/// </summary>
-		/// <param name="source">包头原始字节</param>
+		/// <param name="source">包头原始字节（14 字节）</param>
 		/// <returns>是否解析成功</returns>
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
-			return m_networkChannel.PacketReceiveHeaderHandler.Deserialize(source);
+			if (source is not byte[] reader) return false;
+
+			// packetLength
+			var offset = 0;
+			m_receivedPacketLength = reader.ReadUInt(ref offset); //4
+
+			// operationType（无消费者，仅推进偏移）
+			offset += sizeof(byte); //1
+
+			// zipFlag
+			m_receivedZipFlag = reader.ReadByte(ref offset); //1
+
+			// uniqueId
+			m_receivedUniqueId = reader.ReadInt(ref offset); //4
+
+			// messageId
+			m_receivedId = reader.ReadInt(ref offset); //4
+			return true;
+		}
+
+		/// <summary>
+		/// 校验包头中的包长度并换算包体长度（接收侧，依据最近一次解析的包头）。
+		/// </summary>
+		/// <returns>包体长度</returns>
+		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
+		public int ValidateAndGetPacketBodyLength()
+		{
+			if (m_receivedPacketLength < PACKET_HEADER_LENGTH)
+			{
+				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{PACKET_HEADER_LENGTH}");
+			}
+
+			var bodyLength = (long)m_receivedPacketLength - PACKET_HEADER_LENGTH;
+			if (bodyLength > MaxPacketBodyLength)
+			{
+				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
+			}
+
+			return (int)bodyLength;
 		}
 
 		/// <summary>
@@ -213,7 +314,9 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject msgObj)
 		{
 			source.NotNull(nameof(source));
-			return m_networkChannel.PacketReceiveBodyHandler.Deserialize(source, messageId, out msgObj);
+			var messageType = MessageIdRegistry.GetTypeById(messageId);
+			msgObj = (MessageObject)SerializerHelper.Deserialize(source, messageType);
+			return true;
 		}
 
 		/// <summary>

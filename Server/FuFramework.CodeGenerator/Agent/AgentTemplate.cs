@@ -42,12 +42,31 @@ public static class AgentTemplate
             }
             else
             {
+                // 非泛型 Task/ValueTask 的 async 方法只能裸 return（await 结果无值可带）；
+                // 泛型 Task<T>/ValueTask<T> 才能写 return await ...。
+                var isNonGenericAwaitable = infoMethod.ReturnType.Equals("Task") || infoMethod.ReturnType.Equals("ValueTask");
                 TemplateStringBuilder.AppendLine("\t\t\t(bool needEnqueue, long chainId)= base.Actor.WorkerActor.IsNeedEnqueue();");
                 TemplateStringBuilder.AppendLine("\t\t\tif (!needEnqueue)");
                 TemplateStringBuilder.AppendLine("\t\t\t{");
-                TemplateStringBuilder.AppendLine($"\t\t\t\treturn {(infoMethod.IsAsync ? "await " : string.Empty)} base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString});");
+                if (infoMethod.IsAsync && isNonGenericAwaitable)
+                {
+                    TemplateStringBuilder.AppendLine($"\t\t\t\tawait base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString});");
+                    TemplateStringBuilder.AppendLine("\t\t\t\treturn;");
+                }
+                else
+                {
+                    TemplateStringBuilder.AppendLine($"\t\t\t\treturn {(infoMethod.IsAsync ? "await " : string.Empty)} base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString});");
+                }
                 TemplateStringBuilder.AppendLine("\t\t\t}");
-                TemplateStringBuilder.AppendLine($"\t\t\treturn {(infoMethod.IsAsync ? "await " : string.Empty)} base.Actor.WorkerActor.Enqueue(()=>base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString}), chainId, {(infoMethod.Discard ? "true" : "false")}, {infoMethod.TimeOut});");
+                if (infoMethod.IsAsync && isNonGenericAwaitable)
+                {
+                    TemplateStringBuilder.AppendLine($"\t\t\tawait base.Actor.WorkerActor.Enqueue(()=>base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString}), chainId, {(infoMethod.Discard ? "true" : "false")}, {infoMethod.TimeOut});");
+                    TemplateStringBuilder.AppendLine("\t\t\treturn;");
+                }
+                else
+                {
+                    TemplateStringBuilder.AppendLine($"\t\t\treturn {(infoMethod.IsAsync ? "await " : string.Empty)} base.Actor.WorkerActor.Enqueue(()=>base.{infoMethod.Name}{infoMethod.Typeparams}({infoMethod.ParamString}), chainId, {(infoMethod.Discard ? "true" : "false")}, {infoMethod.TimeOut});");
+                }
             }
 
             TemplateStringBuilder.AppendLine("\t\t}");

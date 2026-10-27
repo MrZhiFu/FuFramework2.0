@@ -295,28 +295,28 @@ namespace Hotfix.Framework.Network
 					m_HeartBeatState.Reset(false);
 				}
 
-				if (buffer.Length < PacketReceiveHeaderHandler.PacketHeaderLength) return;
+				if (buffer.Length < ReceiveState.PACKET_HEADER_LENGTH) return;
 
 				var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
 				if (processSuccess)
 				{
-					var bodyLength = ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler);
-					m_ReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
+					var bodyLength = m_NetworkChannelHelper.ValidateAndGetPacketBodyLength();
+					m_ReceiveState.ZipFlag = m_NetworkChannelHelper.LastReceivedZipFlag;
+					m_ReceiveState.Reset(bodyLength);
 					if (buffer.Length < bodyLength) return;
 
-					var body = buffer.ReadBytes(PacketReceiveHeaderHandler.PacketHeaderLength, bodyLength);
-					if (m_ReceiveState.PacketHeader.ZipFlag != 0)
+					var body = buffer.ReadBytes(ReceiveState.PACKET_HEADER_LENGTH, bodyLength);
+					if (m_ReceiveState.ZipFlag != 0)
 					{
 						// 解压
-						MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
-						body = MessageDecompressHandler.Decompress(body);
+						body = Utility.Zip.Decompress(body);
 					}
 
 					// 反序列化数据
-					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, PacketReceiveHeaderHandler.Id, out var msgObj);
+					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, m_NetworkChannelHelper.LastReceivedMessageId, out var msgObj);
 					if (processSuccess)
 					{
-						msgObj.SetUniqueId(PacketReceiveHeaderHandler.UniqueId);
+						msgObj.SetUniqueId(m_NetworkChannelHelper.LastReceivedUniqueId);
 					}
 
 #if ENABLE_NETWORK_RSP_LOG

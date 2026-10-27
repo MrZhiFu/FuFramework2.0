@@ -29,15 +29,6 @@ namespace Hotfix.Framework.Network
 		protected readonly object m_handleMsgLock = new();
 
 		/// <summary>
-		/// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
-		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
-		/// 默认值依据：本项目 proto 未使用 bytes 大字段（仅 repeated/map 的常规消息），
-		/// 实际消息体在 KB 量级，1 MiB 是宽松的健全性上限；若后续协议引入大消息，
-		/// 由具体通道实现（TCP / WebSocket）在合适时机调高本值即可。
-		/// </summary>
-		protected static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
-
-		/// <summary>
 		/// 待处理消息链表（接收线程投递、主线程派发）
 		/// </summary>
 		protected readonly FuLinkedList<MessageObject> m_waitingHandleMsgLkList = new();
@@ -93,39 +84,15 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 校验包头中的包长度并换算包体长度。
-		/// </summary>
-		/// <param name="header">已解析的包头</param>
-		/// <returns>包体长度</returns>
-		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
-		protected static int ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler header)
-		{
-			var packetLength = header.PacketLength;
-			var headerLength = header.PacketHeaderLength;
-			if (packetLength < headerLength)
-			{
-				throw new InvalidOperationException($"包长度非法。packetLength:{packetLength}, headerLength:{headerLength}");
-			}
-
-			var bodyLength = (long)packetLength - headerLength;
-			if (bodyLength > MaxPacketBodyLength)
-			{
-				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
-			}
-
-			return (int)bodyLength;
-		}
-
-		/// <summary>
 		/// 接收调试日志（仅 ENABLE_NETWORK_RSP_LOG 宏开启时输出）
 		/// </summary>
 		/// <param name="msgObj">已接收的消息对象</param>
 		protected void DebugReceiveLog(MessageObject msgObj)
 		{
 #if ENABLE_NETWORK_RSP_LOG
-			if (!m_IgnoreReceiveIds.Contains(PacketReceiveHeaderHandler.Id))
+			if (!m_IgnoreReceiveIds.Contains(m_NetworkChannelHelper.LastReceivedMessageId))
 			{
-				FuLogger.LogInfo($"收到消息:[{msgObj.GetType().Name}({PacketReceiveHeaderHandler.Id}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"收到消息:[{msgObj.GetType().Name}({m_NetworkChannelHelper.LastReceivedMessageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

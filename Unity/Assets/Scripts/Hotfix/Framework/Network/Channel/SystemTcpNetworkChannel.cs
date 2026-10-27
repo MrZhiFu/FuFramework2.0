@@ -184,7 +184,7 @@ namespace Hotfix.Framework.Network
 			// 完整的包，从头开始处理
 			m_ReceiveState.Stream.Position = 0L;
 			bool processSuccess;
-			if (m_ReceiveState.PacketHeader != null)
+			if (m_ReceiveState.IsAwaitingBody)
 			{
 				// 解析包体
 				processSuccess = ProcessPackBody();
@@ -215,7 +215,7 @@ namespace Hotfix.Framework.Network
 		/// <returns></returns>
 		private bool ProcessPackHeader()
 		{
-			var headerLength = PacketReceiveHeaderHandler.PacketHeaderLength;
+			var headerLength = ReceiveState.PACKET_HEADER_LENGTH;
 			var buffer       = new byte[headerLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
 			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
@@ -226,8 +226,10 @@ namespace Hotfix.Framework.Network
 				return false;
 			}
 
-			var bodyLength = ValidateAndGetPacketBodyLength(PacketReceiveHeaderHandler);
-			m_ReceiveState.Reset(bodyLength, PacketReceiveHeaderHandler);
+			var bodyLength = m_NetworkChannelHelper.ValidateAndGetPacketBodyLength();
+			m_ReceiveState.ZipFlag      = m_NetworkChannelHelper.LastReceivedZipFlag;
+			m_ReceiveState.Reset(bodyLength);
+			m_ReceiveState.IsAwaitingBody = true;
 			return true;
 		}
 
@@ -237,21 +239,20 @@ namespace Hotfix.Framework.Network
 		/// <returns></returns>
 		private bool ProcessPackBody()
 		{
-			var bodyLength = ValidateAndGetPacketBodyLength(m_ReceiveState.PacketHeader);
+			var bodyLength = (int)m_ReceiveState.Stream.Length;
 			var buffer     = new byte[bodyLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, bodyLength);
 
-			if (m_ReceiveState.PacketHeader.ZipFlag != 0)
+			if (m_ReceiveState.ZipFlag != 0)
 			{
 				// 解压
-				MessageDecompressHandler.NotNull(nameof(MessageDecompressHandler));
-				buffer = MessageDecompressHandler.Decompress(buffer);
+				buffer = Utility.Zip.Decompress(buffer);
 			}
 
-			var processSuccess = m_NetworkChannelHelper.DeserializePacketBody(buffer, PacketReceiveHeaderHandler.Id, out var msgObj);
+			var processSuccess = m_NetworkChannelHelper.DeserializePacketBody(buffer, m_NetworkChannelHelper.LastReceivedMessageId, out var msgObj);
 			if (processSuccess)
 			{
-				msgObj.SetUniqueId(PacketReceiveHeaderHandler.UniqueId);
+				msgObj.SetUniqueId(m_NetworkChannelHelper.LastReceivedUniqueId);
 			}
 
 #if ENABLE_NETWORK_RSP_LOG

@@ -2,10 +2,11 @@ using System;
 using System.IO;
 
 // ReSharper disable once CheckNamespace
+
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 接收状态：攒包缓冲流与当前包的解析进度（目标长度、包头处理器、空包体标志），支撑粘包/半包切分。
+	/// 接收状态：攒包缓冲流与当前包的解析进度（目标长度、压缩标记、空包体标志），支撑粘包/半包切分。
 	/// </summary>
 	internal sealed class ReceiveState : IDisposable
 	{
@@ -30,9 +31,14 @@ namespace Hotfix.Framework.Network
 		public bool IsEmptyBody { get; private set; }
 
 		/// <summary>
-		/// 接收包头处理器
+		/// 是否处于"已解析包头、等待/收攒包体"阶段（false = 等待包头）
 		/// </summary>
-		public PacketReceiveHeaderHandler PacketHeader { get; private set; }
+		public bool IsAwaitingBody { get; set; }
+
+		/// <summary>
+		/// 当前包的压缩标记（包头期从 helper 解析结果写入，包体期跨批次消费）
+		/// </summary>
+		public byte ZipFlag { get; set; }
 
 		/// <summary>
 		/// 接收数据流
@@ -45,7 +51,8 @@ namespace Hotfix.Framework.Network
 		/// <param name="packetHeaderLength">包头长度</param>
 		public void PrepareForPacketHeader(int packetHeaderLength = PACKET_HEADER_LENGTH)
 		{
-			Reset(packetHeaderLength, null);
+			Reset(packetHeaderLength);
+			IsAwaitingBody = false;
 		}
 
 		/// <summary>
@@ -65,11 +72,10 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 重置接收状态
+		/// 重置接收状态（进入"等待/收攒包体"阶段）
 		/// </summary>
 		/// <param name="targetLength">目标长度</param>
-		/// <param name="packetHeader">接收包头处理器</param>
-		public void Reset(int targetLength, PacketReceiveHeaderHandler packetHeader)
+		public void Reset(int targetLength)
 		{
 			if (targetLength < 0) throw new InvalidOperationException("目标长度无效。");
 
@@ -77,8 +83,7 @@ namespace Hotfix.Framework.Network
 			Stream.SetLength(targetLength);
 
 			// 发现内容长度为空.说明是个空消息或者内容是默认值.
-			IsEmptyBody  = targetLength == 0;
-			PacketHeader = packetHeader;
+			IsEmptyBody = targetLength == 0;
 		}
 	}
 }
