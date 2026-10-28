@@ -7,9 +7,10 @@
     <component id="ubwa2u" name="CompRedDot.xml" path="/Comp/" exported="true"/>
     <image id="ubwa2w" name="img_red_dot.png" path="/Res/"/>
     <component id="pb2xa" name="WinGlobalMask.xml" path="/" exported="true"/>
-    <component id="n0aj2x" name="WinGlobalLoading.xml" path="/" exported="true"/>
+    <component id="n0aj2x" name="WinReconnecting.xml" path="/" exported="true"/>
     <image id="n0aj2y" name="img_loading.png" path="/Res/"/>
     <component id="fmrm30" name="BtnClose.xml" path="/Comp/Btn/" exported="true"/>
+    <component id="ezvv32" name="WinGlobalLoading.xml" path="/" exported="true"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

@@ -7,7 +7,7 @@
     <component id="pb2x7" name="WinClickGuide.xml" path="/" exported="true"/>
     <component id="pb2x9" name="BtnNext.xml" path="/Comp/"/>
   </resources>
-  <publish name="Guide" genCode="true">
+  <publish name="" genCode="true">
     <atlas name="默认" index="0"/>
   </publish>
 </packageDescription>

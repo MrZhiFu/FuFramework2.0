@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component size="1920,1080">
-  <controller name="BtnCtrl" alias="按钮显示状态" exported="true" pages="3,ShowAll,0,HideAll,1,ShowOk,2,ShowCancel" selected="0">
+  <controller name="BtnType" alias="按钮显示样式" exported="true" pages="3,ShowAll,0,HideAll,1,ShowOk,2,ShowCancel" selected="0">
     <remark page="0" value="显示全部按钮"/>
     <remark page="1" value="隐藏全部按钮"/>
     <remark page="2" value="只显示确认按钮"/>
@@ -14,14 +14,14 @@
       <relation target="n9_ek35" sidePair="width-width,height-height,center-center,middle-middle"/>
     </richtext>
     <component id="n1_iopl" name="_btnOk" src="oo3b2t" fileName="Comp/Btn/BtnOk.xml" pkg="ats3vms3" xy="705,705" size="196,76">
-      <gearDisplay controller="BtnCtrl" pages="3,1"/>
-      <gearXY controller="BtnCtrl" pages="1" values="862,708" default="705,705"/>
+      <gearDisplay controller="BtnType" pages="3,1"/>
+      <gearXY controller="BtnType" pages="1" values="862,708" default="705,705"/>
       <relation target="n9_ek35" sidePair="left-left,bottom-bottom"/>
       <Button title="确认"/>
     </component>
     <component id="n2_iopl" name="_btnNo" src="oo3b2p" fileName="Comp/Btn/BtnCancel.xml" pkg="ats3vms3" xy="1003,705" size="196,76">
-      <gearDisplay controller="BtnCtrl" pages="3,2"/>
-      <gearXY controller="BtnCtrl" pages="2" values="862,705" default="1003,705"/>
+      <gearDisplay controller="BtnType" pages="3,2"/>
+      <gearXY controller="BtnType" pages="2" values="862,705" default="1003,705"/>
       <relation target="n9_ek35" sidePair="right-right,bottom-bottom"/>
       <Button title="取消"/>
     </component>
