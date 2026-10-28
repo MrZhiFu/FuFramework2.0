@@ -133,8 +133,9 @@ function GenCommon:GenControllerDefine(dataList, compCls)
             displayName = (alias and alias ~= "") and alias or controllerName
         end
 
-        -- 2. 构建页面备注映射：优先从 rawXml 解析 <remark>，回退为空
-        local remarkMap = {}
+        -- 2. 收集页面备注：按控制器内出现顺序存数组（与页面一一对应；不按 page id 键寻，
+        --    避免编辑器把页面 id 打乱（如 pages="3,ShowAll,0,HideAll,..."）导致注释错位）
+        local remarkSeq = {}
         if rawXml then
             local escName = controllerName:gsub("([%.%-])", "%%%1")
             local ctrlStart = rawXml:find('<controller name="' .. escName .. '"')
@@ -144,22 +145,21 @@ function GenCommon:GenControllerDefine(dataList, compCls)
                 if ctrlEnd then
                     ctrlSection = ctrlSection:sub(1, ctrlEnd)
                 end
-                for page, value in ctrlSection:gmatch('<remark page="(%d+)" value="([^"]*)"') do
+                for _, value in ctrlSection:gmatch('<remark page="(%d+)" value="([^"]*)"') do
                     if value ~= "" then
-                        remarkMap[page] = value
+                        table.insert(remarkSeq, value)
                     end
                 end
             end
         end
-        if next(remarkMap) == nil then
+        if #remarkSeq <= 0 then
             local remarkList = controller:Elements("remark")
             if remarkList and remarkList.Count > 0 then
                 for r = 1, remarkList.Count do
                     local remark = remarkList[r - 1]
-                    local page = remark:GetAttribute("page")
                     local remarkValue = remark:GetAttribute("value")
-                    if page and remarkValue and remarkValue ~= "" then
-                        remarkMap[page] = remarkValue
+                    if remarkValue and remarkValue ~= "" then
+                        table.insert(remarkSeq, remarkValue)
                     end
                 end
             end
@@ -176,8 +176,10 @@ function GenCommon:GenControllerDefine(dataList, compCls)
                 if value == "" then
                     value = ("N" .. idx)
                 end
-                local valueComment = remarkMap[idx] or value
-                table.insert(pageValues, { idx = idx, value = value, comment = valueComment })
+                -- 枚举值 = 页面遍历顺序（0 起），忽略 pages 里可能乱序的 id
+                local order = #pageValues
+                local valueComment = remarkSeq[order + 1] or value
+                table.insert(pageValues, { order = order, value = value, comment = valueComment })
             end
         end
 
@@ -201,7 +203,7 @@ function GenCommon:GenControllerDefine(dataList, compCls)
             local keyName = Tool:FirstCharUpper(pv.value)
             table.insert(dataList, keyName)
             table.insert(dataList, " = ")
-            table.insert(dataList, pv.idx)
+            table.insert(dataList, tostring(pv.order))
             table.insert(dataList, ",\n")
         end
         table.insert(dataList, "\t\t}\n\n")
