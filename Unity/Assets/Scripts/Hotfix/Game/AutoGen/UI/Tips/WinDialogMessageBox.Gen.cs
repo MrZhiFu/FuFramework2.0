@@ -23,21 +23,21 @@ namespace Hotfix.Game.UI
 		public enum EBtnType
 		{
 			/// <summary>
-			/// 只显示取消按钮
-			/// </summary>
-			ShowAll = 3,
-			/// <summary>
 			/// 显示全部按钮
 			/// </summary>
-			HideAll = 0,
-			/// <summary>
-			/// 隐藏全部按钮
-			/// </summary>
-			ShowOk = 1,
+			ShowAll = 0,
 			/// <summary>
 			/// 只显示确认按钮
 			/// </summary>
+			ShowOk = 1,
+			/// <summary>
+			/// 只显示取消按钮
+			/// </summary>
 			ShowCancel = 2,
+			/// <summary>
+			/// 隐藏全部按钮
+			/// </summary>
+			HideAll = 3,
 		}
 
 		/// <summary>

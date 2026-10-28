@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component size="1920,1080">
-  <controller name="BtnType" alias="按钮显示样式" exported="true" pages="3,ShowAll,0,HideAll,1,ShowOk,2,ShowCancel" selected="0">
+  <controller name="BtnType" alias="按钮显示样式" exported="true" pages="3,ShowAll,1,ShowOk,2,ShowCancel,0,HideAll" selected="0">
     <remark page="0" value="显示全部按钮"/>
-    <remark page="1" value="隐藏全部按钮"/>
-    <remark page="2" value="只显示确认按钮"/>
-    <remark page="3" value="只显示取消按钮"/>
+    <remark page="1" value="只显示确认按钮"/>
+    <remark page="2" value="只显示取消按钮"/>
+    <remark page="3" value="隐藏全部按钮"/>
   </controller>
   <displayList>
     <graph id="n9_ek35" name="Bg1" xy="539,274" size="842,532" type="rect" lineSize="0" fillColor="#ffff9933">
