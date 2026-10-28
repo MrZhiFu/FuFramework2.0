@@ -55,7 +55,7 @@
   },
   {
     "Name": "WinGlobalLoading",
-    "Layer": 2000,
+    "Layer": 4000,
     "TweenType": 1,
     "TweenDuration": 0.3,
     "AdjustNotch": false,
@@ -106,5 +106,14 @@
     "AdjustNotch": false,
     "PauseCoveredUI": false,
     "Blur": false
+  },
+  {
+    "Name": "WinReconnecting",
+    "Layer": 4000,
+    "TweenType": 1,
+    "TweenDuration": 0.3,
+    "AdjustNotch": false,
+    "PauseCoveredUI": false,
+    "Blur": true
   }
 ]
