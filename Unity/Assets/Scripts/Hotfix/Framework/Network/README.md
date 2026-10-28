@@ -230,7 +230,7 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 
 | 内部类 | 说明 |
 |------|------|
-| `ConnectState` | 连接状态管理：重连次数、重连间隔 |
+| `ConnectState` | 连接流程状态：携带 Socket 与用户自定义数据，供连接回调取回上下文 |
 | `HeartBeatState` | 心跳状态管理：发送间隔、超时检测 |
 | `SendState` | 发送状态管理：MemoryStream 缓冲 |
 | `ReceiveState` | 接收状态管理：MemoryStream + 包解析 |
@@ -255,6 +255,16 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 | `NetworkErrorEventArgs` | 网络错误事件 |
 | `NetworkMissHeartBeatEventArgs` | 心跳丢失事件 |
 
+### 4.8 断线自动重连（框架三件套）
+
+| 件 | API | 说明 |
+|---|---|---|
+| 关闭原因 | `ENetworkCloseReason`（`Active`/`Lost`） | `Close(reason)` 贯通全调用点；`NetworkClosedEventArgs.CloseReason` 供订阅方区分主动登出与异常断线（决定是否重连） |
+| 可等待拨号 | `ConnectAsync(address, cancellationToken, timeoutMs)` | 创建频道 + 连接 + 等待结果；超时/失败以异常返回——替代"Connect 发完即忘 + 业务手写事件桥" |
+| 退避重拨 | `ReconnectAsync(options, cancellationToken)` | `ReconnectOptions` 定目标地址与退避序列（默认 `{2,3,5,8,13}s`）；每轮销毁重建 + 拨号，耗尽抛 `TimeoutException` |
+
+业务侧编排见 Game 层 `ReconnectManager`：订阅 `Closed(Lost)` → 弹"重连中"转圈框 → `ReconnectAsync` → 静默重登（`PlayerLoginFlow`）→ 关窗回主界面原地复活；重试耗尽弹"重连失败"框交玩家手选；被顶号（`NotifyPrompt Type=5` 标记）不自动重连。
+
 ## 5. 使用示例
 
 ### 5.1 创建网络连接
@@ -268,7 +278,7 @@ public class NetworkExample
     public void Init()
     {
         // 创建网络频道（模块内唯一；传输由编译宏在创建时决定 TCP/WS）
-        NetworkModule.Instance.CreateChannel(new NetworkChannelHelper(), rpcTimeout: 5000);
+        NetworkModule.Instance.CreateChannel(rpcTimeout: 5000);
 
         // 注册消息处理器（使用 NotifyMessageHandlerRegistry）
         NotifyMessageHandlerRegistry.Add(new LoginMessageHandler());
@@ -358,6 +368,7 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 Network/
 ├── NetworkModule.cs                                  # 网络管理模块（字段/生命周期/事件转发）
 ├── NetworkModule.API.cs                              # 对外公共 API（单频道门面：创建/连接/收发/销毁）
+├── NetworkModule.Reconnect.cs                        # 重连分部：ReconnectOptions + ReconnectAsync（退避重拨）
 ├── Channel/                                          # 网络频道（接口与实现同居，internal）
 │   ├── INetworkChannel.cs                            # 网络频道接口
 │   ├── NetworkChannelBase.cs                         # 网络频道基类
@@ -397,8 +408,9 @@ Network/
 │   ├── NetworkClosedEventArgs.cs
 │   ├── NetworkErrorEventArgs.cs
 │   └── NetworkMissHeartBeatEventArgs.cs
-└── Misc/                                             # 杂项（错误码）
-│   └── NetworkErrorCode.cs                           # 网络错误码
+├── Misc/                                             # 杂项（错误码、关闭原因）
+│   ├── NetworkErrorCode.cs                           # 网络错误码
+│   └── ENetworkCloseReason.cs                        # 网络频道关闭原因（Active/Lost）
 └── README.md                                         # 本文档
 ```
 

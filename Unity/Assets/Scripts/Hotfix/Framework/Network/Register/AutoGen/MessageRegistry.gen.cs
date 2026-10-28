@@ -77,7 +77,7 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
-        /// 共 1 条绑定，来自 1 个宿主类型。
+        /// 共 2 条绑定，来自 2 个宿主类型。
         /// 委托形如 static msgObj =&gt; Handler.Instance.OnX((X)msgObj)：
         /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
@@ -86,6 +86,10 @@ namespace Hotfix.Framework.Network
             // Hotfix.Game.Manager_ToDelete.BagManager
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
                 static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj),
+                priority: 0);
+            // Hotfix.Game.Network.ReconnectManager
+            NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyPrompt),
+                static msgObj => Hotfix.Game.Network.ReconnectManager.Instance.OnNotifyPrompt((NotifyPrompt)msgObj),
                 priority: 0);
             NotifyMessageHandlerRegistry.SortByPriority();
         }

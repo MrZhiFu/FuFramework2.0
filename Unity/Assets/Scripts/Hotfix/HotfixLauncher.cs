@@ -18,6 +18,7 @@ using Hotfix.Framework.Event;
 using Hotfix.Framework.FSM;
 using Hotfix.Framework.UI;
 using Hotfix.Framework.Procedure;
+using Hotfix.Game.Network;
 using Hotfix.Framework.ObjectPool;
 using Hotfix.Framework.Localization;
 using Hotfix.Framework.Model;
@@ -162,6 +163,9 @@ namespace Hotfix
 		private static void EnterGame(ILaunchView launchView)
 		{
 			GlobalModule.UIModule.Open<WinLogin>();
+
+			// 网络重连编排：订阅断线事件（仅在进游戏后生效；登录期失联由按钮兜底）
+			ReconnectManager.Instance.Initialize();
 			launchView.Close();
 
 			// 卸载Launcher界面资源包, 防止Launcher包常驻内存

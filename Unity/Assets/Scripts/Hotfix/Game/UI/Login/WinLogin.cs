@@ -81,7 +81,10 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnLoginClick(EventContext ctx)
 		{
-			UserLoginAsync().Forget();
+			var dialogData = new WinDialogMessageBox.DialogMessageBoxData("重连失败，请重试或返回登录。", null, null);   // 返回登录
+			GlobalModule.UIModule.Open<WinDialogMessageBox>(dialogData);
+			
+			// UserLoginAsync().Forget();
 			// PlayBgm().Forget();
 			// Example: RedDotModule.Instance.RegisterLeaf(ERedDotKey.Bag_Item, () => GetBagRedDotCount(), "BagChanged");
 		}

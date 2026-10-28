@@ -27,9 +27,8 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道的新实例。
 		/// </summary>
-		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		public SystemTcpNetworkChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
+		public SystemTcpNetworkChannel(int rpcTimeout) : base(rpcTimeout) { }
 
 		/// <summary>
 		/// 连接到远程主机。
@@ -134,7 +133,7 @@ namespace Hotfix.Framework.Network
 
 			if (bytesReceived <= 0)
 			{
-				Close();
+				Close(ENetworkCloseReason.Lost);
 				return;
 			}
 
@@ -411,7 +410,7 @@ namespace Hotfix.Framework.Network
 				                      errorCode: ENetworkErrorCode.ConnectError,
 				                      socketError: socketException?.SocketErrorCode ?? SocketError.Success,
 				                      errorMessage: exception.ToString());
-				Close();
+				Close(ENetworkCloseReason.Lost);
 				return;
 			}
 

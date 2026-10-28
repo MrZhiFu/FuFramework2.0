@@ -96,6 +96,11 @@ namespace Hotfix.Framework.Network
 			/// 错误消息
 			/// </summary>
 			public string m_ErrorMessage;
+
+			/// <summary>
+			/// 关闭原因（仅 Closed 事件有意义；Active=主动，Lost=异常断线）
+			/// </summary>
+			public ENetworkCloseReason m_CloseReason;
 		}
 
 		/// <summary>
@@ -112,9 +117,9 @@ namespace Hotfix.Framework.Network
 		public Action<NetworkChannelBase, object> m_NetworkChannelConnected;
 
 		/// <summary>
-		/// 连接关闭回调（参数：频道）
+		/// 连接关闭回调（参数：频道、关闭原因）
 		/// </summary>
-		public Action<NetworkChannelBase> m_NetworkChannelClosed;
+		public Action<NetworkChannelBase, ENetworkCloseReason> m_NetworkChannelClosed;
 
 		/// <summary>
 		/// 心跳丢失回调（参数：频道、连续丢失次数）
@@ -139,12 +144,11 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道基类的新实例。
 		/// </summary>
-		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		protected NetworkChannelBase(NetworkChannelHelper networkChannelHelper, int rpcTimeout)
+		protected NetworkChannelBase(int rpcTimeout)
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
-			m_NetworkChannelHelper        = networkChannelHelper;
+			m_NetworkChannelHelper        = new NetworkChannelHelper();   // 凭据内化：helper 恒定唯一类型，无外部注入点，在频道构造内统一创建
 			m_HeartBeatInterval           = DEFAULT_HEART_BEAT_INTERVAL;
 			m_MissHeartBeatCountByClose   = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			m_Socket                      = null;
@@ -160,7 +164,7 @@ namespace Hotfix.Framework.Network
 			m_NetworkChannelMissHeartBeat = null;
 			m_NetworkChannelError         = null;
 
-			networkChannelHelper.Initialize(this);
+			m_NetworkChannelHelper.Initialize(this);
 		}
 
 		/// <summary>
@@ -193,7 +197,8 @@ namespace Hotfix.Framework.Network
 		/// 关闭连接并释放所有相关资源。
 		/// 语义：断开连接（可重连）——重连时将重建 Socket；彻底销毁频道请调 Dispose。
 		/// </summary>
-		public virtual void Close()
+		/// <param name="reason">关闭原因（Active=主动：登出/销毁；Lost=异常断线：心跳判死、收发异常、对端断开）</param>
+		public virtual void Close(ENetworkCloseReason reason = ENetworkCloseReason.Active)
 		{
 			lock (m_closeLock)
 			{
@@ -213,7 +218,7 @@ namespace Hotfix.Framework.Network
 					m_Socket = null;
 					// 原为 NetworkChannelClosed?.Invoke(this)（可能运行在 Socket 回调线程）——改为入队封送。
 					// m_Socket==null 的早退保证重复 Close 不会重复入队；事件队列不被 Close 清空。
-					EnqueueLifecycleEvent(EChannelLifecycleEventType.Closed);
+					EnqueueLifecycleEvent(EChannelLifecycleEventType.Closed, closeReason: reason);
 				}
 			}
 
@@ -236,7 +241,7 @@ namespace Hotfix.Framework.Network
 		{
 			if (m_disposed) return;
 
-			Close();
+			Close(ENetworkCloseReason.Active);
 			m_SendState.Dispose();
 			m_ReceiveState.Dispose();
 			m_NetworkChannelHelper.Dispose();
@@ -251,7 +256,8 @@ namespace Hotfix.Framework.Network
 		protected void EnqueueLifecycleEvent(EChannelLifecycleEventType type, object userData = null,
 		                                     ENetworkErrorCode errorCode = ENetworkErrorCode.SocketError,
 		                                     SocketError socketError = SocketError.Success,
-		                                     string errorMessage = null)
+		                                     string errorMessage = null,
+		                                     ENetworkCloseReason closeReason = ENetworkCloseReason.Active)
 		{
 			var lifecycleEvent = new LifecycleEvent
 			{
@@ -260,6 +266,7 @@ namespace Hotfix.Framework.Network
 				m_ErrorCode    = errorCode,
 				m_SocketError  = socketError,
 				m_ErrorMessage = errorMessage,
+				m_CloseReason  = closeReason,
 			};
 
 			lock (m_handleMsgLock)
@@ -289,7 +296,7 @@ namespace Hotfix.Framework.Network
 						m_NetworkChannelConnected?.Invoke(this, lifecycleEvent.m_UserData);
 						break;
 					case EChannelLifecycleEventType.Closed:
-						m_NetworkChannelClosed?.Invoke(this);
+						m_NetworkChannelClosed?.Invoke(this, lifecycleEvent.m_CloseReason);
 						break;
 					case EChannelLifecycleEventType.Error:
 						m_NetworkChannelError?.Invoke(this, lifecycleEvent.m_ErrorCode, lifecycleEvent.m_SocketError, lifecycleEvent.m_ErrorMessage);

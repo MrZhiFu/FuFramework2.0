@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Network
 		{
 			if (m_Socket != null)
 			{
-				Close();
+				Close(ENetworkCloseReason.Active);
 				m_Socket = null;
 			}
 
@@ -89,7 +89,7 @@ namespace Hotfix.Framework.Network
 					// 获取IP失败
 					FuLogger.LogError($"IP 地址无效。{host}");
 					m_IsVerifyAddress = false;
-					Close();
+					Close(ENetworkCloseReason.Lost);
 					m_Socket = null;
 				}
 			}
@@ -97,7 +97,7 @@ namespace Hotfix.Framework.Network
 			{
 				FuLogger.LogError($"IP 地址无效。{host} {e.Message}");
 				m_IsVerifyAddress = false;
-				Close();
+				Close(ENetworkCloseReason.Lost);
 				m_Socket = null;
 			}
 

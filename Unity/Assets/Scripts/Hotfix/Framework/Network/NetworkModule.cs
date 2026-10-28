@@ -81,9 +81,10 @@ namespace Hotfix.Framework.Network
 		/// 频道关闭回调，广播连接关闭事件
 		/// </summary>
 		/// <param name="networkChannel">网络频道</param>
-		private void OnNetworkChannelClosed(NetworkChannelBase networkChannel)
+		/// <param name="closeReason">关闭原因</param>
+		private void OnNetworkChannelClosed(NetworkChannelBase networkChannel, ENetworkCloseReason closeReason)
 		{
-			var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel);
+			var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel, closeReason);
 			m_eventModule.Broadcast(this, networkClosedEventArgs);
 		}
 

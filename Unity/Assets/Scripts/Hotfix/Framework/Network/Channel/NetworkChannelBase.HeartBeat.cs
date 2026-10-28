@@ -86,8 +86,8 @@ namespace Hotfix.Framework.Network
 
 			if (shouldClose)
 			{
-				// 心跳丢失达到上限。触发断开
-				Close();
+				// 心跳丢失达到上限。触发断开（异常断线）
+				Close(ENetworkCloseReason.Lost);
 			}
 		}
 	}

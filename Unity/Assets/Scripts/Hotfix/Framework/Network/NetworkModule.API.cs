@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network
@@ -24,22 +26,21 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 创建网络频道（模块内唯一，重复创建抛异常）。
 		/// 传输实现由编译宏决定：WebGL + WebSocket 宏（或 FORCE_ENABLE_WEB_SOCKET）→ WebSocket，否则 TCP。
+		/// 频道辅助器（信封读写）由频道构造内化创建，调用方无需也不应传入。
 		/// </summary>
-		/// <param name="networkChannelHelper">网络频道辅助器（信封读写内置）。</param>
 		/// <param name="rpcTimeout">RPC超时时间，默认5000毫秒。</param>
 		/// <returns>要创建的网络频道。</returns>
-		public INetworkChannel CreateChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout = 5000)
+		public INetworkChannel CreateChannel(int rpcTimeout = 5000)
 		{
-			networkChannelHelper.NotNull(nameof(networkChannelHelper));
 			if (m_networkChannel != null)
 			{
 				throw new InvalidOperationException("[NetworkModule]网络频道已存在，请先 DestroyChannel。");
 			}
 
 #if UNITY_WEBGL || FORCE_ENABLE_WEB_SOCKET
-			NetworkChannelBase networkChannel = new WebSocketNetworkChannel(networkChannelHelper, rpcTimeout);
+			NetworkChannelBase networkChannel = new WebSocketNetworkChannel(rpcTimeout);
 #else
-			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(networkChannelHelper, rpcTimeout);
+			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(rpcTimeout);
 #endif
 			networkChannel.m_NetworkChannelConnected     += OnNetworkChannelConnected;
 			networkChannel.m_NetworkChannelClosed        += OnNetworkChannelClosed;
@@ -90,7 +91,73 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 关闭连接（可重连，转发当前频道 Close）。频道未创建时静默。
 		/// </summary>
-		public void Close() => m_networkChannel?.Close();
+		/// <param name="reason">关闭原因（默认主动关闭；异常断线由框架内部标注，业务侧一般无需传）</param>
+		public void Close(ENetworkCloseReason reason = ENetworkCloseReason.Active) => m_networkChannel?.Close(reason);
+
+		/// <summary>
+		/// 创建频道并发起连接，等待拨号结果（替代"Connect 发完即忘 + 业务手写事件桥"）。
+		/// 拨通返回已连接频道；超时抛 <see cref="TimeoutException"/>；拨号失败经网络错误事件抛 <see cref="InvalidOperationException"/>。
+		/// 已有频道时与 <see cref="CreateChannel"/> 一致抛出「频道已存在」异常（重连场景由 ReconnectAsync 先销毁）。
+		/// 铁律 5：cancellationToken 必传；取消时抛 <see cref="OperationCanceledException"/> 并清理事件订阅。
+		/// </summary>
+		/// <param name="address">服务器地址</param>
+		/// <param name="cancellationToken">取消令牌</param>
+		/// <param name="timeoutMilliseconds">拨号超时（毫秒），默认 15000</param>
+		/// <returns>已连接的网络频道</returns>
+		public async UniTask<INetworkChannel> ConnectAsync(Uri address, CancellationToken cancellationToken, int timeoutMilliseconds = 15000)
+		{
+			address.NotNull(nameof(address));
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var channel       = CreateChannel();
+			var tcs           = new UniTaskCompletionSource<bool>();
+			var timeoutSource = new CancellationTokenSource();
+			timeoutSource.CancelAfter(timeoutMilliseconds);
+
+			// 一次性事件桥：只认本频道；TCS TrySet 幂等，多事件竞争安全；finally 中全量退订。
+			void OnConnected(object sender, GameEventArgs e)
+			{
+				if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != channel) return;
+				tcs.TrySetResult(true);
+			}
+
+			void OnError(object sender, GameEventArgs e)
+			{
+				if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != channel) return;
+				tcs.TrySetException(new InvalidOperationException($"网络连接失败。错误码：{ne.ErrorCode}，消息：'{ne.ErrorMessage}'。"));
+			}
+
+			void OnClosed(object sender, GameEventArgs e)
+			{
+				if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != channel) return;
+				tcs.TrySetException(new InvalidOperationException("连接已关闭。"));
+			}
+
+			GlobalModule.EventModule.Subscribe(NetworkConnectedEventArgs.EventId, OnConnected);
+			GlobalModule.EventModule.Subscribe(NetworkErrorEventArgs.EventId,     OnError);
+			GlobalModule.EventModule.Subscribe(NetworkClosedEventArgs.EventId,    OnClosed);
+			Exception capturedException = null;
+			try
+			{
+				// 超时：timeoutSource 取消 → Register 回调把等待变为 TimeoutException
+				await using var timeoutRegistration = timeoutSource.Token.Register(() => tcs.TrySetException(new TimeoutException($"连接超时（{timeoutMilliseconds}ms）。")));
+				channel.Connect(address);
+				await tcs.Task.AttachExternalCancellation(cancellationToken);
+			}
+			catch (Exception e)
+			{
+				capturedException = e;
+			}
+
+			// 超时/取消的 await 恢复可能在线程池线程（CancelAfter 的 Timer 回调驱动）——切回主线程再退订（EventModule 仅主线程可访问）
+			await UniTask.SwitchToMainThread();
+			timeoutSource.Dispose();
+			GlobalModule.EventModule.Unsubscribe(NetworkConnectedEventArgs.EventId, OnConnected);
+			GlobalModule.EventModule.Unsubscribe(NetworkErrorEventArgs.EventId,     OnError);
+			GlobalModule.EventModule.Unsubscribe(NetworkClosedEventArgs.EventId,    OnClosed);
+			if (capturedException != null) throw capturedException;
+			return channel;
+		}
 
 		#endregion
 

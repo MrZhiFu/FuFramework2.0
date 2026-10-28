@@ -11,11 +11,12 @@ using ProtoBuf;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络频道帮助器。
+	/// 网络频道辅助器（频道的内建组成部分：信封读写 + 事件订阅 + 外部装配委托执行）。
+	/// 定位：由频道构造内化创建（<see cref="NetworkChannelBase"/>），业务侧无注入点；
+	/// 经 <see cref="Initialize"/> 与所属频道绑定，随频道销毁而 <see cref="Dispose"/>，与频道同生共死。
 	/// 功能：
-	///     1. 初始化网络频道帮助器。
-	///     2. 信封读写：包头的序列化写入（含压缩判定）与解析读取（含接收状态缓存）。
-	///     3. 显式注册外部包处理器装配委托（含生成物注册的游戏心跳）。
+	///     1. 信封读写：包头的序列化写入（含压缩判定）与解析读取（含接收状态缓存）。
+	///     2. 显式注册外部包处理器装配委托（含生成物注册的游戏心跳）。
 	/// </summary>
 	public class NetworkChannelHelper
 	{
@@ -71,7 +72,12 @@ namespace Hotfix.Framework.Network
 		public static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
 
 		/// <summary>
-		/// 网络频道
+		/// 事件组件实例
+		/// </summary>
+		private static EventModule s_event;
+
+		/// <summary>
+		/// 所属频道引用（Initialize 注入）：事件过滤、心跳与发送（取频道会话）依赖它
 		/// </summary>
 		private INetworkChannel m_networkChannel;
 
@@ -96,17 +102,9 @@ namespace Hotfix.Framework.Network
 		public byte LastReceivedZipFlag => m_receivedZipFlag;
 
 		/// <summary>
-		/// 获取事件组件。
+		/// 事件组件（helper 自身订阅/退订网络事件用；全局事件请走 GlobalModule.EventModule）
 		/// </summary>
-		public static EventModule Event
-		{
-			get { return s_event ??= ModuleManager.GetModule<EventModule>(); }
-		}
-
-		/// <summary>
-		/// 事件组件实例
-		/// </summary>
-		private static EventModule s_event;
+		private static EventModule Event => s_event ??= ModuleManager.GetModule<EventModule>();
 
 		/// <summary>
 		/// 外部装配委托集合（显式注册入口；项目铁律 4：不做反射扫描自动发现）。
@@ -122,9 +120,10 @@ namespace Hotfix.Framework.Network
 		private static readonly object sr_externalPacketHandlerRegistrarsLock = new();
 
 		/// <summary>
-		/// 初始化网络频道帮助器。
+		/// 与所属频道绑定：注入频道引用、执行外部装配委托（含生成物注册的游戏心跳）、订阅网络事件。
+		/// 由频道构造在创建本辅助器后立即调用一次。
 		/// </summary>
-		/// <param name="netChannel"></param>
+		/// <param name="netChannel">所属网络频道</param>
 		public void Initialize(INetworkChannel netChannel)
 		{
 			m_networkChannel = netChannel;
@@ -247,7 +246,7 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 反序列化接收包头：解析五字段（包长/操作类型/压缩标记/UniqueId/消息ID）并缓存接收状态。
+		/// 反序列化接收包头：解析五字段（包长/操作类型/压缩标记/唯一ID/消息ID）并缓存接收状态。
 		/// 操作类型仅推进读取偏移（零消费者），不保留为状态。
 		/// </summary>
 		/// <param name="source">包头原始字节（14 字节）</param>
@@ -257,21 +256,22 @@ namespace Hotfix.Framework.Network
 			source.NotNull(nameof(source));
 			if (source is not byte[] reader) return false;
 
-			// packetLength
 			var offset = 0;
-			m_receivedPacketLength = reader.ReadUInt(ref offset); //4
+			
+			// 消息长度 4
+			m_receivedPacketLength = reader.ReadUInt(ref offset);
 
-			// operationType（无消费者，仅推进偏移）
-			offset += sizeof(byte); //1
+			// 操作类型 1（无消费者，仅推进偏移）
+			offset += sizeof(byte);
 
-			// zipFlag
-			m_receivedZipFlag = reader.ReadByte(ref offset); //1
+			// 压缩标记 1
+			m_receivedZipFlag = reader.ReadByte(ref offset);
 
-			// uniqueId
-			m_receivedUniqueId = reader.ReadInt(ref offset); //4
+			// 唯一ID 4
+			m_receivedUniqueId = reader.ReadInt(ref offset);
 
-			// messageId
-			m_receivedId = reader.ReadInt(ref offset); //4
+			// 消息ID 4
+			m_receivedId = reader.ReadInt(ref offset);
 			return true;
 		}
 
@@ -310,6 +310,8 @@ namespace Hotfix.Framework.Network
 			msgObj = (MessageObject)SerializerHelper.Deserialize(source, messageType);
 			return true;
 		}
+		
+		
 
 		/// <summary>
 		/// 网络连接成功事件回调
@@ -353,7 +355,7 @@ namespace Hotfix.Framework.Network
 		{
 			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
 			FuLogger.LogError($"网络错误，错误码：'{ne.ErrorCode}'，错误消息：'{ne.ErrorMessage}'。");
-			ne.NetworkChannel.Close();
+			ne.NetworkChannel.Close(ENetworkCloseReason.Lost);
 		}
 	}
 }

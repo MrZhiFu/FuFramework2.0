@@ -15,15 +15,28 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		public sealed class DialogMessageBoxData
 		{
-			public string Message  { get; }
+			public string Content  { get; }
 			public Action OnEnter  { get; }
 			public Action OnCancel { get; }
 
-			public DialogMessageBoxData(string message, Action onEnter, Action onCancel = null)
+			/// <summary>
+			/// 按钮显示状态（默认全按钮；嵌套类 private 对外层 OnOpen 可见——外部经静态工厂指定，无需读取）
+			/// </summary>
+			public EBtnType BtnType { get; }
+
+			/// <summary>
+			/// 构造按钮对话框
+			/// </summary>
+			/// <param name="content">提示内容</param>
+			/// <param name="onEnter">点击确定按钮的回调</param>
+			/// <param name="onCancel">点击取消按钮的回调</param>
+			/// <param name="btnType">按钮显示状态</param>
+			public DialogMessageBoxData(string content, Action onEnter, Action onCancel, EBtnType btnType = EBtnType.ShowAll)
 			{
-				Message  = message;
+				Content  = content;
 				OnEnter  = onEnter;
 				OnCancel = onCancel;
+				BtnType  = btnType;
 			}
 		}
 
@@ -64,7 +77,8 @@ namespace Hotfix.Game.UI
 		{
 			if (UserData is not DialogMessageBoxData userData) return;
 			m_data          = userData;
-			txtContent.text = m_data.Message;
+			txtContent.text = m_data.Content;
+			SetBtnTypeCtrl(m_data.BtnType);
 
 			Refresh();
 		}

@@ -31,7 +31,6 @@ namespace Hotfix.Game.UI
 		{
 			InitUIComp();
 			InitUIEvent();
-			InitEvent();
 		}
 
 		/// <summary>
@@ -45,7 +44,7 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 注册相关逻辑事件
+		/// 注册网络事件订阅。每次打开重订（OnClose 已退订，见下）。
 		/// </summary>
 		private void InitEvent()
 		{
@@ -59,15 +58,21 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		protected override void OnOpen()
 		{
-	        playerList = AccountManager.Instance.PlayerList;
-	        listPlayer.numItems = playerList.Count;
+			playerList = AccountManager.Instance.PlayerList;
+			listPlayer.numItems = playerList.Count;
+			InitEvent();
 			Refresh();
 		}
 
 		/// <summary>
 		/// 界面关闭
+		/// 退订网络订阅：窗口关闭（进游戏后对象池待复用）后订阅仍存活，会在重连拨通广播 Connected 时
+		/// 被幽灵触发——用已关闭界面的过期数据再跑一次登录事务（双事务竞态）。
 		/// </summary>
-		protected override void OnClose() { }
+		protected override void OnClose()
+		{
+			UnSubscribeAll();
+		}
 
 		/// <summary>
 		/// 界面销毁
@@ -83,29 +88,13 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 角色登录进游戏（TCP）：挂起推送派发 → Call(ReqPlayerLogin) 建立全量基线 → 恢复派发 → 打开主界面。
+		/// 角色登录进游戏（TCP）：事务已抽入 <see cref="PlayerLoginFlow.EnterGameAsync"/>
+		/// （挂阀门 → Call 建立基线 → 恢复派发，失败收尾在其中）。Token 随界面关闭自动取消。
 		/// 与 WinLogin.UserLoginAsync（账号登录，HTTP）分工：账号层管"你是谁"，进游戏层管"建立会话与数据基线"。
 		/// </summary>
 		private async UniTaskVoid PlayerLoginAsync()
 		{
-			// 挂起推送派发：登录窗口期的增量推送进缓冲（全量基线未建立前不可派发）
-			NetworkModule.Instance.SuspendNotifyDispatch();
-			try
-			{
-				// 请求玩家登录
-				var reqPlayerLogin  = new ReqPlayerLogin { Id = m_selectedPlayerInfo.Id };
-				var respPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin);
-				PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
-
-				// 基线就绪：恢复派发，缓冲推送按到达顺序回放
-				NetworkModule.Instance.ResumeNotifyDispatch();
-			}
-			catch (Exception)
-			{
-				// 登录失败：基线未建立，缓冲中的增量全是脏数据，直接丢弃不回放
-				NetworkModule.Instance.ClearNotifyBuffer();
-				throw;
-			}
+			await PlayerLoginFlow.EnterGameAsync(m_selectedPlayerInfo.Id, Token);
 
 			// 打开主界面
 			await GlobalModule.UIModule.OpenAsync<WinMain>();
@@ -147,7 +136,7 @@ namespace Hotfix.Game.UI
 			loaderSelectedIcon.icon  = UIPackage.GetItemURL("Common", "wrap_1");
 			txtSelectedName.text  = playerList[idx].Name;
 			txtSelectedLevel.text = "当前等级:" + playerList[idx].Level;
-			SetController(ECtrlSelected.Yes);
+			SetCtrlSelectedCtrl(ECtrlSelected.Yes);
 		}
 
 		private void OnRenderListPlayerItem(int idx, GObject item)
@@ -173,7 +162,7 @@ namespace Hotfix.Game.UI
 				NetworkModule.Instance.DestroyChannel();
 			}
 
-			channel = NetworkModule.Instance.CreateChannel(new NetworkChannelHelper());
+			channel = NetworkModule.Instance.CreateChannel();
 
 			// 心跳处理器由框架在创建频道时自动装配（NetworkChannelHelper.Initialize →
 			// 生成式静态注册表会注册游戏侧 HeartBeatProvider），此处无需再手动注册。

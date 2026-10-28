@@ -45,15 +45,14 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="resetHeartBeatElapseSeconds">是否重置心跳流逝时长</param>
 		/// <remarks>
-		/// 无论哪种重置都会刷新真实时钟基点：收包清账/连接重置意味着"刚发生过心跳相关事件"，
-		/// 下一次推进从当前真实时刻重新分段累计（分段累计之和不变，不影响"每 N 秒必发"的节奏）。
-		/// 本方法会在后台收包线程被调用（调用点均持 <c>m_HeartBeatLock</c>），与主线程推进互斥，线程安全同现状。
+		/// 本方法在后台收包/连接回调线程被调用（调用点均持 <c>m_HeartBeatLock</c>），因此**不读 Unity 的 Time API**：
+		/// 真实时钟基点由主线程 <see cref="UpdateByRealTime"/> 每帧刷新，无需在此更新——收包清账后下一帧的
+		/// now - last 即以当前时刻为起点重新累计，与"见包即续命"语义一致（基点误差 ≤ 1 帧，可忽略）。
 		/// </remarks>
 		public void Reset(bool resetHeartBeatElapseSeconds)
 		{
 			if (resetHeartBeatElapseSeconds) HeartBeatElapseSeconds = 0f;
-			m_lastRealTimeSinceStartup = Time.realtimeSinceStartup;
-			MissHeartBeatCount         = 0;
+			MissHeartBeatCount = 0;
 		}
 	}
 }

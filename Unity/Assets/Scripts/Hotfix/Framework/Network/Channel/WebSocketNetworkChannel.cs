@@ -33,9 +33,8 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道的新实例。
 		/// </summary>
-		/// <param name="networkChannelHelper">网络频道辅助器。</param>
 		/// <param name="rpcTimeout">RPC超时时间</param>
-		public WebSocketNetworkChannel(NetworkChannelHelper networkChannelHelper, int rpcTimeout) : base(networkChannelHelper, rpcTimeout) { }
+		public WebSocketNetworkChannel(int rpcTimeout) : base(rpcTimeout) { }
 
 		/// <summary>
 		/// WebSocket 的 URL 由底层客户端自行解析，无需在这里做 DNS 解析。
@@ -85,14 +84,14 @@ namespace Hotfix.Framework.Network
 		/// 底层连接关闭回调，触发频道关闭
 		/// </summary>
 		/// <param name="errorMessage">关闭原因</param>
-		private void CloseCallback(string errorMessage) => Close();
+		private void CloseCallback(string errorMessage) => Close(ENetworkCloseReason.Lost);
 
 		/// <summary>
 		/// 关闭频道并取消进行中的连接
 		/// </summary>
-		public override void Close()
+		public override void Close(ENetworkCloseReason reason)
 		{
-			base.Close();
+			base.Close(reason);
 			m_cancellationTokenSource?.Cancel();
 		}
 
