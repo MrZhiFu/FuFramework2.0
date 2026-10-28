@@ -43,7 +43,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 设置控制器-按钮显示样式
 		/// </summary>
-		public void SetBtnTypeCtrl(EBtnType eBtnType) => BtnType.SetSelectedIndex((int) eBtnType);
+		public void SetBtnTypeCtrl(EBtnType eBtnType) => BtnType.selectedIndex = (int) eBtnType;
 
 		/// <summary>
 		/// 获取控制器-按钮显示样式

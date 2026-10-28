@@ -46,7 +46,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 设置控制器-IsSelectedItem
 		/// </summary>
-		public void SetIsSelectedItemCtrl(EIsSelectedItem eIsSelectedItem) => IsSelectedItem.SetSelectedIndex((int) eIsSelectedItem);
+		public void SetIsSelectedItemCtrl(EIsSelectedItem eIsSelectedItem) => IsSelectedItem.selectedIndex = (int) eIsSelectedItem;
 
 		/// <summary>
 		/// 获取控制器-IsSelectedItem

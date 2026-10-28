@@ -48,7 +48,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 设置控制器-是否可使用
 		/// </summary>
-		public void SetIsCanUseCtrl(EIsCanUse eIsCanUse) => IsCanUse.SetSelectedIndex((int) eIsCanUse);
+		public void SetIsCanUseCtrl(EIsCanUse eIsCanUse) => IsCanUse.selectedIndex = (int) eIsCanUse;
 
 		/// <summary>
 		/// 获取控制器-是否可使用

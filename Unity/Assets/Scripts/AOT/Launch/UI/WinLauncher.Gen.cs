@@ -51,7 +51,7 @@ namespace AOT.Launch.UI
 		/// <summary>
 		/// 设置控制器-是否需要更新
 		/// </summary>
-		public void SetIsNeedUpgradeCtrl(EIsNeedUpgrade eIsNeedUpgrade) => IsNeedUpgrade.SetSelectedIndex((int) eIsNeedUpgrade);
+		public void SetIsNeedUpgradeCtrl(EIsNeedUpgrade eIsNeedUpgrade) => IsNeedUpgrade.selectedIndex = (int) eIsNeedUpgrade;
 
 		/// <summary>
 		/// 获取控制器-是否需要更新
@@ -61,7 +61,7 @@ namespace AOT.Launch.UI
 		/// <summary>
 		/// 设置控制器-是否下载中
 		/// </summary>
-		public void SetIsDownloadingCtrl(EIsDownloading eIsDownloading) => IsDownloading.SetSelectedIndex((int) eIsDownloading);
+		public void SetIsDownloadingCtrl(EIsDownloading eIsDownloading) => IsDownloading.selectedIndex = (int) eIsDownloading;
 
 		/// <summary>
 		/// 获取控制器-是否下载中

@@ -44,7 +44,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 设置控制器-button
 		/// </summary>
-		public void SetbuttonCtrl(Ebutton ebutton) => button.SetSelectedIndex((int) ebutton);
+		public void SetbuttonCtrl(Ebutton ebutton) => button.selectedIndex = (int) ebutton;
 
 		/// <summary>
 		/// 获取控制器-button

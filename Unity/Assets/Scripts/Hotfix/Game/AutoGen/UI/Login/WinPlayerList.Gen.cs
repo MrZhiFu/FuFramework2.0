@@ -37,7 +37,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 设置控制器-是否选中指定角色
 		/// </summary>
-		public void SetCtrlSelectedCtrl(ECtrlSelected eCtrlSelected) => CtrlSelected.SetSelectedIndex((int) eCtrlSelected);
+		public void SetCtrlSelectedCtrl(ECtrlSelected eCtrlSelected) => CtrlSelected.selectedIndex = (int) eCtrlSelected;
 
 		/// <summary>
 		/// 获取控制器-是否选中指定角色

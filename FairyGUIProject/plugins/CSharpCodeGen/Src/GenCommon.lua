@@ -216,7 +216,7 @@ function GenCommon:GenControllerDefine(dataList, compCls)
         end
 
         table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置控制器-%s\n\t\t/// </summary>\n", info.displayName))
-        table.insert(dataList, Tool:StrFormat("\t\tpublic void Set%s(E%s e%s) => %s.SetSelectedIndex((int) e%s);\n", ctrlName, info.name, info.name, info.name, info.name))
+        table.insert(dataList, Tool:StrFormat("\t\tpublic void Set%s(E%s e%s) => %s.selectedIndex = (int) e%s;\n", ctrlName, info.name, info.name, info.name, info.name))
         table.insert(dataList, "\n")
 
         table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 获取控制器-%s\n\t\t/// </summary>\n", info.displayName))
