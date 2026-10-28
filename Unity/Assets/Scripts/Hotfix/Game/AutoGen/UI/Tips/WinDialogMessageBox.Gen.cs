@@ -13,6 +13,7 @@ namespace Hotfix.Game.UI
         public override string PackageName => "Tips"; // 包名
 
 		private Controller BtnCtrl;
+		private Controller Test;
 		private GRichTextField txtContent;
 		private GButton btnOk;
 		private GButton btnNo;
@@ -20,7 +21,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 按钮显示状态
 		/// </summary>
-		private enum EBtnCtrl
+		public enum EBtnCtrl
 		{
 			/// <summary>
 			/// 只显示取消按钮
@@ -41,9 +42,39 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 设置 按钮显示状态 控制器状态
+		/// 测试
 		/// </summary>
-		private void SetController(EBtnCtrl eBtnCtrl) => BtnCtrl.SetSelectedIndex((int) eBtnCtrl);
+		public enum ETest
+		{
+			/// <summary>
+			/// 测试1
+			/// </summary>
+			Test1 = 0,
+			/// <summary>
+			/// 测试2
+			/// </summary>
+			Test2 = 1,
+		}
+
+		/// <summary>
+		/// 设置控制器-按钮显示状态
+		/// </summary>
+		public void SetBtnCtrl(EBtnCtrl eBtnCtrl) => BtnCtrl.SetSelectedIndex((int) eBtnCtrl);
+
+		/// <summary>
+		/// 获取控制器-按钮显示状态
+		/// </summary>
+		public EBtnCtrl GetBtnCtrl() => (EBtnCtrl)BtnCtrl.selectedIndex;
+
+		/// <summary>
+		/// 设置控制器-测试
+		/// </summary>
+		public void SetTestCtrl(ETest eTest) => Test.SetSelectedIndex((int) eTest);
+
+		/// <summary>
+		/// 获取控制器-测试
+		/// </summary>
+		public ETest GetTestCtrl() => (ETest)Test.selectedIndex;
 
         /// <summary>
         /// 界面组件初始化
@@ -51,6 +82,7 @@ namespace Hotfix.Game.UI
         private void InitUIComp()
         {
 			BtnCtrl = WinUI.GetController("BtnCtrl");
+			Test = WinUI.GetController("Test");
 			txtContent = (GRichTextField)GetChild("_txtContent");
 			btnOk = (GButton)GetChild("_btnOk");
 			btnNo = (GButton)GetChild("_btnNo");

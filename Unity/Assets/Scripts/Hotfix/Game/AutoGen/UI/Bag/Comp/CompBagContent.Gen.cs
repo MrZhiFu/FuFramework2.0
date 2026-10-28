@@ -31,7 +31,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// IsSelectedItem
 		/// </summary>
-		private enum EIsSelectedItem
+		public enum EIsSelectedItem
 		{
 			/// <summary>
 			/// No
@@ -44,9 +44,14 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 设置 IsSelectedItem 控制器状态
+		/// 设置控制器-IsSelectedItem
 		/// </summary>
-		private void SetController(EIsSelectedItem eIsSelectedItem) => IsSelectedItem.SetSelectedIndex((int) eIsSelectedItem);
+		public void SetIsSelectedItemCtrl(EIsSelectedItem eIsSelectedItem) => IsSelectedItem.SetSelectedIndex((int) eIsSelectedItem);
+
+		/// <summary>
+		/// 获取控制器-IsSelectedItem
+		/// </summary>
+		public EIsSelectedItem GetIsSelectedItemCtrl() => (EIsSelectedItem)IsSelectedItem.selectedIndex;
 
 		/// <summary>
 		/// 组件被构造时由FUI自动调用

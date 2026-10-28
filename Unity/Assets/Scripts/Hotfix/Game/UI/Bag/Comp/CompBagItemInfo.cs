@@ -59,7 +59,7 @@ namespace Hotfix.Game.UI
 			txtName.text = itemConfig.Name;
 			txtDesc.text = itemConfig.Desc;
 			var eIsCanUse = itemConfig.CanUse == EItemUseType.CanNot ? EIsCanUse.No : EIsCanUse.Yes;
-			SetController(eIsCanUse);
+			SetIsCanUseCtrl(eIsCanUse);
 		}
 
 		#region 交互事件以及ListItem渲染回调处理

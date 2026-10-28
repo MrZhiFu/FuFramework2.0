@@ -22,7 +22,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 是否选中指定角色
 		/// </summary>
-		private enum ECtrlSelected
+		public enum ECtrlSelected
 		{
 			/// <summary>
 			/// 没选中
@@ -35,9 +35,14 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 设置 是否选中指定角色 控制器状态
+		/// 设置控制器-是否选中指定角色
 		/// </summary>
-		private void SetController(ECtrlSelected eCtrlSelected) => CtrlSelected.SetSelectedIndex((int) eCtrlSelected);
+		public void SetCtrlSelectedCtrl(ECtrlSelected eCtrlSelected) => CtrlSelected.SetSelectedIndex((int) eCtrlSelected);
+
+		/// <summary>
+		/// 获取控制器-是否选中指定角色
+		/// </summary>
+		public ECtrlSelected GetCtrlSelectedCtrl() => (ECtrlSelected)CtrlSelected.selectedIndex;
 
         /// <summary>
         /// 界面组件初始化

@@ -151,13 +151,13 @@ namespace Hotfix.Game.UI
 			if (m_bagItems.Count > 0)
 			{
 				listItem.selectedIndex = 0;
-				SetController(EIsSelectedItem.Yes);
+				SetIsSelectedItemCtrl(EIsSelectedItem.Yes);
 				var bagItem = m_bagItems[0];
 				UpdateSelectItem(bagItem);
 			}
 			else
 			{
-				SetController(EIsSelectedItem.No);
+				SetIsSelectedItemCtrl(EIsSelectedItem.No);
 				m_selectBagItem = null;
 			}
 		}

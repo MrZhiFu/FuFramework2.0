@@ -191,7 +191,7 @@ function GenCommon:GenControllerDefine(dataList, compCls)
     -- 第二遍：生成所有枚举定义
     for _, info in ipairs(ctrlInfos) do
         table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// %s\n\t\t/// </summary>\n", info.displayName))
-        table.insert(dataList, "\t\tprivate enum E")
+        table.insert(dataList, "\t\tpublic enum E")
         table.insert(dataList, info.name)
         table.insert(dataList, "\n\t\t{\n")
 
@@ -207,11 +207,20 @@ function GenCommon:GenControllerDefine(dataList, compCls)
         table.insert(dataList, "\t\t}\n\n")
     end
 
-    -- 第三遍：生成所有 SetController 方法
+    -- 第三遍：生成所有 Set{name}Ctrl / Get{name}Ctrl 方法（public，供外部直接读写控制器状态）
     for _, info in ipairs(ctrlInfos) do
-        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置 %s 控制器状态\n\t\t/// </summary>\n", info.displayName))
-        table.insert(dataList, Tool:StrFormat("\t\tprivate void SetController(E%s e%s) => ", info.name, info.name))
-        table.insert(dataList, Tool:StrFormat("%s.SetSelectedIndex((int) e%s);\n", info.name, info.name))
+        -- 方法名 = 控制器名（已含 Ctrl 后缀则不重复追加，如 BtnCtrl→SetBtnCtrl/GetBtnCtrl、Test→SetTestCtrl/GetTestCtrl）
+        local ctrlName = info.name
+        if ctrlName:sub(-4) ~= "Ctrl" then
+            ctrlName = ctrlName .. "Ctrl"
+        end
+
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 设置控制器-%s\n\t\t/// </summary>\n", info.displayName))
+        table.insert(dataList, Tool:StrFormat("\t\tpublic void Set%s(E%s e%s) => %s.SetSelectedIndex((int) e%s);\n", ctrlName, info.name, info.name, info.name, info.name))
+        table.insert(dataList, "\n")
+
+        table.insert(dataList, Tool:StrFormat("\t\t/// <summary>\n\t\t/// 获取控制器-%s\n\t\t/// </summary>\n", info.displayName))
+        table.insert(dataList, Tool:StrFormat("\t\tpublic E%s Get%s() => (E%s)%s.selectedIndex;\n", info.name, ctrlName, info.name, info.name))
         table.insert(dataList, "\n")
     end
 

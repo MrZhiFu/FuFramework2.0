@@ -31,7 +31,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// button
 		/// </summary>
-		private enum Ebutton
+		public enum Ebutton
 		{
 			/// <summary>
 			/// up
@@ -44,9 +44,14 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 设置 button 控制器状态
+		/// 设置控制器-button
 		/// </summary>
-		private void SetController(Ebutton ebutton) => button.SetSelectedIndex((int) ebutton);
+		public void SetbuttonCtrl(Ebutton ebutton) => button.SetSelectedIndex((int) ebutton);
+
+		/// <summary>
+		/// 获取控制器-button
+		/// </summary>
+		public Ebutton GetbuttonCtrl() => (Ebutton)button.selectedIndex;
 
 		/// <summary>
 		/// 组件被构造时由FUI自动调用

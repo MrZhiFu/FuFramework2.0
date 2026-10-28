@@ -100,13 +100,13 @@ namespace AOT.Launch
 		/// 设置是否显示更新确认框。
 		/// </summary>
 		/// <param name="need">是否显示更新确认框</param>
-		public void SetNeedUpgrade(bool need) => m_winLauncher.SetController(need ? WinLauncher.EIsNeedUpgrade.Yes : WinLauncher.EIsNeedUpgrade.No);
+		public void SetNeedUpgrade(bool need) => m_winLauncher.SetIsNeedUpgradeCtrl(need ? WinLauncher.EIsNeedUpgrade.Yes : WinLauncher.EIsNeedUpgrade.No);
 
 		/// <summary>
 		/// 设置是否处于下载中状态。
 		/// </summary>
 		/// <param name="downloading">是否处于下载中状态</param>
-		public void SetDownloading(bool downloading) => m_winLauncher.SetController(downloading ? WinLauncher.EIsDownloading.Yes : WinLauncher.EIsDownloading.No);
+		public void SetDownloading(bool downloading) => m_winLauncher.SetIsDownloadingCtrl(downloading ? WinLauncher.EIsDownloading.Yes : WinLauncher.EIsDownloading.No);
 
 		/// <summary>
 		/// 显示更新确认框。

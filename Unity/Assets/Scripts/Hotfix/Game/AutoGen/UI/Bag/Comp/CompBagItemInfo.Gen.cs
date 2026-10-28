@@ -33,7 +33,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 是否可使用
 		/// </summary>
-		private enum EIsCanUse
+		public enum EIsCanUse
 		{
 			/// <summary>
 			/// 不可使用
@@ -46,9 +46,14 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 设置 是否可使用 控制器状态
+		/// 设置控制器-是否可使用
 		/// </summary>
-		private void SetController(EIsCanUse eIsCanUse) => IsCanUse.SetSelectedIndex((int) eIsCanUse);
+		public void SetIsCanUseCtrl(EIsCanUse eIsCanUse) => IsCanUse.SetSelectedIndex((int) eIsCanUse);
+
+		/// <summary>
+		/// 获取控制器-是否可使用
+		/// </summary>
+		public EIsCanUse GetIsCanUseCtrl() => (EIsCanUse)IsCanUse.selectedIndex;
 
 		/// <summary>
 		/// 组件被构造时由FUI自动调用

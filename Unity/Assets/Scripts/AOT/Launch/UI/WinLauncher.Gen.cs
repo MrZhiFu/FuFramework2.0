@@ -49,14 +49,24 @@ namespace AOT.Launch.UI
 		}
 
 		/// <summary>
-		/// 设置 是否需要更新 控制器状态
+		/// 设置控制器-是否需要更新
 		/// </summary>
-		public void SetController(EIsNeedUpgrade eIsNeedUpgrade) => IsNeedUpgrade.SetSelectedIndex((int) eIsNeedUpgrade);
+		public void SetIsNeedUpgradeCtrl(EIsNeedUpgrade eIsNeedUpgrade) => IsNeedUpgrade.SetSelectedIndex((int) eIsNeedUpgrade);
 
 		/// <summary>
-		/// 设置 是否下载中 控制器状态
+		/// 获取控制器-是否需要更新
 		/// </summary>
-		public void SetController(EIsDownloading eIsDownloading) => IsDownloading.SetSelectedIndex((int) eIsDownloading);
+		public EIsNeedUpgrade GetIsNeedUpgradeCtrl() => (EIsNeedUpgrade)IsNeedUpgrade.selectedIndex;
+
+		/// <summary>
+		/// 设置控制器-是否下载中
+		/// </summary>
+		public void SetIsDownloadingCtrl(EIsDownloading eIsDownloading) => IsDownloading.SetSelectedIndex((int) eIsDownloading);
+
+		/// <summary>
+		/// 获取控制器-是否下载中
+		/// </summary>
+		public EIsDownloading GetIsDownloadingCtrl() => (EIsDownloading)IsDownloading.selectedIndex;
 
         /// <summary>
         /// 界面组件初始化

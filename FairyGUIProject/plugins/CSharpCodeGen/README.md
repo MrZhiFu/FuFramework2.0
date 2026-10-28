@@ -28,6 +28,20 @@ FairyGUI 编辑器插件，**发布（Publish）时自动启用**（`onPublish` 
 5. **依赖检查**：包依赖必须位于任意 Common 包或当前发布包中，存在非法依赖时终止发布
 6. 收集包内界面/组件清单 → 依次生成 Win →（非 Launcher）Comp → Binder
 
+## 控制器导出（public 枚举 + Set/Get 读写方法）
+
+每个控制器（含别名 `alias`，显示名取别名或控制器名）在 Gen 层生成：
+
+| 产物 | 形态 |
+| ---- | ---- |
+| 枚举 | `public enum E{控制器名}`（页面值为枚举成员，取页 `remark` 或页面值作注释） |
+| 写方法 | `public void Set{控制器名}Ctrl(E{控制器名} e...)` → `{控制器名}.SetSelectedIndex(...)` |
+| 读方法 | `public E{控制器名} Get{控制器名}Ctrl()` → 返回当前 `selectedIndex` 的枚举 |
+
+**方法名命名规则**：控制器名本身以 `Ctrl` 结尾则不重复追加，否则补 `Ctrl`——`BtnCtrl`→`SetBtnCtrl`/`GetBtnCtrl`；`Test`→`SetTestCtrl`/`GetTestCtrl`；`CtrlSelected`→`SetCtrlSelectedCtrl`（其尾部是 `Selected` 非 `Ctrl`）。
+
+方法均 `public`，供外部直接读写控制器状态（如 `WinDialogMessageBox` 的 `SetBtnCtrl`/`GetBtnCtrl`）。注释格式：`设置控制器-{显示名}` / `获取控制器-{显示名}`。
+
 ## 事件接线（InitUIEvent）与事件白名单
 
 事件注册代码（`AddUIListener(...)`）归属于**手写层**的 `InitUIEvent` 方法：
