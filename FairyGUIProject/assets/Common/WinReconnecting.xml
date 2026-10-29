@@ -4,13 +4,13 @@
     <graph id="n0" name="maskBg" xy="0,0" size="1920,1080" alpha="0" type="rect" lineSize="0" fillColor="#5c000000">
       <relation target="" sidePair="height-height,width-width"/>
     </graph>
-    <image id="n1_n0aj" name="circle" src="n0aj2y" fileName="Res/img_loading.png" xy="959,539" pivot="0.5,0.5" anchor="true" size="118,118" aspect="true">
+    <image id="n1_n0aj" name="circle" src="n0aj2y" fileName="Res/img_loading.png" xy="960,539" pivot="0.5,0.5" anchor="true" size="118,118" aspect="true">
       <relation target="" sidePair="center-center,middle-middle"/>
     </image>
     <text id="n2_ezvv" name="_txtDesc" xy="247,706" size="1426,54" font="ui://f59y7iy8rlr0az" fontSize="40" align="center" autoSize="none" bold="true" text="网络不稳定，正在尝试重新连接...">
       <relation target="" sidePair="center-center,middle-middle"/>
     </text>
-    <component id="n3_ezvv" name="_btnCancel" src="oo3b2p" fileName="Comp/Btn/BtnCancel.xml" xy="738,923" size="520,76">
+    <component id="n3_ezvv" name="_btnCancel" src="oo3b2p" fileName="Comp/Btn/BtnCancel.xml" xy="700,923" size="520,76">
       <relation target="" sidePair="center-center,middle-middle"/>
       <Button title="取消"/>
     </component>

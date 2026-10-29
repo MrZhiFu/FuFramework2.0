@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component size="1920,1080">
   <displayList>
-    <graph id="n46_dxlc" name="Bg" xy="-265,-101" size="2450,1268" type="rect" lineSize="0" fillColor="#ff669966">
+    <graph id="n46_dxlc" name="Bg" xy="-265,-101" size="2450,1268" type="rect" lineSize="0" fillColor="#ff5b453c">
       <relation target="" sidePair="width-width,height-height"/>
     </graph>
     <text id="n30_xsvi" name="_txtError" xy="476,694" pivot="1,0" size="967,46" font="ui://f59y7iy8udcb2" fontSize="28" color="#f56236" align="center" vAlign="middle" letterSpacing="-1" autoSize="shrink" singleLine="true" autoClearText="true" text="发生错误">

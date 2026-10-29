@@ -2,7 +2,7 @@
 <component size="1600,1024">
   <controller name="IsSelectedItem" pages="0,No,1,Yes" selected="0"/>
   <displayList>
-    <graph id="n26_dsha" name="Bg2" xy="0,39" size="1600,985" type="rect" fillColor="#ffcccccc" corner="20">
+    <graph id="n26_dsha" name="Bg2" xy="0,39" size="1600,985" type="rect" lineSize="0" fillColor="#ff5b453c" corner="20">
       <relation target="" sidePair="center-center"/>
     </graph>
     <list id="n24_dsha" name="_listItem" xy="42,52" size="1515,835" layout="flow_hz" overflow="scroll" margin="20,0,0,0" colGap="26" lineItemCount="7" defaultItem="ui://a3awyna7l50q5" autoClearItems="true">
