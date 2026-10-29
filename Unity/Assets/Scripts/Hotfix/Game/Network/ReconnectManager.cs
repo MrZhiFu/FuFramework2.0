@@ -96,7 +96,7 @@ namespace Hotfix.Game.Network
 				m_kickContent = string.Empty;
 
 				ShowKickedPrompt(content);
-				LogoutFlow.LogoutAsync().Forget();
+				GameSessionFlow.LogoutAsync().Forget();
 				return;
 			}
 
@@ -125,7 +125,7 @@ namespace Hotfix.Game.Network
 				try
 				{
 					await NetworkModule.Instance.ReconnectAsync(new ReconnectOptions { Address = address }, m_reconnectCancellation.Token);
-					await PlayerLoginFlow.EnterGameAsync(playerId, m_reconnectCancellation.Token);
+					await GameSessionFlow.EnterGameAsync(playerId, m_reconnectCancellation.Token);
 
 					// 原地复活：关全部窗口（含转圈框）重建主界面——不弹回选角界面
 					GlobalModule.UIModule.CloseAll();
@@ -134,7 +134,7 @@ namespace Hotfix.Game.Network
 				catch (OperationCanceledException)
 				{
 					// 玩家取消（转圈框取消按钮）/ 登出竞态：回登录界面
-					await LogoutFlow.LogoutAsync();
+					await GameSessionFlow.LogoutAsync();
 				}
 				catch (Exception)
 				{
@@ -142,7 +142,7 @@ namespace Hotfix.Game.Network
 					GlobalModule.UIModule.CloseAll();
 					var dialogData = new WinDialogMessageBox.DialogMessageBoxData("重连失败，请重试或返回登录。",
 					                                                              () => StartReconnectFlow(address).Forget(), // 再试一次：重头再来，计数天然重置
-					                                                              () => LogoutFlow.LogoutAsync().Forget());   // 返回登录
+					                                                              () => GameSessionFlow.LogoutAsync().Forget());   // 返回登录
 					await GlobalModule.UIModule.OpenAsync<WinDialogMessageBox>(dialogData);
 				}
 			}
@@ -158,7 +158,7 @@ namespace Hotfix.Game.Network
 		private void ShowKickedPrompt(string content)
 		{
 			// 被顶是强制离开：仅显示「确定」单按钮，"回登录"是唯一出口（取消只关窗会留玩家在断线死局）
-			var dialogData = new WinDialogMessageBox.DialogMessageBoxData(content, () => LogoutFlow.LogoutAsync().Forget(), null, WinDialogMessageBox.EBtnType.ShowOk);
+			var dialogData = new WinDialogMessageBox.DialogMessageBoxData(content, () => GameSessionFlow.LogoutAsync().Forget(), null, WinDialogMessageBox.EBtnType.ShowOk);
 			GlobalModule.UIModule.Open<WinDialogMessageBox>(dialogData);
 		}
 	}

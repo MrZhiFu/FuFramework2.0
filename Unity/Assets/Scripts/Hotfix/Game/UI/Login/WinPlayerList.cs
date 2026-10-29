@@ -96,14 +96,14 @@ namespace Hotfix.Game.UI
 		private async UniTaskVoid PlayerLoginAsync()
 		{
 			//进入游戏事务
-			await PlayerLoginFlow.EnterGameAsync(m_selectedPlayerInfo.Id, Token);
+			await GameSessionFlow.EnterGameAsync(m_selectedPlayerInfo.Id, Token);
 
 			// 关闭当前界面
 			GlobalModule.UIModule.Close(this);
 
 			// 加载主场景。注意不用窗口 Token：Close(this) 已取消它，此后的链路（场景加载/开主界面）
 			// 寿命比选角窗口长，归"进游戏事务"所有（PlayerLoginFlow.TransactionToken）。
-			await SceneModule.Instance.LoadSceneByName("Main", PlayerLoginFlow.TransactionToken);
+			await SceneModule.Instance.LoadSceneByName("Main", GameSessionFlow.TransactionToken);
 			
 			// 打开主界面
 			await GlobalModule.UIModule.OpenAsync<WinMain>();

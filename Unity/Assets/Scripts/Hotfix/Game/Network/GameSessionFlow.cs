@@ -3,18 +3,20 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
+using Hotfix.Framework.Scene;
 using Hotfix.Game.Proto;
+using Hotfix.Game.UI;
 using Hotfix.Game.Manager_ToDelete;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 namespace Hotfix.Game.Network
 {
 	/// <summary>
-	/// 进游戏登录事务（登录窗口与重连入口共用）：
-	/// 挂起推送派发 → Call(ReqPlayerLogin) 建立全量基线 → 恢复派发。
-	/// 失败收尾：清空缓冲并解除挂起（防脏数据回放 + 防后续会话"聋"），异常原样上抛。
-	/// 重入防护：同一时间只允许一个登录事务。
+	/// 游戏会话流：会话建立（进游戏）与销毁（登出）的对称操作，登录窗口与重连编排共用。
+	/// 进游戏：挂起推送派发 → Call(ReqPlayerLogin) 建立全量基线 → 恢复派发；失败收尾（清缓冲+解除挂起）在内，异常上抛。
+	/// 登出：终止重连 → 清玩家状态 → 清推送缓冲 → 关频道（Active，不触发自动重连）→ 卸载主场景 → 关全部窗口 → 回登录界面。
 	/// </summary>
-	public static class PlayerLoginFlow
+	public static class GameSessionFlow
 	{
 		/// <summary>
 		/// 是否正在执行登录事务（同一时间只允许一个登录事务）
@@ -34,7 +36,7 @@ namespace Hotfix.Game.Network
 		public static CancellationToken TransactionToken => sr_transactionCancellation.Token;
 
 		/// <summary>
-		/// 执行进游戏事务。
+		/// 进游戏：执行登录事务。
 		/// </summary>
 		/// <param name="playerId">角色 ID</param>
 		/// <param name="cancellationToken">取消令牌（铁律 5：调用方生命周期持有者传入）</param>
@@ -69,6 +71,37 @@ namespace Hotfix.Game.Network
 			{
 				s_isEntering = false;
 			}
+		}
+
+		/// <summary>
+		/// 登出：终止重连 → 清玩家状态 → 清推送缓冲 → 关频道（Active，不触发自动重连）→ 卸载主场景 → 关全部窗口 → 回登录界面。
+		/// 【返回登录】/ 被顶号 / 主动登出共用。
+		/// </summary>
+		public static async UniTask LogoutAsync()
+		{
+			// 终止可能进行中的重连事务（否则断线判定可能抢先新建频道）
+			ReconnectManager.Instance.CancelReconnect();
+
+			// 清玩家本地状态（断线重连认领的玩家身份随之废弃）
+			PlayerManager.Instance.PlayerInfo = null;
+
+			// 清推送缓冲：旧会话脏数据不带到下一会话
+			NetworkModule.Instance.ClearNotifyBuffer();
+
+			// 关闭频道（Dispose → Close(Active)，不会触发自动重连）
+			NetworkModule.Instance.DestroyChannel();
+
+			// 卸载主场景：登出回到"未进游戏"状态。不卸载则再登录时 LoadScene 因"已加载"直接抛异常；
+			// 幂等防御：场景未加载（异常时序）时跳过，UnloadScene 对未加载场景同样抛异常。
+			var mainScenePath = UtilityAOT.AssetPath.GetScenePath("Main");
+			if (SceneModule.Instance.IsLoaded(mainScenePath))
+				SceneModule.Instance.UnloadScene(mainScenePath);
+
+			// 关闭全部窗口（含主界面），回账号登录界面
+			GlobalModule.UIModule.CloseAll();
+
+			// 打开账号登录界面
+			await GlobalModule.UIModule.OpenAsync<WinLogin>();
 		}
 	}
 }
