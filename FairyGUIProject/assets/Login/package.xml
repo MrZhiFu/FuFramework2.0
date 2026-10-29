@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <packageDescription id="f011l0h9">
   <resources>
+    <folder id="/Res/Single/" name="Single" path="/Res/" atlas="alone_npot"/>
     <component id="nmd0c" name="WinLogin.xml" path="/" exported="true"/>
     <component id="aneks9g" name="WinLoginAnnouncement.xml" path="/" exported="true"/>
     <component id="xsvis9l" name="BtnLogin.xml" path="/Comp/"/>
@@ -9,7 +10,7 @@
     <component id="i3dbs9o" name="BtnLoginPlayerListItem.xml" path="/Comp/"/>
     <component id="i3dbs9p" name="WinPlayerCreate.xml" path="/" exported="true"/>
     <image id="i3dbs9q" name="Button BG.png" path="/Res/"/>
-    <image id="ob7as9r" name="Background.png" path="/Res/"/>
+    <image id="ob7as9r" name="Background.png" path="/Res/Single/"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>

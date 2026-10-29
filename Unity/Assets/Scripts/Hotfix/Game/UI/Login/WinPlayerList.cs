@@ -3,6 +3,7 @@ using Hotfix.Game.Config;
 using Hotfix.Game.Proto;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using Hotfix.Framework.UI;
@@ -10,6 +11,7 @@ using Hotfix.Framework.Event;
 using Hotfix.Framework.Network;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
+using Hotfix.Framework.Scene;
 using Hotfix.Game.Manager_ToDelete;
 using Hotfix.Game.Network;
 
@@ -96,11 +98,13 @@ namespace Hotfix.Game.UI
 		{
 			await PlayerLoginFlow.EnterGameAsync(m_selectedPlayerInfo.Id, Token);
 
-			// 打开主界面
-			await GlobalModule.UIModule.OpenAsync<WinMain>();
-
 			// 关闭当前界面
 			GlobalModule.UIModule.Close(this);
+
+			await SceneModule.Instance.LoadSceneByName("Main", new CancellationToken());
+			
+			// 打开主界面
+			await GlobalModule.UIModule.OpenAsync<WinMain>();
 		}
 
 		/// <summary>

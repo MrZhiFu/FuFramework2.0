@@ -12,10 +12,10 @@ namespace Hotfix.Game.UI
         public override string WinName => "WinMain";      // 界面名称
         public override string PackageName => "Main"; // 包名
 
-		private GButton btnBag;
 		private GLoader loaderPlayerIcon;
 		private GTextField txtPlayerName;
 		private GTextField txtPlayerLevel;
+		private GButton btnBag;
 
 
 
@@ -24,10 +24,10 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			btnBag = (GButton)GetChild("_btnBag");
 			loaderPlayerIcon = (GLoader)GetChild("_loaderPlayerIcon");
 			txtPlayerName = (GTextField)GetChild("_txtPlayerName");
 			txtPlayerLevel = (GTextField)GetChild("_txtPlayerLevel");
+			btnBag = (GButton)GetChild("_btnBag");
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		private void Refresh()
 		{
-			loaderPlayerIcon.icon = UIPackage.GetItemURL("Common", "wrap_1"); //PlayerManager.Instance.PlayerInfo.Avatar.ToString());
+			// loaderPlayerIcon.icon = UIPackage.GetItemURL("Common", "wrap_1"); //PlayerManager.Instance.PlayerInfo.Avatar.ToString());
 			txtPlayerName.text    = PlayerManager.Instance.PlayerInfo.Name;
 			txtPlayerLevel.text   = "当前等级:" + PlayerManager.Instance.PlayerInfo.Level;
 		}

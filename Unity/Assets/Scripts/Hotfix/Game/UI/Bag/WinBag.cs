@@ -22,7 +22,10 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 界面可交互组件事件初始化
 		/// </summary>
-		private void InitUIEvent() { }
+		private void InitUIEvent()
+		{
+			AddUIListener(btnClose.onClick, OnBtnCloseClick);
+		}
 
 		/// <summary>
 		/// 注册相关逻辑事件
@@ -63,7 +66,7 @@ namespace Hotfix.Game.UI
 
 		private void OnBtnCloseClick(EventContext ctx)
 		{
-			// todo
+			CloseSelf();
 		}
 
 		#endregion

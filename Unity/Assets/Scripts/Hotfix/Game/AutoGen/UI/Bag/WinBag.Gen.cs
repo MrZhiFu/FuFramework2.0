@@ -13,7 +13,7 @@ namespace Hotfix.Game.UI
         public override string PackageName => "Bag"; // 包名
 
 		private CompBagContent compContent;
-		private GComponent btnClose;
+		private GButton btnClose;
 
 
 
@@ -23,7 +23,7 @@ namespace Hotfix.Game.UI
         private void InitUIComp()
         {
 			compContent = (CompBagContent)GetChild("_compContent");
-			btnClose = (GComponent)GetChild("_btnClose");
+			btnClose = (GButton)GetChild("_btnClose");
         }
     }
 }

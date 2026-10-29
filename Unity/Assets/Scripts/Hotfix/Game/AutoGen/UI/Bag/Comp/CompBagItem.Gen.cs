@@ -34,11 +34,11 @@ namespace Hotfix.Game.UI
 			/// <summary>
 			/// up
 			/// </summary>
-			Up = 2,
+			Up = 0,
 			/// <summary>
 			/// down
 			/// </summary>
-			Down = 3,
+			Down = 1,
 		}
 
 		/// <summary>

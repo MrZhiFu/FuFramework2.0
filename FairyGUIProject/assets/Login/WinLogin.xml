@@ -17,7 +17,7 @@
       <relation target="n20_nmd0" sidePair="middle-middle,left-right"/>
     </image>
     <text id="n17_nmd0" name="_inputUserName" xy="592,404" size="716,59" font="ui://f59y7iy8ghno32" fontSize="44" color="#dedede" letterSpacing="-1" autoSize="none" strokeColor="#000000" strokeSize="2" text="" input="true" prompt="点击输入">
-      <relation target="n16_nmd0" sidePair="width-width,height-height"/>
+      <relation target="n16_nmd0" sidePair="width-width,height-height,middle-middle,left-left"/>
     </text>
     <text id="n21_nmd0" name="_txtPassword" xy="472,585" size="88,56" customData="L10n:common_user_password" font="ui://f59y7iy8ghno32" fontSize="42" color="#d1c7ba" text="密码">
       <relation target="" sidePair="center-center,middle-middle"/>
@@ -26,7 +26,7 @@
       <relation target="n21_nmd0" sidePair="middle-middle,left-right"/>
     </image>
     <text id="n19_nmd0" name="_inputPassword" xy="592,585" size="716,59" fontSize="44" color="#dedede" vAlign="middle" letterSpacing="-1" autoSize="none" strokeColor="#000000" strokeSize="2" singleLine="true" text="123456" input="true" prompt="点击输入" password="true">
-      <relation target="n18_nmd0" sidePair="width-width,height-height"/>
+      <relation target="n18_nmd0" sidePair="width-width,height-height,middle-middle,left-left"/>
     </text>
   </displayList>
 </component>

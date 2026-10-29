@@ -3,6 +3,7 @@
   <resources>
     <component id="xws70" name="WinMain.xml" path="/" exported="true"/>
     <component id="xws71" name="BtnBag.xml" path="/Comp/"/>
+    <image id="fx683" name="avatar.png" path="/Res/"/>
   </resources>
   <publish name="" genCode="true"/>
 </packageDescription>
