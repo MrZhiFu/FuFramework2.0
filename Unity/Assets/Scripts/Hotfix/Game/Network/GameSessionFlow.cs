@@ -26,7 +26,7 @@ namespace Hotfix.Game.Network
 		/// <summary>
 		/// 进游戏事务取消源：事务 Token 供 <b>登录成功之后</b>的后续链使用（加载主场景、打开主界面等）——
 		/// 这些步骤的寿命比触发它的选角窗口长（窗口在事务中途 Close，其 Token 随之取消），故不能沿用窗口令牌。
-		/// 每次事务开始（EnterGameAsync）Recreate：新事务开启新生命周期，旧事务未完成的链路随之作废。
+		/// 每次事务开始（LoginFlowAsync）Recreate：新事务开启新生命周期，旧事务未完成的链路随之作废。
 		/// </summary>
 		private static readonly LifecycleCancellationSource sr_transactionCancellation = new();
 
@@ -41,7 +41,7 @@ namespace Hotfix.Game.Network
 		/// <param name="playerId">角色 ID</param>
 		/// <param name="cancellationToken">取消令牌（铁律 5：调用方生命周期持有者传入）</param>
 		/// <returns>登录响应（含 PlayerInfo）</returns>
-		public static async UniTask<RespPlayerLogin> EnterGameAsync(long playerId, CancellationToken cancellationToken)
+		public static async UniTask<RespPlayerLogin> LoginFlowAsync(long playerId, CancellationToken cancellationToken)
 		{
 			if (s_isEntering) throw new InvalidOperationException("已有登录事务进行中，请勿重入。");
 			s_isEntering = true;
@@ -77,7 +77,7 @@ namespace Hotfix.Game.Network
 		/// 登出：终止重连 → 清玩家状态 → 清推送缓冲 → 关频道（Active，不触发自动重连）→ 卸载主场景 → 关全部窗口 → 回登录界面。
 		/// 【返回登录】/ 被顶号 / 主动登出共用。
 		/// </summary>
-		public static async UniTask LogoutAsync()
+		public static async UniTask LogoutFlowAsync()
 		{
 			// 终止可能进行中的重连事务（否则断线判定可能抢先新建频道）
 			ReconnectManager.Instance.CancelReconnect();

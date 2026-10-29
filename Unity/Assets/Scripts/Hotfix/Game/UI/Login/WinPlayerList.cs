@@ -89,14 +89,14 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 角色登录进游戏（TCP）：事务已抽入 <see cref="GameSessionFlow.EnterGameAsync"/>
+		/// 角色登录进游戏（TCP）：事务已抽入 <see cref="GameSessionFlow.LoginFlowAsync"/>
 		/// （挂阀门 → Call 建立基线 → 恢复派发，失败收尾在其中）。Token 随界面关闭自动取消。
 		/// 与 WinLogin.UserLoginAsync（账号登录，HTTP）分工：账号层管"你是谁"，进游戏层管"建立会话与数据基线"。
 		/// </summary>
 		private async UniTaskVoid PlayerLoginAsync()
 		{
 			//进入游戏事务
-			await GameSessionFlow.EnterGameAsync(m_selectedPlayerInfo.Id, Token);
+			await GameSessionFlow.LoginFlowAsync(m_selectedPlayerInfo.Id, Token);
 
 			// 关闭当前界面
 			GlobalModule.UIModule.Close(this);
