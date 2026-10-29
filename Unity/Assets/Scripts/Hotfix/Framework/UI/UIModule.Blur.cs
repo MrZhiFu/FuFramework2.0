@@ -51,15 +51,12 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private const float MASK_POWER = 0.35f;
 
+
 		/// <summary>
 		/// 截屏组件（挂在 FairyGUI StageCamera 上）。
 		/// </summary>
-		private BlurCapture m_blurCapture;
+		private BlurCaptureComp m_blurCaptureComp;
 
-		/// <summary>
-		/// 模糊 Shader 资源句柄（模块生命周期内保持引用，释放时 Release）。
-		/// </summary>
-		private AssetHandle m_blurShaderHandle;
 
 		/// <summary>
 		/// 模糊 Shader（加载完成后有效）。
@@ -67,14 +64,9 @@ namespace Hotfix.Framework.UI
 		private Shader m_blurShader;
 
 		/// <summary>
-		/// Shader 在途加载任务（OnWinOpeningAsync 惰性等待，防冷启动竞态）。
-		/// </summary>
-		private UniTaskCompletionSource<Shader> m_shaderLoadTask;
-
-		/// <summary>
 		/// 模糊材质单例（HideFlags.HideAndDontSave，不随场景保存）。
 		/// </summary>
-		private Material m_blurMaterial;
+		private Material m_blurMat;
 
 		/// <summary>
 		/// 半分辨率截屏 RT。
@@ -82,14 +74,25 @@ namespace Hotfix.Framework.UI
 		private RenderTexture m_blurRT;
 
 		/// <summary>
-		/// 全屏模糊覆盖层单例。
+		/// 全屏模糊Image。
 		/// </summary>
-		private GImage m_blurOverlay;
+		private GImage m_blurImg;
 
 		/// <summary>
 		/// 当前可见模糊界面的层级集合（判断叠加 + 定位最上层）。
 		/// </summary>
 		private readonly List<EUILayer> m_activeBlurLayers = new();
+
+
+		/// <summary>
+		/// 模糊 Shader 资源句柄（模块生命周期内保持引用，释放时 Release）。
+		/// </summary>
+		private AssetHandle m_blurShaderHandle;
+
+		/// <summary>
+		/// Shader 在途加载任务（OnWinOpeningAsync 惰性等待，防冷启动竞态）。
+		/// </summary>
+		private UniTaskCompletionSource<Shader> m_loadShaderTask;
 
 		/// <summary>
 		/// 渐入动画取消令牌。
@@ -101,6 +104,7 @@ namespace Hotfix.Framework.UI
 		/// ReleaseBlur（OnDispose）时 Cancel，在途 Shader 加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
 		private CancellationScope m_scope = new();
+
 
 		/// <summary>
 		/// Shader 属性 ID - 模糊背景纹理。
@@ -122,6 +126,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private static readonly int sr_blurProgress = Shader.PropertyToID("_BlurProgress");
 
+
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
@@ -137,6 +142,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private static string BlurShaderPath => UtilityAOT.AssetPath.GetShaderPath($"{BLUR_SHADER_NAME}.shader");
 
+
 		/// <summary>
 		/// 初始化模糊功能（UIModule.OnInit 调用）。
 		/// 挂载截屏组件 + 异步预热 Shader 与材质。
@@ -149,11 +155,11 @@ namespace Hotfix.Framework.UI
 			{
 				// 检查 StageCamera 是否已挂载截屏组件，未挂载则挂载一个。
 				var go = StageCamera.main.gameObject;
-				m_blurCapture         = go.GetComponent<BlurCapture>() ?? go.AddComponent<BlurCapture>();
-				m_blurCapture.enabled = false; // 默认禁用
+				m_blurCaptureComp         = go.GetComponent<BlurCaptureComp>() ?? go.AddComponent<BlurCaptureComp>();
+				m_blurCaptureComp.enabled = false; // 默认禁用
 			}
 
-			m_shaderLoadTask = new UniTaskCompletionSource<Shader>();
+			m_loadShaderTask = new UniTaskCompletionSource<Shader>();
 
 			// 异步加载模糊 Shader 并创建材质。
 			LoadBlurShaderAsync().Forget();
@@ -165,12 +171,15 @@ namespace Hotfix.Framework.UI
 		private async UniTaskVoid LoadBlurShaderAsync()
 		{
 			// 本次加载负责置位的完成源：捕获本地引用，避免中途 InitBlur 替换字段后误写新生命周期的任务状态
-			var loadTaskSource = m_shaderLoadTask;
+			var loadTaskSource = m_loadShaderTask;
 			if (loadTaskSource == null) return;
 
 			// 在途任务把句柄存局部变量，epoch 校验通过后才提交共享字段，杜绝旧生命周期任务覆盖新任务状态
-			AssetHandle handle        = null;
-			var         capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
+			AssetHandle handle = null;
+
+			// 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝覆盖新任务状态
+			var capturedToken = m_scope.Token;
+
 			try
 			{
 				var assetModule = ModuleManager.GetModule<AssetModule>();
@@ -196,9 +205,9 @@ namespace Hotfix.Framework.UI
 				}
 
 				m_blurShaderHandle = handle;
-				handle             = null; // 所有权已转移给模块字段，catch 不再释放
+				handle             = null;
 				m_blurShader       = shader;
-				m_blurMaterial     = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+				m_blurMat          = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
 				loadTaskSource.TrySetResult(shader);
 				FuLogger.LogInfo("[UIModule] UI背景模糊 Shader 加载完成。");
 			}
@@ -207,7 +216,7 @@ namespace Hotfix.Framework.UI
 				FuLogger.LogError($"[UIModule] UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
 
 				// 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留
-				if (handle != null) handle.Release();
+				handle?.Release();
 
 				// 模块已销毁/生命周期变更时不污染新任务状态，但仍须置位完成源，避免等待方永久挂起
 				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token)
@@ -226,14 +235,14 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private async UniTask OnWinOpeningAsync()
 		{
-			if (m_blurCapture == null) return;
+			if (m_blurCaptureComp == null) return;
 
 			// Shader 未就绪时等待在途加载（失败则本次模糊禁用）
-			if (m_blurShader == null && m_shaderLoadTask != null)
+			if (m_blurShader == null && m_loadShaderTask != null)
 			{
 				try
 				{
-					await m_shaderLoadTask.Task;
+					await m_loadShaderTask.Task;
 				}
 				catch
 				{
@@ -241,26 +250,26 @@ namespace Hotfix.Framework.UI
 				}
 			}
 
-			if (m_blurShader == null || m_blurMaterial == null) return;
+			if (m_blurShader == null || m_blurMat == null) return;
 
 			// 叠加场景：先隐藏覆盖层，保证重截帧不含旧覆盖层
-			if (m_activeBlurLayers.Count > 0 && m_blurOverlay != null)
-				m_blurOverlay.visible = false;
+			if (m_activeBlurLayers.Count > 0 && m_blurImg != null)
+				m_blurImg.visible = false;
 
 			// 确保半分辨率截屏 RT 存在且尺寸匹配当前屏幕。
 			EnsureBlurRT();
 			if (m_blurRT == null) return;
 
 			// 捕获一帧：OnRenderImage 把当前帧（对话框未上屏）合成画面截到 RT，随后冻结
-			m_blurCapture.m_captureRT = m_blurRT;
-			m_blurCapture.m_capture   = true;
-			m_blurCapture.enabled     = true;
+			m_blurCaptureComp.m_captureRT = m_blurRT;
+			m_blurCaptureComp.m_capture   = true;
+			m_blurCaptureComp.enabled     = true;
 
 			// 等待本帧渲染完成（LastPostLateUpdate 阶段），确保 OnRenderImage 已把画面截到 RT，不受调用阶段影响
-			await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+			await UniTask.NextFrame(cancellationToken: Token);
 
-			m_blurCapture.enabled   = false;
-			m_blurCapture.m_capture = false;
+			m_blurCaptureComp.enabled   = false;
+			m_blurCaptureComp.m_capture = false;
 		}
 
 		/// <summary>
@@ -273,20 +282,20 @@ namespace Hotfix.Framework.UI
 			var layer = win.UIConfig?.Layer ?? EUILayer.Normal;
 			m_activeBlurLayers.Add(layer);
 
-			if (m_blurMaterial == null || m_blurRT == null) return;
+			if (m_blurMat == null || m_blurRT == null) return;
 
 			EnsureBlurOverlay();
-			if (m_blurOverlay == null) return;
+			if (m_blurImg == null) return;
 
 			// 定位到最上层模糊界面层级下方
-			m_blurOverlay.sortingOrder = MaxActiveBlurLayer() - 1;
+			m_blurImg.sortingOrder = MaxActiveBlurLayer() - 1;
 
 			// 注入冻结帧与参数
-			m_blurMaterial.SetTexture(sr_blurBgTex, m_blurRT);
-			m_blurMaterial.SetFloat(sr_blurSize,  BLUR_SIZE);
-			m_blurMaterial.SetFloat(sr_maskPower, MASK_POWER);
+			m_blurMat.SetTexture(sr_blurBgTex, m_blurRT);
+			m_blurMat.SetFloat(sr_blurSize,  BLUR_SIZE);
+			m_blurMat.SetFloat(sr_maskPower, MASK_POWER);
 
-			m_blurOverlay.visible = true;
+			m_blurImg.visible = true;
 
 			// 渐入动画：驱动 _BlurProgress 0→1，与界面开屏 Fade 同步。
 			AnimateBlurIn(win.UIConfig?.TweenDuration ?? 0.3f);
@@ -305,20 +314,20 @@ namespace Hotfix.Framework.UI
 			if (m_activeBlurLayers.Count == 0)
 			{
 				CancelBlurAnim();
-				if (m_blurOverlay != null)
-					m_blurOverlay.visible = false;
+				if (m_blurImg != null)
+					m_blurImg.visible = false;
 				return;
 			}
 
 			// 仍有模糊界面：覆盖层重定位到剩余最上层下方（复用冻结帧，不重截）
-			if (m_blurOverlay != null)
-			{
-				m_blurOverlay.sortingOrder = MaxActiveBlurLayer() - 1;
+			if (m_blurImg == null) return;
 
-				// 叠加打开时 OnWinOpeningAsync 可能隐藏了覆盖层，这里恢复显示，防止下层模糊界面背板丢失
-				m_blurOverlay.visible = true;
-			}
+			m_blurImg.sortingOrder = MaxActiveBlurLayer() - 1;
+
+			// 叠加打开时 OnWinOpeningAsync 可能隐藏了覆盖层，这里恢复显示，防止下层模糊界面背板丢失
+			m_blurImg.visible = true;
 		}
+
 
 		/// <summary>
 		/// 释放模糊资源（UIModule.OnDispose 调用）。
@@ -330,10 +339,10 @@ namespace Hotfix.Framework.UI
 
 			CancelBlurAnim();
 
-			if (m_blurOverlay != null)
+			if (m_blurImg != null)
 			{
-				m_blurOverlay.Dispose();
-				m_blurOverlay = null;
+				m_blurImg.Dispose();
+				m_blurImg = null;
 			}
 
 			if (m_blurRT != null)
@@ -342,10 +351,10 @@ namespace Hotfix.Framework.UI
 				m_blurRT = null;
 			}
 
-			if (m_blurMaterial != null)
+			if (m_blurMat != null)
 			{
-				UnityEngine.Object.Destroy(m_blurMaterial);
-				m_blurMaterial = null;
+				UnityEngine.Object.Destroy(m_blurMat);
+				m_blurMat = null;
 			}
 
 			if (m_blurShaderHandle != null)
@@ -356,17 +365,17 @@ namespace Hotfix.Framework.UI
 			}
 
 			// 销毁截屏组件，避免残留（否则第三方误启用会使 StageCamera 每帧多两次 Blit）
-			if (m_blurCapture != null)
+			if (m_blurCaptureComp != null)
 			{
-				UnityEngine.Object.Destroy(m_blurCapture);
-				m_blurCapture = null;
+				UnityEngine.Object.Destroy(m_blurCaptureComp);
+				m_blurCaptureComp = null;
 			}
 
 			m_blurShader = null;
 
 			// 先置位在途 Shader 加载的完成源再丢弃引用：OnWinOpeningAsync 可能已 await 它，不置位会永久挂起
-			m_shaderLoadTask?.TrySetCanceled();
-			m_shaderLoadTask = null;
+			m_loadShaderTask?.TrySetCanceled();
+			m_loadShaderTask = null;
 
 			m_activeBlurLayers.Clear();
 		}
@@ -402,20 +411,20 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private void EnsureBlurOverlay()
 		{
-			if (m_blurOverlay != null) return;
+			if (m_blurImg != null) return;
 
-			m_blurOverlay      = new GImage();
-			m_blurOverlay.name = m_blurOverlay.gameObjectName = "__UIBlurBackground";
+			m_blurImg      = new GImage();
+			m_blurImg.name = m_blurImg.gameObjectName = "__UIBlurBackground";
 
 			// 不拦截触摸，点击穿透到下层
-			m_blurOverlay.touchable = false;
-			m_blurOverlay.visible   = false;
-			m_blurOverlay.texture   = new NTexture(Texture2D.whiteTexture) { destroyMethod = DestroyMethod.None };
-			m_blurOverlay.material  = m_blurMaterial;
-			GRoot.inst.AddChild(m_blurOverlay);
+			m_blurImg.touchable = false;
+			m_blurImg.visible   = false;
+			m_blurImg.texture   = new NTexture(Texture2D.whiteTexture) { destroyMethod = DestroyMethod.None };
+			m_blurImg.material  = m_blurMat;
+			GRoot.inst.AddChild(m_blurImg);
 
 			// 全屏，忽略刘海
-			m_blurOverlay.IgnoreSafeArea();
+			m_blurImg.IgnoreSafeArea();
 		}
 
 		/// <summary>
@@ -436,12 +445,14 @@ namespace Hotfix.Framework.UI
 		/// <param name="ct">取消令牌，动画被取消时终止。</param>
 		private async UniTask RunBlurAnimAsync(float duration, CancellationToken ct)
 		{
-			m_blurMaterial.SetFloat(sr_blurProgress, 0f);
-			await UniTask.NextFrame(); // 确保 progress=0 先渲染一帧，避免首帧闪现
+			m_blurMat.SetFloat(sr_blurProgress, 0f);
+
+			// 确保 progress=0 先渲染一帧，避免首帧闪现
+			await UniTask.NextFrame();
 
 			if (duration <= 0f)
 			{
-				m_blurMaterial.SetFloat(sr_blurProgress, 1f);
+				m_blurMat.SetFloat(sr_blurProgress, 1f);
 				return;
 			}
 
@@ -449,11 +460,11 @@ namespace Hotfix.Framework.UI
 			while (elapsed < duration)
 			{
 				elapsed += Time.deltaTime;
-				m_blurMaterial.SetFloat(sr_blurProgress, Mathf.Clamp01(elapsed / duration));
+				m_blurMat.SetFloat(sr_blurProgress, Mathf.Clamp01(elapsed / duration));
 				await UniTask.NextFrame(PlayerLoopTiming.Update, ct);
 			}
 
-			m_blurMaterial.SetFloat(sr_blurProgress, 1f);
+			m_blurMat.SetFloat(sr_blurProgress, 1f);
 		}
 
 		/// <summary>
