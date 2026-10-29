@@ -263,7 +263,7 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 | 可等待拨号 | `ConnectAsync(address, cancellationToken, timeoutMs)` | 创建频道 + 连接 + 等待结果；超时/失败以异常返回——替代"Connect 发完即忘 + 业务手写事件桥" |
 | 退避重拨 | `ReconnectAsync(options, cancellationToken)` | `ReconnectOptions` 定目标地址与退避序列（默认 `{2,3,5,8,13}s`）；每轮销毁重建 + 拨号，耗尽抛 `TimeoutException` |
 
-业务侧编排见 Game 层 `ReconnectManager`：订阅 `Closed(Lost)` → 弹"重连中"转圈框 → `ReconnectAsync` → 静默重登（`PlayerLoginFlow`）→ 关窗回主界面原地复活；重试耗尽弹"重连失败"框交玩家手选；被顶号（`NotifyPrompt Type=5` 标记）不自动重连。
+业务侧编排见 Game 层 `ReconnectManager`：订阅 `Closed(Lost)` → 弹"重连中"转圈框 → `ReconnectAsync` → 静默重登（`GameSessionFlow`）→ 关窗回主界面原地复活；重试耗尽弹"重连失败"框交玩家手选；被顶号（`NotifyPrompt Type=5` 标记）不自动重连。
 
 ## 5. 使用示例
 
