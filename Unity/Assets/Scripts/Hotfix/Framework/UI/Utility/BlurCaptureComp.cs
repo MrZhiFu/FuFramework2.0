@@ -11,7 +11,7 @@ namespace Hotfix.Framework.UI
 	///     2. 捕获一帧后关闭，实现"冻结帧"（不含对话框自身，无自反馈）。
 	/// 原理：StageCamera 的 clearFlags=Depth（只清深度保留颜色），故 OnRenderImage 的 source 即完整合成帧。
 	/// </summary>
-	public sealed class BlurCapture : MonoBehaviour
+	public sealed class BlurCaptureComp : MonoBehaviour
 	{
 		/// <summary>
 		/// 是否执行截屏。为 true 时将当前帧合成画面 Blit 到 m_captureRT。
