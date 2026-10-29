@@ -89,7 +89,7 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 角色登录进游戏（TCP）：事务已抽入 <see cref="PlayerLoginFlow.EnterGameAsync"/>
+		/// 角色登录进游戏（TCP）：事务已抽入 <see cref="GameSessionFlow.EnterGameAsync"/>
 		/// （挂阀门 → Call 建立基线 → 恢复派发，失败收尾在其中）。Token 随界面关闭自动取消。
 		/// 与 WinLogin.UserLoginAsync（账号登录，HTTP）分工：账号层管"你是谁"，进游戏层管"建立会话与数据基线"。
 		/// </summary>
@@ -102,7 +102,7 @@ namespace Hotfix.Game.UI
 			GlobalModule.UIModule.Close(this);
 
 			// 加载主场景。注意不用窗口 Token：Close(this) 已取消它，此后的链路（场景加载/开主界面）
-			// 寿命比选角窗口长，归"进游戏事务"所有（PlayerLoginFlow.TransactionToken）。
+			// 寿命比选角窗口长，归"进游戏事务"所有（GameSessionFlow.TransactionToken）。
 			await SceneModule.Instance.LoadSceneByName("Main", GameSessionFlow.TransactionToken);
 			
 			// 打开主界面

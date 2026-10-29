@@ -108,7 +108,7 @@ namespace Hotfix.Game.Network
 
 		/// <summary>
 		/// 启动重连事务：重开取消源 → 弹"重连中"转圈框 → ReconnectAsync 退避重拨 →
-		/// 拨通后静默重登（PlayerLoginFlow）→ 关全部窗口回主界面原地复活；
+		/// 拨通后静默重登（GameSessionFlow）→ 关全部窗口回主界面原地复活；
 		/// 失败 → "重连失败"框（再试一次=从拨号重头 / 返回登录）；取消 → 走登出。
 		/// 重入防护：m_isReconnecting 在分流处检查；本方法负责置位/复位。
 		/// </summary>
