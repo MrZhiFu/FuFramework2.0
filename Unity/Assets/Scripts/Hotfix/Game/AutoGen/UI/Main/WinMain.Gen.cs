@@ -12,7 +12,6 @@ namespace Hotfix.Game.UI
         public override string WinName => "WinMain";      // 界面名称
         public override string PackageName => "Main"; // 包名
 
-		private GLoader loaderBg;
 		private GButton btnBag;
 		private GLoader loaderPlayerIcon;
 		private GTextField txtPlayerName;
@@ -25,7 +24,6 @@ namespace Hotfix.Game.UI
         /// </summary>
         private void InitUIComp()
         {
-			loaderBg = (GLoader)GetChild("_loaderBg");
 			btnBag = (GButton)GetChild("_btnBag");
 			loaderPlayerIcon = (GLoader)GetChild("_loaderPlayerIcon");
 			txtPlayerName = (GTextField)GetChild("_txtPlayerName");
