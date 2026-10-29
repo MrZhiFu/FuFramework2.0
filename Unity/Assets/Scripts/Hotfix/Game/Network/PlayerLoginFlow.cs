@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
 using Hotfix.Game.Proto;
 using Hotfix.Game.Manager_ToDelete;
@@ -21,6 +22,18 @@ namespace Hotfix.Game.Network
 		private static bool s_isEntering;
 
 		/// <summary>
+		/// 进游戏事务取消源：事务 Token 供 <b>登录成功之后</b>的后续链使用（加载主场景、打开主界面等）——
+		/// 这些步骤的寿命比触发它的选角窗口长（窗口在事务中途 Close，其 Token 随之取消），故不能沿用窗口令牌。
+		/// 每次事务开始（EnterGameAsync）Recreate：新事务开启新生命周期，旧事务未完成的链路随之作废。
+		/// </summary>
+		private static readonly LifecycleCancellationSource sr_transactionCancellation = new();
+
+		/// <summary>
+		/// 进游戏事务令牌：登录成功后的后续异步链（场景加载等）统一使用，与窗口生命周期解耦。
+		/// </summary>
+		public static CancellationToken TransactionToken => sr_transactionCancellation.Token;
+
+		/// <summary>
 		/// 执行进游戏事务。
 		/// </summary>
 		/// <param name="playerId">角色 ID</param>
@@ -30,6 +43,7 @@ namespace Hotfix.Game.Network
 		{
 			if (s_isEntering) throw new InvalidOperationException("已有登录事务进行中，请勿重入。");
 			s_isEntering = true;
+			sr_transactionCancellation.Recreate(); // 新事务开启新生命周期：旧事务未完成的后续链路随之取消
 
 			// 挂起推送派发：全量基线建立前的增量推送进缓冲
 			NetworkModule.Instance.SuspendNotifyDispatch();

@@ -1,8 +1,10 @@
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
+using Hotfix.Framework.Scene;
 using Hotfix.Game.UI;
 using Hotfix.Game.Manager_ToDelete;
+using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 namespace Hotfix.Game.Network
 {
@@ -29,8 +31,16 @@ namespace Hotfix.Game.Network
 			// 关闭频道（Dispose → Close(Active)，不会触发自动重连）
 			NetworkModule.Instance.DestroyChannel();
 
+			// 卸载主场景：登出回到"未进游戏"状态。不卸载则再登录时 LoadScene 因"已加载"直接抛异常；
+			// 幂等防御：场景未加载（异常时序）时跳过，UnloadScene 对未加载场景同样抛异常。
+			var mainScenePath = UtilityAOT.AssetPath.GetScenePath("Main");
+			if (SceneModule.Instance.IsLoaded(mainScenePath))
+				SceneModule.Instance.UnloadScene(mainScenePath);
+
 			// 关闭全部窗口（含主界面），回账号登录界面
 			GlobalModule.UIModule.CloseAll();
+			
+			// 打开账号登录界面
 			await GlobalModule.UIModule.OpenAsync<WinLogin>();
 		}
 	}
