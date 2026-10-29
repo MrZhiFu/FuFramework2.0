@@ -51,7 +51,7 @@
     "TweenDuration": 0.3,
     "AdjustNotch": false,
     "PauseCoveredUI": false,
-    "Blur": false
+    "Blur": true
   },
   {
     "Name": "WinGlobalLoading",
