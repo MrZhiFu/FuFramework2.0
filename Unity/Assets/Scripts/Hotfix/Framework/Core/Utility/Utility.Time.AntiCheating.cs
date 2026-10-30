@@ -503,19 +503,16 @@ namespace Hotfix.Framework.Core
 		#endregion
 
 		/// <summary>
-		/// 获取系统启动时间(毫秒) 49.8天后重置
+		/// 获取系统启动时间(毫秒)。PC 端 49.8 天轮转一次（32位 TickCount），iOS/安卓端无重置
 		/// </summary>
 		/// <returns></returns>
 		private static long GetTickCount()
 		{
 			var tickCount = -1;
 #if UNITY_IOS && !UNITY_EDITOR
-			//此方法获取的时间有时候不准确，需要确定。不可用时就需要通过原生端来获取。
-			tickCount = _GetUpTime() * 1000;
-
-			//这里是单独实现ios的方法，一般需要通过xcode来获取。具体实现方式
-			// var data = UnitySDK.UnityAgent.CallNativeReturn<DoubleNativeData>(SystemDefine.IOSGetSystemOpenTime);
-			// tickCount = (long)data.Data * 1000;
+			// iOS：mach_continuous_time() 是含睡眠时间的单调时钟（与安卓 elapsedRealtime 语义对等），
+			// 设备息屏挂机期间也在走，与系统时钟的增量对比不会被睡眠打断。
+			tickCount = GetIosUptimeMs();
 #else
 			//由于 TickCount 属性值的值是32位有符号整数，因此，如果系统连续运行，TickCount 将从零递增到 Int32.MaxValue 大约24.9 天，
 			//然后跳转到 Int32.MinValue，这是一个负数，然后在下一个24.9 天内递增为零
@@ -530,9 +527,46 @@ namespace Hotfix.Framework.Core
 		}
 
 
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
+		/// <summary>
+		/// 含睡眠时间的单调时钟刻度（Mach 时间单位，非纳秒）。
+		/// libsystem 公开符号，__Internal 可直接解析，无需往 Xcode 工程注入任何原生代码。
+		/// </summary>
 		[DllImport("__Internal")]
-		private static extern long _GetUpTime();
+		private static extern ulong mach_continuous_time();
+
+		/// <summary>
+		/// Mach 时间刻度到纳秒的换算系数（numer/denom，全机恒定）。
+		/// </summary>
+		private struct MachTimebaseInfo
+		{
+			public uint Numer;
+			public uint Denom;
+		}
+
+		[DllImport("__Internal")]
+		private static extern int mach_timebase_info(out MachTimebaseInfo info);
+
+		private static uint s_machTimebaseNumer;  // 换算分子
+		private static uint s_machTimebaseDenom;  // 换算分母（0=尚未查询）
+
+		/// <summary>
+		/// 获取 iOS 设备开机后经过的毫秒数：刻度 × numer ÷ denom = 纳秒，再转毫秒。
+		/// timebase 全机恒定只查一次；换算系数异常时返回 0，由 GetUtcNow 的失败兜底分支接住。
+		/// </summary>
+		private static long GetIosUptimeMs()
+		{
+			if (s_machTimebaseDenom == 0)
+			{
+				mach_timebase_info(out var info);
+				s_machTimebaseNumer = info.Numer;
+				s_machTimebaseDenom = info.Denom > 0 ? info.Denom : 1;
+			}
+
+			var ticks       = mach_continuous_time();
+			var nanoseconds = ticks * s_machTimebaseNumer / s_machTimebaseDenom;
+			return (long)(nanoseconds / 1_000_000);
+		}
 #endif
 
 

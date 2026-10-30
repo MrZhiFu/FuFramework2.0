@@ -10,22 +10,22 @@ namespace Hotfix.Framework.Core
 	public static partial class Utility
 	{
 		/// <summary>
-		/// 时间相关的实用函数。
-		/// 功能：
-		///     1. 服务器与客户端时间差设置。
-		///     2. 时间戳与时间的相互转换。
-		///     3. 时间格式转换。
-		///     4. 当前时间相关。
-		///     5. 跨越天数相关。
-		///     6. 天计算相关。
-		///     7. 周计算相关。
-		///     8. 月计算相关。
-		///     9. 年计算相关。
-		///     10. 指定日期相关。
-		/// </summary>
-		/// <remarks>
-		/// 方法名约定：不带Ms的为秒级时间戳，带Ms的为毫秒级时间戳。
-		/// </remarks>
+	/// 时间相关的实用函数：统一时间入口 + 时间戳/时间转换 + 跨天与天/周/月/年历法工具。
+	///
+	/// 【时间源：两条时间线，业务无需选择，<see cref="GetUtcNow"/> 自动切换】
+	///     联机：心跳响应携带服务器时间戳，经 <see cref="SyncServerTime"/> 校准偏差（2s 死区防抖），
+	///           此后 GetUtcNow = 真实系统时钟 + 服务器偏差 —— 服务器权威投影，改本地时钟/存档无效；
+	///           断线期间已校准的偏差持续有效，重连后自动重新校准。
+	///     单机：防作弊时钟兜底（TimeAntiCheating：NTP 优先 + TickCount 双源验证）。
+	///
+	/// 【用法】
+	///     业务时间（活动/倒计时/每日重置/结算判定）一律用 <see cref="Now"/> / <see cref="NowMs"/>，
+	///     不要用 DateTime.Now（可被玩家改表欺骗）；
+	///     本地自然日展示用 NowLocal 系与周/月/年系列（基于 DateTime.Now）；UTC 展示用 NowUtc 系列。
+	/// </summary>
+	/// <remarks>
+	/// 方法名约定：不带Ms的为秒级时间戳，带Ms的为毫秒级时间戳。
+	/// </remarks>
 		public static class Time
 		{
 			/// <summary>
