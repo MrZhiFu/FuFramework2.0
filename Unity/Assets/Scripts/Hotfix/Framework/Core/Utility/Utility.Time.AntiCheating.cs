@@ -60,22 +60,41 @@ namespace Hotfix.Framework.Core
 		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 重查网络时间的最大尝试次数
 
 		/// <summary>
-		/// 时间记录校验和混淆盐：防止随手篡改记录数值（配合 GetSavedTime/SaveTime 的 "毫秒|校验和" 格式）。
+		/// 时间记录校验和混淆盐：防止随手篡改记录数值（配合 GetSavedTime/SaveTime 的 "秒|校验和" 格式）。
 		/// 注意：盐随代码可被逆向，这是"提高门槛"而非"加密保险"——单机防作弊的合理上限。
 		/// </summary>
 		private const string TIME_RECORD_SALT = "FuFramework.TimeAntiCheating.v1";
+
+		/// <summary>
+		/// 每隔多少秒才真正把时间记录写进本地存档(秒)。
+		/// 这个记录只在下次打开游戏时用来检测时间作弊，平时没必要每秒都写 PlayerPrefs
+		/// </summary>
+		private const float SAVE_FLUSH_INTERVAL_SEC = 30f;
+
+		/// <summary>
+		/// "钟走了多久"和"秒表走了多久"对不上多少秒以内算正常(秒)。
+		/// 不能太小：NTP网络校时、电脑睡眠唤醒、虚拟机挂起恢复都会让钟一次跳几秒~几十秒，太小会误伤正常玩家（时间被强行纠正、倒计时跳变）；
+		/// 不能太大：超过它的部分就是"改了也不被抓"的免费额度，60秒下改1小时必被抓、改几十秒没有油水——不建议随意调小
+		/// </summary>
+		private const long CLOCK_CHECK_TOLERANCE_SEC = 60;
 
 		#endregion
 
 		#region 静态字段
 
-		private static bool     s_forbidCheck;         // 禁止检测（方便测试）
-		private static DateTime s_cachedTime;          // 缓存的时间结果
-		private static long     s_lastTickCount;       // 上次计算时的系统启动时间（秒）
-		private static bool     s_gotNetTime;          // 是否得到了在线时间
-		private static DateTime s_nowOnlineDateTime;   // 当前在线时间
-		private static float    s_lastRecheckTime;     // 上次重查网络时间时的时间
-		private static int      s_recheckAttemptCount; // 重查网络时间的尝试次数
+		private static bool     s_forbidCheck;                              // 禁止检测（方便测试）
+		private static DateTime s_cachedTime;                               // 缓存的时间结果
+		private static long     s_lastTickCount;                            // 上次计算时的系统启动时间（秒）
+		private static bool     s_gotNetTime;                               // 是否得到了在线时间
+		private static DateTime s_nowOnlineDateTime;                        // 当前在线时间
+		private static float    s_lastRecheckTime;                          // 上次重查网络时间时的时间
+		private static int      s_recheckAttemptCount;                      // 重查网络时间的尝试次数
+		private static bool     s_benchmarksLoaded;                         // 是否已从本地存档读出上次的时间记录（只读一次，之后都用内存值）
+		private static long     s_savedTickTime;                            // 上次保存的"系统已运行秒数"，用来和当前值对比检测时间作弊（0=还没记录）
+		private static long     s_savedUtcTime;                             // 上次保存的"UTC时间戳(秒)"，作用同上（0=还没记录）
+		private static float    s_lastFlushTime = -SAVE_FLUSH_INTERVAL_SEC; // 上次把记录写进本地存档的时刻（初始值保证首次必定写入）
+		private static IntPtr   s_androidSystemClockClass;                  // 缓存的 SystemClock 类引用（JNI 一次性查找）
+		private static IntPtr   s_androidElapsedRealtimeMethodId;           // 缓存的 elapsedRealtime 方法ID
 
 		#endregion
 
@@ -94,8 +113,12 @@ namespace Hotfix.Framework.Core
 				return GetTickCount();
 #elif UNITY_IOS
 				return GetTickCount();
-#else
+#elif UNITY_ANDROID
 				return GetAndroidTickCount();
+#else
+				// 其余平台（Windows/Mac/Linux 独立包等）走系统 TickCount，
+				// 不可落入 Android JNI 分支——那会让 TickCount 恒为 0，防作弊链失效返回 0001-01-01
+				return GetTickCount();
 #endif
 			}
 		}
@@ -140,34 +163,27 @@ namespace Hotfix.Framework.Core
 		{
 			if (s_forbidCheck) return DateTime.UtcNow;
 
-			// 使用缓存优化，1秒内避免重复计算
 			var currentTick = TickCount;
-			if (Math.Abs(currentTick - s_lastTickCount) < 1) // 1秒内使用缓存
-			{
-				return s_cachedTime;
-			}
+
+			// 拿不到系统启动时间（返回0，如JNI失败/平台不支持）就没有对比依据，
+			// 直接用系统时间兜底，避免返回错误的纪元时间
+			if (currentTick <= 0) return DateTime.UtcNow;
+
+			// 同一秒内直接复用缓存
+			if (currentTick == s_lastTickCount) return s_cachedTime;
 
 			DateTime result;
 
-			// 本次系统启动后经过的秒数（复用缓存判断取到的值，避免重复 JNI/环境调用）
-			var tickTime = currentTick;
-
-			// 获取上次记录的系统启动后经过的秒数
-			var lastTickTime = GetSavedTime(LAST_TICK_TIME_KEY);
-			if (lastTickTime <= 0)
-			{
-				Log($"首次运行或记录的数据被删除了，重新保存系统启动后经过的秒数{tickTime}s");
-				SaveTime(LAST_TICK_TIME_KEY, tickTime);
-				lastTickTime = tickTime;
-			}
+			// 上次的时间记录只在首次调用时从本地存档读一次，之后都用内存里的值（见 FlushSavedTimesThrottled）
+			LoadBenchmarksIfNeeded(currentTick);
 
 			if (s_gotNetTime)
 			{
 				// 已经获得过网络时间：结果 = 网络时间 + 系统启动时间差
-				s_nowOnlineDateTime = s_nowOnlineDateTime.AddSeconds(tickTime - lastTickTime);
-				SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(s_nowOnlineDateTime));
-				SaveTime(LAST_TICK_TIME_KEY, tickTime);
-				result = s_nowOnlineDateTime;
+				s_nowOnlineDateTime = s_nowOnlineDateTime.AddSeconds(currentTick - s_savedTickTime);
+				s_savedUtcTime      = Time2Timestamp(s_nowOnlineDateTime);
+				s_savedTickTime     = currentTick;
+				result              = s_nowOnlineDateTime;
 			}
 			else
 			{
@@ -175,27 +191,24 @@ namespace Hotfix.Framework.Core
 				var now          = DateTime.UtcNow;
 				var nowTimestamp = Time2Timestamp(now);
 
-				// 获取记录的上次时间戳（<=0 表示无有效基准：首次运行/清存档/重装——
-				// 以本次真实时间为基准，避免 timestampDelta 相对 0 计算出天量差值而误判作弊返回 1970 年）
-				var lastTimestamp = GetSavedTime(LAST_UTC_TIME_KEY);
-				if (lastTimestamp <= 0)
-				{
-					lastTimestamp = nowTimestamp;
-					SaveTime(LAST_UTC_TIME_KEY, nowTimestamp);
-				}
+				// 上次保存的UTC时间戳（0 表示没有记录：首次运行/清存档/重装——
+				// 此时拿本次真实时间当起点，避免时间差算出天文数字而误判作弊返回 1970 年）
+				var lastTimestamp = s_savedUtcTime > 0 ? s_savedUtcTime : nowTimestamp;
 
 				// 获取当前时间戳和上次记录的时间戳差值
 				var timestampDelta = nowTimestamp - lastTimestamp;
 
 				// 获取本次和上次的系统启动经过的时间差值
-				var tickTimeDelta = tickTime - lastTickTime;
+				var tickTimeDelta = currentTick - s_savedTickTime;
 
 				var delta = Math.Abs(timestampDelta - tickTimeDelta);
-				if (delta < 60 || tickTimeDelta <= 0)
+
+				// 差值在容差内=钟正常；秒表倒退(<=0)=电脑重启过、秒表归零，没有对比意义，直接信任钟
+				if (delta < CLOCK_CHECK_TOLERANCE_SEC || tickTimeDelta <= 0)
 				{
-					SaveTime(LAST_UTC_TIME_KEY,  nowTimestamp);
-					SaveTime(LAST_TICK_TIME_KEY, tickTime);
-					result = now;
+					s_savedUtcTime  = nowTimestamp;
+					s_savedTickTime = currentTick;
+					result          = now;
 				}
 				else
 				{
@@ -207,6 +220,9 @@ namespace Hotfix.Framework.Core
 				// 尝试重新获取下网络时间
 				TryRecheckNetTime();
 			}
+
+			// 时间记录攒够间隔才写进本地存档（见 FlushSavedTimesThrottled）
+			FlushSavedTimesThrottled();
 
 			// 更新缓存
 			s_lastTickCount = currentTick;
@@ -276,6 +292,48 @@ namespace Hotfix.Framework.Core
 			s_lastRecheckTime     = 0f;
 		}
 
+		/// <summary>
+		/// 只在首次调用时从本地存档读出上次保存的时间记录，之后都用内存里的值——
+		/// 每次都读 PlayerPrefs（还要算校验和）太浪费
+		/// </summary>
+		private static void LoadBenchmarksIfNeeded(long currentTick)
+		{
+			if (s_benchmarksLoaded) return;
+
+			s_savedTickTime = GetSavedTime(LAST_TICK_TIME_KEY);
+			if (s_savedTickTime <= 0)
+			{
+				Log($"首次运行或记录的数据被删除了，重新保存系统启动后经过的秒数{currentTick}s");
+				s_savedTickTime = currentTick;
+			}
+
+			// 0 表示没有可用记录（首次运行/清存档/记录被篡改），调用方会拿当前时间当起点重新记
+			s_savedUtcTime = GetSavedTime(LAST_UTC_TIME_KEY);
+
+			s_benchmarksLoaded = true;
+		}
+
+		/// <summary>
+		/// 马上把内存里的时间记录写进本地存档（只在关键节点调用：拿到网络时间/游戏退出）
+		/// </summary>
+		private static void FlushSavedTimes()
+		{
+			SaveTime(LAST_UTC_TIME_KEY,  s_savedUtcTime);
+			SaveTime(LAST_TICK_TIME_KEY, s_savedTickTime);
+			s_lastFlushTime = Time.realtimeSinceStartup;
+		}
+
+		/// <summary>
+		/// 距上次写入超过 <see cref="SAVE_FLUSH_INTERVAL_SEC"/> 才真正写一次本地存档。
+		/// 这个记录只在下次打开游戏时用来检测时间作弊，没必要每秒都写；
+		/// 游戏崩溃时最多丢 30 秒记录，对防作弊没有影响
+		/// </summary>
+		private static void FlushSavedTimesThrottled()
+		{
+			if (Time.realtimeSinceStartup - s_lastFlushTime < SAVE_FLUSH_INTERVAL_SEC) return;
+			FlushSavedTimes();
+		}
+
 		#region 多npt服务器地址获取全球时间方法
 
 		/// <summary>
@@ -336,7 +394,7 @@ namespace Hotfix.Framework.Core
 				try
 				{
 					Log($"正在尝试从服务器 {server} 获取时间...");
-					var result = await RequestTimestampFromNtpAsync(server, sendTimeout, receiveTimeout, cancellationToken);
+					var result = await ReqTimestampFromNtpAsync(server, sendTimeout, receiveTimeout, cancellationToken);
 
 					if (result.error == null)
 					{
@@ -367,7 +425,7 @@ namespace Hotfix.Framework.Core
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		/// <exception cref="Exception"></exception>
-		private static async UniTask<(DateTimeOffset timestamp, Exception error)> RequestTimestampFromNtpAsync(string server, int sendTimeout, int receiveTimeout, CancellationToken cancellationToken)
+		private static async UniTask<(DateTimeOffset timestamp, Exception error)> ReqTimestampFromNtpAsync(string server, int sendTimeout, int receiveTimeout, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -432,8 +490,10 @@ namespace Hotfix.Framework.Core
 			s_nowOnlineDateTime = offTime.UtcDateTime;
 			s_gotNetTime        = true;
 
-			SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(s_nowOnlineDateTime));
-			SaveTime(LAST_TICK_TIME_KEY, TickCount);
+			// 拿到权威网络时间是关键节点：更新内存记录并马上写进本地存档
+			s_savedUtcTime  = Time2Timestamp(s_nowOnlineDateTime);
+			s_savedTickTime = TickCount;
+			FlushSavedTimes();
 
 			// 重置重查状态
 			ResetRecheckState();
@@ -477,21 +537,28 @@ namespace Hotfix.Framework.Core
 
 
 		/// <summary>
-		/// 获取安卓端系统启动时间(毫秒)(必须在安卓上机上才有用) 无重置
+		/// 获取安卓端系统启动时间(毫秒)(必须在安卓真机上才有用) 无重置
 		/// </summary>
 		/// <returns></returns>
 		private static long GetAndroidTickCount()
 		{
 			try
 			{
-				var clazz = AndroidJNI.FindClass("android/os/SystemClock");
-				if (clazz == IntPtr.Zero) return 0;
+				// jclass/jmethodID 仅首次查找（Unity 的 FindClass 返回全局引用，可跨调用缓存），
+				// 之后每次调用只剩一次 CallStaticLongMethod JNI 往返——TickCount 是 GetUtcNow 每次调用的必经之路
+				if (s_androidSystemClockClass == IntPtr.Zero)
+				{
+					var clazz = AndroidJNI.FindClass("android/os/SystemClock");
+					if (clazz == IntPtr.Zero) return 0;
 
-				var methodId = AndroidJNI.GetStaticMethodID(clazz, "elapsedRealtime", "()J");
-				if (methodId == IntPtr.Zero) return 0;
+					var methodId = AndroidJNI.GetStaticMethodID(clazz, "elapsedRealtime", "()J");
+					if (methodId == IntPtr.Zero) return 0;
 
-				var args = Array.Empty<jvalue>();
-				return AndroidJNI.CallStaticLongMethod(clazz, methodId, args);
+					s_androidSystemClockClass        = clazz;
+					s_androidElapsedRealtimeMethodId = methodId;
+				}
+
+				return AndroidJNI.CallStaticLongMethod(s_androidSystemClockClass, s_androidElapsedRealtimeMethodId, Array.Empty<jvalue>());
 			}
 			catch (Exception e)
 			{
@@ -501,7 +568,7 @@ namespace Hotfix.Framework.Core
 		}
 
 		/// <summary>
-		/// 获取本地记录的时间(毫秒)。格式为 "毫秒|校验和"（旧版纯数字格式兼容读取，下次保存自动升级）。
+		/// 获取本地记录的时间(秒)。格式为 "秒|校验和"（旧版纯数字格式兼容读取，下次保存自动升级）。
 		/// 校验和不匹配 = 记录被篡改 → 回退为无基准(0)，由 <see cref="GetUtcNow"/> 的无基准分支重建。
 		/// 记录为非法数据时同样回退为无基准(0)，不打崩时间链。
 		/// </summary>
@@ -513,19 +580,19 @@ namespace Hotfix.Framework.Core
 			{
 				var resStr = PlayerPrefs.GetString(key, "0");
 
-				// 旧格式兼容：纯数字为校验和机制启用前的记录，按毫秒读取
+				// 旧格式兼容：纯数字为校验和机制启用前的记录，按秒读取
 				if (long.TryParse(resStr, out var legacyValue)) return legacyValue;
 
-				// 新格式：毫秒|校验和
+				// 新格式：秒|校验和
 				var separatorIndex = resStr.IndexOf('|');
 				if (separatorIndex <= 0) return 0;
 
-				var msPart       = resStr[..separatorIndex];
+				var secondsPart  = resStr[..separatorIndex];
 				var checksumPart = resStr[(separatorIndex + 1)..];
-				if (!long.TryParse(msPart, out var milliseconds)) return 0;
+				if (!long.TryParse(secondsPart, out var seconds)) return 0;
 
-				var expectedChecksum = Utility.Hash.XxHash.Hash64(key + milliseconds + TIME_RECORD_SALT).ToString();
-				return checksumPart == expectedChecksum ? milliseconds : 0;
+				var expectedChecksum = Utility.Hash.XxHash.Hash64(key + seconds + TIME_RECORD_SALT).ToString();
+				return checksumPart == expectedChecksum ? seconds : 0;
 			}
 			catch (Exception e)
 			{
@@ -535,14 +602,14 @@ namespace Hotfix.Framework.Core
 		}
 
 		/// <summary>
-		/// 保存时间记录(毫秒)。格式为 "毫秒|校验和"（校验和由 key+毫秒值+盐 计算出，防随手篡改记录数值）
+		/// 保存时间记录(秒)。格式为 "秒|校验和"（校验和由 key+秒值+盐 计算出，防随手篡改记录数值）
 		/// </summary>
 		/// <param name="key"></param>
-		/// <param name="ms"></param>
-		private static void SaveTime(string key, long ms)
+		/// <param name="seconds"></param>
+		private static void SaveTime(string key, long seconds)
 		{
-			var checksum = Utility.Hash.XxHash.Hash64(key + ms + TIME_RECORD_SALT).ToString();
-			PlayerPrefs.SetString(key, $"{ms}|{checksum}");
+			var checksum = Utility.Hash.XxHash.Hash64(key + seconds + TIME_RECORD_SALT).ToString();
+			PlayerPrefs.SetString(key, $"{seconds}|{checksum}");
 		}
 
 		/// <summary>

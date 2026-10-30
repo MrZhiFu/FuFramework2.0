@@ -63,11 +63,11 @@ namespace Hotfix.Framework.Core
 			/// 死区：已校准且偏差变化小于 <see cref="SYNC_TIME_THRESHOLD_MS"/> 时忽略——
 			/// 单次校准的误差来自网络往返的一半，小偏差大概率是抖动，直接校准会让倒计时跳变。
 			/// </summary>
-			/// <param name="serverTimeMs">服务器当前时间戳（毫秒）</param>
-			public static void SyncServerTime(long serverTimeMs)
+			/// <param name="serverTimestamp">服务器当前时间戳（毫秒）</param>
+			public static void SyncServerTime(long serverTimestamp)
 			{
-				var clientRealNowMs = (long)(DateTime.UtcNow - sr_UtcEpoch).TotalMilliseconds;
-				var newDiff = serverTimeMs - clientRealNowMs;
+				var clientTimestamp = (long)(DateTime.UtcNow - sr_UtcEpoch).TotalMilliseconds;
+				var newDiff         = serverTimestamp - clientTimestamp;
 
 				var current = Interlocked.Read(ref s_diffTimeMs);
 				if (current != DIFF_UNSET && System.Math.Abs(newDiff - current) < SYNC_TIME_THRESHOLD_MS) return;
@@ -84,9 +84,7 @@ namespace Hotfix.Framework.Core
 			public static DateTime GetUtcNow()
 			{
 				var diff = Interlocked.Read(ref s_diffTimeMs);
-				if (diff != DIFF_UNSET) return DateTime.UtcNow.AddMilliseconds(diff);
-
-				return TimeAntiCheating.GetUtcNow();
+				return diff != DIFF_UNSET ? DateTime.UtcNow.AddMilliseconds(diff) : TimeAntiCheating.GetUtcNow();
 			}
 
 			/// <summary>
@@ -98,11 +96,6 @@ namespace Hotfix.Framework.Core
 			/// 当前时间戳(毫秒)。已校准=服务器权威时间；未校准=防作弊时钟
 			/// </summary>
 			public static long NowMs() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
-
-			/// <summary>
-			/// 今天开始时间戳(秒)，如：2021-01-01 00:00:00 的秒级时间戳（按 GetUtcNow 的时区，见各方法注释）
-			/// </summary>
-			public static long TodayStart() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
 
 			#endregion
 
@@ -167,22 +160,18 @@ namespace Hotfix.Framework.Core
 			/// </summary>
 			/// <param name="timestampMs">Unix时间戳（毫秒）</param>
 			/// <returns>从指定时间戳到当前时间的时间间隔</returns>
-			public static TimeSpan GetElapsedTimeSince(long timestampMs)
-			{
-				var nowTimestamp = NowMs();
-				var timeSpan     = TimestampMsToTime(nowTimestamp, true) - TimestampMsToTime(timestampMs, true);
-				return timeSpan;
-			}
+			public static TimeSpan GetElapsedTimeSince(long timestampMs) => TimeSpan.FromMilliseconds(NowMs() - timestampMs);
 
 			/// <summary>
 			/// 将Unix时间戳转换为相对于本地当前时间的时间间隔。
 			/// 即计算本地当前时间与给定时间戳表示的时间之间的差值。
 			/// </summary>
 			/// <param name="timestampMs">Unix时间戳（毫秒）</param>
-			/// <returns>从指定时间戳到当本地前时间的时间间隔</returns>
+			/// <returns>从指定时间戳到本地当前时间的时间间隔</returns>
+			/// <remarks>时间源为本地系统时钟（可被用户修改）；需要服务器权威时间请使用 <see cref="GetElapsedTimeSince"/>。</remarks>
 			public static TimeSpan GetElapsedTimeSinceLocal(long timestampMs)
 			{
-				var timeSpan = DateTime.Now - TimestampMsToTime(timestampMs, true);
+				var timeSpan = DateTime.Now - TimestampMsToTime(timestampMs);
 				return timeSpan;
 			}
 
@@ -194,36 +183,58 @@ namespace Hotfix.Framework.Core
 			/// 获取当前本地时区的日期，格式为yyyyMMdd的整数
 			/// </summary>
 			/// <returns>返回一个8位整数，表示当前本地时区的日期。例如：20231225表示2023年12月25日</returns>
-			public static int NowLocalDate() => Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
+			/// <remarks>纯整数运算，无字符串分配与解析，高频调用安全。</remarks>
+			public static int NowLocalDate()
+			{
+				var now = DateTime.Now;
+				return now.Year * 10000 + now.Month * 100 + now.Day;
+			}
 
 			/// <summary>
 			/// 获取当前UTC时区的日期，格式为yyyyMMdd的整数
 			/// </summary>
 			/// <returns>返回一个8位整数，表示当前UTC时区的日期。例如：20231225表示2023年12月25日</returns>
-			public static int NowUtcDate() => Convert.ToInt32(GetUtcNow().ToString("yyyyMMdd"));
+			/// <remarks>纯整数运算，无字符串分配与解析，高频调用安全。</remarks>
+			public static int NowUtcDate()
+			{
+				var utcNow = GetUtcNow();
+				return utcNow.Year * 10000 + utcNow.Month * 100 + utcNow.Day;
+			}
 
 			/// <summary>
 			/// 获取当前UTC时间，格式为HHmmss的整数
 			/// </summary>
 			/// <returns>返回一个6位整数，表示当前UTC时间。例如：143045表示14:30:45</returns>
-			public static int NowUtcTime() => Convert.ToInt32(NowUtcTimeStr());
+			/// <remarks>纯整数运算，无字符串分配与解析，高频调用安全。</remarks>
+			public static int NowUtcTime()
+			{
+				var utcNow = GetUtcNow();
+				return utcNow.Hour * 10000 + utcNow.Minute * 100 + utcNow.Second;
+			}
 
 			/// <summary>
 			/// 获取当前本地时间，格式为HHmmss的整数
 			/// </summary>
 			/// <returns>返回一个6位整数，表示当前本地时间。例如：143045表示14:30:45</returns>
-			public static int NowLocalTime() => Convert.ToInt32(NowLocalTimeStr());
+			/// <remarks>纯整数运算，无字符串分配与解析，高频调用安全。</remarks>
+			public static int NowLocalTime()
+			{
+				var now = DateTime.Now;
+				return now.Hour * 10000 + now.Minute * 100 + now.Second;
+			}
 
 			/// <summary>
 			/// 获取当前UTC时间，格式为HHmmss的字符串
 			/// </summary>
 			/// <returns>返回一个6位字符串，表示当前UTC时间。例如：143045表示14:30:45</returns>
+			/// <remarks>每次调用分配字符串，高频场景请使用 <see cref="NowUtcTime"/>。</remarks>
 			public static string NowUtcTimeStr() => GetUtcNow().ToString("HHmmss");
 
 			/// <summary>
 			/// 获取当前本地时间，格式为HHmmss的字符串
 			/// </summary>
 			/// <returns>返回一个6位字符串，表示当前本地时间。例如：143045表示14:30:45</returns>
+			/// <remarks>每次调用分配字符串，高频场景请使用 <see cref="NowLocalTime"/>。</remarks>
 			public static string NowLocalTimeStr() => DateTime.Now.ToString("HHmmss");
 
 			/// <summary>
@@ -286,7 +297,7 @@ namespace Hotfix.Framework.Core
 			public static int GetCrossDaysToNowLocal(long beginTimestamp, int hour = 0)
 			{
 				var begin = TimestampToTime(beginTimestamp);
-				return GetCrossDaysToNowUtc(begin, hour);
+				return GetCrossDaysToNowLocal(begin, hour);
 			}
 
 			/// <summary>
@@ -369,51 +380,51 @@ namespace Hotfix.Framework.Core
 			}
 
 			/// <summary>
-			/// 获取今天开始时间
+			/// 获取今天开始时间（本地时区）
 			/// </summary>
-			/// <returns>今天零点时间</returns>
-			public static DateTime GetTodayStartTime() => GetUtcNow().Date;
+			/// <returns>今天本地零点时间</returns>
+			public static DateTime GetTodayStartTime() => GetUtcNow().ToLocalTime().Date;
 
 			/// <summary>
-			/// 获取今天开始时间戳
+			/// 获取今天开始时间戳（本地时区）
 			/// </summary>
-			/// <returns>今天零点时间戳(秒)</returns>
+			/// <returns>今天本地零点时间戳(秒)</returns>
 			public static long GetTodayStartTimestamp() => new DateTimeOffset(GetTodayStartTime()).ToUnixTimeSeconds();
 
 			/// <summary>
-			/// 获取今天结束时间
+			/// 获取今天结束时间（本地时区）
 			/// </summary>
-			/// <returns>今天23:59:59的时间</returns>
-			public static DateTime GetTodayEndTime() => GetUtcNow().Date.AddDays(1).AddSeconds(-1);
+			/// <returns>今天本地23:59:59的时间</returns>
+			public static DateTime GetTodayEndTime() => GetUtcNow().ToLocalTime().Date.AddDays(1).AddSeconds(-1);
 
 			/// <summary>
-			/// 获取今天结束时间戳
+			/// 获取今天结束时间戳（本地时区）
 			/// </summary>
-			/// <returns>今天23:59:59的时间戳(秒)</returns>
+			/// <returns>今天本地23:59:59的时间戳(秒)</returns>
 			public static long GetTodayEndTimestamp() => new DateTimeOffset(GetTodayEndTime()).ToUnixTimeSeconds();
 
 			/// <summary>
-			/// 获取明天开始时间
+			/// 获取明天开始时间（本地时区）
 			/// </summary>
-			/// <returns>明天零点时间</returns>
-			public static DateTime GetTomorrowStartTime() => GetUtcNow().Date.AddDays(1);
+			/// <returns>明天本地零点时间</returns>
+			public static DateTime GetTomorrowStartTime() => GetUtcNow().ToLocalTime().Date.AddDays(1);
 
 			/// <summary>
-			/// 获取明天开始时间戳
+			/// 获取明天开始时间戳（本地时区）
 			/// </summary>
-			/// <returns>明天零点时间戳(秒)</returns>
+			/// <returns>明天本地零点时间戳(秒)</returns>
 			public static long GetTomorrowStartTimestamp() => new DateTimeOffset(GetTomorrowStartTime()).ToUnixTimeSeconds();
 
 			/// <summary>
-			/// 获取明天结束时间
+			/// 获取明天结束时间（本地时区）
 			/// </summary>
-			/// <returns>明天23:59:59的时间</returns>
-			public static DateTime GetTomorrowEndTime() => GetUtcNow().Date.AddDays(2).AddSeconds(-1);
+			/// <returns>明天本地23:59:59的时间</returns>
+			public static DateTime GetTomorrowEndTime() => GetUtcNow().ToLocalTime().Date.AddDays(2).AddSeconds(-1);
 
 			/// <summary>
-			/// 获取明天结束时间戳
+			/// 获取明天结束时间戳（本地时区）
 			/// </summary>
-			/// <returns>明天23:59:59的时间戳(秒)</returns>
+			/// <returns>明天本地23:59:59的时间戳(秒)</returns>
 			public static long GetTomorrowEndTimestamp() => new DateTimeOffset(GetTomorrowEndTime()).ToUnixTimeSeconds();
 
 			#endregion
