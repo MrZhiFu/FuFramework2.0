@@ -1,8 +1,10 @@
 using System;
+using System.Threading;
 
 // ReSharper disable once CheckNamespace
 using AOT.Framework.Core.Log;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Core
 {
 	public static partial class Utility
@@ -38,110 +40,69 @@ namespace Hotfix.Framework.Core
 			public static readonly long sr_EpochTicks = sr_UtcEpoch.Ticks;
 
 			/// <summary>
-			/// 是否是秒级
+			/// 校时死区阈值（毫秒）：偏差变化小于该值不校准——避免网络往返抖动导致倒计时跳变
 			/// </summary>
-			private static bool s_isSecLevel = true;
+			private const long SYNC_TIME_THRESHOLD_MS = 2000;
 
 			/// <summary>
-			/// 服务器与客户端的时间差。
-			/// 单位：_isSecLevel为true时为秒，为false时为毫秒。
+			/// "未校准"哨兵：时钟偏差尚无有效值（真实偏差不可能是此值）。单机/未登录时走防作弊兜底
 			/// </summary>
-			private static long s_diffTime;
-
-
-			#region 服务器/客户端时间相关
+			private const long DIFF_UNSET = long.MinValue;
 
 			/// <summary>
-			/// 设置服务器与客户端的时间差
+			/// 服务器与客户端的时钟偏差（毫秒）：服务器时间戳 − 客户端真实时钟戳。
+			/// 由心跳校时（<see cref="SyncServerTime"/>）以 Interlocked 原子写入（防 32 位平台 long 撕裂），
+			/// 联机后 <see cref="GetUtcNow"/> 据此投影出服务器权威时间。
 			/// </summary>
-			/// <param name="serverTimestamp">服务器时间戳</param>
-			/// <remarks>
-			/// 自动检测时间戳精度：
-			/// 通过比较与当前时间的差值，选择差值更小的精度
-			/// </remarks>
-			public static void SetDifferenceTime(long serverTimestamp)
+			private static long s_diffTimeMs = DIFF_UNSET;
+
+			#region 校时与统一时间入口
+
+			/// <summary>
+			/// 服务器校时（心跳响应调用）：按服务器时间戳校准时钟偏差。
+			/// 死区：已校准且偏差变化小于 <see cref="SYNC_TIME_THRESHOLD_MS"/> 时忽略——
+			/// 单次校准的误差来自网络往返的一半，小偏差大概率是抖动，直接校准会让倒计时跳变。
+			/// </summary>
+			/// <param name="serverTimeMs">服务器当前时间戳（毫秒）</param>
+			public static void SyncServerTime(long serverTimeMs)
 			{
-				if (serverTimestamp < 0)
-					throw new ArgumentException("时间戳不能为负数", nameof(serverTimestamp));
+				var clientRealNowMs = (long)(DateTime.UtcNow - sr_UtcEpoch).TotalMilliseconds;
+				var newDiff = serverTimeMs - clientRealNowMs;
 
-				// 获取当前客户端时间
-				var currentSeconds      = ClientNow();
-				var currentMilliseconds = ClientNowMs();
+				var current = Interlocked.Read(ref s_diffTimeMs);
+				if (current != DIFF_UNSET && System.Math.Abs(newDiff - current) < SYNC_TIME_THRESHOLD_MS) return;
 
-				// 计算与两种精度的差值
-				var diffSeconds      = System.Math.Abs(serverTimestamp - currentSeconds);
-				var diffMilliseconds = System.Math.Abs(serverTimestamp - currentMilliseconds);
-
-				// 选择差值更小的精度
-				s_isSecLevel = diffSeconds < diffMilliseconds;
-
-				if (s_isSecLevel)
-				{
-					s_diffTime = serverTimestamp - currentSeconds;
-					FuLogger.LogInfo($"检测为秒级时间戳，服务器与客户端时间差: {s_diffTime}秒");
-				}
-				else
-				{
-					s_diffTime = serverTimestamp - currentMilliseconds;
-					FuLogger.LogInfo($"检测为毫秒级时间戳，服务器与客户端时间差: {s_diffTime}毫秒");
-				}
+				Interlocked.Exchange(ref s_diffTimeMs, newDiff);
+				FuLogger.LogInfo($"服务器时间校准完成，时钟偏差 {newDiff}ms（含网络往返误差）。");
 			}
 
 			/// <summary>
-			/// 服务器当前时间戳(秒/毫秒)
-			/// 如果是秒级，返回秒级时间戳，如果是毫秒级，返回毫秒级时间戳
+			/// 当前 UTC 时刻（业务唯一入口）：
+			///   已校准（联机）→ 真实系统时钟 + 服务器偏差 —— 服务器权威投影，改本地时钟/存档无效；
+			///   未校准（单机）→ 防作弊时钟（NTP + 双源验证）兜底。
 			/// </summary>
-			/// <returns></returns>
-			public static long ServerNow()
+			public static DateTime GetUtcNow()
 			{
-				if (s_isSecLevel) return s_diffTime + ClientNow();
-				return (s_diffTime + ClientNowMs()) / 1000;
+				var diff = Interlocked.Read(ref s_diffTimeMs);
+				if (diff != DIFF_UNSET) return DateTime.UtcNow.AddMilliseconds(diff);
+
+				return TimeAntiCheating.GetUtcNow();
 			}
 
 			/// <summary>
-			/// 服务器今天开始时间戳(秒/毫秒)，如：2021-01-01 00:00:00的秒级/毫秒级时间戳
-			/// 如果是秒级，返回秒级时间戳，如果是毫秒级，返回毫秒级时间戳
+			/// 当前时间戳(秒)。已校准=服务器权威时间；未校准=防作弊时钟
 			/// </summary>
-			/// <returns></returns>
-			public static long ServerToday()
-			{
-				if (s_isSecLevel) return s_diffTime + ClientToday();
-				return (s_diffTime + ClientTodayMs()) / 1000;
-			}
+			public static long Now() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
 
 			/// <summary>
-			/// 获取当前Utc时间
+			/// 当前时间戳(毫秒)。已校准=服务器权威时间；未校准=防作弊时钟
 			/// </summary>
-			/// <param name="useAntiCheating">是否使用时间防作弊方案</param>
-			/// <returns></returns>
-			public static DateTime GetUtcNow(bool useAntiCheating = true)
-			{
-				return useAntiCheating ? TimeAntiCheating.GetUtcNow() : DateTime.UtcNow;
-			}
+			public static long NowMs() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
 
 			/// <summary>
-			/// 客户端当前时间戳(秒)
+			/// 今天开始时间戳(秒)，如：2021-01-01 00:00:00 的秒级时间戳（按 GetUtcNow 的时区，见各方法注释）
 			/// </summary>
-			/// <returns></returns>
-			public static long ClientNow() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
-
-			/// <summary>
-			/// 客户端当前时间戳(毫秒)
-			/// </summary>
-			/// <returns></returns>
-			public static long ClientNowMs() => (GetUtcNow().Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
-
-			/// <summary>
-			/// 客户端今天开始时间戳(秒)，如：2021-01-01 00:00:00的秒级时间戳
-			/// </summary>
-			/// <returns></returns>
-			public static long ClientToday() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
-
-			/// <summary>
-			/// 客户端今天开始时间戳(毫秒)，如：2021-01-01 00:00:00的毫秒级时间戳
-			/// </summary>
-			/// <returns></returns>
-			public static long ClientTodayMs() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerMillisecond;
+			public static long TodayStart() => (GetUtcNow().Date.Ticks - sr_EpochTicks) / TimeSpan.TicksPerSecond;
 
 			#endregion
 
@@ -208,7 +169,7 @@ namespace Hotfix.Framework.Core
 			/// <returns>从指定时间戳到当前时间的时间间隔</returns>
 			public static TimeSpan GetElapsedTimeSince(long timestampMs)
 			{
-				var nowTimestamp = ClientNowMs();
+				var nowTimestamp = NowMs();
 				var timeSpan     = TimestampMsToTime(nowTimestamp, true) - TimestampMsToTime(timestampMs, true);
 				return timeSpan;
 			}

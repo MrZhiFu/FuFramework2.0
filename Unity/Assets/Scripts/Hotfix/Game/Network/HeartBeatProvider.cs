@@ -18,7 +18,7 @@ namespace Hotfix.Game.Network
 
 		public override MessageObject CreateHeartBeatReq()
 		{
-			m_reqHeartBeat.Timestamp = Utility.Time.ClientNow();
+			m_reqHeartBeat.Timestamp = Utility.Time.NowMs();
 			m_reqHeartBeat.UpdateUniqueId();
 			return m_reqHeartBeat;
 		}

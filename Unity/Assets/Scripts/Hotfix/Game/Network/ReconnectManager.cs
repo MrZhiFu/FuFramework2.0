@@ -76,6 +76,16 @@ namespace Hotfix.Game.Network
 		}
 
 		/// <summary>
+		/// 心跳校时：NotifyHeartBeat 携带服务器时间戳（服务器 ReplyHeartBeat 回发）。
+		/// SyncServerTime 内部有 2s 死区（偏差变化小于阈值不校准，防网络往返抖动导致倒计时跳变）。
+		/// </summary>
+		[NotifyMessageHandler(typeof(NotifyHeartBeat), nameof(OnNotifyHeartBeat))]
+		internal void OnNotifyHeartBeat(NotifyHeartBeat msg)
+		{
+			if (msg.Timestamp > 0) Utility.Time.SyncServerTime(msg.Timestamp);
+		}
+
+		/// <summary>
 		/// 网络关闭事件分流（见类注释的顺序）
 		/// </summary>
 		private void OnNetworkClosed(object sender, GameEventArgs e)

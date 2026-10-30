@@ -11,16 +11,6 @@ namespace Hotfix.Framework.Network
 	internal sealed class RpcMessageData
 	{
 		/// <summary>
-		/// 消息的唯一ID
-		/// </summary>
-		public long UniqueId { get; }
-
-		/// <summary>
-		/// 创建时间
-		/// </summary>
-		public long CreatedTime { get; }
-
-		/// <summary>
 		/// 超时时间。单位毫秒
 		/// </summary>
 		public int TimeoutTime { get; }
@@ -33,12 +23,39 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 请求消息
 		/// </summary>
-		public IRequestMessage RequestMessage { get; private set; }
+		public IRequestMessage RequestMessage { get; }
 
 		/// <summary>
-		/// 响应消息
+		/// 底层任务完成源
 		/// </summary>
-		public IResponseMessage ResponseMessage { get; private set; }
+		private readonly UniTaskCompletionSource<IResponseMessage> m_tcs;
+
+		/// <summary>
+		/// 等待的返回结果。UniTaskCompletionSource.Task 支持被多个调用方重复 await。
+		/// </summary>
+		public UniTask<IResponseMessage> Task => m_tcs.Task;
+
+		/// <summary>
+		/// 创建 RPC 消息数据对象
+		/// </summary>
+		/// <param name="requestMessage">请求消息</param>
+		/// <param name="timeoutTime">超时时间。单位毫秒</param>
+		private RpcMessageData(IRequestMessage requestMessage, int timeoutTime)
+		{
+			RequestMessage = requestMessage;
+			TimeoutTime    = timeoutTime;
+			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
+		}
+
+		/// <summary>
+		/// 创建RPC 消息数据对象
+		/// </summary>
+		/// <param name="actorRequestMessage">请求消息</param>
+		/// <param name="timeoutTime">超时时间。单位毫秒</param>
+		internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeoutTime = 5000)
+		{
+			return new RpcMessageData(actorRequestMessage, timeoutTime);
+		}
 
 		/// <summary>
 		/// 设置等待的返回结果
@@ -46,7 +63,6 @@ namespace Hotfix.Framework.Network
 		/// <param name="responseMessage"></param>
 		public void Reply(IResponseMessage responseMessage)
 		{
-			ResponseMessage = responseMessage;
 			m_tcs.TrySetResult(responseMessage);
 		}
 
@@ -71,40 +87,5 @@ namespace Hotfix.Framework.Network
 			m_tcs.TrySetException(new TimeoutException("RPC 调用超时。消息为：" + RequestMessage));
 			return true;
 		}
-
-		/// <summary>
-		/// 创建RPC 消息数据对象
-		/// </summary>
-		/// <param name="actorRequestMessage">请求消息</param>
-		/// <param name="timeoutTime">超时时间。单位毫秒</param>
-		internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeoutTime = 5000)
-		{
-			var rpcMessageData = new RpcMessageData(actorRequestMessage, timeoutTime);
-			return rpcMessageData;
-		}
-
-		/// <summary>
-		/// 创建 RPC 消息数据对象
-		/// </summary>
-		/// <param name="requestMessage">请求消息</param>
-		/// <param name="timeoutTime">超时时间。单位毫秒</param>
-		private RpcMessageData(IRequestMessage requestMessage, int timeoutTime)
-		{
-			CreatedTime    = Utility.Time.ClientNow();
-			RequestMessage = requestMessage;
-			TimeoutTime    = timeoutTime;
-			UniqueId       = ((MessageObject)requestMessage).UniqueId;
-			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
-		}
-
-		/// <summary>
-		/// 底层任务完成源
-		/// </summary>
-		private readonly UniTaskCompletionSource<IResponseMessage> m_tcs;
-
-		/// <summary>
-		/// 等待的返回结果。UniTaskCompletionSource.Task 支持被多个调用方重复 await。
-		/// </summary>
-		public UniTask<IResponseMessage> Task => m_tcs.Task;
 	}
 }

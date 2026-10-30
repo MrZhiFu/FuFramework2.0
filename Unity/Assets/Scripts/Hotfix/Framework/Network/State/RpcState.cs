@@ -32,6 +32,21 @@ namespace Hotfix.Framework.Network
 		private readonly int m_rpcTimeout;
 
 		/// <summary>
+		/// 自上次消费以来是否发生过 RPC 超时（供频道联动立即探活；读取即清零）
+		/// </summary>
+		private bool m_hasTimeout;
+
+		/// <summary>
+		/// 读取并清零"发生过 RPC 超时"标志（频道据此立即拉满心跳流逝，下一帧补发心跳体检链路，不等下一个心跳周期）
+		/// </summary>
+		public bool ConsumeTimeoutFlag()
+		{
+			var has = m_hasTimeout;
+			m_hasTimeout = false;
+			return has;
+		}
+
+		/// <summary>
 		/// 创建 RPC 状态
 		/// </summary>
 		/// <param name="timeout">RPC 超时时间。单位毫秒，不能小于 3000</param>
@@ -121,6 +136,7 @@ namespace Hotfix.Framework.Network
 				}
 
 				m_timeoutReplyIdSet.Clear();
+				m_hasTimeout = true; // 超时可能意味着链路异常：通知频道立即探活
 			}
 		}
 	}

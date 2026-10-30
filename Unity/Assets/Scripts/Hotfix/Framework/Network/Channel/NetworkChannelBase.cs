@@ -191,6 +191,13 @@ namespace Hotfix.Framework.Network
 			
 			// 驱动RPC逻辑更新，处理消息计时和超时移除消息
 			m_rpcState.Update(deltaTime);
+
+			// RPC 超时联动探活：
+			// 超时可能意味着链路异常——立即拉满心跳流逝，下一帧 ProcessHeartBeat 补发心跳体检，不等下一个心跳周期。
+			if (m_rpcState.ConsumeTimeoutFlag())
+			{
+				lock (m_HeartBeatLock) m_HeartBeatState.HeartBeatElapseSeconds = m_HeartBeatInterval;
+			}
 		}
 
 		/// <summary>
