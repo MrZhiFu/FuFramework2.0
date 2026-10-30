@@ -96,6 +96,15 @@ namespace Hotfix.Framework.Core
 		}
 
 		/// <summary>
+		/// 应用退出回调：Unity 在 OnDestroy 之前调用（QuitGame/Application.Quit/编辑器停止播放均触发）。
+		/// 通知时间防作弊组件落盘最后状态（下次启动据此校验时间可信性；缺失会扩大"关游戏间隔"的误判窗口）。
+		/// </summary>
+		private void OnApplicationQuit()
+		{
+			TimeAntiCheating.OnApplicationQuit();
+		}
+
+		/// <summary>
 		/// 释放模块（幂等）：QuitGame 与 OnDispose 都会调用，重复进入只释放一次。
 		/// 先取出委托并置 null 再调用：即使委托内部抛异常，后续再进入也不会二次释放（模块二次 OnDispose 会 NRE）。
 		/// </summary>

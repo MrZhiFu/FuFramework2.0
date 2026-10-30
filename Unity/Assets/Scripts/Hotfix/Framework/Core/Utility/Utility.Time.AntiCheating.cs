@@ -59,6 +59,12 @@ namespace Hotfix.Framework.Core
 		private const string LAST_UTC_TIME_KEY    = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
 		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 重查网络时间的最大尝试次数
 
+		/// <summary>
+		/// 时间记录校验和混淆盐：防止随手篡改记录数值（配合 GetSavedTime/SaveTime 的 "毫秒|校验和" 格式）。
+		/// 注意：盐随代码可被逆向，这是"提高门槛"而非"加密保险"——单机防作弊的合理上限。
+		/// </summary>
+		private const string TIME_RECORD_SALT = "FuFramework.TimeAntiCheating.v1";
+
 		#endregion
 
 		#region 静态字段
@@ -138,14 +144,13 @@ namespace Hotfix.Framework.Core
 			var currentTick = TickCount;
 			if (Math.Abs(currentTick - s_lastTickCount) < 1) // 1秒内使用缓存
 			{
-				Log($"使用缓存时间，当前Utc时间：{s_cachedTime}");
 				return s_cachedTime;
 			}
 
 			DateTime result;
 
-			// 本次系统启动后经过的秒数
-			var tickTime = TickCount;
+			// 本次系统启动后经过的秒数（复用缓存判断取到的值，避免重复 JNI/环境调用）
+			var tickTime = currentTick;
 
 			// 获取上次记录的系统启动后经过的秒数
 			var lastTickTime = GetSavedTime(LAST_TICK_TIME_KEY);
@@ -163,7 +168,6 @@ namespace Hotfix.Framework.Core
 				SaveTime(LAST_UTC_TIME_KEY,  Time2Timestamp(s_nowOnlineDateTime));
 				SaveTime(LAST_TICK_TIME_KEY, tickTime);
 				result = s_nowOnlineDateTime;
-				Log($"使用网络时间刷新时间记录点，时间可靠，当前Utc时间：{result}");
 			}
 			else
 			{
@@ -171,27 +175,24 @@ namespace Hotfix.Framework.Core
 				var now          = DateTime.UtcNow;
 				var nowTimestamp = Time2Timestamp(now);
 
-				// 获取记录的上次时间戳
+				// 获取记录的上次时间戳（<=0 表示无有效基准：首次运行/清存档/重装——
+				// 以本次真实时间为基准，避免 timestampDelta 相对 0 计算出天量差值而误判作弊返回 1970 年）
 				var lastTimestamp = GetSavedTime(LAST_UTC_TIME_KEY);
-				if (lastTimestamp < 0)
+				if (lastTimestamp <= 0)
 				{
-					lastTimestamp = 0;
+					lastTimestamp = nowTimestamp;
+					SaveTime(LAST_UTC_TIME_KEY, nowTimestamp);
 				}
 
 				// 获取当前时间戳和上次记录的时间戳差值
 				var timestampDelta = nowTimestamp - lastTimestamp;
-				Log($"当前时间戳: {nowTimestamp}s，上次记录的时间戳: {lastTimestamp}s, 两者差值: {timestampDelta}s");
 
 				// 获取本次和上次的系统启动经过的时间差值
 				var tickTimeDelta = tickTime - lastTickTime;
-				Log($"本次系统启动经过的时间: {tickTime}s，上次系统启动经过的时间: {lastTickTime}s, 两者差值: {tickTimeDelta}s");
 
 				var delta = Math.Abs(timestampDelta - tickTimeDelta);
 				if (delta < 60 || tickTimeDelta <= 0)
 				{
-					if (delta         < 60) Log($"使用离线本地时间，系统启动时间与时间戳差值为{delta}s，低于1分钟，时间可靠，当前Utc时间：{now}");
-					if (tickTimeDelta <= 0) Log($"本次和上次的系统启动经过的时间差值<=0，首次运行或记录的数据被删除了或系统重启了，时间可靠，当前Utc时间：{now}");
-
 					SaveTime(LAST_UTC_TIME_KEY,  nowTimestamp);
 					SaveTime(LAST_TICK_TIME_KEY, tickTime);
 					result = now;
@@ -233,10 +234,7 @@ namespace Hotfix.Framework.Core
 		/// 禁止时间检测（方便测试用，正式版请不要调用）
 		/// </summary>
 		/// <param name="forbid"></param>
-		public static void ForbidCheck(bool forbid)
-		{
-			s_forbidCheck = forbid;
-		}
+		public static void ForbidCheck(bool forbid) => s_forbidCheck = forbid;
 
 		#endregion
 
@@ -458,7 +456,6 @@ namespace Hotfix.Framework.Core
 			//这里是单独实现ios的方法，一般需要通过xcode来获取。具体实现方式
 			// var data = UnitySDK.UnityAgent.CallNativeReturn<DoubleNativeData>(SystemDefine.IOSGetSystemOpenTime);
 			// tickCount = (long)data.Data * 1000;
-			FuLogger.LogInfo("获取IOS端系统启动时间(毫秒):" + tickCount);
 #else
 			//由于 TickCount 属性值的值是32位有符号整数，因此，如果系统连续运行，TickCount 将从零递增到 Int32.MaxValue 大约24.9 天，
 			//然后跳转到 Int32.MinValue，这是一个负数，然后在下一个24.9 天内递增为零
@@ -468,8 +465,6 @@ namespace Hotfix.Framework.Core
 			{
 				tickCount = tickCount - int.MinValue + int.MaxValue;
 			}
-
-			Log("获取系统启动时间(毫秒):" + tickCount);
 #endif
 			return tickCount;
 		}
@@ -490,24 +485,13 @@ namespace Hotfix.Framework.Core
 			try
 			{
 				var clazz = AndroidJNI.FindClass("android/os/SystemClock");
-				if (clazz == IntPtr.Zero)
-				{
-					Log("找不到 android.os.SystemClock 类");
-					return 0;
-				}
+				if (clazz == IntPtr.Zero) return 0;
 
 				var methodId = AndroidJNI.GetStaticMethodID(clazz, "elapsedRealtime", "()J");
-				if (methodId == IntPtr.Zero)
-				{
-					Log("找不到 elapsedRealtime 方法");
-					return 0;
-				}
+				if (methodId == IntPtr.Zero) return 0;
 
-				var args   = Array.Empty<jvalue>();
-				var result = AndroidJNI.CallStaticLongMethod(clazz, methodId, args);
-
-				Log("获取安卓端系统启动时间(毫秒):" + result);
-				return result;
+				var args = Array.Empty<jvalue>();
+				return AndroidJNI.CallStaticLongMethod(clazz, methodId, args);
 			}
 			catch (Exception e)
 			{
@@ -517,35 +501,58 @@ namespace Hotfix.Framework.Core
 		}
 
 		/// <summary>
-		/// 获取本地记录的时间(毫秒)
+		/// 获取本地记录的时间(毫秒)。格式为 "毫秒|校验和"（旧版纯数字格式兼容读取，下次保存自动升级）。
+		/// 校验和不匹配 = 记录被篡改 → 回退为无基准(0)，由 <see cref="GetUtcNow"/> 的无基准分支重建。
+		/// 记录为非法数据时同样回退为无基准(0)，不打崩时间链。
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
 		private static long GetSavedTime(string key)
 		{
-			var resStr = PlayerPrefs.GetString(key, "0");
-			var res    = Convert.ToInt64(resStr, CultureInfo.InvariantCulture);
-			return res;
+			try
+			{
+				var resStr = PlayerPrefs.GetString(key, "0");
+
+				// 旧格式兼容：纯数字为校验和机制启用前的记录，按毫秒读取
+				if (long.TryParse(resStr, out var legacyValue)) return legacyValue;
+
+				// 新格式：毫秒|校验和
+				var separatorIndex = resStr.IndexOf('|');
+				if (separatorIndex <= 0) return 0;
+
+				var msPart       = resStr[..separatorIndex];
+				var checksumPart = resStr[(separatorIndex + 1)..];
+				if (!long.TryParse(msPart, out var milliseconds)) return 0;
+
+				var expectedChecksum = Utility.Hash.XxHash.Hash64(key + milliseconds + TIME_RECORD_SALT).ToString();
+				return checksumPart == expectedChecksum ? milliseconds : 0;
+			}
+			catch (Exception e)
+			{
+				Log($"读取本地时间记录 '{key}' 失败（数据被篡改？），已回退为无基准：{e.Message}");
+				return 0;
+			}
 		}
 
 		/// <summary>
-		/// 保存时间记录(毫秒)
+		/// 保存时间记录(毫秒)。格式为 "毫秒|校验和"（校验和由 key+毫秒值+盐 计算出，防随手篡改记录数值）
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="ms"></param>
 		private static void SaveTime(string key, long ms)
 		{
-			PlayerPrefs.SetString(key, ms.ToString(CultureInfo.InvariantCulture));
+			var checksum = Utility.Hash.XxHash.Hash64(key + ms + TIME_RECORD_SALT).ToString();
+			PlayerPrefs.SetString(key, $"{ms}|{checksum}");
 		}
 
 		/// <summary>
 		/// 获取时间戳(秒)
 		/// </summary>
-		/// <param name="tarTime"></param>
+		/// <param name="time"></param>
 		/// <returns></returns>
-		private static long Time2Timestamp(DateTime tarTime)
+		private static long Time2Timestamp(DateTime time)
 		{
-			var ts = tarTime - Utility.Time.sr_UtcEpoch;
+			var ts = time - Utility.Time.sr_UtcEpoch;
 			return Convert.ToInt64(ts.TotalSeconds);
 		}
 
