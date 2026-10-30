@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -57,7 +55,7 @@ namespace Hotfix.Framework.Core
 
 		private const string LAST_TICK_TIME_KEY   = "LastTickTime"; // 最后一次存储的系统启动时间记录key
 		private const string LAST_UTC_TIME_KEY    = "LastUtcTime";  // 最后一次存储在本地的Utc时间戳记录key
-		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 重查网络时间的最大尝试次数
+		private const int    MAX_RECHECK_ATTEMPTS = 3;              // 每轮（重查间隔内）NTP 最大尝试次数
 
 		/// <summary>
 		/// 时间记录校验和混淆盐：防止随手篡改记录数值（配合 GetSavedTime/SaveTime 的 "秒|校验和" 格式）。
@@ -78,6 +76,12 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		private const long CLOCK_CHECK_TOLERANCE_SEC = 60;
 
+		/// <summary>
+		/// 作弊纠正日志的节流间隔(秒)：纠正分支不更新时间记录，玩家改表不还原时会每秒重复触发，
+		/// 不节流的话这条日志会一直刷屏
+		/// </summary>
+		private const float CHEAT_LOG_INTERVAL_SEC = 10f;
+
 		#endregion
 
 		#region 静态字段
@@ -93,52 +97,52 @@ namespace Hotfix.Framework.Core
 		private static long     s_savedTickTime;                            // 上次保存的"系统已运行秒数"，用来和当前值对比检测时间作弊（0=还没记录）
 		private static long     s_savedUtcTime;                             // 上次保存的"UTC时间戳(秒)"，作用同上（0=还没记录）
 		private static float    s_lastFlushTime = -SAVE_FLUSH_INTERVAL_SEC; // 上次把记录写进本地存档的时刻（初始值保证首次必定写入）
-		private static IntPtr   s_androidSystemClockClass;                  // 缓存的 SystemClock 类引用（JNI 一次性查找）
-		private static IntPtr   s_androidElapsedRealtimeMethodId;           // 缓存的 elapsedRealtime 方法ID
+		private static bool     s_ntpEverAttempted;                         // 是否发起过 NTP 请求（首次发起不受重查间隔限制）
+		private static bool     s_quitting;                                 // 应用退出流程中（阻止退出时再发起 NTP 访问已释放的取消源）
+		private static float    s_lastCheatLogTime = -CHEAT_LOG_INTERVAL_SEC; // 上次记录作弊纠正日志的时刻（初始值保证第一条必打）
+#if UNITY_ANDROID
+		private static IntPtr s_androidSystemClockClass;        // 缓存的 SystemClock 类引用（JNI 一次性查找）
+		private static IntPtr s_androidElapsedRealtimeMethodId; // 缓存的 elapsedRealtime 方法ID
+#endif
 
 		#endregion
 
 		#region 属性
 
 		/// <summary>
-		/// 获取系统启动后经过的毫秒数，如果返回零则获取失败（概率约等于0）
-		/// (不要每帧调用，会有性能问题)
+		/// 获取系统启动后经过的毫秒数，如果返回零则获取失败（概率约等于0）。
+		/// 内部是一次系统调用（安卓为一次 JNI），每帧调用也无性能压力——但业务取时间请走 GetUtcNow（自带秒级缓存）
 		/// </summary>
 		/// <returns>系统启动后经过的毫秒数</returns>
 		public static long TickCountMs
 		{
 			get
 			{
-#if UNITY_EDITOR
-				return GetTickCount();
-#elif UNITY_IOS
-				return GetTickCount();
-#elif UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
 				return GetAndroidTickCount();
 #else
-				// 其余平台（Windows/Mac/Linux 独立包等）走系统 TickCount，
-				// 不可落入 Android JNI 分支——那会让 TickCount 恒为 0，防作弊链失效返回 0001-01-01
+				// Editor/iOS/PC 独立包等全部走系统级秒表（Environment.TickCount / mach_continuous_time）。
+				// 非安卓平台绝不能落入 Android JNI——JNI 会失败导致秒表恒为 0，防作弊链失效返回 0001-01-01
 				return GetTickCount();
 #endif
 			}
 		}
 
 		/// <summary>
-		/// 获取系统启动后经过的秒数
-		/// (强烈建议不要每帧调用，会有性能问题)
+		/// 获取系统启动后经过的秒数（= <see cref="TickCountMs"/> / 1000）
 		/// </summary>
 		/// <returns>系统启动后经过的秒数</returns>
 		public static long TickCount => TickCountMs / 1000;
 
 		/// <summary>
-		/// 是否需要在未获得网络时间时重新查找网络时间(用于在未获取到在线时间时判断是否需要重新获取)
+		/// 是否需要在未获得网络时间时重新查找网络时间（用于在未获取到在线时间时判断是否需要重新获取）
 		/// </summary>
-		public static bool s_NeedRecheckNetTime = true;
+		public static bool NeedRecheckNetTime { get; set; } = true;
 
 		/// <summary>
-		/// 网络时间重查间隔(秒), 默认5分钟
+		/// 网络时间重查间隔(秒)，默认 5 分钟
 		/// </summary>
-		public static float s_NetTimeRecheckInterval = 300f;
+		public static float NetTimeRecheckInterval { get; set; } = 300f;
 
 		#endregion
 
@@ -179,6 +183,10 @@ namespace Hotfix.Framework.Core
 
 			if (s_gotNetTime)
 			{
+				// 秒表基准缺失（SetOnlineTime 时秒表瞬时失败存了 0）时以当前秒表读数重新配对，
+				// 否则 AddSeconds(currentTick - 0) 会把网络时间推进整个开机时长
+				if (s_savedTickTime <= 0) s_savedTickTime = currentTick;
+
 				// 已经获得过网络时间：结果 = 网络时间 + 系统启动时间差
 				s_nowOnlineDateTime = s_nowOnlineDateTime.AddSeconds(currentTick - s_savedTickTime);
 				s_savedUtcTime      = Time2Timestamp(s_nowOnlineDateTime);
@@ -214,7 +222,14 @@ namespace Hotfix.Framework.Core
 				{
 					// 说明时间不可靠,返回纠正后的时间：结果 = 当前Utc时间 + (时间戳差值 - 系统启动时间差值)
 					result = now.AddSeconds(-(timestampDelta - tickTimeDelta));
-					Log($"时间不可靠，纠正后的当前时间：{result}");
+
+					// 纠正分支不更新时间记录，玩家改表不还原时这里每秒都会重复触发——节流防日志刷屏
+					var currentTime = Time.realtimeSinceStartup;
+					if (currentTime - s_lastCheatLogTime >= CHEAT_LOG_INTERVAL_SEC)
+					{
+						s_lastCheatLogTime = currentTime;
+						Log($"时间不可靠，纠正后的当前时间：{result}");
+					}
 				}
 
 				// 尝试重新获取下网络时间
@@ -236,7 +251,9 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public static void OnApplicationQuit()
 		{
-			// 取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
+			// 先置退出标志（下方 GetUtcNow 会经过 TryRecheckNetTime，退出时不能再发起 NTP 去访问已释放的取消源），
+			// 再取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
+			s_quitting = true;
 			sr_ntpCancellation.Dispose();
 
 			var now          = GetUtcNow();
@@ -257,21 +274,24 @@ namespace Hotfix.Framework.Core
 		#region 内部方法
 
 		/// <summary>
-		/// 尝试重新获取网络时间（带频率限制和重试机制）
+		/// 尝试重新获取网络时间（带频率限制和轮次重试机制）
 		/// </summary>
 		private static void TryRecheckNetTime()
 		{
-			if (!s_NeedRecheckNetTime || s_gotNetTime) return;
+			if (s_quitting || !NeedRecheckNetTime || s_gotNetTime) return;
 
-			// 检查重查频率限制
 			var currentTime = Time.realtimeSinceStartup;
-			if (currentTime - s_lastRecheckTime < s_NetTimeRecheckInterval) return;
 
-			// 检查重试次数限制
+			// 首次直接发起：s_lastRecheckTime 初始 0 与 realtimeSinceStartup 起算点重合，
+			// 若也受间隔限制，游戏启动后前 5 分钟永远不会尝试 NTP；之后按间隔节流
+			if (s_ntpEverAttempted && currentTime - s_lastRecheckTime < NetTimeRecheckInterval) return;
+			s_ntpEverAttempted = true;
+
+			// 达到本轮最大尝试次数：清零进入下一轮——即每 5 分钟最多 3 次。
+			// 不能永久封顶，否则"开局断网、中途恢复网络"的玩家永远等不到 NTP
 			if (s_recheckAttemptCount >= MAX_RECHECK_ATTEMPTS)
 			{
-				Log("已达到最大网络时间重试次数，停止重试");
-				return;
+				s_recheckAttemptCount = 0;
 			}
 
 			s_lastRecheckTime = currentTime;
@@ -279,8 +299,8 @@ namespace Hotfix.Framework.Core
 
 			Log($"第{s_recheckAttemptCount}次尝试重新获取网络时间");
 
-			// 异步链的生命周期由 m_ntpCancellation 持有：Token 透传给所有在途请求，OnApplicationQuit 取消释放
-			MultipleNptGetTimeAsync(sr_ntpCancellation.Token).Forget();
+			// 异步链的生命周期由 sr_ntpCancellation 持有：Token 透传给所有在途 UDP 收发，OnApplicationQuit 取消释放
+			MultipleNtpGetTimeAsync(sr_ntpCancellation.Token).Forget();
 		}
 
 		/// <summary>
@@ -334,7 +354,7 @@ namespace Hotfix.Framework.Core
 			FlushSavedTimes();
 		}
 
-		#region 多npt服务器地址获取全球时间方法
+		#region 多NTP服务器地址获取全球时间方法
 
 		/// <summary>
 		/// NTP 异步请求的生命周期取消源（静态类自持）。
@@ -343,27 +363,37 @@ namespace Hotfix.Framework.Core
 		private static readonly LifecycleCancellationSource sr_ntpCancellation = new();
 
 		/// <summary>
-		/// 多地址获取网络时间方法（fire-and-forget）。
-		/// 生命周期由 m_ntpCancellation 持有：其 Token 被取消时，在途 DNS/UDP 请求立即中止。
+		/// NTP 协议的时间纪元：1900-01-01 00:00:00 UTC（NTP 时间戳从此刻起算，比 Unix 纪元早 70 年）
 		/// </summary>
-		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 m_ntpCancellation 提供）。</param>
-		private static async UniTaskVoid MultipleNptGetTimeAsync(CancellationToken cancellationToken)
+		private static readonly DateTime sr_ntpEpochStart = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+		/// <summary>
+		/// NTP 服务器候选列表：串行逐个尝试，取第一个成功者（国内外混布，兼顾各地区可达性）
+		/// </summary>
+		private static readonly string[] sr_ntpServers =
 		{
-			string[] ntpServers =
-			{
-				"time.google.com",  //国际通用地址 Google 提供的 NTP 服务
-				"time.windows.com", //国际用地址 微软提供的 NTP 服务
-				"time.apple.com",   //国际用地址 苹果提供的 NTP 服务
-				"time1.aliyun.com", //中国区 阿里云提供的 NTP 服务
-				"ntp.ntsc.ac.cn",   //中国区 中国科学院国家授时中心
-				"ntp1.inrim.it",    //意大利国家计量研究所
-				"ntp.nict.jp",      // 日本国立信息通信研究所
-				"time.nist.gov",    // 美国国家标准与技术研究院
-				"us.pool.ntp.org",  // 美国地区的 NTP 服务器池
-			};
+			"time.google.com",  // Google 提供的 NTP 服务
+			"time.windows.com", // 微软提供的 NTP 服务
+			"time.apple.com",   // 苹果提供的 NTP 服务
+			"time1.aliyun.com", // 中国区 阿里云提供的 NTP 服务
+			"ntp.ntsc.ac.cn",   // 中国区 中国科学院国家授时中心
+			"ntp1.inrim.it",    // 意大利国家计量研究所
+			"ntp.nict.jp",      // 日本国立信息通信研究所
+			"time.nist.gov",    // 美国国家标准与技术研究院
+			"us.pool.ntp.org",  // 美国地区的 NTP 服务器池
+		};
+
+		/// <summary>
+		/// 多地址获取网络时间方法（fire-and-forget）。
+		/// 生命周期由 sr_ntpCancellation 持有：其 Token 被取消时，在途 UDP 收发立即中止
+		/// （DNS 解析没有取消接口，受系统自身超时约束）。
+		/// </summary>
+		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 sr_ntpCancellation 提供）。</param>
+		private static async UniTaskVoid MultipleNtpGetTimeAsync(CancellationToken cancellationToken)
+		{
 			try
 			{
-				var time = await GetFirstAvailableTimestampAsync(ntpServers, cancellationToken);
+				var time = await GetFirstAvailableTimestampAsync(sr_ntpServers, cancellationToken);
 				SetOnlineTime(time);
 			}
 			catch (OperationCanceledException)
@@ -404,12 +434,16 @@ namespace Hotfix.Framework.Core
 
 					Log($"服务器 {server} 获取时间失败: {result.error.Message}");
 				}
+				catch (OperationCanceledException)
+				{
+					throw; // 生命周期取消不是"这个服务器失败"，原样上抛结束整条链
+				}
 				catch (Exception ex)
 				{
 					Log($"服务器 {server} 请求异常: {ex.Message}");
 				}
 
-				// 可选：在服务器之间添加短暂延迟（UniTask，且随生命周期令牌取消）
+				// 服务器之间短暂歇一口气再试下一个（随生命周期令牌取消）
 				await UniTask.Delay(100, cancellationToken: cancellationToken);
 			}
 
@@ -432,45 +466,52 @@ namespace Hotfix.Framework.Core
 				var ntpData = new byte[48];
 				ntpData[0] = 0x1B; // LI = 0 (no warning), VN = 3 (IPv4 only), Mode = 3 (Client Mode)
 
-				// 使用 Dns.GetHostEntryAsync 获取服务器 IP 地址
-				var addresses = (await Dns.GetHostEntryAsync(server)).AddressList;
+				// DNS 解析没有取消接口（.NET 限制），断网/解析失败由它自身的系统超时约束
+				var addresses = await Dns.GetHostAddressesAsync(server);
 
-				// 过滤出 IPv4 地址
-				var ipv4AddressList = new List<IPAddress>();
+				// 取第一个 IPv4 地址即可（NTP 走 UDP 单播）
+				IPAddress ipv4Address = null;
 				foreach (var a in addresses)
 				{
 					if (a.AddressFamily == AddressFamily.InterNetwork)
 					{
-						ipv4AddressList.Add(a);
+						ipv4Address = a;
+						break;
 					}
 				}
 
-				if (ipv4AddressList.Count == 0) throw new Exception("无法解析 NTP 服务器地址");
+				if (ipv4Address == null) throw new Exception("无法解析 NTP 服务器地址");
 
-				var ipEndPoint = new IPEndPoint(ipv4AddressList[0], 123); // NTP 默认端口
+				var ipEndPoint = new IPEndPoint(ipv4Address, 123); // NTP 默认端口
 
 				using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-				socket.SendTimeout    = sendTimeout;
-				socket.ReceiveTimeout = receiveTimeout;
+				await socket.ConnectAsync(ipEndPoint); // UDP 的 Connect 只是绑定默认远端，不真正发握手包
 
-				await socket.ConnectAsync(ipEndPoint);
+				// Socket.SendTimeout/ReceiveTimeout 只对同步收发有效——异步收发的超时必须用取消令牌实现，
+				// 否则 UDP 丢包时 ReceiveAsync 会一直挂着，整条 NTP 链卡死在一个服务器上
+				using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+				timeoutCts.CancelAfter(sendTimeout);
+				await socket.SendAsync(new ArraySegment<byte>(ntpData), SocketFlags.None, timeoutCts.Token);
 
-				if (!socket.Connected) throw new Exception("未连接到 NTP 服务器");
+				timeoutCts.CancelAfter(receiveTimeout);
+				var received = await socket.ReceiveAsync(new ArraySegment<byte>(ntpData), SocketFlags.None, timeoutCts.Token);
 
-				await socket.SendAsync(new ArraySegment<byte>(ntpData), SocketFlags.None, cancellationToken);
-				await socket.ReceiveAsync(new ArraySegment<byte>(ntpData), SocketFlags.None, cancellationToken);
+				// NTP 报文固定 48 字节：短包继续解析会把数组里的 0 当时间戳，得到 1900 年的假时间
+				if (received < ntpData.Length) throw new Exception($"NTP 响应长度不足: {received}/{ntpData.Length}");
 
 				// 解析 NTP 时间戳
 				var iPart        = (ulong)ntpData[40] << 24 | (ulong)ntpData[41] << 16 | (ulong)ntpData[42] << 8 | ntpData[43];
 				var fPart        = (ulong)ntpData[44] << 24 | (ulong)ntpData[45] << 16 | (ulong)ntpData[46] << 8 | ntpData[47];
 				var milliseconds = iPart * 1000L + fPart * 1000L / 0x100000000L;
 
-				// NTP 时间戳是从 1900-01-01 开始计算的
-				var epochStart = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-				var now        = epochStart.AddMilliseconds(milliseconds); //DateTime
-				var timeOffset = new DateTimeOffset(now);                  //转化为DateTImeOffset
+				var now        = sr_ntpEpochStart.AddMilliseconds(milliseconds); //DateTime
+				var timeOffset = new DateTimeOffset(now);                        //转化为DateTImeOffset
 				Log($"获取网络Utc时间成功:server:{server}, DateTime:{now}");
 				return (timeOffset, null);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				throw; // 生命周期取消（区别于单个请求的超时取消），原样上抛
 			}
 			catch (Exception e)
 			{
@@ -527,7 +568,7 @@ namespace Hotfix.Framework.Core
 		}
 
 
-#if UNITY_IOS && !UNITY_EDITOR
+#if UNITY_IOS
 		/// <summary>
 		/// 含睡眠时间的单调时钟刻度（Mach 时间单位，非纳秒）。
 		/// libsystem 公开符号，__Internal 可直接解析，无需往 Xcode 工程注入任何原生代码。
@@ -563,13 +604,14 @@ namespace Hotfix.Framework.Core
 				s_machTimebaseDenom = info.Denom > 0 ? info.Denom : 1;
 			}
 
-			var ticks       = mach_continuous_time();
+			var ticks = mach_continuous_time();
 			var nanoseconds = ticks * s_machTimebaseNumer / s_machTimebaseDenom;
 			return (long)(nanoseconds / 1_000_000);
 		}
 #endif
 
 
+#if UNITY_ANDROID
 		/// <summary>
 		/// 获取安卓端系统启动时间(毫秒)(必须在安卓真机上才有用) 无重置
 		/// </summary>
@@ -600,6 +642,7 @@ namespace Hotfix.Framework.Core
 				return 0;
 			}
 		}
+#endif
 
 		/// <summary>
 		/// 获取本地记录的时间(秒)。格式为 "秒|校验和"（旧版纯数字格式兼容读取，下次保存自动升级）。
