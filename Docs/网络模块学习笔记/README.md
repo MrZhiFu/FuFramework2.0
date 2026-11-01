@@ -17,10 +17,11 @@
 | [07 · 断线自动重连](07-断线自动重连.md) | 保活恢复 | 断线判定、重连三件套、会话流对称操作 | — |
 | [08 · 服务器时间同步](08-服务器时间同步.md) | 服务器权威时间线 | 双时间线、心跳校时、2 秒死区、单机防作弊天花板 | — |
 | [09 · HTTP 与 TCP 的分工](09-HTTP与TCP分工.md) | 双通道选择 | TCP 请求的代价、登录走 HTTP、无状态可扩容、MessageHttpObject 假扮包头 | — |
+| [10 · 服务器主动推送](10-服务器主动推送.md) | Notify 推送 | INotifyMessage、WriteAsync 主动开口、三级分流、[NotifyMessageHandler] 声明即生效、派发阀门缓冲四道保险 | — |
 
 ## 使用建议
 
-- **学习路线**：01 → 02 → 03 → 04 → 05 → 06 → 07（断线自动重连）→ 08（服务器时间同步）→ 09（HTTP 与 TCP 的分工），再由"参照自选站"复习。
+- **学习路线**：01 → 02 → 03 → 04 → 05 → 06 → 07（断线自动重连）→ 08（服务器时间同步）→ 09（HTTP 与 TCP 的分工）→ 10（服务器主动推送），再由"参照自选站"复习。
 - **每篇内嵌自测题**：先做题，再对答案；答错回到对应小节重读。
 - **图怎么用**：图为独立 HTML（内联 SVG），浏览器打开可交互；节点挂真实源码行号。
 - 推荐对照代码阅读，核心文件：`Framework/Network/MessageBase/MessageObject.cs`（UniqueId 侧信道）、`Register/MessageIdRegistry.cs`、`Register/NotifyMessageHandlerRegistry.cs`（绑定表 + Priority + 派发阀门）、`Register/AutoGen/MessageRegistry.gen.cs`（生成物，勿手改）、`Channel/NetworkChannelBase.API.cs`（Call/Send）、`Channel/NetworkChannelHelper.cs`（包处理器装配）、`State/RpcState.cs`（挂起表）；重连三件套 `Framework/Network/NetworkModule.Reconnect.cs` + 编排 `Game/Network/ReconnectManager.cs` 与会话流 `Game/Network/GameSessionFlow.cs`（进游戏/登出对称操作）。
