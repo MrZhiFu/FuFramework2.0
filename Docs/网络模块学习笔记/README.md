@@ -1,10 +1,10 @@
 # 网络模块学习笔记（Hotfix.Framework.Network）
 
-> 面向网络开发小白的六篇深度自学资料。每篇都从 **What（是什么）→ Why（为什么这样设计）→ How（真实代码怎么走）** 三个维度展开，
+> 面向网络开发小白的系列深度自学资料。每篇都从 **What（是什么）→ Why（为什么这样设计）→ How（真实代码怎么走）** 三个维度展开，
 > 并把全部自测题与参考答案整理进各篇末尾，方便随学随考。
 > 内容基于仓库真实代码（`Unity/Assets/Scripts/Hotfix/Framework/Network/`），可边读边对照代码。
 
-## 六篇导航
+## 篇目导航
 
 | 篇 | 主题 | 关键词 | 配套 archify 图 |
 |----|------|--------|----------------|
@@ -14,10 +14,13 @@
 | [04 · 频道核心](04-频道核心.md) | 收发状态机·心跳·锁 | Update 一镜到底、发送/接收状态机、心跳保活与断线判定、锁的领地 | [心跳状态机](../../.archify/lifecycle-heartbeat-20261019-222217/heartbeat.html) |
 | [05 · 装配系统](05-装配系统.md) | 零反射注册 | 铁律 4、生成期前移、三张表、MessageIds 语义常量、显式锚定、强类型委托、Priority 排序、编译期守卫 | [频道类体系](../../.archify/architecture-channel-classes-20261019-222217/channel-classes.html) |
 | [06 · RPC 与业务接入](06-RPC与业务接入.md) | 请求-响应 | 挂起表、UniqueId 侧信道、超时/断线异常终结、TryReply/派发分流、HTTP/TCP 双段登录、推送派发阀门 | [RPC 时序图](../../.archify/sequence-rpc-call-20261019-222217/rpc-call.html) |
+| [07 · 断线自动重连](07-断线自动重连.md) | 保活恢复 | 断线判定、重连三件套、会话流对称操作 | — |
+| [08 · 服务器时间同步](08-服务器时间同步.md) | 服务器权威时间线 | 双时间线、心跳校时、2 秒死区、单机防作弊天花板 | — |
+| [09 · HTTP 与 TCP 的分工](09-HTTP与TCP分工.md) | 双通道选择 | TCP 请求的代价、登录走 HTTP、无状态可扩容、MessageHttpObject 假扮包头 | — |
 
 ## 使用建议
 
-- **学习路线**：01 → 02 → 03 → 04 → 05 → 06 → 07（断线自动重连）→ 08（服务器时间同步），再由"参照自选站"复习。
+- **学习路线**：01 → 02 → 03 → 04 → 05 → 06 → 07（断线自动重连）→ 08（服务器时间同步）→ 09（HTTP 与 TCP 的分工），再由"参照自选站"复习。
 - **每篇内嵌自测题**：先做题，再对答案；答错回到对应小节重读。
 - **图怎么用**：图为独立 HTML（内联 SVG），浏览器打开可交互；节点挂真实源码行号。
 - 推荐对照代码阅读，核心文件：`Framework/Network/MessageBase/MessageObject.cs`（UniqueId 侧信道）、`Register/MessageIdRegistry.cs`、`Register/NotifyMessageHandlerRegistry.cs`（绑定表 + Priority + 派发阀门）、`Register/AutoGen/MessageRegistry.gen.cs`（生成物，勿手改）、`Channel/NetworkChannelBase.API.cs`（Call/Send）、`Channel/NetworkChannelHelper.cs`（包处理器装配）、`State/RpcState.cs`（挂起表）；重连三件套 `Framework/Network/NetworkModule.Reconnect.cs` + 编排 `Game/Network/ReconnectManager.cs` 与会话流 `Game/Network/GameSessionFlow.cs`（进游戏/登出对称操作）。
