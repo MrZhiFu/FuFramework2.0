@@ -203,14 +203,14 @@ NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切�
 历史上它们是 6 个可注册的"包处理器"类（`Handler/` 目录，反射扫描 `IPacketHandler` 起家），
 经动词化重构后仍名存实亡，最终删除目录、逻辑并入 helper（未兑现的替换扩展缝一并移除）。
 **心跳提供者不在框架内**：心跳消息是 Game 层的 proto 生成物，框架无法构造——
-由生成物注册游戏侧 `HeartBeatProvider`（基类 `IHeartBeatReqCreator` 为 abstract，编译期强制游戏侧实现）。
+由生成物注册游戏侧 `HeartBeatReqCreatorImpl`（实现 `IHeartBeatReqCreator` 接口，编译期强制游戏侧实现）。
 需要补充跨层对象时：
 
 ```csharp
 // 1) 静态注册入口（对所有 NetworkChannelHelper 生效，建议启动期调用一次）
 NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 {
-    channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatProvider());
+    channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatReqCreatorImpl());
 });
 
 ```
@@ -242,7 +242,7 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 
 | 类 | 说明 |
 |------|------|
-| `IHeartBeatReqCreator` | 心跳提供者基类（abstract，构造由游戏侧 `HeartBeatProvider` 实现；经生成物注册） |
+| `IHeartBeatReqCreator` | 心跳请求构造器接口（构造由游戏侧 `HeartBeatReqCreatorImpl` 实现；经生成物注册） |
 
 > 信封读写（包头序列化/解析、包体反序列化、压缩判定）已内置于 `NetworkChannelHelper`（原 6 个包处理器类已删）。
 
@@ -403,7 +403,7 @@ Network/
 ├── MessageBase/                                      # 消息基类与心跳提供者基类
 │   ├── MessageObject.cs                              # 消息基类（含 UniqueId）
 │   ├── MessageHttpObject.cs                          # HTTP 消息包装基类
-│   └── IHeartBeatReqCreator.cs                      # 心跳提供者基类（abstract；游戏侧 HeartBeatProvider 经生成物注册）
+│   └── IHeartBeatReqCreator.cs                      # 心跳请求构造器接口（游戏侧 HeartBeatReqCreatorImpl 经生成物注册）
 ├── Attribute/                                        # 声明用特性（供生成脚本扫描）
 │   ├── NotifyMessageHandlerAttribute.cs              # 消息处理器特性（方法须 internal/public）
 │   └── MessageIdAttribute.cs                         # 消息 ID 标记特性

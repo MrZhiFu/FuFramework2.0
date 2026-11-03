@@ -375,7 +375,7 @@ def scan_proto_messages():
 
 
 def scan_class_index():
-    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 同名声明列表（派生类与基类可能同名，如 HeartBeatProvider）。"""
+    """返回 (decls, by_name)。decls: 所有类型声明；by_name: 简单名 -> 同名声明列表（派生类与基类可能同名）。"""
     decls = []
     by_name = {}
     for path in iter_cs_files(HOTFIX_ROOT):
