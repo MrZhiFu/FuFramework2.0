@@ -866,25 +866,8 @@ namespace FuFramework.Network.Editor
 				};
 			}
 
-			// 诊断版：文案区分 绑定失败/调用异常/返回空——定位后改回纯状态
-			if (m_getConnectionStateMethod == null)
-			{
-				m_connectionStyle.normal.textColor = ErrorStatusColor;
-				GUILayout.Label("● 状态(方法未绑定)", m_connectionStyle, GUILayout.Width(180));
-				return;
-			}
-
-			string state;
-			try
-			{
-				var moduleInstance = m_moduleInstanceProperty?.GetValue(null);
-				state = m_getConnectionStateMethod.Invoke(moduleInstance, null) as string ?? "状态(返回空)";
-			}
-			catch (Exception e)
-			{
-				state = "状态(异常:" + (e.InnerException?.Message ?? e.Message) + ")";
-			}
-
+			var moduleInstance = m_moduleInstanceProperty?.GetValue(null);
+			var state = m_getConnectionStateMethod?.Invoke(moduleInstance, null) as string ?? "未知";
 			m_connectionStyle.normal.textColor = state.StartsWith("已连接") ? ConnectionOkColor
 				: state.StartsWith("已断开")   ? ErrorStatusColor
 				: new Color(0.6f, 0.6f, 0.6f);
