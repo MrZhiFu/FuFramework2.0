@@ -35,6 +35,12 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public const int LIMIT_COMPRESS_LENGTH = 512;
 
+		/// <summary>
+		/// 单个数据包的包体长度上限（默认 1 MiB，可按协议需要调整）。
+		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
+		/// </summary>
+		public const int MAX_PACKET_BODY_LENGTH = 1024 * 1024;
+
 		#endregion
 
 		#region 心跳

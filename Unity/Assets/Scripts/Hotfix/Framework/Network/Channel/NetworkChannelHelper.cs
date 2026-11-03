@@ -56,12 +56,6 @@ namespace Hotfix.Framework.Network
 		private byte m_receivedZipFlag;
 
 		/// <summary>
-		/// 单个数据包的包体长度上限（默认 1 MiB，<b>可按协议需要调整</b>）。
-		/// 包头中的 PacketLength 直接来自网络报文，若不设上限，畸形包会导致超大数组分配/内存耗尽。
-		/// </summary>
-		public static int MaxPacketBodyLength { get; set; } = 1024 * 1024;
-
-		/// <summary>
 		/// 事件组件实例
 		/// </summary>
 		private static EventModule s_event;
@@ -283,9 +277,9 @@ namespace Hotfix.Framework.Network
 			}
 
 			var bodyLength = (long)m_receivedPacketLength - ChannelConst.PACKET_HEADER_LENGTH;
-			if (bodyLength > MaxPacketBodyLength)
+			if (bodyLength > ChannelConst.MAX_PACKET_BODY_LENGTH)
 			{
-				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");
+				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{ChannelConst.MAX_PACKET_BODY_LENGTH}");
 			}
 
 			return (int)bodyLength;
