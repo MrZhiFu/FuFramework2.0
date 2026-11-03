@@ -25,9 +25,9 @@ gen-proto-registry.py
     3. <Unity>/Assets/Scripts/Hotfix/**/*.cs
        -> 框架外「具体（非抽象）」的包处理器实现：继承 PacketReceiveHeaderHandler /
           PacketReceiveBodyHandler / PacketSendHeaderHandler / PacketSendBodyHandler /
-          HeartBeatProviderBase / MessageCompressHandler / MessageDecompressHandler 之一。
+          IHeartBeatReqCreator / MessageCompressHandler / MessageDecompressHandler 之一。
           判定沿继承链匹配框架具体基类（处理器接口已删除），因此「派生自框架基类」的实现（如
-          Hotfix.Game.Network.HeartBeatProvider : HeartBeatProviderBase）
+          Hotfix.Game.Network.HeartBeatProvider : IHeartBeatReqCreator）
           也能被正确识别并注册为心跳处理器（游戏侧实现是唯一装配，基类 abstract 不参与默认装配）。
 
 背景（项目铁律 4：运行时杜绝反射）：
@@ -142,7 +142,7 @@ RE_TYPE_DECL = re.compile(r"\b(?:class|struct)\s+(\w+)")
 # 一个类型命中多个时只按第一个匹配项注册，与原实现保持一致。
 # 判定沿继承链匹配「框架具体处理器基类」——处理器接口已删除，单实现策略点直接用具体类。）
 PACKET_INTERFACE_ORDER = [
-    ("HeartBeatProviderBase", "channel.RegisterHeartBeatProvider(new {fq}());"),
+    ("IHeartBeatReqCreator", "channel.RegisterHeartBeatReqCreator(new {fq}());"),
 ]
 PACKET_INTERFACE_NAMES = set(n for n, _ in PACKET_INTERFACE_ORDER)
 

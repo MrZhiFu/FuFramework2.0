@@ -114,8 +114,8 @@ namespace Hotfix.Framework.Network
 
             NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
             {
-                // HeartBeatProviderBase	Unity/Assets/Scripts/Hotfix/Game/Network/HeartBeatProvider.cs
-                channel.RegisterHeartBeatProvider(new Hotfix.Game.Network.HeartBeatProvider());
+                // IHeartBeatReqCreator	Unity/Assets/Scripts/Hotfix/Game/Network/HeartBeatReqCreatorImpl.cs
+                channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatReqCreatorImpl());
             });
         }
     }

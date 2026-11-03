@@ -17,12 +17,12 @@ namespace Hotfix.Framework.Network
 	/// 装配：框架默认装配**不包含**心跳（没有默认实现可装），
 	/// 由生成物 MessageRegistry.gen.cs 的 RegisterExternalPacketHandler 注册游戏侧实现。
 	/// </summary>
-	public abstract class HeartBeatProviderBase
+	public interface IHeartBeatReqCreator
 	{
 		/// <summary>
 		/// 生成心跳消息。由游戏侧派生类实现（ReqHeartBeat 为 proto 生成物，框架不引用）
 		/// </summary>
 		/// <returns>心跳消息对象</returns>
-		public abstract MessageObject CreateHeartBeatReq();
+		MessageObject CreateHeartBeatReq();
 	}
 }

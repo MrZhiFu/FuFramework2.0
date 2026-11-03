@@ -23,13 +23,13 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 心跳提供者（游戏侧派生实现，经生成物注册；提供心跳参数与心跳包构造）
 		/// </summary>
-		HeartBeatProviderBase HeartBeatProvider { get; }
+		IHeartBeatReqCreator HeartBeatReqCreator { get; }
 
 		/// <summary>
 		/// 注册心跳提供者（覆盖频道默认的心跳间隔与判死阈值）
 		/// </summary>
 		/// <param name="handler">心跳提供者对象</param>
-		void RegisterHeartBeatProvider(HeartBeatProviderBase handler);
+		void RegisterHeartBeatReqCreator(IHeartBeatReqCreator handler);
 
 		/// <summary>
 		/// 设置忽略的消息打印列表（过滤高频消息的调试日志，需开启 ENABLE_NETWORK_REQ_LOG / ENABLE_NETWORK_RSP_LOG 宏）。

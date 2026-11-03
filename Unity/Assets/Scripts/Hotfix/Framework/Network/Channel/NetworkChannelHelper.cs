@@ -174,7 +174,7 @@ namespace Hotfix.Framework.Network
 		/// <returns>是否已发起发送</returns>
 		public bool SendHeartBeat()
 		{
-			var message = m_networkChannel.HeartBeatProvider.CreateHeartBeatReq();
+			var message = m_networkChannel.HeartBeatReqCreator.CreateHeartBeatReq();
 			m_networkChannel.Send(message);
 			return true;
 		}

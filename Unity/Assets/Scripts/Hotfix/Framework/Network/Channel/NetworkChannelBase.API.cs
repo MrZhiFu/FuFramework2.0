@@ -19,16 +19,16 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 心跳提供者（游戏侧派生实现，经生成物注册）
 		/// </summary>
-		public HeartBeatProviderBase HeartBeatProvider { get; private set; }
+		public IHeartBeatReqCreator HeartBeatReqCreator { get; private set; }
 
 		/// <summary>
 		/// 注册心跳提供者（覆盖频道默认的心跳间隔与判死阈值）
 		/// </summary>
 		/// <param name="handler">心跳提供者对象</param>
-		public void RegisterHeartBeatProvider(HeartBeatProviderBase handler)
+		public void RegisterHeartBeatReqCreator(IHeartBeatReqCreator handler)
 		{
 			handler.NotNull(nameof(handler));
-			HeartBeatProvider = handler; // 仅承担心跳包构造；运行时参数统一见 ChannelConst
+			HeartBeatReqCreator = handler; // 仅承担心跳包构造；运行时参数统一见 ChannelConst
 		}
 
 		/// <summary>
