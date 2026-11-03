@@ -70,9 +70,9 @@ namespace Hotfix.Framework.Network
 			{
 				rpcMessageData.Cancel();
 #if UNITY_EDITOR
-				// 网络监控器终点回写：断线/销毁取消的请求记录状态置为取消；
+				// 网络调试面板终点回写：断线/销毁取消的请求记录状态置为取消；
 				// 字典 Key 虽为 long，但值源自 int UniqueId，显式收窄无损
-				NetworkMonitor.OnRpcSettled((int)uniqueId, ENetworkMessageStatus.Canceled, rpcMessageData.ElapseTime);
+				NetworkDebug.OnRpcSettled((int)uniqueId, ENetworkMessageStatus.Canceled, rpcMessageData.ElapseTime);
 #endif
 			}
 
@@ -91,8 +91,8 @@ namespace Hotfix.Framework.Network
 			if (!m_waitingReplyDict.TryRemove(msgObj.UniqueId, out var rpcMessageData)) return false;
 
 #if UNITY_EDITOR
-			// 网络监控器终点回写：请求记录状态置为已回并记录耗时
-			NetworkMonitor.OnRpcSettled(msgObj.UniqueId, ENetworkMessageStatus.Replied, rpcMessageData.ElapseTime);
+			// 网络调试面板终点回写：请求记录状态置为已回并记录耗时
+			NetworkDebug.OnRpcSettled(msgObj.UniqueId, ENetworkMessageStatus.Replied, rpcMessageData.ElapseTime);
 #endif
 
 			rpcMessageData.Reply(responseMessage);
@@ -143,11 +143,11 @@ namespace Hotfix.Framework.Network
 				foreach (var objectId in m_timeoutReplyIdSet)
 				{
 #if UNITY_EDITOR
-					// 网络监控器终点回写：请求记录状态置为超时（移除前取值，避免竞态）；
+					// 网络调试面板终点回写：请求记录状态置为超时（移除前取值，避免竞态）；
 					// 字典 Key 虽为 long，但值源自 int UniqueId，显式收窄无损
 					if (m_waitingReplyDict.TryGetValue(objectId, out var timedOutData))
 					{
-						NetworkMonitor.OnRpcSettled((int)objectId, ENetworkMessageStatus.Timeout, timedOutData.ElapseTime);
+						NetworkDebug.OnRpcSettled((int)objectId, ENetworkMessageStatus.Timeout, timedOutData.ElapseTime);
 					}
 #endif
 					m_waitingReplyDict.TryRemove(objectId, out _);

@@ -135,12 +135,12 @@ namespace FuFramework.Core.Editor
 		public static System.Type TimerInfo => Resolve("Hotfix.Framework.Timer.TimerInfo");
 
 		/// <summary>
-		/// Hotfix.Framework.Network.NetworkMonitor（网络监控器静态采集器，#if UNITY_EDITOR 条件编译）
+		/// Hotfix.Framework.Network.NetworkDebug（网络调试面板静态采集器，#if UNITY_EDITOR 条件编译）
 		/// </summary>
-		public static System.Type NetworkMonitor => Resolve("Hotfix.Framework.Network.NetworkMonitor");
+		public static System.Type NetworkDebug => Resolve("Hotfix.Framework.Network.NetworkDebug");
 
 		/// <summary>
-		/// Hotfix.Framework.Network.NetworkModule（网络管理模块，监控分部含触发断线入口）
+		/// Hotfix.Framework.Network.NetworkModule（网络管理模块，调试分部含触发断线入口）
 		/// </summary>
 		public static System.Type NetworkModule => Resolve("Hotfix.Framework.Network.NetworkModule");
 

@@ -1,15 +1,15 @@
-# 网络监控器（NetworkModule 调试面板）设计稿
+# 网络调试面板设计稿
 
 > 日期：2026-11-01
 > 状态：待审批
-> 功能参考：`C:\Users\Administrator\Desktop\网络监控器`（SLG 项目整建制工具，2362 行/7 文件）
+> 功能参考：`C:\Users\Administrator\Desktop\网络调试面板`（SLG 项目整建制工具，2362 行/7 文件）
 > 类结构参考：`Unity/Assets/Editor/FuFramework/ReferencePool/ReferencePoolModuleWindow.cs`（DebugWindowBase 反射面板体系）
 
 ## 1. 意图与背景
 
-为 NetworkModule（TCP 链路）建立**网络监控器**调试面板：实时查看运行时的消息收发历史，支撑联调排错（请求发出去没回来、耗时在哪、错误码是什么、推送有没有到）。
+为 NetworkModule（TCP 链路）建立**网络调试面板**：实时查看运行时的消息收发历史，支撑联调排错（请求发出去没回来、耗时在哪、错误码是什么、推送有没有到）。
 
-桌面的网络监控器是从 SLG 项目搬来的完整工具（列表/筛选/详情/Hex/重发/HTTP 六大功能），但其接入点是 SLG 体系（ProtoMap/SendAndReceiveAsync），不能直接使用——本设计将它的**UI 形态与功能集**映射到本项目的框架上，**类结构**则落在本项目现成的 DebugWindowBase 面板体系里。
+桌面的网络调试面板是从 SLG 项目搬来的完整工具（列表/筛选/详情/Hex/重发/HTTP 六大功能），但其接入点是 SLG 体系（ProtoMap/SendAndReceiveAsync），不能直接使用——本设计将它的**UI 形态与功能集**映射到本项目的框架上，**类结构**则落在本项目现成的 DebugWindowBase 面板体系里。
 
 ### 1.1 用户拍板的决策
 
@@ -31,11 +31,11 @@
 │  NetworkJsonViewWindow                   JSON 折叠查看器（子窗口）  │
 │  NetworkHexViewWindow                    Hex 二进制查看器（子窗口）  │
 │  NetworkResendWindow                     重发编辑窗口（子窗口）      │
-│  全部经 HotfixReflection 反射访问 Hotfix 侧 NetworkMonitor         │
+│  全部经 HotfixReflection 反射访问 Hotfix 侧 NetworkDebug         │
 └──────────────────────────────────────────────────────────────┘
                     ▲ 反射（低频：拉快照/触发操作）
 ┌─ Hotfix 层（Scripts/Hotfix/Framework/Network/）──────────────────┐
-│  NetworkMonitor（静态类，#if UNITY_EDITOR 条件编译，不进包）        │
+│  NetworkDebug（静态类，#if UNITY_EDITOR 条件编译，不进包）        │
 │  ├─ 循环队列 2000 条 NetworkMessageRecord（线程安全）              │
 │  ├─ Enabled 开关（面板打开才录制，关闭即停——照 WebModule.Debug 模式）│
 │  └─ 查询接口：GetSnapshot / GetRecord / Clear / SetEnabled / Resend│
@@ -67,7 +67,7 @@
 | JsonSnapshot | `UtilityAOT.Json.ToJson(msgObj)` 生成的内容快照（上限见 3.4） |
 | ResendSource | 标记本条是否由重发产生（与原始记录区分） |
 
-### 3.2 NetworkMonitor（静态采集器）
+### 3.2 NetworkDebug（静态采集器）
 
 照 `WebModule.Debug.cs` 的既有模式（同项目同惯例，注释同样写明"仅供编辑器调试面板反射读取"）：
 
@@ -105,16 +105,16 @@
 
 ### 3.5 HTTP 链路：不在本面板范围
 
-HTTP 监控已由 `WebModule.Debug.cs`（埋点）+ `WebModuleWindow`（面板，1596 行）完整实现：统计概览、实时请求快照（等待/发送中）、最近记录列表、手动测试请求（HTTP 版"重发"）、急救取消。网络监控器**不做 HTTP Tab**——避免两个面板重复展示同一份数据；HTTP 调试请使用 Web 模块调试面板（`FuFramework/调试/Web模块调试面板`）。
+HTTP 监控已由 `WebModule.Debug.cs`（埋点）+ `WebModuleWindow`（面板，1596 行）完整实现：统计概览、实时请求快照（等待/发送中）、最近记录列表、手动测试请求（HTTP 版"重发"）、急救取消。网络调试面板**不做 HTTP Tab**——避免两个面板重复展示同一份数据；HTTP 调试请使用 Web 模块调试面板（`FuFramework/调试/Web模块调试面板`）。
 
 ## 4. Editor 窗口层
 
 ### 4.1 主窗口 NetworkModuleWindow : DebugWindowBase
 
-- 菜单：`FuFramework/调试/网络监控器`，`FuMenuPriority` 新增 `DEBUG_PANEL_NETWORK` 段（分段管理惯例）。
+- 菜单：`FuFramework/调试/网络调试面板`，`FuMenuPriority` 新增 `DEBUG_PANEL_NETWORK` 段（分段管理惯例）。
 - **基座微量扩展**：`DebugWindowBase` 新增 `protected virtual void OnPanelEnabled() / OnPanelDisabled()`（基类 `OnEnable/OnDisable` 末尾各调一行，默认空实现）——7 个现有面板零影响。本面板覆写它们实现"打开才录制、关闭即停"的开关接线（基类 OnEnable/OnDisable 为 private 非虚，子类不可直接介入）。
-- 基座复用：Play 守卫、反射守卫（`HotfixReflection.TypeNames` 增补 NetworkMonitor 条目）、自动刷新（覆写 `RefreshInterval => 0.1f`，对齐参考工具 10FPS）、`HasExpandCollapse => false`。
-- 工具栏：基类搜索框（按消息名/消息号/UniqueId 过滤）+ `DrawToolbarExtraButtons` 放【触发断线】（模拟意外断线：确认对话框 → `NetworkModule.TriggerDisconnectForMonitor()` → `Close(Lost)` → 自动重连编排，验收期新增）【暂停/继续】【清除忽略】【清空】。
+- 基座复用：Play 守卫、反射守卫（`HotfixReflection.TypeNames` 增补 NetworkDebug 条目）、自动刷新（覆写 `RefreshInterval => 0.1f`，对齐参考工具 10FPS）、`HasExpandCollapse => false`。
+- 工具栏：基类搜索框（按消息名/消息号/UniqueId 过滤）+ `DrawToolbarExtraButtons` 放【触发断线】（模拟意外断线：确认对话框 → `NetworkModule.TriggerDisconnectForDebug()` → `Close(Lost)` → 自动重连编排，验收期新增）【暂停/继续】【清除忽略】【清空】。
 - 概览区（`DrawOverview`）：Tab 筛选（全部/请求/响应/推送/心跳/错误，按钮上带消息计数）+ **重发默认可用**（无总开关，见 §6）。
 - 列表（`DrawContent`）：虚拟化列表（照参考工具 DisplayRow 拍平方案，行高固定 25px，只绘制可见行）；列：序号/时刻/类型/消息名/UniqueId/状态/耗时/大小；颜色标识照参考（请求橙红/响应黄绿/推送粉红，错误标红）。
 - 详情：选中记录后在列表下方固定高度区绘制基本信息 + 三个按钮【查看 JSON 结构】【查看二进制数据】【再次发送（请求类可用）】。
@@ -127,21 +127,21 @@ HTTP 监控已由 `WebModule.Debug.cs`（埋点）+ `WebModuleWindow`（面板�
 |---|---|---|
 | `NetworkJsonViewWindow` | ProtobufViewWindow(+Render) | 对 JsonSnapshot 文本做结构化折叠渲染：`{}`/`[]` 容器行首箭头切换折叠/展开，支持复制全文 |
 | `NetworkHexViewWindow` | HexViewWindow | 每行 16 字节：偏移量 + Hex + ASCII 混排，支持复制 |
-| `NetworkResendWindow` | ProtoResendWindow | 预填请求 JSON（可编辑），显示目标消息名与 UniqueId；确认后反射调 `NetworkMonitor.Resend(seq, json)`；发送后提示"已发起，结果见列表" |
+| `NetworkResendWindow` | ProtoResendWindow | 预填请求 JSON（可编辑），显示目标消息名与 UniqueId；确认后反射调 `NetworkDebug.Resend(seq, json)`；发送后提示"已发起，结果见列表" |
 
 子窗口数据传递：打开时把目标记录的 JsonSnapshot / BodyBytes 值传入窗口静态字段（窗口间传值用最简方式，照参考工具做法）。
 
 ### 4.3 反射边界
 
-- Editor 面板只反射 `NetworkMonitor`（静态类）与 `WebModule`（Debug 查询接口）的**公开静态成员**。
-- `HotfixReflection.TypeNames` 增补 NetworkMonitor 条目（改热更类型名只需同步此处的既有惯例）。
+- Editor 面板只反射 `NetworkDebug`（静态类）与 `WebModule`（Debug 查询接口）的**公开静态成员**。
+- `HotfixReflection.TypeNames` 增补 NetworkDebug 条目（改热更类型名只需同步此处的既有惯例）。
 - 铁律说明：铁律 4（运行时杜绝反射）指运行时游戏逻辑；Editor 调试面板反射是项目既定模式（7 个面板同款），本设计沿用。
 
 ## 5. 重发链路（Hotfix 侧）
 
 ```
 Editor：NetworkResendWindow 确认
-  → 反射调 NetworkMonitor.Resend(seq, jsonBody)     [默认可用，无开关]
+  → 反射调 NetworkDebug.Resend(seq, jsonBody)     [默认可用，无开关]
 Hotfix（Forget() 全链，主线程上下文）：
   1. 按 seq 找原请求记录 → 拿 MessageId → MessageIdRegistry 反查消息类型
   2. JSON 反序列化为消息对象（UniqueId 重新分配，不沿用旧值避免撞挂起表）
@@ -155,14 +155,14 @@ Hotfix（Forget() 全链，主线程上下文）：
 
 ## 6. 重发可用性（决策演变）
 
-- **初期决策**：加默认关闭的总开关（`NetworkMonitor.ResendEnabled` + EditorPrefs）防误触。
+- **初期决策**：加默认关闭的总开关（`NetworkDebug.ResendEnabled` + EditorPrefs）防误触。
 - **验收期推翻**（用户裁决）：Editor 开发工具本就只在开发环境使用，重发**默认可用、无开关把守**——总开关链路已整体移除（Hotfix 属性/面板 Toggle/重发窗口判定）。
 - 保留的安全边界：仅 Request 可重发；重发窗口醒目 Warning 提示"重发会真实发送到服务器"。
 
 ## 7. 约束（铁律）
 
 1. **不进包**：Hotfix 侧采集层全部 `#if UNITY_EDITOR` 条件编译；Editor 侧天然 Editor-only。
-2. **UniTask**：Hotfix 侧重发链路用 UniTask + `Forget()`，生命周期由 NetworkMonitor 静态自持（编辑器调试工具，无窗口生命周期概念；与 NTP 链的静态自持同款）。
+2. **UniTask**：Hotfix 侧重发链路用 UniTask + `Forget()`，生命周期由 NetworkDebug 静态自持（编辑器调试工具，无窗口生命周期概念；与 NTP 链的静态自持同款）。
 3. **无 LINQ**：采集层与面板代码均手写循环（Editor 面板非热路径，但仍守铁律）。
 4. **运行时零反射**：埋点是同程序集直调；反射只在 Editor 层。
 5. **不改动既有语义**：埋点为纯增量调用（照 WebModule.Debug 的"纯增量埋点"承诺），收发/超时/取消逻辑一行不动。
@@ -207,4 +207,4 @@ Hotfix（Forget() 全链，主线程上下文）：
 4. JSON 折叠视图可展开/折叠/复制；Hex 视图字节为**未压缩包体**，与重新序列化的 proto 字节一致（可逐字节对照 JSON 字段）。
 5. 选中请求改 JSON 字段重发，服务器收到并正常响应，列表出现 IsResend 标记的新请求与对应响应。
 6. 面板关闭后录制停止（日志无新增记录），重新打开后历史清空重新录制。
-7. Build 后包体不含 NetworkMonitor 与任何埋点代码。
+7. Build 后包体不含 NetworkDebug 与任何埋点代码。

@@ -448,7 +448,7 @@ namespace FuFramework.Core.Editor
 		public const int DEBUG_PANEL_TIMER = DEBUG_PANEL_BASE + 6;
 
 		/// <summary>
-		/// 网络监控器调试面板。
+		/// 网络调试面板。
 		/// </summary>
 		public const int DEBUG_PANEL_NETWORK = DEBUG_PANEL_BASE + 7;
 

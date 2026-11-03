@@ -209,8 +209,8 @@ namespace Hotfix.Framework.Network
 			msgBodyBuffer   = SerializerHelper.Serialize(msgObj);
 
 #if UNITY_EDITOR
-			// 网络监控器发送埋点：抓压缩前的原始包体字节（与接收侧解压后字节对称，Hex 视图可与 JSON 对照）
-			NetworkMonitor.RecordRequest(msgObj, m_currentSentId, msgBodyBuffer);
+			// 网络调试面板发送埋点：抓压缩前的原始包体字节（与接收侧解压后字节对称，Hex 视图可与 JSON 对照）
+			NetworkDebug.RecordRequest(msgObj, m_currentSentId, msgBodyBuffer);
 #endif
 
 			byte isZip;

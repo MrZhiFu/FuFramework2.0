@@ -92,12 +92,12 @@ namespace FuFramework.Core.Editor
 		protected virtual void DrawOverview() { }
 
 		/// <summary>
-		/// 面板启用时回调（OnEnable 末尾触发，可选）——如网络监控器据此开启录制开关
+		/// 面板启用时回调（OnEnable 末尾触发，可选）——如网络调试面板据此开启录制开关
 		/// </summary>
 		protected virtual void OnPanelEnabled() { }
 
 		/// <summary>
-		/// 面板禁用时回调（OnDisable 末尾触发，可选）——如网络监控器据此关闭录制开关
+		/// 面板禁用时回调（OnDisable 末尾触发，可选）——如网络调试面板据此关闭录制开关
 		/// </summary>
 		protected virtual void OnPanelDisabled() { }
 
@@ -123,7 +123,7 @@ namespace FuFramework.Core.Editor
 		protected virtual void DrawToolbarExtraButtons() { }
 
 		/// <summary>
-		/// 窗口底部固定区（滚动容器之外、不随内容滚动，可选）——如网络监控器的操作按钮行
+		/// 窗口底部固定区（滚动容器之外、不随内容滚动，可选）——如网络调试面板的操作按钮行
 		/// </summary>
 		protected virtual void DrawBottomBar() { }
 

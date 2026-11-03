@@ -8,7 +8,7 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络监控器静态采集器（仅编辑器调试使用，#if UNITY_EDITOR 条件编译，不进包）。
+	/// 网络调试面板静态采集器（仅编辑器调试使用，#if UNITY_EDITOR 条件编译，不进包）。
 	/// 功能：
 	///     1. 以环形缓冲保留最近 2000 条收发消息记录（请求/响应/推送/心跳），线程安全（收发链路跨线程）。
 	///     2. Enabled 开关：面板打开才录制、关闭即停（开启瞬间清空既有历史），正式运行零开销；
@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Network
 	///     2. 记录只存生成好的显示数据（JSON 快照/字节拷贝），绝不持有消息对象引用。
 	///     3. 仅供编辑器调试面板反射读取。
 	/// </summary>
-	public static class NetworkMonitor
+	public static class NetworkDebug
 	{
 		#region 常量
 
@@ -301,14 +301,14 @@ namespace Hotfix.Framework.Network
 			var source = FindRecord(seq);
 			if (source == null || source.Kind != ENetworkMessageKind.Request)
 			{
-				FuLogger.LogWarning($"NetworkMonitor: 重发失败，未找到序号 {seq} 对应的请求记录。");
+				FuLogger.LogWarning($"NetworkDebug: 重发失败，未找到序号 {seq} 对应的请求记录。");
 				return false;
 			}
 
 			var messageType = MessageIdRegistry.GetTypeById(source.MessageId);
 			if (messageType == null)
 			{
-				FuLogger.LogWarning($"NetworkMonitor: 重发失败，消息 ID {source.MessageId} 未注册类型。");
+				FuLogger.LogWarning($"NetworkDebug: 重发失败，消息 ID {source.MessageId} 未注册类型。");
 				return false;
 			}
 
@@ -319,20 +319,20 @@ namespace Hotfix.Framework.Network
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"NetworkMonitor: 重发失败，JSON 反序列化异常：{e.Message}");
+				FuLogger.LogWarning($"NetworkDebug: 重发失败，JSON 反序列化异常：{e.Message}");
 				return false;
 			}
 
 			if (msgObj == null)
 			{
-				FuLogger.LogWarning($"NetworkMonitor: 重发失败，JSON 反序列化结果不是消息对象（{messageType.Name}）。");
+				FuLogger.LogWarning($"NetworkDebug: 重发失败，JSON 反序列化结果不是消息对象（{messageType.Name}）。");
 				return false;
 			}
 
 			// 置一次性重发标记后交网络模块发起：紧随其后的发送埋点将标注 IsResend；
 			// 响应/超时/取消经既有 RPC 终点自然落入记录列表
 			MarkNextResend();
-			NetworkModule.Instance.ResendForMonitor(msgObj);
+			NetworkModule.Instance.ResendForDebug(msgObj);
 			return true;
 		}
 

@@ -13,13 +13,13 @@ using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
 namespace FuFramework.Network.Editor
 {
 	/// <summary>
-	/// 网络监控器调试面板：实时查看 TCP 链路的请求/响应/推送收发历史，支撑联调排错。
+	/// 网络调试面板：实时查看 TCP 链路的请求/响应/推送收发历史，支撑联调排错。
 	/// 功能：
 	///     1. 实时列表（虚拟化绘制，最多 2000 条循环记录）：Tab 筛选 + 搜索 + 消息号忽略，颜色区分消息类型与状态。
 	///     2. 详情查看：基本信息 + JSON 结构查看（折叠）+ 二进制 Hex 查看 + 请求重发（受总开关把守）。
 	///     3. 暂停/继续、清空记录；面板打开即开启录制、关闭即停（经基座 OnPanelEnabled/OnPanelDisabled 钩子）。
 	/// 说明：
-	///     1. 数据源为 Hotfix 侧 NetworkMonitor 静态采集器（不进包），经 HotfixReflection 反射访问（Editor 程序集不引用 HotFix 程序集的既定模式）。
+	///     1. 数据源为 Hotfix 侧 NetworkDebug 静态采集器（不进包），经 HotfixReflection 反射访问（Editor 程序集不引用 HotFix 程序集的既定模式）。
 	///     2. HTTP 链路的监控不在此面板——Web 模块调试面板已完整覆盖。
 	/// </summary>
 	public sealed class NetworkModuleWindow : DebugWindowBase
@@ -29,7 +29,7 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 模块显示名（反射初始化失败提示用）
 		/// </summary>
-		protected override string ModuleDisplayName => "NetworkMonitor";
+		protected override string ModuleDisplayName => "NetworkDebug";
 
 		/// <summary>
 		/// 自动刷新间隔 100ms（对齐参考工具 10FPS，兼顾实时性与重绘开销）
@@ -44,10 +44,10 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 打开调试面板
 		/// </summary>
-		[MenuItem("FuFramework/调试/网络监控器", false, FuMenuPriority.DEBUG_PANEL_NETWORK)]
+		[MenuItem("FuFramework/调试/网络调试面板", false, FuMenuPriority.DEBUG_PANEL_NETWORK)]
 		public static void ShowWindow()
 		{
-			var window = GetWindow<NetworkModuleWindow>("网络监控器");
+			var window = GetWindow<NetworkModuleWindow>("网络调试面板");
 			window.minSize = new Vector2(800, 600);
 
 			// 初始位置居中显示
@@ -98,7 +98,7 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 忽略消息号列表的 EditorPrefs 键（逗号分隔存储）。
 		/// </summary>
-		private const string IgnoredMessagesKey = "NetworkMonitor_IgnoredMessages";
+		private const string IgnoredMessagesKey = "NetworkDebug_IgnoredMessages";
 
 		/// <summary>
 		/// 表头文字（前 8 列；第 9 列"备注"自适应宽度）。
@@ -189,16 +189,16 @@ namespace FuFramework.Network.Editor
 		#region 反射缓存
 
 		/// <summary>
-		/// NetworkMonitor 类型（静态采集器）
+		/// NetworkDebug 类型（静态采集器）
 		/// </summary>
-		private System.Type m_monitorType;
+		private System.Type m_debugType;
 
 		/// <summary>
 		/// NetworkMessageRecord 类型（记录条目）
 		/// </summary>
 		private System.Type m_recordType;
 
-		// NetworkMonitor 静态成员
+		// NetworkDebug 静态成员
 		private PropertyInfo m_enabledProperty;
 		private MethodInfo   m_setEnabledMethod;
 		private PropertyInfo m_isPausedProperty;
@@ -238,7 +238,7 @@ namespace FuFramework.Network.Editor
 		{
 			LoadIgnoredMessages();
 			m_enabledApplied = false;
-			SetMonitorEnabled(true);
+			SetDebugEnabled(true);
 		}
 
 		/// <summary>
@@ -246,14 +246,14 @@ namespace FuFramework.Network.Editor
 		/// </summary>
 		protected override void OnPanelDisabled()
 		{
-			SetMonitorEnabled(false);
+			SetDebugEnabled(false);
 			m_enabledApplied = false;
 		}
 
 		/// <summary>
 		/// 反射设置录制开关（反射未就绪时静默跳过——OnEnable 早于首次 OnGUI，此处先尝试初始化）
 		/// </summary>
-		private void SetMonitorEnabled(bool enabled)
+		private void SetDebugEnabled(bool enabled)
 		{
 			if (m_setEnabledMethod == null && !EnsureReflection()) return;
 			m_setEnabledMethod?.Invoke(null, new object[] { enabled });
@@ -269,29 +269,29 @@ namespace FuFramework.Network.Editor
 		/// <returns>初始化成功返回 true</returns>
 		protected override bool EnsureReflection()
 		{
-			if (m_monitorType != null) return true;
+			if (m_debugType != null) return true;
 
-			m_monitorType = HotfixReflection.NetworkMonitor;
-			if (m_monitorType == null) return false;
+			m_debugType = HotfixReflection.NetworkDebug;
+			if (m_debugType == null) return false;
 
-			m_recordType = m_monitorType.Assembly.GetType("Hotfix.Framework.Network.NetworkMessageRecord");
+			m_recordType = m_debugType.Assembly.GetType("Hotfix.Framework.Network.NetworkMessageRecord");
 			if (m_recordType == null) return false;
 
 			const BindingFlags StaticFlags = BindingFlags.Public | BindingFlags.Static;
 			const BindingFlags InstanceFlags = BindingFlags.Public | BindingFlags.Instance;
 
-			// NetworkMonitor 静态成员
-			m_enabledProperty        = m_monitorType.GetProperty("Enabled", StaticFlags);
-			m_setEnabledMethod       = m_monitorType.GetMethod("SetEnabled", StaticFlags);
-			m_isPausedProperty       = m_monitorType.GetProperty("IsPaused", StaticFlags);
-			m_getSnapshotMethod      = m_monitorType.GetMethod("GetSnapshot", StaticFlags);
-			m_clearMethod            = m_monitorType.GetMethod("Clear", StaticFlags);
-			m_resendMethod           = m_monitorType.GetMethod("Resend", StaticFlags);
+			// NetworkDebug 静态成员
+			m_enabledProperty        = m_debugType.GetProperty("Enabled", StaticFlags);
+			m_setEnabledMethod       = m_debugType.GetMethod("SetEnabled", StaticFlags);
+			m_isPausedProperty       = m_debugType.GetProperty("IsPaused", StaticFlags);
+			m_getSnapshotMethod      = m_debugType.GetMethod("GetSnapshot", StaticFlags);
+			m_clearMethod            = m_debugType.GetMethod("Clear", StaticFlags);
+			m_resendMethod           = m_debugType.GetMethod("Resend", StaticFlags);
 
-			// 触发断线在 NetworkModule（监控分部）上：Instance 属性取实例后调 internal 方法
+			// 触发断线在 NetworkModule（调试分部）上：Instance 属性取实例后调 internal 方法
 			m_moduleType             = HotfixReflection.NetworkModule;
 			m_moduleInstanceProperty = m_moduleType?.GetProperty("Instance", StaticFlags);
-			m_triggerDisconnectMethod = m_moduleType?.GetMethod("TriggerDisconnectForMonitor", BindingFlags.NonPublic | BindingFlags.Instance);
+			m_triggerDisconnectMethod = m_moduleType?.GetMethod("TriggerDisconnectForDebug", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			// NetworkMessageRecord 实例成员
 			m_recSeqProperty           = m_recordType.GetProperty("Seq", InstanceFlags);
@@ -315,7 +315,7 @@ namespace FuFramework.Network.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_monitorType               = null;
+			m_debugType               = null;
 			m_recordType                = null;
 			m_enabledProperty           = null;
 			m_setEnabledMethod          = null;
@@ -844,7 +844,7 @@ namespace FuFramework.Network.Editor
 		#region 触发断线
 
 		/// <summary>
-		/// 反射触发 Lost 断线（NetworkModule.TriggerDisconnectForMonitor）
+		/// 反射触发 Lost 断线（NetworkModule.TriggerDisconnectForDebug）
 		/// </summary>
 		private void TriggerDisconnect()
 		{

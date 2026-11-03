@@ -265,14 +265,14 @@ NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
 
 业务侧编排见 Game 层 `ReconnectManager`：订阅 `Closed(Lost)` → 弹"重连中"转圈框 → `ReconnectAsync` → 静默重登（`GameSessionFlow`）→ 关窗回主界面原地复活；重试耗尽弹"重连失败"框交玩家手选；被顶号（`NotifyPrompt Type=5` 标记）不自动重连。
 
-### 4.9 网络监控器（调试面板）
+### 4.9 网络调试面板
 
-Play 模式下实时查看 TCP 链路的收发历史，支撑联调排错。菜单 `FuFramework/调试/网络监控器`。
+Play 模式下实时查看 TCP 链路的收发历史，支撑联调排错。菜单 `FuFramework/调试/网络调试面板`。
 
 | 项 | 说明 |
 |---|---|
 | 录制开关 | **面板打开才录制、关闭即停**（经基座 `OnPanelEnabled/OnPanelDisabled` 钩子），正式运行零开销；工具栏另有暂停/继续、清空记录 |
-| 采集层 | Hotfix 侧 `NetworkMonitor` 静态类（`#if UNITY_EDITOR` 不进包）：环形队列 2000 条、线程安全、JSON 快照 32KB/包体字节 64KB 截断；埋点纯增量（发送压缩前/解码点成条/RPC 三终点回写） |
+| 采集层 | Hotfix 侧 `NetworkDebug` 静态类（`#if UNITY_EDITOR` 不进包）：环形队列 2000 条、线程安全、JSON 快照 32KB/包体字节 64KB 截断；埋点纯增量（发送压缩前/解码点成条/RPC 三终点回写） |
 | 消息分类 | 请求（橙红）/ 响应（黄绿）/ 推送（粉红）/ **心跳（绿）**——心跳=双实现通知（如校时 `NotifyHeartBeat`），纯保活心跳不记录 |
 | 状态流转 | 状态概念只属于请求：待回 → 已回/超时/取消/错误；响应/推送/心跳显示 `-`；请求与响应记录靠 UniqueId 配对，两侧都带同一次往返的耗时 |
 | 页签与筛选 | 全部/请求/响应/推送/心跳/错误（按钮带计数）；搜索（消息名/消息号/UniqueId）；消息号忽略（EditorPrefs 持久化，工具栏可清除） |

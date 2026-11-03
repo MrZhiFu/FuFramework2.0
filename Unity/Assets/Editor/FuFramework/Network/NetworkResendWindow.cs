@@ -9,7 +9,7 @@ using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
 namespace FuFramework.Network.Editor
 {
 	/// <summary>
-	/// 网络消息重发窗口：预填选中请求的 JSON（可编辑），确认后经 NetworkMonitor.Resend 重发到服务器。
+	/// 网络消息重发窗口：预填选中请求的 JSON（可编辑），确认后经 NetworkDebug.Resend 重发到服务器。
 	/// 说明：
 	///     1. 重发真实发到服务器——本工具仅 Editor 环境使用，默认可用（无总开关把守）。
 	///     2. 发起成功后结果（响应/超时/取消）经既有 RPC 终点自然落入记录列表（IsResend 标记），本窗口只负责发起。
@@ -17,7 +17,7 @@ namespace FuFramework.Network.Editor
 	public sealed class NetworkResendWindow : EditorWindow
 	{
 		/// <summary>
-		/// 反射缓存：NetworkMonitor.Resend 方法（主面板传入，避免重复反射初始化）
+		/// 反射缓存：NetworkDebug.Resend 方法（主面板传入，避免重复反射初始化）
 		/// </summary>
 		private MethodInfo m_resendMethod;
 
@@ -44,7 +44,7 @@ namespace FuFramework.Network.Editor
 		/// <summary>
 		/// 打开重发窗口
 		/// </summary>
-		/// <param name="resendMethod">NetworkMonitor.Resend 的 MethodInfo（主面板传入，避免重复反射初始化）</param>
+		/// <param name="resendMethod">NetworkDebug.Resend 的 MethodInfo（主面板传入，避免重复反射初始化）</param>
 		/// <param name="seq">原请求记录序号</param>
 		/// <param name="messageName">消息显示名</param>
 		/// <param name="json">预填 JSON</param>
@@ -90,7 +90,7 @@ namespace FuFramework.Network.Editor
 		}
 
 		/// <summary>
-		/// 发起重发：调 NetworkMonitor.Resend，失败弹提示（原因已由其内部记日志）
+		/// 发起重发：调 NetworkDebug.Resend，失败弹提示（原因已由其内部记日志）
 		/// </summary>
 		private void TryResend()
 		{
