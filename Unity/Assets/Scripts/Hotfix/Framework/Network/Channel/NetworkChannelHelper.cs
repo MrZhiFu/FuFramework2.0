@@ -243,24 +243,23 @@ namespace Hotfix.Framework.Network
 		public bool DeserializePacketHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
-			if (source is not byte[] reader) return false;
 
 			var offset = 0;
-			
+
 			// 消息长度 4
-			m_receivedPacketLength = reader.ReadUInt(ref offset);
+			m_receivedPacketLength = source.ReadUInt(ref offset);
 
 			// 操作类型 1（无消费者，仅推进偏移）
 			offset += sizeof(byte);
 
 			// 压缩标记 1
-			m_receivedZipFlag = reader.ReadByte(ref offset);
+			m_receivedZipFlag = source.ReadByte(ref offset);
 
 			// 唯一ID 4
-			m_receivedUniqueId = reader.ReadInt(ref offset);
+			m_receivedUniqueId = source.ReadInt(ref offset);
 
 			// 消息ID 4
-			m_receivedId = reader.ReadInt(ref offset);
+			m_receivedId = source.ReadInt(ref offset);
 			return true;
 		}
 
