@@ -3,7 +3,7 @@
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 心跳请求构造器接口（编译期强制游戏侧实现）。
+	/// 心跳请求创建接口（编译期强制游戏侧实现）。
 	///
 	/// 说明（依赖方向）：心跳消息 ReqHeartBeat 是 proto 生成物，位于 Game 层——
 	/// Framework 不引用 Game，框架无法构造具体心跳包，因此实现类必须由游戏侧提供
