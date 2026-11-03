@@ -117,6 +117,7 @@ namespace FuFramework.Network.Editor
 		private static readonly Color HeartBeatTextColor = new(0x32 / 255f, 0xCD / 255f, 0x32 / 255f, 1f); // 心跳：LimeGreen
 		private static readonly Color ErrorStatusColor = new(1f, 0.35f, 0.35f, 1f);                     // 异常状态：红
 		private static readonly Color SelectedRowColor = new(0.25f, 0.35f, 0.5f, 0.5f);                 // 选中行：半透明蓝
+		private static readonly Color ConnectionOkColor = new(0.3f, 0.85f, 0.4f, 1f);                   // 连接状态：绿
 
 		#endregion
 
@@ -180,6 +181,11 @@ namespace FuFramework.Network.Editor
 		private bool m_enabledApplied;
 
 		/// <summary>
+		/// 工具栏连接状态指示样式（颜色随状态改写）。
+		/// </summary>
+		[NonSerialized] private GUIStyle m_connectionStyle;
+
+		/// <summary>
 		/// 数据行文本容器（虚拟化绘制每行复用，避免每帧每行分配数组）。
 		/// </summary>
 		[NonSerialized] private string[] m_rowCells;
@@ -206,6 +212,7 @@ namespace FuFramework.Network.Editor
 		private MethodInfo   m_clearMethod;
 		private MethodInfo   m_resendMethod;
 		private MethodInfo   m_triggerDisconnectMethod;
+		private MethodInfo   m_getConnectionStateMethod;
 
 		/// <summary>
 		/// NetworkModule 类型与 Instance 属性（触发断线入口的宿主）
@@ -287,6 +294,7 @@ namespace FuFramework.Network.Editor
 			m_getSnapshotMethod      = m_debugType.GetMethod("GetSnapshot", StaticFlags);
 			m_clearMethod            = m_debugType.GetMethod("Clear", StaticFlags);
 			m_resendMethod           = m_debugType.GetMethod("Resend", StaticFlags);
+			m_getConnectionStateMethod = m_debugType.GetMethod("GetConnectionStateForDebug", BindingFlags.NonPublic | BindingFlags.Static);
 
 			// 触发断线在 NetworkModule（调试分部）上：Instance 属性取实例后调 internal 方法
 			m_moduleType             = HotfixReflection.NetworkModule;
@@ -324,6 +332,7 @@ namespace FuFramework.Network.Editor
 			m_clearMethod               = null;
 			m_resendMethod              = null;
 			m_triggerDisconnectMethod   = null;
+			m_getConnectionStateMethod  = null;
 			m_moduleType                = null;
 			m_moduleInstanceProperty    = null;
 			m_recSeqProperty            = null;
@@ -837,6 +846,30 @@ namespace FuFramework.Network.Editor
 				m_displayRecords.Clear();
 				m_selectedSeq      = -1;
 			}
+
+			DrawConnectionState();
+		}
+
+		/// <summary>
+		/// 连接状态指示（工具栏最右端）：● 绿=已连接（含远端地址）/ 红=已断开 / 灰=未连接。
+		/// 每帧反射查询一次（单次调用开销可忽略）。
+		/// </summary>
+		private void DrawConnectionState()
+		{
+			if (m_connectionStyle == null)
+			{
+				m_connectionStyle = new GUIStyle(EditorStyles.miniLabel)
+				{
+					alignment = TextAnchor.MiddleCenter,
+					padding   = new RectOffset(8, 4, 0, 0),
+				};
+			}
+
+			var state = m_getConnectionStateMethod?.Invoke(null, null) as string ?? "未知";
+			m_connectionStyle.normal.textColor = state.StartsWith("已连接") ? ConnectionOkColor
+				: state.StartsWith("已断开")   ? ErrorStatusColor
+				: new Color(0.6f, 0.6f, 0.6f);
+			GUILayout.Label($"● {state}", m_connectionStyle, GUILayout.Width(180));
 		}
 
 		#endregion

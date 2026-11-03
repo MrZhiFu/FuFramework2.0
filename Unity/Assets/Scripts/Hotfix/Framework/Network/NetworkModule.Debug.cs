@@ -44,6 +44,22 @@ namespace Hotfix.Framework.Network
 
 			m_networkChannel.Close(ENetworkCloseReason.Lost);
 		}
+
+		/// <summary>
+		/// 获取当前连接状态文本（调试专用，供网络调试面板工具栏指示）：
+		/// 未连接（无频道）/ 已连接 {远端地址} / 已断开（频道在但传输层已断）。
+		/// 判活走传输层 Socket.IsConnected（IsOpen 为频道 protected 业务闸门，外部类不可访问；
+		/// 两者差异仅在 Connected 仍 true 但 IsOpen 已 false 的拒绝发送窗口，调试指示可接受）。
+		/// </summary>
+		internal string GetConnectionStateForDebug()
+		{
+			if (m_networkChannel == null) return "未连接";
+
+			var socket = m_networkChannel.Socket;
+			if (socket == null || !socket.IsConnected) return "已断开";
+
+			return $"已连接 {socket.RemoteEndPoint}";
+		}
 	}
 }
 #endif
