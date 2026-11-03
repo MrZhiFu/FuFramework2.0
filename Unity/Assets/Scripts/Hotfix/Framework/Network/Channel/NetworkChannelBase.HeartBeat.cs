@@ -9,16 +9,6 @@ namespace Hotfix.Framework.Network
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
 		/// <summary>
-		/// 心跳间隔
-		/// </summary>
-		protected float m_HeartBeatInterval;
-
-		/// <summary>
-		/// 心跳丢失次数
-		/// </summary>
-		protected int m_MissHeartBeatCountByClose;
-
-		/// <summary>
 		/// 心跳状态
 		/// </summary>
 		protected readonly HeartBeatState m_HeartBeatState;
@@ -36,7 +26,11 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private void ProcessHeartBeat()
 		{
-			if (m_HeartBeatInterval <= 0f) return;
+			// 心跳参数直读 Provider（单一来源，无注册时快照）；未注册 Provider 的频道走 ChannelConst 兜底
+			var provider         = HeartBeatProvider;
+			var interval         = provider?.HeartBeatInterval ?? ChannelConst.DEFAULT_HEART_BEAT_INTERVAL;
+			var missCountByClose = provider?.MissHeartBeatCountByClose ?? ChannelConst.DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			if (interval <= 0f) return;
 
 			var sendHeartBeat      = false;
 			var missHeartBeatCount = 0;
@@ -46,7 +40,7 @@ namespace Hotfix.Framework.Network
 
 				// 真实时钟差值推进（非逐帧累加）：挂后台回前台首帧差值即挂起时长，立即补发心跳体检连接
 				m_HeartBeatState.UpdateByRealTime();
-				if (m_HeartBeatState.HeartBeatElapseSeconds >= m_HeartBeatInterval)
+				if (m_HeartBeatState.HeartBeatElapseSeconds >= interval)
 				{
 					sendHeartBeat      = true;
 					missHeartBeatCount = m_HeartBeatState.MissHeartBeatCount;
@@ -71,7 +65,7 @@ namespace Hotfix.Framework.Network
 			bool shouldClose;
 			lock (m_HeartBeatLock)
 			{
-				shouldClose = m_HeartBeatState.MissHeartBeatCount > m_MissHeartBeatCountByClose;
+				shouldClose = m_HeartBeatState.MissHeartBeatCount > missCountByClose;
 			}
 
 			if (shouldClose)

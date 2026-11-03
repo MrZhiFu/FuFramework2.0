@@ -28,16 +28,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHeartBeatProvider(HeartBeatProviderBase handler)
 		{
 			handler.NotNull(nameof(handler));
-			HeartBeatProvider = handler;
-			if (handler.HeartBeatInterval > 0)
-			{
-				m_HeartBeatInterval = handler.HeartBeatInterval;
-			}
-
-			if (handler.MissHeartBeatCountByClose > 0)
-			{
-				m_MissHeartBeatCountByClose = handler.MissHeartBeatCountByClose;
-			}
+			HeartBeatProvider = handler; // 心跳参数由 ProcessHeartBeat 直读 Provider，无注册时快照
 		}
 
 		/// <summary>

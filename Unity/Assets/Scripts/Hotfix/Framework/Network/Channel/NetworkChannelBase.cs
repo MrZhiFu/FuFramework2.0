@@ -148,8 +148,6 @@ namespace Hotfix.Framework.Network
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
 			m_NetworkChannelHelper        = new NetworkChannelHelper();   // 凭据内化：helper 恒定唯一类型，无外部注入点，在频道构造内统一创建
-			m_HeartBeatInterval           = ChannelConst.DEFAULT_HEART_BEAT_INTERVAL;
-			m_MissHeartBeatCountByClose   = ChannelConst.DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			m_Socket                      = null;
 			m_SendState                   = new SendState();
 			m_ReceiveState                = new ReceiveState();
@@ -195,7 +193,7 @@ namespace Hotfix.Framework.Network
 			// 超时可能意味着链路异常——立即拉满心跳流逝，下一帧 ProcessHeartBeat 补发心跳体检，不等下一个心跳周期。
 			if (m_rpcState.ConsumeTimeoutFlag())
 			{
-				lock (m_HeartBeatLock) m_HeartBeatState.HeartBeatElapseSeconds = m_HeartBeatInterval;
+				lock (m_HeartBeatLock) m_HeartBeatState.HeartBeatElapseSeconds = HeartBeatProvider?.HeartBeatInterval ?? ChannelConst.DEFAULT_HEART_BEAT_INTERVAL;
 			}
 		}
 
