@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHeartBeatProvider(HeartBeatProviderBase handler)
 		{
 			handler.NotNull(nameof(handler));
-			HeartBeatProvider = handler; // 心跳参数由 ProcessHeartBeat 直读 Provider，无注册时快照
+			HeartBeatProvider = handler; // 仅承担心跳包构造；运行时参数统一见 ChannelConst
 		}
 
 		/// <summary>

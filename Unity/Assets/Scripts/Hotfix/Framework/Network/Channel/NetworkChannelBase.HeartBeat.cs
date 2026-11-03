@@ -26,11 +26,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private void ProcessHeartBeat()
 		{
-			// 心跳参数直读 Provider（单一来源，无注册时快照）；未注册 Provider 的频道走 ChannelConst 兜底
-			var provider         = HeartBeatProvider;
-			var interval         = provider?.HeartBeatInterval ?? ChannelConst.DEFAULT_HEART_BEAT_INTERVAL;
-			var missCountByClose = provider?.MissHeartBeatCountByClose ?? ChannelConst.DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
-			if (interval <= 0f) return;
+			// 心跳参数直读 ChannelConst（单一事实源）
+			var interval = ChannelConst.HEART_BEAT_INTERVAL;
+			var missCountByClose = ChannelConst.MISS_HEART_BEAT_COUNT_BY_CLOSE;
 
 			var sendHeartBeat      = false;
 			var missHeartBeatCount = 0;

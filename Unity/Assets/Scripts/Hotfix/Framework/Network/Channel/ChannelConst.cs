@@ -5,9 +5,7 @@ namespace Hotfix.Framework.Network
 {
 	/// <summary>
 	/// 网络频道运行时参数常量（单一事实源）。
-	/// 网络底层参数调好后一般不再改——全部集中于此，按分区注释取值依据；
-	/// 心跳参数的**实际生效值**由 <see cref="HeartBeatProviderBase"/> 派生类覆写（Game 层），
-	/// 此处的心跳默认值仅为 Provider 未注册时的兜底。
+	/// 网络底层参数调好后一般不再改——全部集中于此，按分区注释取值依据。
 	/// </summary>
 	public static class ChannelConst
 	{
@@ -39,17 +37,17 @@ namespace Hotfix.Framework.Network
 
 		#endregion
 
-		#region 心跳（兜底默认；实际生效值见 HeartBeatProviderBase 派生类）
+		#region 心跳
 
 		/// <summary>
-		/// 心跳间隔兜底默认（秒）。实际生效值由 Provider 覆写（当前 5s）
+		/// 心跳间隔（秒）
 		/// </summary>
-		public const float DEFAULT_HEART_BEAT_INTERVAL = 30f;
+		public const float HEART_BEAT_INTERVAL = 5f;
 
 		/// <summary>
-		/// 心跳丢失判死次数兜底默认。实际生效值由 Provider 覆写（当前 5 次，约 25s 判死）
+		/// 心跳连续丢失判死次数（5s 间隔下约 25~30s 判死触发重连）
 		/// </summary>
-		public const int DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE = 10;
+		public const int MISS_HEART_BEAT_COUNT_BY_CLOSE = 5;
 
 		#endregion
 
