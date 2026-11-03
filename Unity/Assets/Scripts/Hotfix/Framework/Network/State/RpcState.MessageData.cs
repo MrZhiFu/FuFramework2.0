@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Network
 		private RpcMessageData(IRequestMessage requestMessage)
 		{
 			RequestMessage = requestMessage;
-			TimeoutTime    = ChannelConst.RPC_TIMEOUT_DEFAULT;
+			TimeoutTime    = NetworkModule.RPC_TIMEOUT_DEFAULT;
 			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
 		}
 

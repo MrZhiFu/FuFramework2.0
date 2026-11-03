@@ -42,14 +42,14 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 创建 RPC 状态（超时取 <see cref="ChannelConst.RPC_TIMEOUT_DEFAULT"/>）
+		/// 创建 RPC 状态（超时取 <see cref="NetworkModule.RPC_TIMEOUT_DEFAULT"/>）
 		/// </summary>
 		public RpcState()
 		{
-			m_rpcTimeout = ChannelConst.RPC_TIMEOUT_DEFAULT;
-			if (m_rpcTimeout < ChannelConst.RPC_TIMEOUT_MIN)
+			m_rpcTimeout = NetworkModule.RPC_TIMEOUT_DEFAULT;
+			if (m_rpcTimeout < NetworkModule.RPC_TIMEOUT_MIN)
 			{
-				throw new InvalidOperationException("RPC 超时配置低于下限（ChannelConst.RPC_TIMEOUT_MIN）");
+				throw new InvalidOperationException("RPC 超时配置低于下限（NetworkModule.RPC_TIMEOUT_MIN）");
 			}
 		}
 

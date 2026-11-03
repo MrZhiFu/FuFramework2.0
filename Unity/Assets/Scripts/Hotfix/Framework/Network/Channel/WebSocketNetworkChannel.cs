@@ -205,7 +205,7 @@ namespace Hotfix.Framework.Network
 				var socketClient = (WebSocketNetSocket)m_Socket;
 
 				// 连接超时/取消由 CTS 控制：原实现是 async void，既无超时也无取消，失败还可能抛出。
-				cancellationTokenSource.CancelAfter(ChannelConst.CONNECT_TIMEOUT_MILLISECONDS);
+				cancellationTokenSource.CancelAfter(NetworkModule.CONNECT_TIMEOUT_MILLISECONDS);
 
 				await socketClient.ConnectAsync(cancellationTokenSource.Token);
 				ConnectCallback(new ConnectState(m_Socket, userData));
@@ -217,7 +217,7 @@ namespace Hotfix.Framework.Network
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.ConnectError,
 				                      socketError: SocketError.TimedOut,
-				                      errorMessage: $"WebSocket 连接已取消或超时（{ChannelConst.CONNECT_TIMEOUT_MILLISECONDS}ms）。");
+				                      errorMessage: $"WebSocket 连接已取消或超时（{NetworkModule.CONNECT_TIMEOUT_MILLISECONDS}ms）。");
 			}
 			catch (Exception exception)
 			{
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.Network
 					m_HeartBeatState.Reset(false);
 				}
 
-				if (buffer.Length < ChannelConst.PACKET_HEADER_LENGTH) return;
+				if (buffer.Length < NetworkModule.PACKET_HEADER_LENGTH) return;
 
 				var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
 				if (processSuccess)
@@ -298,7 +298,7 @@ namespace Hotfix.Framework.Network
 					m_ReceiveState.Reset(bodyLength);
 					if (buffer.Length < bodyLength) return;
 
-					var body = buffer.ReadBytes(ChannelConst.PACKET_HEADER_LENGTH, bodyLength);
+					var body = buffer.ReadBytes(NetworkModule.PACKET_HEADER_LENGTH, bodyLength);
 					if (m_ReceiveState.ZipFlag != 0)
 					{
 						// 解压

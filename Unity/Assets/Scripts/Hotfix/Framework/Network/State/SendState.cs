@@ -17,7 +17,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送数据流
 		/// </summary>
-		public MemoryStream CacheStream { get; private set; } = new(ChannelConst.STREAM_BUFFER_LENGTH);
+		public MemoryStream CacheStream { get; private set; } = new(NetworkModule.STREAM_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 重置发送数据流

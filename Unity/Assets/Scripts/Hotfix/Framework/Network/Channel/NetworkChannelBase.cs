@@ -193,7 +193,7 @@ namespace Hotfix.Framework.Network
 			// 超时可能意味着链路异常——立即拉满心跳流逝，下一帧 ProcessHeartBeat 补发心跳体检，不等下一个心跳周期。
 			if (m_rpcState.ConsumeTimeoutFlag())
 			{
-				lock (m_HeartBeatLock) m_HeartBeatState.HeartBeatElapseSeconds = ChannelConst.HEART_BEAT_INTERVAL;
+				lock (m_HeartBeatLock) m_HeartBeatState.HeartBeatElapseSeconds = NetworkModule.HEART_BEAT_INTERVAL;
 			}
 		}
 

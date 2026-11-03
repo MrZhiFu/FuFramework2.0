@@ -4,10 +4,10 @@ using System;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络频道运行时参数常量（单一事实源）。
+	/// 网络管理模块——常量分部：网络频道运行时参数（单一事实源）。
 	/// 网络底层参数调好后一般不再改——全部集中于此，按分区注释取值依据。
 	/// </summary>
-	public static class ChannelConst
+	public sealed partial class NetworkModule
 	{
 		#region 包头与缓冲
 

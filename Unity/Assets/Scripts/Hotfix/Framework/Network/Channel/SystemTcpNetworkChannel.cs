@@ -213,7 +213,7 @@ namespace Hotfix.Framework.Network
 		/// <returns></returns>
 		private bool ProcessPackHeader()
 		{
-			var headerLength = ChannelConst.PACKET_HEADER_LENGTH;
+			var headerLength = NetworkModule.PACKET_HEADER_LENGTH;
 			var buffer       = new byte[headerLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
 			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);

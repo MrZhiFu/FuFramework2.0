@@ -26,9 +26,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private void ProcessHeartBeat()
 		{
-			// 心跳参数直读 ChannelConst（单一事实源）
-			var interval = ChannelConst.HEART_BEAT_INTERVAL;
-			var missCountByClose = ChannelConst.MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			// 心跳参数直读 NetworkModule.Const 分部（单一事实源）
+			var interval = NetworkModule.HEART_BEAT_INTERVAL;
+			var missCountByClose = NetworkModule.MISS_HEART_BEAT_COUNT_BY_CLOSE;
 
 			var sendHeartBeat      = false;
 			var missHeartBeatCount = 0;

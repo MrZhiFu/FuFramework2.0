@@ -12,7 +12,7 @@ namespace Hotfix.Framework.Network
 	/// 此基类只承担两件事：
 	///     1. 派生类的类型锚点：生成器沿继承链识别游戏侧实现并注册；
 	///     2. 心跳包构造的职责边界：ReqHeartBeat 是 proto 生成物位于 Game 层，Framework 不引用 Game
-	///        无法构造，必须由本类派生实现（心跳参数等运行时配置统一见 <see cref="ChannelConst"/>）。
+	///        无法构造，必须由本类派生实现（心跳参数等运行时配置统一见 <see cref="NetworkModule"/>）。
 	///
 	/// 装配：框架默认装配**不包含**心跳（没有默认实现可装），
 	/// 由生成物 MessageRegistry.gen.cs 的 RegisterExternalPacketHandler 注册游戏侧实现。

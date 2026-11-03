@@ -33,13 +33,13 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 接收数据流
 		/// </summary>
-		public MemoryStream Stream { get; private set; } = new(ChannelConst.STREAM_BUFFER_LENGTH);
+		public MemoryStream Stream { get; private set; } = new(NetworkModule.STREAM_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 准备接收包头
 		/// </summary>
 		/// <param name="packetHeaderLength">包头长度</param>
-		public void PrepareForPacketHeader(int packetHeaderLength = ChannelConst.PACKET_HEADER_LENGTH)
+		public void PrepareForPacketHeader(int packetHeaderLength = NetworkModule.PACKET_HEADER_LENGTH)
 		{
 			Reset(packetHeaderLength);
 			IsAwaitingBody = false;

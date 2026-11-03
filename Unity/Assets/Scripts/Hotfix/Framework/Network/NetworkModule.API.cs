@@ -110,7 +110,7 @@ namespace Hotfix.Framework.Network
 			var channel       = CreateChannel();
 			var tcs           = new UniTaskCompletionSource<bool>();
 			var timeoutSource = new CancellationTokenSource();
-			timeoutSource.CancelAfter(ChannelConst.CONNECT_TIMEOUT_MILLISECONDS);
+			timeoutSource.CancelAfter(NetworkModule.CONNECT_TIMEOUT_MILLISECONDS);
 
 			// 一次性事件桥：只认本频道；TCS TrySet 幂等，多事件竞争安全；finally 中全量退订。
 			void OnConnected(object sender, GameEventArgs e)
@@ -138,7 +138,7 @@ namespace Hotfix.Framework.Network
 			try
 			{
 				// 超时：timeoutSource 取消 → Register 回调把等待变为 TimeoutException
-				await using var timeoutRegistration = timeoutSource.Token.Register(() => tcs.TrySetException(new TimeoutException($"连接超时（{ChannelConst.CONNECT_TIMEOUT_MILLISECONDS}ms）。")));
+				await using var timeoutRegistration = timeoutSource.Token.Register(() => tcs.TrySetException(new TimeoutException($"连接超时（{NetworkModule.CONNECT_TIMEOUT_MILLISECONDS}ms）。")));
 				channel.Connect(address);
 				await tcs.Task.AttachExternalCancellation(cancellationToken);
 			}

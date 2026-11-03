@@ -161,10 +161,10 @@ namespace Hotfix.Framework.Network
 
 			if (s_dispatchSuspended)
 			{
-				if (sr_bufferedNotifyQueue.Count >= ChannelConst.MAX_BUFFERED_NOTIFY_COUNT)
+				if (sr_bufferedNotifyQueue.Count >= NetworkModule.MAX_BUFFERED_NOTIFY_COUNT)
 				{
 					// 丢弃最旧一条：无界积压（内存）比丢推送更危险，丢弃时有警告可查。
-					FuLogger.LogWarning($"推送缓冲队列已满({ChannelConst.MAX_BUFFERED_NOTIFY_COUNT})，丢弃最旧一条。请检查是否忘记恢复推送派发。");
+					FuLogger.LogWarning($"推送缓冲队列已满({NetworkModule.MAX_BUFFERED_NOTIFY_COUNT})，丢弃最旧一条。请检查是否忘记恢复推送派发。");
 					sr_bufferedNotifyQueue.Dequeue();
 				}
 

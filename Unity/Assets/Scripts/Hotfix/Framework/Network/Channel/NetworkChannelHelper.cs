@@ -23,7 +23,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 包头缓存字节（避免每次发包重新分配）
 		/// </summary>
-		private readonly byte[] m_cachedByte = new byte[ChannelConst.PACKET_HEADER_LENGTH];
+		private readonly byte[] m_cachedByte = new byte[NetworkModule.PACKET_HEADER_LENGTH];
 
 		/// <summary>
 		/// 包头缓存的写入偏移
@@ -31,29 +31,9 @@ namespace Hotfix.Framework.Network
 		private int m_offset;
 
 		/// <summary>
-		/// 当前发送消息的 ID（供发送调试日志读取）
-		/// </summary>
-		private int m_currentSentId;
-
-		/// <summary>
 		/// 当前接收消息的包长（含 14 字节包头）
 		/// </summary>
 		private uint m_receivedPacketLength;
-
-		/// <summary>
-		/// 当前接收消息的 ID（供接收调试日志与包体反序列化读取）
-		/// </summary>
-		private int m_receivedId;
-
-		/// <summary>
-		/// 当前接收消息的 UniqueId（供收包侧还原 RPC 配对单号）
-		/// </summary>
-		private int m_receivedUniqueId;
-
-		/// <summary>
-		/// 当前接收消息的压缩标记
-		/// </summary>
-		private byte m_receivedZipFlag;
 
 		/// <summary>
 		/// 事件组件实例
@@ -68,22 +48,22 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 当前发送消息的 ID（发送调试日志过滤用）
 		/// </summary>
-		public int LastSentMessageId => m_currentSentId;
+		public int LastSentMessageId { get; private set; }
 
 		/// <summary>
 		/// 当前接收消息的 ID（接收调试日志过滤与包体反序列化用）
 		/// </summary>
-		public int LastReceivedMessageId => m_receivedId;
+		public int LastReceivedMessageId { get; private set; }
 
 		/// <summary>
 		/// 当前接收消息的 UniqueId（收包侧还原 RPC 配对单号用）
 		/// </summary>
-		public int LastReceivedUniqueId => m_receivedUniqueId;
+		public int LastReceivedUniqueId { get; private set; }
 
 		/// <summary>
 		/// 当前接收消息的压缩标记（包体期解压判定用，跨收包批次存活）
 		/// </summary>
-		public byte LastReceivedZipFlag => m_receivedZipFlag;
+		public byte LastReceivedZipFlag { get; private set; }
 
 		/// <summary>
 		/// 事件组件（helper 自身订阅/退订网络事件用；全局事件请走 GlobalModule.EventModule）
@@ -158,8 +138,8 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void PrepareForConnecting()
 		{
-			m_networkChannel.Socket.ReceiveBufferSize = ChannelConst.SOCKET_BUFFER_SIZE;
-			m_networkChannel.Socket.SendBufferSize    = ChannelConst.SOCKET_BUFFER_SIZE;
+			m_networkChannel.Socket.ReceiveBufferSize = NetworkModule.SOCKET_BUFFER_SIZE;
+			m_networkChannel.Socket.SendBufferSize    = NetworkModule.SOCKET_BUFFER_SIZE;
 		}
 
 		/// <summary>
@@ -189,16 +169,16 @@ namespace Hotfix.Framework.Network
 			m_offset = 0;
 			var messageType = msgObj.GetType();
 
-			m_currentSentId = MessageIdRegistry.GetIdByType(messageType);
-			msgBodyBuffer   = SerializerHelper.Serialize(msgObj);
+			LastSentMessageId = MessageIdRegistry.GetIdByType(messageType);
+			msgBodyBuffer     = SerializerHelper.Serialize(msgObj);
 
 #if UNITY_EDITOR
 			// 网络调试面板发送埋点：抓压缩前的原始包体字节（与接收侧解压后字节对称，Hex 视图可与 JSON 对照）
-			NetworkDebug.RecordRequest(msgObj, m_currentSentId, msgBodyBuffer);
+			NetworkDebug.RecordRequest(msgObj, LastSentMessageId, msgBodyBuffer);
 #endif
 
 			byte isZip;
-			if (msgBodyBuffer.Length > ChannelConst.LIMIT_COMPRESS_LENGTH)
+			if (msgBodyBuffer.Length > NetworkModule.LIMIT_COMPRESS_LENGTH)
 			{
 				isZip         = 1;
 				msgBodyBuffer = Utility.Zip.Compress(msgBodyBuffer);
@@ -208,14 +188,14 @@ namespace Hotfix.Framework.Network
 				isZip = 0;
 			}
 
-			var packetLength = (uint)(ChannelConst.PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
+			var packetLength = (uint)(NetworkModule.PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
 
 			m_cachedByte.WriteUInt(packetLength, ref m_offset);                                // 数据包总大小
 			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset); // 消息操作类型
 			m_cachedByte.WriteByte(isZip,                                       ref m_offset); // 消息压缩标记
-			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                              // 消息编号
-			m_cachedByte.WriteInt(m_currentSentId, ref m_offset);                              // 消息ID
-			cacheStream.Write(m_cachedByte, 0, ChannelConst.PACKET_HEADER_LENGTH);
+			m_cachedByte.WriteInt(msgObj.UniqueId,   ref m_offset);                            // 消息编号
+			m_cachedByte.WriteInt(LastSentMessageId, ref m_offset);                            // 消息ID
+			cacheStream.Write(m_cachedByte, 0, NetworkModule.PACKET_HEADER_LENGTH);
 			return true;
 		}
 
@@ -253,13 +233,13 @@ namespace Hotfix.Framework.Network
 			offset += sizeof(byte);
 
 			// 压缩标记 1
-			m_receivedZipFlag = source.ReadByte(ref offset);
+			LastReceivedZipFlag = source.ReadByte(ref offset);
 
 			// 唯一ID 4
-			m_receivedUniqueId = source.ReadInt(ref offset);
+			LastReceivedUniqueId = source.ReadInt(ref offset);
 
 			// 消息ID 4
-			m_receivedId = source.ReadInt(ref offset);
+			LastReceivedMessageId = source.ReadInt(ref offset);
 			return true;
 		}
 
@@ -270,15 +250,15 @@ namespace Hotfix.Framework.Network
 		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
 		public int ValidateAndGetPacketBodyLength()
 		{
-			if (m_receivedPacketLength < ChannelConst.PACKET_HEADER_LENGTH)
+			if (m_receivedPacketLength < NetworkModule.PACKET_HEADER_LENGTH)
 			{
-				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{ChannelConst.PACKET_HEADER_LENGTH}");
+				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{NetworkModule.PACKET_HEADER_LENGTH}");
 			}
 
-			var bodyLength = (long)m_receivedPacketLength - ChannelConst.PACKET_HEADER_LENGTH;
-			if (bodyLength > ChannelConst.MAX_PACKET_BODY_LENGTH)
+			var bodyLength = (long)m_receivedPacketLength - NetworkModule.PACKET_HEADER_LENGTH;
+			if (bodyLength > NetworkModule.MAX_PACKET_BODY_LENGTH)
 			{
-				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{ChannelConst.MAX_PACKET_BODY_LENGTH}");
+				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{NetworkModule.MAX_PACKET_BODY_LENGTH}");
 			}
 
 			return (int)bodyLength;
@@ -298,8 +278,7 @@ namespace Hotfix.Framework.Network
 			msgObj = (MessageObject)SerializerHelper.Deserialize(source, messageType);
 			return true;
 		}
-		
-		
+
 
 		/// <summary>
 		/// 网络连接成功事件回调

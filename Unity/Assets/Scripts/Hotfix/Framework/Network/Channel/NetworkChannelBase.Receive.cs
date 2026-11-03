@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Network
 
 					// 派发限流：推送达到每帧定额时停止排水（未出队，留待下帧）；
 					// 回包/心跳豁免——否则限流会推迟 RPC 响应唤醒。
-					if (notifyDispatched >= ChannelConst.MAX_NOTIFY_DISPATCH_PER_FRAME && first.Value is not (IResponseMessage or IHeartBeatMessage))
+					if (notifyDispatched >= NetworkModule.MAX_NOTIFY_DISPATCH_PER_FRAME && first.Value is not (IResponseMessage or IHeartBeatMessage))
 						break;
 
 					// 接收回调运行在线程池线程（AddLast），此处与其互斥出队；
