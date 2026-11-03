@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Hotfix.Framework.Core;
-
-#if ENABLE_NETWORK_REQ_LOG
 using AOT.Framework.Core.Log;
-#endif
+using AOT.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network

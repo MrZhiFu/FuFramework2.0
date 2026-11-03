@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
+using AOT.Framework.Core.Utility;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Network

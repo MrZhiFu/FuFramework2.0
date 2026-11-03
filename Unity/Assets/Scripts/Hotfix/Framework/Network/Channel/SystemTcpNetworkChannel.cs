@@ -252,6 +252,12 @@ namespace Hotfix.Framework.Network
 			if (processSuccess)
 			{
 				msgObj.SetUniqueId(m_NetworkChannelHelper.LastReceivedUniqueId);
+
+#if UNITY_EDITOR
+				// 网络监控器接收埋点：解码点成条——LastReceivedMessageId 是解码线程更新的单字段，
+				// 主线程派发时读会错位；此处 msgObj/消息号/未压缩包体一把抓全，Seq 反映到达序
+				NetworkMonitor.RecordReceived(msgObj, m_NetworkChannelHelper.LastReceivedMessageId, buffer);
+#endif
 			}
 
 #if ENABLE_NETWORK_RSP_LOG
