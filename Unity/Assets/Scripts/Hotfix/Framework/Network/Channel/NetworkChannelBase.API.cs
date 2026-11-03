@@ -78,5 +78,34 @@ namespace Hotfix.Framework.Network
 			m_IgnoreSendIds    = sendIds    ?? new List<int>();
 			m_IgnoreReceiveIds = receiveIds ?? new List<int>();
 		}
+
+#if UNITY_EDITOR
+		/// <summary>
+		/// 网络监控器重发专用的非泛型 RPC 调用（仅供 NetworkMonitor.Resend 编排使用）。
+		/// 说明：运行时 Type 无法调泛型 <see cref="Call{TResponse}"/>（TResponse 编译期推断），
+		/// 此为等价的非泛型路径——第一步 Send 复用发送管线，随后按 UniqueId 挂表等待配对回包。
+		/// UniqueId 沿用消息对象新分配值（重发编排不重置），响应/超时/取消经既有 RpcState 终点自然入监控记录。
+		/// </summary>
+		/// <param name="msgObj">请求消息对象</param>
+		/// <returns>服务器响应消息</returns>
+		internal async UniTask<IResponseMessage> CallForMonitor(MessageObject msgObj)
+		{
+			msgObj.NotNull(nameof(msgObj));
+			try
+			{
+				if (!IsOpen) throw new InvalidOperationException("[NetworkMonitor] 重发放弃：网络频道未连接。");
+				Send(msgObj);
+				return await m_rpcState.Call(msgObj);
+			}
+			catch (Exception e)
+			{
+				// 重发异步失败（未连接/发送异常）：把本次重发请求记录回写为错误态——列表可见痕迹；
+				// Send 前失败则无记录产生，OnRpcSettled 按 UniqueId 查不到即静默忽略。
+				// 异常原样上抛，交 Forget 的未观察异常日志（保持既有行为）
+				NetworkMonitor.OnRpcSettled(msgObj.UniqueId, ENetworkMessageStatus.Error, 0);
+				throw;
+			}
+		}
+#endif
 	}
 }
