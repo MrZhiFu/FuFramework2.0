@@ -15,11 +15,6 @@ namespace Hotfix.Framework.Network
 	internal sealed class WebSocketNetworkChannel : NetworkChannelBase
 	{
 		/// <summary>
-		/// WebSocket 连接超时时间（毫秒）
-		/// </summary>
-		private const int CONNECT_TIMEOUT_MILLISECONDS = 15000;
-
-		/// <summary>
 		/// 最近一次连接的地址，用于在地址解析完成后创建 WebSocket 客户端。
 		/// </summary>
 		private Uri m_lastAddress;
@@ -33,8 +28,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道的新实例。
 		/// </summary>
-		/// <param name="rpcTimeout">RPC超时时间</param>
-		public WebSocketNetworkChannel(int rpcTimeout) : base(rpcTimeout) { }
+		public WebSocketNetworkChannel() { }
 
 		/// <summary>
 		/// WebSocket 的 URL 由底层客户端自行解析，无需在这里做 DNS 解析。
@@ -211,7 +205,7 @@ namespace Hotfix.Framework.Network
 				var socketClient = (WebSocketNetSocket)m_Socket;
 
 				// 连接超时/取消由 CTS 控制：原实现是 async void，既无超时也无取消，失败还可能抛出。
-				cancellationTokenSource.CancelAfter(CONNECT_TIMEOUT_MILLISECONDS);
+				cancellationTokenSource.CancelAfter(ChannelConst.CONNECT_TIMEOUT_MILLISECONDS);
 
 				await socketClient.ConnectAsync(cancellationTokenSource.Token);
 				ConnectCallback(new ConnectState(m_Socket, userData));
@@ -223,7 +217,7 @@ namespace Hotfix.Framework.Network
 				EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 				                      errorCode: ENetworkErrorCode.ConnectError,
 				                      socketError: SocketError.TimedOut,
-				                      errorMessage: $"WebSocket 连接已取消或超时（{CONNECT_TIMEOUT_MILLISECONDS}ms）。");
+				                      errorMessage: $"WebSocket 连接已取消或超时（{ChannelConst.CONNECT_TIMEOUT_MILLISECONDS}ms）。");
 			}
 			catch (Exception exception)
 			{
@@ -294,7 +288,7 @@ namespace Hotfix.Framework.Network
 					m_HeartBeatState.Reset(false);
 				}
 
-				if (buffer.Length < ReceiveState.PACKET_HEADER_LENGTH) return;
+				if (buffer.Length < ChannelConst.PACKET_HEADER_LENGTH) return;
 
 				var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
 				if (processSuccess)
@@ -304,7 +298,7 @@ namespace Hotfix.Framework.Network
 					m_ReceiveState.Reset(bodyLength);
 					if (buffer.Length < bodyLength) return;
 
-					var body = buffer.ReadBytes(ReceiveState.PACKET_HEADER_LENGTH, bodyLength);
+					var body = buffer.ReadBytes(ChannelConst.PACKET_HEADER_LENGTH, bodyLength);
 					if (m_ReceiveState.ZipFlag != 0)
 					{
 						// 解压

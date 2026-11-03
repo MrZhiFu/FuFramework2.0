@@ -21,19 +21,9 @@ namespace Hotfix.Framework.Network
 	public class NetworkChannelHelper
 	{
 		/// <summary>
-		/// 包头长度：4(总长) + 1(操作类型) + 1(压缩标记) + 4(UniqueId) + 4(消息ID) = 14 字节
-		/// </summary>
-		private const int PACKET_HEADER_LENGTH = 14;
-
-		/// <summary>
-		/// 消息体超过该长度启用压缩
-		/// </summary>
-		private const int LIMIT_COMPRESS_LENGTH = 512;
-
-		/// <summary>
 		/// 包头缓存字节（避免每次发包重新分配）
 		/// </summary>
-		private readonly byte[] m_cachedByte = new byte[PACKET_HEADER_LENGTH];
+		private readonly byte[] m_cachedByte = new byte[ChannelConst.PACKET_HEADER_LENGTH];
 
 		/// <summary>
 		/// 包头缓存的写入偏移
@@ -174,8 +164,8 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		public void PrepareForConnecting()
 		{
-			m_networkChannel.Socket.ReceiveBufferSize = 1024 * 64 - 1;
-			m_networkChannel.Socket.SendBufferSize    = 1024 * 64 - 1;
+			m_networkChannel.Socket.ReceiveBufferSize = ChannelConst.SOCKET_BUFFER_SIZE;
+			m_networkChannel.Socket.SendBufferSize    = ChannelConst.SOCKET_BUFFER_SIZE;
 		}
 
 		/// <summary>
@@ -214,7 +204,7 @@ namespace Hotfix.Framework.Network
 #endif
 
 			byte isZip;
-			if (msgBodyBuffer.Length > LIMIT_COMPRESS_LENGTH)
+			if (msgBodyBuffer.Length > ChannelConst.LIMIT_COMPRESS_LENGTH)
 			{
 				isZip         = 1;
 				msgBodyBuffer = Utility.Zip.Compress(msgBodyBuffer);
@@ -224,14 +214,14 @@ namespace Hotfix.Framework.Network
 				isZip = 0;
 			}
 
-			var packetLength = (uint)(PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
+			var packetLength = (uint)(ChannelConst.PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
 
 			m_cachedByte.WriteUInt(packetLength, ref m_offset);                                // 数据包总大小
 			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset); // 消息操作类型
 			m_cachedByte.WriteByte(isZip,                                       ref m_offset); // 消息压缩标记
 			m_cachedByte.WriteInt(msgObj.UniqueId, ref m_offset);                              // 消息编号
 			m_cachedByte.WriteInt(m_currentSentId, ref m_offset);                              // 消息ID
-			cacheStream.Write(m_cachedByte, 0, PACKET_HEADER_LENGTH);
+			cacheStream.Write(m_cachedByte, 0, ChannelConst.PACKET_HEADER_LENGTH);
 			return true;
 		}
 
@@ -287,12 +277,12 @@ namespace Hotfix.Framework.Network
 		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
 		public int ValidateAndGetPacketBodyLength()
 		{
-			if (m_receivedPacketLength < PACKET_HEADER_LENGTH)
+			if (m_receivedPacketLength < ChannelConst.PACKET_HEADER_LENGTH)
 			{
-				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{PACKET_HEADER_LENGTH}");
+				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{ChannelConst.PACKET_HEADER_LENGTH}");
 			}
 
-			var bodyLength = (long)m_receivedPacketLength - PACKET_HEADER_LENGTH;
+			var bodyLength = (long)m_receivedPacketLength - ChannelConst.PACKET_HEADER_LENGTH;
 			if (bodyLength > MaxPacketBodyLength)
 			{
 				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{MaxPacketBodyLength}");

@@ -35,12 +35,6 @@ namespace Hotfix.Framework.Network
 		protected readonly FuLinkedList<MessageObject> m_waitingHandleMsgLkList = new();
 
 		/// <summary>
-		/// 推送派发每帧上限：防弱网爆发/重连回放把单帧卡死。
-		/// RPC 回包与心跳豁免——响应唤醒延迟优先级高于派发平滑。
-		/// </summary>
-		private const int MAX_NOTIFY_DISPATCH_PER_FRAME = 64;
-
-		/// <summary>
 		/// 处理接收到的消息
 		/// </summary>
 		private void ProcessReceived()
@@ -57,7 +51,7 @@ namespace Hotfix.Framework.Network
 
 					// 派发限流：推送达到每帧定额时停止排水（未出队，留待下帧）；
 					// 回包/心跳豁免——否则限流会推迟 RPC 响应唤醒。
-					if (notifyDispatched >= MAX_NOTIFY_DISPATCH_PER_FRAME && first.Value is not (IResponseMessage or IHeartBeatMessage))
+					if (notifyDispatched >= ChannelConst.MAX_NOTIFY_DISPATCH_PER_FRAME && first.Value is not (IResponseMessage or IHeartBeatMessage))
 						break;
 
 					// 接收回调运行在线程池线程（AddLast），此处与其互斥出队；

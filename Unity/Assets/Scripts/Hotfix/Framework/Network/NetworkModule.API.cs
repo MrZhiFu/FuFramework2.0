@@ -28,9 +28,8 @@ namespace Hotfix.Framework.Network
 		/// 传输实现由编译宏决定：WebGL + WebSocket 宏（或 FORCE_ENABLE_WEB_SOCKET）→ WebSocket，否则 TCP。
 		/// 频道辅助器（信封读写）由频道构造内化创建，调用方无需也不应传入。
 		/// </summary>
-		/// <param name="rpcTimeout">RPC超时时间，默认5000毫秒。</param>
 		/// <returns>要创建的网络频道。</returns>
-		public INetworkChannel CreateChannel(int rpcTimeout = 5000)
+		public INetworkChannel CreateChannel()
 		{
 			if (m_networkChannel != null)
 			{
@@ -38,9 +37,9 @@ namespace Hotfix.Framework.Network
 			}
 
 #if UNITY_WEBGL || FORCE_ENABLE_WEB_SOCKET
-			NetworkChannelBase networkChannel = new WebSocketNetworkChannel(rpcTimeout);
+			NetworkChannelBase networkChannel = new WebSocketNetworkChannel();
 #else
-			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel(rpcTimeout);
+			NetworkChannelBase networkChannel = new SystemTcpNetworkChannel();
 #endif
 			networkChannel.m_NetworkChannelConnected     += OnNetworkChannelConnected;
 			networkChannel.m_NetworkChannelClosed        += OnNetworkChannelClosed;
@@ -102,9 +101,8 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="address">服务器地址</param>
 		/// <param name="cancellationToken">取消令牌</param>
-		/// <param name="timeoutMilliseconds">拨号超时（毫秒），默认 15000</param>
 		/// <returns>已连接的网络频道</returns>
-		public async UniTask<INetworkChannel> ConnectAsync(Uri address, CancellationToken cancellationToken, int timeoutMilliseconds = 15000)
+		public async UniTask<INetworkChannel> ConnectAsync(Uri address, CancellationToken cancellationToken)
 		{
 			address.NotNull(nameof(address));
 			cancellationToken.ThrowIfCancellationRequested();
@@ -112,7 +110,7 @@ namespace Hotfix.Framework.Network
 			var channel       = CreateChannel();
 			var tcs           = new UniTaskCompletionSource<bool>();
 			var timeoutSource = new CancellationTokenSource();
-			timeoutSource.CancelAfter(timeoutMilliseconds);
+			timeoutSource.CancelAfter(ChannelConst.CONNECT_TIMEOUT_MILLISECONDS);
 
 			// 一次性事件桥：只认本频道；TCS TrySet 幂等，多事件竞争安全；finally 中全量退订。
 			void OnConnected(object sender, GameEventArgs e)
@@ -140,7 +138,7 @@ namespace Hotfix.Framework.Network
 			try
 			{
 				// 超时：timeoutSource 取消 → Register 回调把等待变为 TimeoutException
-				await using var timeoutRegistration = timeoutSource.Token.Register(() => tcs.TrySetException(new TimeoutException($"连接超时（{timeoutMilliseconds}ms）。")));
+				await using var timeoutRegistration = timeoutSource.Token.Register(() => tcs.TrySetException(new TimeoutException($"连接超时（{ChannelConst.CONNECT_TIMEOUT_MILLISECONDS}ms）。")));
 				channel.Connect(address);
 				await tcs.Task.AttachExternalCancellation(cancellationToken);
 			}

@@ -144,18 +144,17 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道基类的新实例。
 		/// </summary>
-		/// <param name="rpcTimeout">RPC超时时间</param>
-		protected NetworkChannelBase(int rpcTimeout)
+		protected NetworkChannelBase()
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
 			m_NetworkChannelHelper        = new NetworkChannelHelper();   // 凭据内化：helper 恒定唯一类型，无外部注入点，在频道构造内统一创建
-			m_HeartBeatInterval           = DEFAULT_HEART_BEAT_INTERVAL;
-			m_MissHeartBeatCountByClose   = DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
+			m_HeartBeatInterval           = ChannelConst.DEFAULT_HEART_BEAT_INTERVAL;
+			m_MissHeartBeatCountByClose   = ChannelConst.DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE;
 			m_Socket                      = null;
 			m_SendState                   = new SendState();
 			m_ReceiveState                = new ReceiveState();
 			m_HeartBeatState              = new HeartBeatState();
-			m_rpcState                    = new RpcState(rpcTimeout);
+			m_rpcState                    = new RpcState();
 			IsOpen                        = false;
 			m_IsConnecting                = false;
 			m_disposed                    = false;

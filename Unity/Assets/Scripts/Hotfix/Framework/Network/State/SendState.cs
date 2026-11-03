@@ -10,11 +10,6 @@ namespace Hotfix.Framework.Network
 	internal sealed class SendState : IDisposable
 	{
 		/// <summary>
-		/// 默认缓冲区长度
-		/// </summary>
-		private const int DEFAULT_BUFFER_LENGTH = 1024 * 64;
-
-		/// <summary>
 		/// 是否已释放
 		/// </summary>
 		private bool m_disposed;
@@ -22,7 +17,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发送数据流
 		/// </summary>
-		public MemoryStream CacheStream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
+		public MemoryStream CacheStream { get; private set; } = new(ChannelConst.STREAM_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 重置发送数据流

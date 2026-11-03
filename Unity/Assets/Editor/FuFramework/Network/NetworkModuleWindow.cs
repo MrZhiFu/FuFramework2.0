@@ -294,12 +294,13 @@ namespace FuFramework.Network.Editor
 			m_getSnapshotMethod      = m_debugType.GetMethod("GetSnapshot", StaticFlags);
 			m_clearMethod            = m_debugType.GetMethod("Clear", StaticFlags);
 			m_resendMethod           = m_debugType.GetMethod("Resend", StaticFlags);
-			m_getConnectionStateMethod = m_debugType.GetMethod("GetConnectionStateForDebug", BindingFlags.NonPublic | BindingFlags.Static);
 
-			// 触发断线在 NetworkModule（调试分部）上：Instance 属性取实例后调 internal 方法
-			m_moduleType             = HotfixReflection.NetworkModule;
-			m_moduleInstanceProperty = m_moduleType?.GetProperty("Instance", StaticFlags);
+			// GetConnectionStateForDebug 与触发断线都在 NetworkModule（调试分部）上：Instance 属性取实例后调 internal 方法
+			// （注意宿主是 m_moduleType 而非 m_debugType——此前写在 NetworkDebug 上导致 GetMethod 恒 null）
+			m_moduleType              = HotfixReflection.NetworkModule;
+			m_moduleInstanceProperty  = m_moduleType?.GetProperty("Instance", StaticFlags);
 			m_triggerDisconnectMethod = m_moduleType?.GetMethod("TriggerDisconnectForDebug", BindingFlags.NonPublic | BindingFlags.Instance);
+			m_getConnectionStateMethod = m_moduleType?.GetMethod("GetConnectionStateForDebug", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			// NetworkMessageRecord 实例成员
 			m_recSeqProperty           = m_recordType.GetProperty("Seq", InstanceFlags);
@@ -865,7 +866,25 @@ namespace FuFramework.Network.Editor
 				};
 			}
 
-			var state = m_getConnectionStateMethod?.Invoke(null, null) as string ?? "未知";
+			// 诊断版：文案区分 绑定失败/调用异常/返回空——定位后改回纯状态
+			if (m_getConnectionStateMethod == null)
+			{
+				m_connectionStyle.normal.textColor = ErrorStatusColor;
+				GUILayout.Label("● 状态(方法未绑定)", m_connectionStyle, GUILayout.Width(180));
+				return;
+			}
+
+			string state;
+			try
+			{
+				var moduleInstance = m_moduleInstanceProperty?.GetValue(null);
+				state = m_getConnectionStateMethod.Invoke(moduleInstance, null) as string ?? "状态(返回空)";
+			}
+			catch (Exception e)
+			{
+				state = "状态(异常:" + (e.InnerException?.Message ?? e.Message) + ")";
+			}
+
 			m_connectionStyle.normal.textColor = state.StartsWith("已连接") ? ConnectionOkColor
 				: state.StartsWith("已断开")   ? ErrorStatusColor
 				: new Color(0.6f, 0.6f, 0.6f);

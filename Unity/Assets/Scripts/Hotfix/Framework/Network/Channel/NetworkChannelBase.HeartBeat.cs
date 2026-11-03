@@ -9,16 +9,6 @@ namespace Hotfix.Framework.Network
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
 		/// <summary>
-		/// 默认心跳间隔
-		/// </summary>
-		private const float DEFAULT_HEART_BEAT_INTERVAL = 30f;
-
-		/// <summary>
-		/// 默认心跳丢失断开次数
-		/// </summary>
-		private const int DEFAULT_MISS_HEART_BEAT_COUNT_BY_CLOSE = 10;
-
-		/// <summary>
 		/// 心跳间隔
 		/// </summary>
 		protected float m_HeartBeatInterval;

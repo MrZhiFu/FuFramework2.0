@@ -39,11 +39,10 @@ namespace Hotfix.Framework.Network
 		/// 创建 RPC 消息数据对象
 		/// </summary>
 		/// <param name="requestMessage">请求消息</param>
-		/// <param name="timeoutTime">超时时间。单位毫秒</param>
-		private RpcMessageData(IRequestMessage requestMessage, int timeoutTime)
+		private RpcMessageData(IRequestMessage requestMessage)
 		{
 			RequestMessage = requestMessage;
-			TimeoutTime    = timeoutTime;
+			TimeoutTime    = ChannelConst.RPC_TIMEOUT_DEFAULT;
 			m_tcs          = new UniTaskCompletionSource<IResponseMessage>();
 		}
 
@@ -51,10 +50,9 @@ namespace Hotfix.Framework.Network
 		/// 创建RPC 消息数据对象
 		/// </summary>
 		/// <param name="actorRequestMessage">请求消息</param>
-		/// <param name="timeoutTime">超时时间。单位毫秒</param>
-		internal static RpcMessageData Create(IRequestMessage actorRequestMessage, int timeoutTime = 5000)
+		internal static RpcMessageData Create(IRequestMessage actorRequestMessage)
 		{
-			return new RpcMessageData(actorRequestMessage, timeoutTime);
+			return new RpcMessageData(actorRequestMessage);
 		}
 
 		/// <summary>

@@ -11,16 +11,6 @@ namespace Hotfix.Framework.Network
 	internal sealed class ReceiveState : IDisposable
 	{
 		/// <summary>
-		/// 默认缓冲区长度, 64KB
-		/// </summary>
-		public const int DEFAULT_BUFFER_LENGTH = 1024 * 64;
-
-		/// <summary>
-		/// 默认包头长度, 14字节
-		/// </summary>
-		public const int PACKET_HEADER_LENGTH = 14;
-
-		/// <summary>
 		/// 是否已释放
 		/// </summary>
 		private bool m_disposed = false;
@@ -43,13 +33,13 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 接收数据流
 		/// </summary>
-		public MemoryStream Stream { get; private set; } = new(DEFAULT_BUFFER_LENGTH);
+		public MemoryStream Stream { get; private set; } = new(ChannelConst.STREAM_BUFFER_LENGTH);
 
 		/// <summary>
 		/// 准备接收包头
 		/// </summary>
 		/// <param name="packetHeaderLength">包头长度</param>
-		public void PrepareForPacketHeader(int packetHeaderLength = PACKET_HEADER_LENGTH)
+		public void PrepareForPacketHeader(int packetHeaderLength = ChannelConst.PACKET_HEADER_LENGTH)
 		{
 			Reset(packetHeaderLength);
 			IsAwaitingBody = false;

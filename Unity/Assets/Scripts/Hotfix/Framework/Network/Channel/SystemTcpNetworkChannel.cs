@@ -27,8 +27,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 初始化网络频道的新实例。
 		/// </summary>
-		/// <param name="rpcTimeout">RPC超时时间</param>
-		public SystemTcpNetworkChannel(int rpcTimeout) : base(rpcTimeout) { }
+		public SystemTcpNetworkChannel() { }
 
 		/// <summary>
 		/// 连接到远程主机。
@@ -214,7 +213,7 @@ namespace Hotfix.Framework.Network
 		/// <returns></returns>
 		private bool ProcessPackHeader()
 		{
-			var headerLength = ReceiveState.PACKET_HEADER_LENGTH;
+			var headerLength = ChannelConst.PACKET_HEADER_LENGTH;
 			var buffer       = new byte[headerLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
 			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);

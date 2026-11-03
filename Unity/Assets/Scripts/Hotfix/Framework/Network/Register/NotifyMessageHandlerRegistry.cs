@@ -54,11 +54,6 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 缓冲队列上限：达到后丢弃最旧一条并警告，防止业务忘记恢复导致无界积压。
-		/// </summary>
-		private const int MAX_BUFFERED_NOTIFY_COUNT = 1024;
-
-		/// <summary>
 		/// 推送派发挂起标志。挂起期间到达的推送进入缓冲队列（保持到达顺序），恢复时按序回放。
 		/// </summary>
 		private static bool s_dispatchSuspended;
@@ -166,10 +161,10 @@ namespace Hotfix.Framework.Network
 
 			if (s_dispatchSuspended)
 			{
-				if (sr_bufferedNotifyQueue.Count >= MAX_BUFFERED_NOTIFY_COUNT)
+				if (sr_bufferedNotifyQueue.Count >= ChannelConst.MAX_BUFFERED_NOTIFY_COUNT)
 				{
 					// 丢弃最旧一条：无界积压（内存）比丢推送更危险，丢弃时有警告可查。
-					FuLogger.LogWarning($"推送缓冲队列已满({MAX_BUFFERED_NOTIFY_COUNT})，丢弃最旧一条。请检查是否忘记恢复推送派发。");
+					FuLogger.LogWarning($"推送缓冲队列已满({ChannelConst.MAX_BUFFERED_NOTIFY_COUNT})，丢弃最旧一条。请检查是否忘记恢复推送派发。");
 					sr_bufferedNotifyQueue.Dequeue();
 				}
 

@@ -12,11 +12,6 @@ namespace Hotfix.Framework.Network
 	internal sealed class RpcState : IDisposable
 	{
 		/// <summary>
-		/// RPC 超时时间最小值。单位毫秒
-		/// </summary>
-		private const int RPC_TIMEOUT_MIN = 3000;
-
-		/// <summary>
 		/// 等待回复的请求字典（UniqueId → 等待载体 RpcMessageData）
 		/// </summary>
 		private readonly ConcurrentDictionary<long, RpcMessageData> m_waitingReplyDict = new();
@@ -47,15 +42,14 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 创建 RPC 状态
+		/// 创建 RPC 状态（超时取 <see cref="ChannelConst.RPC_TIMEOUT_DEFAULT"/>）
 		/// </summary>
-		/// <param name="timeout">RPC 超时时间。单位毫秒，不能小于 3000</param>
-		public RpcState(int timeout)
+		public RpcState()
 		{
-			m_rpcTimeout = timeout;
-			if (m_rpcTimeout < RPC_TIMEOUT_MIN)
+			m_rpcTimeout = ChannelConst.RPC_TIMEOUT_DEFAULT;
+			if (m_rpcTimeout < ChannelConst.RPC_TIMEOUT_MIN)
 			{
-				throw new ArgumentOutOfRangeException(nameof(timeout), "RPC超时时间不能小于3000毫秒");
+				throw new InvalidOperationException("RPC 超时配置低于下限（ChannelConst.RPC_TIMEOUT_MIN）");
 			}
 		}
 
@@ -113,7 +107,7 @@ namespace Hotfix.Framework.Network
 				return existing.Task;
 			}
 
-			var rpcMessageData = RpcMessageData.Create(msgObj as IRequestMessage, m_rpcTimeout);
+			var rpcMessageData = RpcMessageData.Create(msgObj as IRequestMessage);
 			m_waitingReplyDict.TryAdd(msgObj.UniqueId, rpcMessageData);
 			return rpcMessageData.Task;
 		}
