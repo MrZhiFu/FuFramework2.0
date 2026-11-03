@@ -92,6 +92,16 @@ namespace FuFramework.Core.Editor
 		protected virtual void DrawOverview() { }
 
 		/// <summary>
+		/// 面板启用时回调（OnEnable 末尾触发，可选）——如网络监控器据此开启录制开关
+		/// </summary>
+		protected virtual void OnPanelEnabled() { }
+
+		/// <summary>
+		/// 面板禁用时回调（OnDisable 末尾触发，可选）——如网络监控器据此关闭录制开关
+		/// </summary>
+		protected virtual void OnPanelDisabled() { }
+
+		/// <summary>
 		/// 刷新动作（自动刷新到点与手动点击「刷新」时触发，可选；
 		/// 如 Event 窗口在此重建快照）
 		/// </summary>
@@ -112,6 +122,11 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		protected virtual void DrawToolbarExtraButtons() { }
 
+		/// <summary>
+		/// 窗口底部固定区（滚动容器之外、不随内容滚动，可选）——如网络监控器的操作按钮行
+		/// </summary>
+		protected virtual void DrawBottomBar() { }
+
 		#endregion
 
 		#region 生命周期
@@ -122,6 +137,7 @@ namespace FuFramework.Core.Editor
 		private void OnEnable()
 		{
 			EditorApplication.update += OnEditorUpdate;
+			OnPanelEnabled();
 		}
 
 		/// <summary>
@@ -130,6 +146,7 @@ namespace FuFramework.Core.Editor
 		private void OnDisable()
 		{
 			EditorApplication.update -= OnEditorUpdate;
+			OnPanelDisabled();
 		}
 
 		/// <summary>
@@ -185,6 +202,8 @@ namespace FuFramework.Core.Editor
 			m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
 			DrawContent();
 			EditorGUILayout.EndScrollView();
+
+			DrawBottomBar();
 		}
 
 		/// <summary>
