@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -77,10 +78,10 @@ namespace FuFramework.Network.Editor
 		private Vector2 m_scroll;
 
 		/// <summary>
-		/// GUI 样式（懒初始化；richText 开启供语法着色）。
+		/// GUI 样式（懒初始化；richText 开启供语法着色）。GUIStyle 会被窗口序列化持久化，须 NonSerialized（审查 M-4）。
 		/// </summary>
-		private GUIStyle m_lineStyle;
-		private GUIStyle m_foldoutLineStyle;
+		[NonSerialized] private GUIStyle m_lineStyle;
+		[NonSerialized] private GUIStyle m_foldoutLineStyle;
 
 		/// <summary>
 		/// 打开查看窗口
@@ -307,8 +308,11 @@ namespace FuFramework.Network.Editor
 			m_scroll = EditorGUILayout.BeginScrollView(m_scroll);
 
 			// 渲染循环：跳过根容器的开/闭行（index 0 与最后一行）；按折叠状态跳过隐藏区间；缩进 4 空格/层
-			var index = 1;
-			while (index < m_lines.Count - 1)
+			// 根为空容器（{} / []，仅 2 行）时跳过逻辑会让窗口空白——直接渲染根行（审查 M-8）
+			var skipRoot = m_lines.Count > 2;
+			var index = skipRoot ? 1 : 0;
+			var endIndex = skipRoot ? m_lines.Count - 1 : m_lines.Count;
+			while (index < endIndex)
 			{
 				var line = m_lines[index];
 				var indent = new GUIContent(string.Empty.PadLeft(line.Depth * 4) + line.Text);

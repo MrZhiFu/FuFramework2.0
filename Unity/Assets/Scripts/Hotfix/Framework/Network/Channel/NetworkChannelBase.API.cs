@@ -101,7 +101,9 @@ namespace Hotfix.Framework.Network
 			{
 				// 重发异步失败（未连接/发送异常）：把本次重发请求记录回写为错误态——列表可见痕迹；
 				// Send 前失败则无记录产生，OnRpcSettled 按 UniqueId 查不到即静默忽略。
+				// 同时复位一次性重发标记（失败路径没有发送埋点去消费它，会泄漏到下一条真实请求）（审查 M-2）。
 				// 异常原样上抛，交 Forget 的未观察异常日志（保持既有行为）
+				NetworkMonitor.ResetResendMark();
 				NetworkMonitor.OnRpcSettled(msgObj.UniqueId, ENetworkMessageStatus.Error, 0);
 				throw;
 			}

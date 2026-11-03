@@ -22,6 +22,7 @@ namespace Hotfix.Framework.Network
 			if (m_networkChannel == null)
 			{
 				FuLogger.LogWarning("NetworkMonitor: 重发放弃，当前无网络频道。");
+				NetworkMonitor.ResetResendMark(); // 此路径不会产生发送埋点消费标记，防泄漏（审查 M-2）
 				return;
 			}
 

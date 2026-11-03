@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -93,7 +94,18 @@ namespace FuFramework.Network.Editor
 		/// </summary>
 		private void TryResend()
 		{
-			var result = m_resendMethod != null && (bool)(m_resendMethod.Invoke(null, new object[] { m_seq, m_json }) ?? false);
+			bool result;
+			try
+			{
+				result = m_resendMethod != null && (bool)(m_resendMethod.Invoke(null, new object[] { m_seq, m_json }) ?? false);
+			}
+			catch (Exception e)
+			{
+				// 反射调用可能穿出未捕获异常（如模块未初始化的 NRE），就地兜底避免 OnGUI 事件中断（审查 M-5）
+				result = false;
+				UnityEngine.Debug.LogWarning($"[NetworkResendWindow] 重发调用异常：{e.InnerException?.Message ?? e.Message}");
+			}
+
 			if (result)
 			{
 				Close();

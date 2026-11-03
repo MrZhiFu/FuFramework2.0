@@ -144,6 +144,8 @@ namespace Hotfix.Framework.Network
 		public static void RecordRequest(MessageObject msgObj, int messageId, byte[] bodyBytes)
 		{
 			if (!Enabled || IsPaused || msgObj == null || IsPureHeartbeat(msgObj)) return;
+			// 单向 Send（非 RPC 请求）不进请求记录：没有 RPC 终点回写，会永久卡"待回"污染诊断语义（审查 M-6）
+			if (msgObj is not IRequestMessage) return;
 
 			// JSON/字节拷贝在锁外完成（锁内只做环形写入与索引更新，收敛临界区）
 			var json = BuildJsonSnapshot(msgObj);
@@ -153,7 +155,6 @@ namespace Hotfix.Framework.Network
 
 			var record = new NetworkMessageRecord
 			{
-				Seq           = ++s_seq,
 				Kind          = ENetworkMessageKind.Request,
 				TimeUtc       = DateTime.UtcNow,
 				UniqueId      = msgObj.UniqueId,
@@ -194,7 +195,6 @@ namespace Hotfix.Framework.Network
 
 			var record = new NetworkMessageRecord
 			{
-				Seq           = ++s_seq,
 				Kind          = kind,
 				TimeUtc       = DateTime.UtcNow,
 				UniqueId      = msgObj.UniqueId,
@@ -282,6 +282,12 @@ namespace Hotfix.Framework.Network
 		/// 置一次性重发标记（调试专用）：紧随其后的发送埋点记录将标注 IsResend。
 		/// </summary>
 		public static void MarkNextResend() => s_nextRecordIsResend = true;
+
+		/// <summary>
+		/// 复位一次性重发标记（调试专用）：重发失败路径（未连接/发送异常）不会产生发送埋点去消费标记，
+		// 不复位会泄漏到下一条真实业务请求上（审查 M-2）。
+		/// </summary>
+		internal static void ResetResendMark() => s_nextRecordIsResend = false;
 
 		/// <summary>
 		/// 重发一条历史请求（调试专用，由重发窗口调用）：按序号定位原请求 → 消息类型反查 →
@@ -386,13 +392,17 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		private static void Push(NetworkMessageRecord record)
 		{
+			record.Seq = ++s_seq; // 锁内自增：跨线程并发录制时保证 Seq 严格递增（审查 M-7）
+
 			if (m_count == CAPACITY)
 			{
 				var evicted = m_records[m_head];
 				if (evicted != null)
 				{
-					m_pendingRequestSeqs.Remove(evicted.UniqueId);
-					m_pendingResponseSeqs.Remove(evicted.UniqueId);
+					// 按被淘汰记录的类型只清对应表——否则同 UniqueId 另一半的 pending 被误删，
+					// 在环的那条记录将永远等不到终点回写（卡"待回"）（审查 M-1）
+					if (evicted.Kind == ENetworkMessageKind.Request)      m_pendingRequestSeqs.Remove(evicted.UniqueId);
+					else if (evicted.Kind == ENetworkMessageKind.Response) m_pendingResponseSeqs.Remove(evicted.UniqueId);
 				}
 
 				m_records[m_head] = record;

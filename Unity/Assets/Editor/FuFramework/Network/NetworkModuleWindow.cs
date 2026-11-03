@@ -175,6 +175,11 @@ namespace FuFramework.Network.Editor
 		private readonly int[] m_tabCounts = new int[6];
 
 		/// <summary>
+		/// 录制开关是否已成功应用（OnEnable 失败时由刷新补应用一次，防"面板开着却永不录制"）。
+		/// </summary>
+		private bool m_enabledApplied;
+
+		/// <summary>
 		/// 数据行文本容器（虚拟化绘制每行复用，避免每帧每行分配数组）。
 		/// </summary>
 		[NonSerialized] private string[] m_rowCells;
@@ -221,7 +226,6 @@ namespace FuFramework.Network.Editor
 		private PropertyInfo m_recBodyBytesProperty;
 		private PropertyInfo m_recBodyTruncatedProperty;
 		private PropertyInfo m_recJsonSnapshotProperty;
-		private PropertyInfo m_recIsResendProperty;
 
 		#endregion
 
@@ -233,6 +237,7 @@ namespace FuFramework.Network.Editor
 		protected override void OnPanelEnabled()
 		{
 			LoadIgnoredMessages();
+			m_enabledApplied = false;
 			SetMonitorEnabled(true);
 		}
 
@@ -242,6 +247,7 @@ namespace FuFramework.Network.Editor
 		protected override void OnPanelDisabled()
 		{
 			SetMonitorEnabled(false);
+			m_enabledApplied = false;
 		}
 
 		/// <summary>
@@ -300,7 +306,6 @@ namespace FuFramework.Network.Editor
 			m_recBodyBytesProperty     = m_recordType.GetProperty("BodyBytes", InstanceFlags);
 			m_recBodyTruncatedProperty = m_recordType.GetProperty("BodyTruncated", InstanceFlags);
 			m_recJsonSnapshotProperty  = m_recordType.GetProperty("JsonSnapshot", InstanceFlags);
-			m_recIsResendProperty      = m_recordType.GetProperty("IsResend", InstanceFlags);
 
 			return m_getSnapshotMethod != null && m_recSeqProperty != null;
 		}
@@ -333,7 +338,6 @@ namespace FuFramework.Network.Editor
 			m_recBodyBytesProperty      = null;
 			m_recBodyTruncatedProperty  = null;
 			m_recJsonSnapshotProperty   = null;
-			m_recIsResendProperty       = null;
 			m_cachedRecords             = Array.Empty<object>();
 			m_displayRecords.Clear();
 		}
@@ -378,9 +382,6 @@ namespace FuFramework.Network.Editor
 		/// <summary>读取 JSON 快照</summary>
 		private string RecJson(object record) => m_recJsonSnapshotProperty?.GetValue(record) as string ?? "";
 
-		/// <summary>读取重发标记</summary>
-		private bool RecIsResend(object record) => (bool)(m_recIsResendProperty?.GetValue(record) ?? false);
-
 		/// <summary>
 		/// 是否异常记录（超时/取消）
 		/// </summary>
@@ -395,6 +396,14 @@ namespace FuFramework.Network.Editor
 		/// </summary>
 		protected override void OnRefresh()
 		{
+			// 录制开关补应用：OnEnable 时 Hotfix 可能尚未加载（Play 启动窗口期），EnsureReflection 失败会静默跳过——
+			// 反射就绪后的首次刷新补开一次，否则面板"正常显示但永不录制"（审查 I-2）
+			if (!m_enabledApplied && Application.isPlaying && EnsureReflection())
+			{
+				m_enabledApplied = true;
+				m_setEnabledMethod?.Invoke(null, new object[] { true });
+			}
+
 			if (m_getSnapshotMethod == null) return;
 
 			m_cachedRecords = m_getSnapshotMethod.Invoke(null, null) as object[] ?? Array.Empty<object>();
@@ -755,7 +764,8 @@ namespace FuFramework.Network.Editor
 				}
 			}
 
-			using (new EditorGUI.DisabledScope(body == null))
+			// 空包体（空 proto 消息可为 0 长度）时 Hex 窗口无内容可看，与 null 一并禁用（审查 M-8）
+			using (new EditorGUI.DisabledScope(body == null || body.Length == 0))
 			{
 				if (GUILayout.Button(RecBodyTruncated(selected) ? "查看二进制数据(已截断)" : "查看二进制数据", GUI.skin.button, barOptions))
 				{
