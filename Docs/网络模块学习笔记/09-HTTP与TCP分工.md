@@ -46,7 +46,7 @@ await NetworkModule.Instance.Call<RespPlayerLogin>(new ReqPlayerLogin { ... }); 
 
 ### 2.1 能不能做 ≠ 该不该做
 
-TCP 确实支持 Req/Rsp（06 篇的 `Call` + `UniqueId` 配对），但它的请求是**挂在一条长期独占的连接**上的。为了维持这根线，框架要持续付出保活代价（`MessageBase/HeartBeatProviderBase.cs:25-30`）：
+TCP 确实支持 Req/Rsp（06 篇的 `Call` + `UniqueId` 配对），但它的请求是**挂在一条长期独占的连接**上的。为了维持这根线，框架要持续付出保活代价（`MessageBase/IHeartBeatReqCreator.cs`）：
 
 ```csharp
 public virtual float HeartBeatInterval => 5;        // 每 5 秒要发一次心跳
@@ -138,7 +138,7 @@ message = (MessageObject)Deserialize(messageHttpObject.Body, type);          // 
 ### 答案
 
 1. 对——TCP 靠 `Call` + `UniqueId` 配对实现 Req/Rsp。但 TCP 的请求挂在一条长期独占的连接上（心跳保活、断线重连、会话状态），为低频一次性操作占线是浪费；HTTP 即寄即断零占用、无状态好扩容，还附赠第三方访问/HTTPS/签名鉴权。核心是"代价与场景"，不是"能力"。
-2. 每 5 秒发一次心跳；连续丢 5 次（约 25 秒）判定连接断开（`HeartBeatProviderBase` 默认值）。
+2. 每 5 秒发一次心跳；连续丢 5 次（约 25 秒）判定连接断开（`NetworkModule.Const` 分部常量）。
 3. 无状态→加机器即扩容；无状态→登录服重启不影响在线玩家；能访问独立第三方服务（如下远程图片）；能接 HTTPS/签名/网关/负载均衡。（任举三个即可）
 4. 干同一件事的两种载体：都是"先被解析的身份信息"（消息类型 + 单号）。TCP 是协议内建区段（`INetworkMessageHeader`），HTTP 没有此区段，于是用 `MessageHttpObject { Id/UniqueId/Body }` 假扮包头装进请求体。
 5. 看 HTTP 请求头的 `Content-Type` 是否等于 `application/x-protobuf`，是则走信封分支，否则按 JSON 走别的分支（`HttpHandler.cs:58`）。

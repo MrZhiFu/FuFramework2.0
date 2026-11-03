@@ -16,6 +16,9 @@ namespace Hotfix.Game.Network
 		/// </summary>
 		private readonly ReqHeartBeat m_reqHeartBeat = new();
 
+		/// <summary>
+		/// 创建心跳包请求
+		/// </summary>
 		public MessageObject CreateHeartBeatReq()
 		{
 			m_reqHeartBeat.Timestamp = Utility.Time.NowMs();

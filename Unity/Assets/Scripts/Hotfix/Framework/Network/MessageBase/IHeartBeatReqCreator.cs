@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Network
 	public interface IHeartBeatReqCreator
 	{
 		/// <summary>
-		/// 生成心跳消息。由游戏侧派生类实现（ReqHeartBeat 为 proto 生成物，框架不引用）
+		/// 创建心跳消息。由游戏侧派生类实现（ReqHeartBeat 为 proto 生成物，框架不引用）
 		/// </summary>
 		/// <returns>心跳消息对象</returns>
 		MessageObject CreateHeartBeatReq();
