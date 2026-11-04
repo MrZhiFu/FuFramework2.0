@@ -38,11 +38,9 @@ namespace Hotfix.Framework.Network
 		/// <typeparam name="T">协议消息类型</typeparam>
 		public static void Register<T>(int messageId) where T : MessageObject
 		{
-			if (!sr_messageDict.TryAdd(messageId, typeof(T)))
-			{
-				sr_messageDict.TryGetValueByKey(messageId, out var exist);
-				throw new InvalidOperationException($"消息Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? typeof(T).FullName}");
-			}
+			if (sr_messageDict.TryAdd(messageId, typeof(T))) return;
+			sr_messageDict.TryGetValueByKey(messageId, out var exist);
+			throw new InvalidOperationException($"消息Id重复==>当前ID:{messageId},已有ID类型:{exist?.FullName ?? typeof(T).FullName}");
 		}
 
 		/// <summary>

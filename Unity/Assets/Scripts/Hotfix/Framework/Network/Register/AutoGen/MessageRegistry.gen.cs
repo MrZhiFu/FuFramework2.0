@@ -23,8 +23,10 @@ namespace Hotfix.Framework.Network
 {
     /// <summary>
     /// 协议消息注册表（生成物）。
-    /// 说明：启动时静态登记全部消息的编号，把收到的每条消息绑定到对应的处理方法（直接写好的委托），
-    /// 并注册框架外的包处理器实现；运行时不扫描程序集、不读特性、不查方法。
+    /// 说明：
+    ///		1.启动时注册全部消息的编号（收发包都按编号互相识别，不登记就无法解析收到的消息），
+    ///		2.绑定全部推送处理方法，
+    ///		3.注册框架外的包处理器实现。
     /// </summary>
     internal static class MessageRegistry
     {
@@ -45,14 +47,15 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 登记每条消息的编号（收发包都按编号互相识别）。
+        /// 注册每条消息的编号（收发包都按编号互相识别）。
         /// </summary>
         private static void RegisterMessageIds()
         {
+            // Basic
             MessageIdRegistry.Register<ReqHeartBeat>(MessageIds.Basic.ReqHeartBeat);
             MessageIdRegistry.Register<NotifyHeartBeat>(MessageIds.Basic.NotifyHeartBeat);
             MessageIdRegistry.Register<NotifyServerFullyLoaded>(MessageIds.Basic.NotifyServerFullyLoaded);
-
+            // Bag
             MessageIdRegistry.Register<ReqBagInfo>(MessageIds.Bag.ReqBagInfo);
             MessageIdRegistry.Register<RespBagInfo>(MessageIds.Bag.RespBagInfo);
             MessageIdRegistry.Register<ReqUseItem>(MessageIds.Bag.ReqUseItem);
@@ -63,7 +66,7 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<RespRemoveItem>(MessageIds.Bag.RespRemoveItem);
             MessageIdRegistry.Register<NotifyBagItem>(MessageIds.Bag.NotifyBagItem);
             MessageIdRegistry.Register<NotifyBagInfoChanged>(MessageIds.Bag.NotifyBagInfoChanged);
-
+            // User
             MessageIdRegistry.Register<ReqUserLogin>(MessageIds.User.ReqUserLogin);
             MessageIdRegistry.Register<RespUserLogin>(MessageIds.User.RespUserLogin);
             MessageIdRegistry.Register<ReqPlayerCreate>(MessageIds.User.ReqPlayerCreate);

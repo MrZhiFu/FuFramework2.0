@@ -637,8 +637,10 @@ namespace Hotfix.Framework.Network
 {{
     /// <summary>
     /// 协议消息注册表（生成物）。
-    /// 说明：启动时静态登记全部消息的编号，把收到的每条消息绑定到对应的处理方法（直接写好的委托），
-    /// 并注册框架外的包处理器实现；运行时不扫描程序集、不读特性、不查方法。
+    /// 说明：
+    ///		1.启动时注册全部消息的编号（收发包都按编号互相识别，不登记就无法解析收到的消息），
+    ///		2.绑定全部推送处理方法，
+    ///		3.注册框架外的包处理器实现。
     /// </summary>
     internal static class MessageRegistry
     {{
@@ -659,7 +661,7 @@ namespace Hotfix.Framework.Network
         }}
 
         /// <summary>
-        /// 登记每条消息的编号（收发包都按编号互相识别）。
+        /// 注册每条消息的编号（收发包都按编号互相识别）。
         /// </summary>
         private static void RegisterMessageIds()
         {{
@@ -704,8 +706,8 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     for msg in messages:
         # 模块分组之间插一个空行（MessageIds.<模块>.<消息> 的第二段即模块名），与 proto 文件的分区横幅对齐
         module = msg["expr"].split(".")[1] if "." in msg["expr"] else None
-        if last_module is not None and module != last_module:
-            lines.append("\n")
+        if module != last_module:
+            lines.append("            // %s\n" % module)
         last_module = module
 
         lines.append(
