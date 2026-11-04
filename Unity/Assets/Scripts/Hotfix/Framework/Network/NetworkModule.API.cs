@@ -84,7 +84,6 @@ namespace Hotfix.Framework.Network
 		/// 连接服务器（转发当前频道 Connect；频道须已创建）。
 		/// </summary>
 		/// <param name="address">服务器地址。</param>
-		/// <param name="userData">用户自定义数据（随连接成功事件回传）。</param>
 		public void Connect(Uri address) => GetChannel().Connect(address);
 
 		/// <summary>

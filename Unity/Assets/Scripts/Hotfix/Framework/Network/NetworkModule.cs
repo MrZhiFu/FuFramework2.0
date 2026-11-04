@@ -70,7 +70,6 @@ namespace Hotfix.Framework.Network
 		/// 频道连接成功回调，广播连接成功事件
 		/// </summary>
 		/// <param name="networkChannel">网络频道</param>
-		/// <param name="userData">用户自定义数据</param>
 		private void OnNetworkChannelConnected(NetworkChannelBase networkChannel)
 		{
 			var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel);
