@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Network
 	///        无法构造，必须由本接口实现（心跳参数等运行时配置统一见 <see cref="NetworkModule"/>）。
 	///
 	/// 装配：框架默认装配**不包含**心跳（没有默认实现可装），
-	/// 由生成物 MessageRegistry.gen.cs 的 RegisterExternalPacketHandler 注册游戏侧实现。
+	/// 由生成物 MessageRegistry.gen.cs 的 RegisterExtPacketHandler 注册游戏侧实现。
 	/// </summary>
 	public interface IHeartBeatReqCreator
 	{

@@ -41,7 +41,7 @@ namespace Hotfix.Framework.Network
         {
             RegisterMessageIds();
             RegisterNotifyHandlers();
-            RegisterExternalPacketHandlers();
+            RegisterExtPacketHandlers();
         }
 
         /// <summary>
@@ -107,12 +107,12 @@ namespace Hotfix.Framework.Network
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
-        private static void RegisterExternalPacketHandlers()
+        private static void RegisterExtPacketHandlers()
         {
             if (s_ExternalPacketHandlersRegistered) return;
             s_ExternalPacketHandlersRegistered = true;
 
-            NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
+            NetworkChannelHelper.RegisterExtPacketHandler(channel =>
             {
                 // IHeartBeatReqCreator	Unity/Assets/Scripts/Hotfix/Game/Network/HeartBeatReqCreatorImpl.cs
                 channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatReqCreatorImpl());

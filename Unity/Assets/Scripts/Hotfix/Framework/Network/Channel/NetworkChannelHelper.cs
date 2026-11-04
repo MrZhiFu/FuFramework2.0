@@ -14,16 +14,24 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public readonly struct PacketHeader
 	{
-		/// <summary>包总长度（含包头）</summary>
+		/// <summary>
+		/// 包总长度（含包头）
+		/// </summary>
 		public uint PacketLength { get; }
 
-		/// <summary>压缩标记（1 = 包体已压缩）</summary>
+		/// <summary>
+		/// 压缩标记（1 = 包体已压缩）
+		/// </summary>
 		public byte ZipFlag { get; }
 
-		/// <summary>消息唯一号（RPC 配对单号）</summary>
+		/// <summary>
+		/// 消息唯一号（RPC 配对单号）
+		/// </summary>
 		public int UniqueId { get; }
 
-		/// <summary>消息 ID</summary>
+		/// <summary>
+		/// 消息 ID
+		/// </summary>
 		public int MessageId { get; }
 
 		public PacketHeader(uint packetLength, byte zipFlag, int uniqueId, int messageId)
@@ -45,24 +53,24 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 外部装配委托集合（显式注册入口；项目铁律 4：不做反射扫描自动发现）。
 		/// 委托在频道构造时调用，实例按频道创建、不可跨频道共享。
-		/// 当前唯一使用者：生成物注册游戏侧心跳请求创建器（<see cref="RegisterExternalPacketHandler"/>）。
+		/// 当前唯一使用者：生成物注册游戏侧心跳请求创建器（<see cref="RegisterExtPacketHandler"/>）。
 		/// 仅限启动期调用，之后不再变更。
 		/// </summary>
-		private static readonly List<Action<INetworkChannel>> sr_externalPacketHandlerList = new();
+		private static readonly List<Action<INetworkChannel>> sr_extPacketHandlerList = new();
 
 		/// <summary>
 		/// 外部装配委托集合的锁对象
 		/// </summary>
-		private static readonly object sr_externalPacketHandlerRegistrarsLock = new();
+		private static readonly object sr_extPacketHandlerLock = new();
 
 		/// <summary>
 		/// 执行外部装配委托（频道构造时调用）：注入频道引用，含生成物注册的游戏心跳。
 		/// </summary>
 		public static void RunExternalPacketHandlers(INetworkChannel channel)
 		{
-			lock (sr_externalPacketHandlerRegistrarsLock)
+			lock (sr_extPacketHandlerLock)
 			{
-				foreach (var handler in sr_externalPacketHandlerList)
+				foreach (var handler in sr_extPacketHandlerList)
 				{
 					handler?.Invoke(channel);
 				}
@@ -73,12 +81,12 @@ namespace Hotfix.Framework.Network
 		/// 显式注册一个外部装配委托。委托会在频道构造时被调用。
 		/// </summary>
 		/// <param name="registrar">装配委托，参数为待装配的网络频道</param>
-		public static void RegisterExternalPacketHandler(Action<INetworkChannel> registrar)
+		public static void RegisterExtPacketHandler(Action<INetworkChannel> registrar)
 		{
 			registrar.NotNull(nameof(registrar));
-			lock (sr_externalPacketHandlerRegistrarsLock)
+			lock (sr_extPacketHandlerLock)
 			{
-				sr_externalPacketHandlerList.Add(registrar);
+				sr_extPacketHandlerList.Add(registrar);
 			}
 		}
 
@@ -155,20 +163,13 @@ namespace Hotfix.Framework.Network
 
 			var offset = 0;
 
-			// 消息长度 4
-			var packetLength = source.ReadUInt(ref offset);
 
-			// 操作类型 1（无消费者，仅推进偏移）
-			offset += sizeof(byte);
+			var packetLength = source.ReadUInt(ref offset); // 消息长度 4
+			offset += sizeof(byte);                         // 操作类型 1（无消费者，仅推进偏移）
 
-			// 压缩标记 1
-			var zipFlag = source.ReadByte(ref offset);
-
-			// 唯一ID 4
-			var uniqueId = source.ReadInt(ref offset);
-
-			// 消息ID 4
-			var messageId = source.ReadInt(ref offset);
+			var zipFlag   = source.ReadByte(ref offset); // 压缩标记 1
+			var uniqueId  = source.ReadInt(ref offset);  // 唯一ID 4
+			var messageId = source.ReadInt(ref offset);  // 消息ID 4
 
 			if (packetLength < NetworkModule.PACKET_HEADER_LENGTH)
 			{

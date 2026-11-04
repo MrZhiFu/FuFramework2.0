@@ -655,7 +655,7 @@ namespace Hotfix.Framework.Network
         {{
             RegisterMessageIds();
             RegisterNotifyHandlers();
-            RegisterExternalPacketHandlers();
+            RegisterExtPacketHandlers();
         }}
 
         /// <summary>
@@ -686,7 +686,7 @@ namespace Hotfix.Framework.Network
         ///
         /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
-        private static void RegisterExternalPacketHandlers()
+        private static void RegisterExtPacketHandlers()
         {{
             if (s_ExternalPacketHandlersRegistered) return;
             s_ExternalPacketHandlersRegistered = true;
@@ -739,7 +739,7 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
     # ---- 框架外包处理器注册 ----
     if external_handlers:
         lines = [
-            "            NetworkChannelHelper.RegisterExternalPacketHandler(channel =>\n",
+            "            NetworkChannelHelper.RegisterExtPacketHandler(channel =>\n",
             "            {\n",
         ]
         for h in external_handlers:
