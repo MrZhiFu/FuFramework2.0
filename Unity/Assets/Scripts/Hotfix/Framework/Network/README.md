@@ -9,7 +9,7 @@ FuFramework Network 模块是游戏框架的网络通信系统，提供完整的
 - **多协议支持**：TCP、WebSocket（可扩展 KCP、UDP）
 - **分层架构**：频道层 → 辅助器层 → 套接字层，职责清晰
 - **特性声明 + 生成期注册**：`[MessageId]` / `[NotifyMessageHandler]` 仅作为声明，注册数据由生成期扫描源码产出的静态表提供（proto 变更后运行一键脚本 `Protobuf/Proto2CsExport-All.bat`；仅新增处理器时运行 `Protobuf/gen-proto-registry.bat`）
-- **信封读写内置 + 显式外部装配**：信封读写（序列化/解析/压缩）内置于 `NetworkChannelHelper`（原 6 个包处理器类已删，`Handler/` 目录退役）；跨层对象（如游戏侧心跳提供者）须通过 `RegisterExternalPacketHandler` 显式注册
+- **编解码静态化 + 显式外部装配**：信封读写（序列化/解析/压缩）内置于 `NetworkChannelHelper`（无状态静态类，解析结果以 `PacketHeader` 结构显式传递；原 6 个包处理器类已删，`Handler/` 目录退役）；跨层对象（如游戏侧心跳请求创建器）须通过 `RegisterExtPacketHandler` 显式注册
 - **四种消息模式**：请求-响应（Request/Response）、服务器推送（Notify）、心跳（HeartBeat）
 - **包处理管线**：包头处理 → 包体处理 → 压缩/解压 → 心跳检测
 - **异步 RPC**：基于 `UniTask` 的异步 RPC 调用，支持超时机制
@@ -207,8 +207,8 @@ NetworkModule.Instance.ClearNotifyBuffer();                      // 登出/切�
 需要补充跨层对象时：
 
 ```csharp
-// 1) 静态注册入口（对所有 NetworkChannelHelper 生效，建议启动期调用一次）
-NetworkChannelHelper.RegisterExternalPacketHandler(channel =>
+// 1) 静态注册入口（静态类全局生效，建议启动期调用一次）
+NetworkChannelHelper.RegisterExtPacketHandler(channel =>
 {
     channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatReqCreatorImpl());
 });
@@ -375,7 +375,7 @@ eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
 ## 6. 目录结构
 
 > 组织原则：**真多态的接口跟随实现同居**（`Channel/`、`Socket/`，频道辅助器同属频道层），
-> 消息契约接口集中于 `Interface/`，消息基类与心跳提供者基类同居 `MessageBase/`
+> 消息契约接口集中于 `Interface/`，消息基类与心跳请求创建器接口同居 `MessageBase/`
 > （信封读写已内置于 `NetworkChannelHelper`，原包处理器目录 `Handler/` 已删），
 > 注册设施与生成物集中（`Register/`）。
 > 全模块统一命名空间 `Hotfix.Framework.Network`，目录仅为物理分组。
@@ -390,7 +390,7 @@ Network/
 ├── Channel/                                          # 网络频道（接口与实现同居，internal）
 │   ├── INetworkChannel.cs                            # 网络频道接口
 │   ├── NetworkChannelBase.cs                         # 网络频道基类
-│   ├── NetworkChannelHelper.cs                       # 频道辅助器（信封读写内置 + external 处理器注册循环；心跳由生成物注册）
+│   ├── NetworkChannelHelper.cs                       # 频道编解码器（无状态静态类：信封读写/外部装配委托）
 │   ├── SystemTcpNetworkChannel.cs                    # TCP 频道实现
 │   └── WebSocketNetworkChannel.cs                    # WebSocket 频道实现
 ├── Socket/                                           # 网络套接字（接口与实现同居，internal）
