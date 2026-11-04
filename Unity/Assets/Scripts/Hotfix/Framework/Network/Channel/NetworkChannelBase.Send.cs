@@ -97,15 +97,15 @@ namespace Hotfix.Framework.Network
 				// 处理待发送的消息对象，直到遇到错误或发送完毕为止。
 				while (m_SendPacketPool.First != null)
 				{
-					var  msgObj = m_SendPacketPool.First.Value;
-					bool serializeResult;
+					var  msgObj        = m_SendPacketPool.First.Value;
+					var  sentMessageId = -1;
 					try
 					{
 						// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
-						serializeResult = ProcessSendMessage(msgObj);
+						sentMessageId = ProcessSendMessage(msgObj);
 
 #if ENABLE_NETWORK_REQ_LOG
-						DebugSendLog(msgObj);
+						DebugSendLog(msgObj, sentMessageId);
 #endif
 					}
 					catch (Exception exception)
@@ -124,8 +124,8 @@ namespace Hotfix.Framework.Network
 						m_SendPacketPool.RemoveFirst();
 					}
 
-					// 消息序列化处理成功，继续处理下一个消息对象
-					if (serializeResult) continue;
+					// 消息序列化处理成功（sentMessageId >= 0），继续处理下一个消息对象
+					if (sentMessageId >= 0) continue;
 
 					// 处理发送消息对象失败，返回false，停止整帧发送
 					const string errorMessage = "序列化消息失败.";
@@ -146,34 +146,26 @@ namespace Hotfix.Framework.Network
 		/// 处理发送消息对象(序列化包头和包体，并将序列化后的包头和包体写进stream中)。
 		/// </summary>
 		/// <param name="msgObj">消息对象</param>
-		/// <returns></returns>
+		/// <returns>本次发送的消息 ID（发送日志过滤/监控埋点用）；序列化失败抛异常</returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		protected virtual bool ProcessSendMessage(MessageObject msgObj)
+		protected virtual int ProcessSendMessage(MessageObject msgObj)
 		{
-			var serializeSuccess = m_NetworkChannelHelper.SerializeAndWriteToCacheStream(msgObj, m_SendState.CacheStream, out var msgBodyBuffer);
-			if (serializeSuccess)
-			{
-				serializeSuccess = m_NetworkChannelHelper.WritePacketBodyToCacheStream(msgBodyBuffer, m_SendState.CacheStream);
-			}
-			else
-			{
-				const string errorMessage = "序列化消息失败。";
-				throw new InvalidOperationException(errorMessage);
-			}
-
-			return serializeSuccess;
+			var messageId = NetworkChannelHelper.SerializeAndWriteToCacheStream(msgObj, m_SendState.CacheStream, out var msgBodyBuffer);
+			NetworkChannelHelper.WritePacketBodyToCacheStream(msgBodyBuffer, m_SendState.CacheStream);
+			return messageId;
 		}
 
 		/// <summary>
 		/// 发送调试日志（仅 ENABLE_NETWORK_REQ_LOG 宏开启时输出）
 		/// </summary>
 		/// <param name="msgObj">已发送的消息对象</param>
-		protected void DebugSendLog(MessageObject msgObj)
+		/// <param name="messageId">本次发送的消息 ID（由序列化管线返回）</param>
+		protected void DebugSendLog(MessageObject msgObj, int messageId)
 		{
 #if ENABLE_NETWORK_REQ_LOG
-			if (!m_IgnoreSendIds.Contains(m_NetworkChannelHelper.LastSentMessageId))
+			if (!m_IgnoreSendIds.Contains(messageId))
 			{
-				FuLogger.LogInfo($"发送消息:[{msgObj.GetType().Name}({m_NetworkChannelHelper.LastSentMessageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"发送消息:[{msgObj.GetType().Name}({messageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

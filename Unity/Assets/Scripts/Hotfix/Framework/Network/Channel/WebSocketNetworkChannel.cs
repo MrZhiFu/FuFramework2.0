@@ -68,7 +68,7 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			m_NetworkChannelHelper.PrepareForConnecting();
+			PrepareForConnecting();
 			ConnectAsync().Forget();
 		}
 
@@ -108,14 +108,14 @@ namespace Hotfix.Framework.Network
 
 				while (m_SendPacketPool.First != null)
 				{
-					var msgObj = m_SendPacketPool.First.Value;
+					var msgObj        = m_SendPacketPool.First.Value;
+					var sentMessageId = -1;
 
-					bool serializeResult;
 					try
 					{
-						serializeResult = ProcessSendMessage(msgObj);
+						sentMessageId = ProcessSendMessage(msgObj);
 #if ENABLE_NETWORK_REQ_LOG
-						DebugSendLog(msgObj);
+						DebugSendLog(msgObj, sentMessageId);
 #endif
 					}
 					catch (Exception exception)
@@ -134,7 +134,7 @@ namespace Hotfix.Framework.Network
 						m_SendPacketPool.RemoveFirst();
 					}
 
-					if (!serializeResult)
+					if (sentMessageId == -1)
 					{
 						const string errorMessage = "序列化消息失败。";
 						if (m_NetworkChannelError == null) throw new InvalidOperationException(errorMessage);
@@ -156,9 +156,9 @@ namespace Hotfix.Framework.Network
 		/// 处理发送消息对象
 		/// </summary>
 		/// <param name="msgObj">消息对象</param>
-		/// <returns></returns>
+		/// <returns>本次发送的消息 ID</returns>
 		/// <exception cref="InvalidOperationException"></exception>
-		protected override bool ProcessSendMessage(MessageObject msgObj)
+		protected override int ProcessSendMessage(MessageObject msgObj)
 		{
 			if (IsClose())
 			{
@@ -167,27 +167,18 @@ namespace Hotfix.Framework.Network
 				                      errorCode: ENetworkErrorCode.SocketError,
 				                      socketError: SocketError.Disconnecting,
 				                      errorMessage: "网络频道正在关闭。");
-				return false;
+				return -1;
 			}
 
-			var serializeResult = base.ProcessSendMessage(msgObj);
-			if (serializeResult)
-			{
-				var webSocketClientNetSocket = (WebSocketNetSocket)m_Socket;
+			var messageId = base.ProcessSendMessage(msgObj);
+			var webSocketClientNetSocket = (WebSocketNetSocket)m_Socket;
 
-				var buffer = new byte[m_SendState.CacheStream.Length];
-				m_SendState.CacheStream.Seek(0, SeekOrigin.Begin);
-				_ = m_SendState.CacheStream.Read(buffer, 0, buffer.Length);
+			var buffer = new byte[m_SendState.CacheStream.Length];
+			m_SendState.CacheStream.Seek(0, SeekOrigin.Begin);
+			_ = m_SendState.CacheStream.Read(buffer, 0, buffer.Length);
 
-				webSocketClientNetSocket.Client.SendAsync(buffer);
-			}
-			else
-			{
-				const string errorMessage = "序列化消息失败。";
-				throw new InvalidOperationException(errorMessage);
-			}
-
-			return true;
+			webSocketClientNetSocket.Client.SendAsync(buffer);
+			return messageId;
 		}
 
 		/// <summary>
@@ -287,53 +278,56 @@ namespace Hotfix.Framework.Network
 
 				if (buffer.Length < NetworkModule.PACKET_HEADER_LENGTH) return;
 
-				var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
-				if (processSuccess)
+				PacketHeader header;
+				try
 				{
-					var bodyLength = m_NetworkChannelHelper.ValidateAndGetPacketBodyLength();
-					m_ReceiveState.ZipFlag = m_NetworkChannelHelper.LastReceivedZipFlag;
-					m_ReceiveState.Reset(bodyLength);
-					if (buffer.Length < bodyLength) return;
-
-					var body = buffer.ReadBytes(NetworkModule.PACKET_HEADER_LENGTH, bodyLength);
-					if (m_ReceiveState.ZipFlag != 0)
-					{
-						// 解压
-						body = Utility.Zip.Decompress(body);
-					}
-
-					// 反序列化数据
-					processSuccess = m_NetworkChannelHelper.DeserializePacketBody(body, m_NetworkChannelHelper.LastReceivedMessageId, out var msgObj);
-					if (processSuccess)
-					{
-						msgObj.SetUniqueId(m_NetworkChannelHelper.LastReceivedUniqueId);
-					}
-
-#if ENABLE_NETWORK_RSP_LOG
-					DebugReceiveLog(msgObj);
-#endif
-					if (!processSuccess)
-					{
-						if (m_NetworkChannelError != null)
-						{
-							EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
-							                      errorCode: ENetworkErrorCode.DeserializePacketError,
-							                      errorMessage: "包体无效。");
-							return;
-						}
-					}
-
-					// 将收到的消息加入到链表最后（与主线程消费互斥）
-					lock (m_handleMsgLock)
-					{
-						m_waitingHandleMsgLkList.AddLast(msgObj);
-					}
+					header = NetworkChannelHelper.ParseHeader(buffer);
 				}
-				else
+				catch (InvalidOperationException)
 				{
 					EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
 					                      errorCode: ENetworkErrorCode.DeserializePacketHeaderError,
 					                      errorMessage: "包头无效。");
+					return;
+				}
+
+				var bodyLength = (int)(header.PacketLength - NetworkModule.PACKET_HEADER_LENGTH);
+				m_ReceiveState.ZipFlag = header.ZipFlag;
+				m_ReceiveState.Reset(bodyLength);
+				if (buffer.Length < bodyLength) return;
+
+				var body = buffer.ReadBytes(NetworkModule.PACKET_HEADER_LENGTH, bodyLength);
+				if (m_ReceiveState.ZipFlag != 0)
+				{
+					// 解压
+					body = Utility.Zip.Decompress(body);
+				}
+
+				// 反序列化数据
+				var deserializeSuccess = NetworkChannelHelper.DeserializePacketBody(body, header.MessageId, out var msgObj);
+				if (deserializeSuccess)
+				{
+					msgObj.SetUniqueId(header.UniqueId);
+				}
+
+#if ENABLE_NETWORK_RSP_LOG
+					DebugReceiveLog(msgObj, header.MessageId);
+#endif
+				if (!deserializeSuccess)
+				{
+					if (m_NetworkChannelError != null)
+					{
+						EnqueueLifecycleEvent(EChannelLifecycleEventType.Error,
+						                      errorCode: ENetworkErrorCode.DeserializePacketError,
+						                      errorMessage: "包体无效。");
+						return;
+					}
+				}
+
+				// 将收到的消息加入到链表最后（与主线程消费互斥）
+				lock (m_handleMsgLock)
+				{
+					m_waitingHandleMsgLkList.AddLast(msgObj);
 				}
 			}
 			catch (Exception e)

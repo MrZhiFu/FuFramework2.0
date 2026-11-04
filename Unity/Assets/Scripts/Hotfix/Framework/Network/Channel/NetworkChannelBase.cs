@@ -14,11 +14,6 @@ namespace Hotfix.Framework.Network
 	internal abstract partial class NetworkChannelBase : INetworkChannel, IDisposable
 	{
 		/// <summary>
-		/// 网络频道帮助器（信封读写内置，负责序列化收发包）
-		/// </summary>
-		protected readonly NetworkChannelHelper m_NetworkChannelHelper;
-
-		/// <summary>
 		/// 网络Socket 对象
 		/// </summary>
 		protected INetworkSocket m_Socket;
@@ -142,7 +137,6 @@ namespace Hotfix.Framework.Network
 		protected NetworkChannelBase()
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
-			m_NetworkChannelHelper        = new NetworkChannelHelper(); // helper 内化：恒定唯一类型无外部注入点，频道构造内统一创建
 			m_Socket                      = null;
 			m_SendState                   = new SendState();
 			m_ReceiveState                = new ReceiveState();
@@ -156,7 +150,7 @@ namespace Hotfix.Framework.Network
 			m_NetworkChannelMissHeartBeat = null;
 			m_NetworkChannelError         = null;
 
-			m_NetworkChannelHelper.Initialize(this);
+			NetworkChannelHelper.RunExternalPacketHandlers(this); // 外部装配委托（含生成物注册的游戏心跳）
 		}
 
 		/// <summary>
@@ -243,9 +237,17 @@ namespace Hotfix.Framework.Network
 			Close(ENetworkCloseReason.Active);
 			m_SendState.Dispose();
 			m_ReceiveState.Dispose();
-			m_NetworkChannelHelper.Dispose();
 
 			m_disposed = true;
+		}
+
+		/// <summary>
+		/// 连接前的准备：设置 Socket 收发缓冲区大小。
+		/// </summary>
+		protected void PrepareForConnecting()
+		{
+			m_Socket.ReceiveBufferSize = NetworkModule.SOCKET_BUFFER_SIZE;
+			m_Socket.SendBufferSize    = NetworkModule.SOCKET_BUFFER_SIZE;
 		}
 
 		/// <summary>

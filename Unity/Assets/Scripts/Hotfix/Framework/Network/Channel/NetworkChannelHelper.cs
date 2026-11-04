@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Hotfix.Framework.Core;
-using AOT.Framework.Core.Log;
 using Hotfix.Framework.Event;
 using ProtoBuf;
 
@@ -11,117 +10,67 @@ using ProtoBuf;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络频道辅助器（频道的内建组成部分：信封读写 + 事件订阅 + 外部装配委托执行）。
-	/// 定位：由频道构造内化创建（<see cref="NetworkChannelBase"/>），业务侧无注入点；
-	/// 经 <see cref="Initialize"/> 与所属频道绑定，随频道销毁而 <see cref="Dispose"/>，与频道同生共死。
-	/// 功能：
-	///     1. 信封读写：包头的序列化写入（含压缩判定）与解析读取（含接收状态缓存）。
-	///     2. 显式注册外部包处理器装配委托（含生成物注册的游戏心跳）。
+	/// 线协议包头解析结果（readonly 结构，显式传递取代隐式字段状态）。
 	/// </summary>
-	public class NetworkChannelHelper
+	public readonly struct PacketHeader
+	{
+		/// <summary>包总长度（含包头）</summary>
+		public uint PacketLength { get; }
+
+		/// <summary>压缩标记（1 = 包体已压缩）</summary>
+		public byte ZipFlag { get; }
+
+		/// <summary>消息唯一号（RPC 配对单号）</summary>
+		public int UniqueId { get; }
+
+		/// <summary>消息 ID</summary>
+		public int MessageId { get; }
+
+		public PacketHeader(uint packetLength, byte zipFlag, int uniqueId, int messageId)
+		{
+			PacketLength = packetLength;
+			ZipFlag      = zipFlag;
+			UniqueId     = uniqueId;
+			MessageId    = messageId;
+		}
+	}
+
+	/// <summary>
+	/// 网络频道编解码器（无状态静态工具类）：信封（包头/包体）的序列化写入与解析读取。
+	/// 全部方法无共享可写状态——解析结果以返回值/出参显式传递，天然线程安全；
+	/// 包头缓冲使用局部数组（14 字节，JIT 栈分配），复用 BufferEx 扩展写入。
+	/// </summary>
+	public static class NetworkChannelHelper
 	{
 		/// <summary>
-		/// 包头缓存字节（避免每次发包重新分配）
-		/// </summary>
-		private readonly byte[] m_cachedByte = new byte[NetworkModule.PACKET_HEADER_LENGTH];
-
-		/// <summary>
-		/// 包头缓存的写入偏移
-		/// </summary>
-		private int m_offset;
-
-		/// <summary>
-		/// 当前接收消息的包长（含 14 字节包头）
-		/// </summary>
-		private uint m_receivedPacketLength;
-
-		/// <summary>
-		/// 事件组件实例
-		/// </summary>
-		private static EventModule s_event;
-
-		/// <summary>
-		/// 所属频道引用（Initialize 注入）：事件过滤、心跳与发送（取频道会话）依赖它
-		/// </summary>
-		private INetworkChannel m_networkChannel;
-
-		/// <summary>
-		/// 当前发送消息的 ID（发送调试日志过滤用）
-		/// </summary>
-		public int LastSentMessageId { get; private set; }
-
-		/// <summary>
-		/// 当前接收消息的 ID（接收调试日志过滤与包体反序列化用）
-		/// </summary>
-		public int LastReceivedMessageId { get; private set; }
-
-		/// <summary>
-		/// 当前接收消息的 UniqueId（收包侧还原 RPC 配对单号用）
-		/// </summary>
-		public int LastReceivedUniqueId { get; private set; }
-
-		/// <summary>
-		/// 当前接收消息的压缩标记（包体期解压判定用，跨收包批次存活）
-		/// </summary>
-		public byte LastReceivedZipFlag { get; private set; }
-
-		/// <summary>
-		/// 事件组件（helper 自身订阅/退订网络事件用；全局事件请走 GlobalModule.EventModule）
-		/// </summary>
-		private static EventModule Event => s_event ??= ModuleManager.GetModule<EventModule>();
-
-		/// <summary>
 		/// 外部装配委托集合（显式注册入口；项目铁律 4：不做反射扫描自动发现）。
-		/// 委托在每个频道 Initialize 时调用，实例按频道创建、不可跨频道共享。
-		/// 当前唯一使用者：生成物注册游戏侧心跳提供者（<see cref="RegisterExternalPacketHandler"/>）。
+		/// 委托在频道构造时调用，实例按频道创建、不可跨频道共享。
+		/// 当前唯一使用者：生成物注册游戏侧心跳请求创建器（<see cref="RegisterExternalPacketHandler"/>）。
 		/// 仅限启动期调用，之后不再变更。
 		/// </summary>
 		private static readonly List<Action<INetworkChannel>> sr_externalPacketHandlerList = new();
 
 		/// <summary>
-		/// 自定义处理器注册表锁对象
+		/// 外部装配委托集合的锁对象
 		/// </summary>
 		private static readonly object sr_externalPacketHandlerRegistrarsLock = new();
 
 		/// <summary>
-		/// 与所属频道绑定：注入频道引用、执行外部装配委托（含生成物注册的游戏心跳）、订阅网络事件。
-		/// 由频道构造在创建本辅助器后立即调用一次。
+		/// 执行外部装配委托（频道构造时调用）：注入频道引用，含生成物注册的游戏心跳。
 		/// </summary>
-		/// <param name="netChannel">所属网络频道</param>
-		public void Initialize(INetworkChannel netChannel)
+		public static void RunExternalPacketHandlers(INetworkChannel channel)
 		{
-			m_networkChannel = netChannel;
-
-			// 显式注册的自定义委托（含生成物注册的游戏心跳）。
-			// 新增自定义处理器必须显式注册，不再依赖反射扫描程序集。
 			lock (sr_externalPacketHandlerRegistrarsLock)
 			{
 				foreach (var handler in sr_externalPacketHandlerList)
 				{
-					handler?.Invoke(m_networkChannel);
+					handler?.Invoke(channel);
 				}
 			}
-
-			Event.Subscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
-			Event.Subscribe(NetworkClosedEventArgs.EventId,        OnNetworkClosedEventArgs);
-			Event.Subscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
-			Event.Subscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
 		}
 
 		/// <summary>
-		/// 关闭网络频道帮助器，退订网络事件
-		/// </summary>
-		public void Dispose()
-		{
-			Event.Unsubscribe(NetworkConnectedEventArgs.EventId,     OnNetworkConnectedEventArgs);
-			Event.Unsubscribe(NetworkClosedEventArgs.EventId,        OnNetworkClosedEventArgs);
-			Event.Unsubscribe(NetworkMissHeartBeatEventArgs.EventId, OnNetworkMissHeartBeatEventArgs);
-			Event.Unsubscribe(NetworkErrorEventArgs.EventId,         OnNetworkErrorEventArgs);
-			m_networkChannel = null;
-		}
-
-		/// <summary>
-		/// 显式注册一个外部装配委托。委托会在每个频道 Initialize 时被调用。
+		/// 显式注册一个外部装配委托。委托会在频道构造时被调用。
 		/// </summary>
 		/// <param name="registrar">装配委托，参数为待装配的网络频道</param>
 		public static void RegisterExternalPacketHandler(Action<INetworkChannel> registrar)
@@ -134,47 +83,27 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 连接前的准备：设置 Socket 收发缓冲区大小
-		/// </summary>
-		public void PrepareForConnecting()
-		{
-			m_networkChannel.Socket.ReceiveBufferSize = NetworkModule.SOCKET_BUFFER_SIZE;
-			m_networkChannel.Socket.SendBufferSize    = NetworkModule.SOCKET_BUFFER_SIZE;
-		}
-
-		/// <summary>
-		/// 发送心跳包。由频道的定时心跳检查触发
-		/// </summary>
-		/// <returns>是否已发起发送</returns>
-		public bool SendHeartBeat()
-		{
-			var message = m_networkChannel.HeartBeatReqCreator.CreateHeartBeatReq();
-			m_networkChannel.Send(message);
-			return true;
-		}
-
-		/// <summary>
-		/// 序列化消息并写入缓存流（写 14 字节包头到缓存流，消息体字节经 out 返回由调用方续写）
+		/// 序列化消息并把包头写入缓存流（消息体字节经 out 返回由调用方续写）。
+		/// 布局：包总长(4) + 操作类型(1) + 压缩标记(1) + UniqueId(4) + 消息ID(4)。
 		/// </summary>
 		/// <param name="msgObj">待发送的消息对象</param>
 		/// <param name="cacheStream">包头写入目标流</param>
-		/// <param name="msgBodyBuffer">输出：待发送的消息体缓冲区（超过 512 字节时已压缩）</param>
-		/// <returns>是否序列化成功</returns>
-		public bool SerializeAndWriteToCacheStream<T>(T msgObj, MemoryStream cacheStream, out byte[] msgBodyBuffer) where T : MessageObject
+		/// <param name="msgBodyBuffer">输出：待发送的消息体缓冲区（超过压缩阈值时已压缩）</param>
+		/// <returns>本次发送的消息 ID（发送日志过滤/监控埋点用）</returns>
+		public static int SerializeAndWriteToCacheStream(MessageObject msgObj, MemoryStream cacheStream, out byte[] msgBodyBuffer)
 		{
-			m_networkChannel.NotNull(nameof(m_networkChannel));
 			msgObj.NotNull(nameof(msgObj));
 			cacheStream.NotNull(nameof(cacheStream));
 
-			m_offset = 0;
-			var messageType = msgObj.GetType();
+			var header       = new byte[NetworkModule.PACKET_HEADER_LENGTH];
+			var offset       = 0;
+			var messageId    = MessageIdRegistry.GetIdByType(msgObj.GetType());
 
-			LastSentMessageId = MessageIdRegistry.GetIdByType(messageType);
-			msgBodyBuffer     = SerializerHelper.Serialize(msgObj);
+			msgBodyBuffer = SerializerHelper.Serialize(msgObj);
 
 #if UNITY_EDITOR
 			// 网络调试面板发送埋点：抓压缩前的原始包体字节（与接收侧解压后字节对称，Hex 视图可与 JSON 对照）
-			NetworkDebug.RecordRequest(msgObj, LastSentMessageId, msgBodyBuffer);
+			NetworkDebug.RecordRequest(msgObj, messageId, msgBodyBuffer);
 #endif
 
 			byte isZip;
@@ -190,13 +119,13 @@ namespace Hotfix.Framework.Network
 
 			var packetLength = (uint)(NetworkModule.PACKET_HEADER_LENGTH + msgBodyBuffer.Length);
 
-			m_cachedByte.WriteUInt(packetLength, ref m_offset);                                // 数据包总大小
-			m_cachedByte.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref m_offset); // 消息操作类型
-			m_cachedByte.WriteByte(isZip,                                       ref m_offset); // 消息压缩标记
-			m_cachedByte.WriteInt(msgObj.UniqueId,   ref m_offset);                            // 消息编号
-			m_cachedByte.WriteInt(LastSentMessageId, ref m_offset);                            // 消息ID
-			cacheStream.Write(m_cachedByte, 0, NetworkModule.PACKET_HEADER_LENGTH);
-			return true;
+			header.WriteUInt(packetLength, ref offset);                                // 数据包总大小
+			header.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref offset); // 消息操作类型
+			header.WriteByte(isZip,                                       ref offset); // 消息压缩标记
+			header.WriteInt(msgObj.UniqueId,   ref offset);                            // 消息编号
+			header.WriteInt(messageId,         ref offset);                            // 消息ID
+			cacheStream.Write(header, 0, NetworkModule.PACKET_HEADER_LENGTH);
+			return messageId;
 		}
 
 		/// <summary>
@@ -205,7 +134,7 @@ namespace Hotfix.Framework.Network
 		/// <param name="msgBodyBuffer">消息体缓冲区</param>
 		/// <param name="cacheStream">包体写入目标流</param>
 		/// <returns>是否写入成功</returns>
-		public bool WritePacketBodyToCacheStream(byte[] msgBodyBuffer, MemoryStream cacheStream)
+		public static bool WritePacketBodyToCacheStream(byte[] msgBodyBuffer, MemoryStream cacheStream)
 		{
 			msgBodyBuffer.NotNull(nameof(msgBodyBuffer));
 			cacheStream.NotNull(nameof(cacheStream));
@@ -215,53 +144,44 @@ namespace Hotfix.Framework.Network
 		}
 
 		/// <summary>
-		/// 反序列化接收包头：解析五字段（包长/操作类型/压缩标记/唯一ID/消息ID）并缓存接收状态。
-		/// 操作类型仅推进读取偏移（零消费者），不保留为状态。
+		/// 解析接收包头并校验（解析即校验：包长度非法或超出包体上限时直接抛异常）。
+		/// 操作类型仅推进读取偏移（零消费者），不进入结果。
 		/// </summary>
 		/// <param name="source">包头原始字节（14 字节）</param>
-		/// <returns>是否解析成功</returns>
-		public bool DeserializePacketHeader(byte[] source)
+		/// <returns>包头解析结果（包总长含包头；包体长度 = PacketLength - 包头长度，由调用方换算）</returns>
+		public static PacketHeader ParseHeader(byte[] source)
 		{
 			source.NotNull(nameof(source));
 
 			var offset = 0;
 
 			// 消息长度 4
-			m_receivedPacketLength = source.ReadUInt(ref offset);
+			var packetLength = source.ReadUInt(ref offset);
 
 			// 操作类型 1（无消费者，仅推进偏移）
 			offset += sizeof(byte);
 
 			// 压缩标记 1
-			LastReceivedZipFlag = source.ReadByte(ref offset);
+			var zipFlag = source.ReadByte(ref offset);
 
 			// 唯一ID 4
-			LastReceivedUniqueId = source.ReadInt(ref offset);
+			var uniqueId = source.ReadInt(ref offset);
 
 			// 消息ID 4
-			LastReceivedMessageId = source.ReadInt(ref offset);
-			return true;
-		}
+			var messageId = source.ReadInt(ref offset);
 
-		/// <summary>
-		/// 校验包头中的包长度并换算包体长度（接收侧，依据最近一次解析的包头）。
-		/// </summary>
-		/// <returns>包体长度</returns>
-		/// <exception cref="InvalidOperationException">包长度非法或超出上限时抛出</exception>
-		public int ValidateAndGetPacketBodyLength()
-		{
-			if (m_receivedPacketLength < NetworkModule.PACKET_HEADER_LENGTH)
+			if (packetLength < NetworkModule.PACKET_HEADER_LENGTH)
 			{
-				throw new InvalidOperationException($"包长度非法。packetLength:{m_receivedPacketLength}, headerLength:{NetworkModule.PACKET_HEADER_LENGTH}");
+				throw new InvalidOperationException($"包长度非法。packetLength:{packetLength}, headerLength:{NetworkModule.PACKET_HEADER_LENGTH}");
 			}
 
-			var bodyLength = (long)m_receivedPacketLength - NetworkModule.PACKET_HEADER_LENGTH;
+			var bodyLength = (long)packetLength - NetworkModule.PACKET_HEADER_LENGTH;
 			if (bodyLength > NetworkModule.MAX_PACKET_BODY_LENGTH)
 			{
 				throw new InvalidOperationException($"包体长度超出上限。bodyLength:{bodyLength}, limit:{NetworkModule.MAX_PACKET_BODY_LENGTH}");
 			}
 
-			return (int)bodyLength;
+			return new PacketHeader(packetLength, zipFlag, uniqueId, messageId);
 		}
 
 		/// <summary>
@@ -271,58 +191,12 @@ namespace Hotfix.Framework.Network
 		/// <param name="messageId">消息 ID</param>
 		/// <param name="msgObj">输出：反序列化得到的消息对象</param>
 		/// <returns>是否解析成功</returns>
-		public bool DeserializePacketBody(byte[] source, int messageId, out MessageObject msgObj)
+		public static bool DeserializePacketBody(byte[] source, int messageId, out MessageObject msgObj)
 		{
 			source.NotNull(nameof(source));
 			var messageType = MessageIdRegistry.GetTypeById(messageId);
 			msgObj = (MessageObject)SerializerHelper.Deserialize(source, messageType);
 			return true;
-		}
-
-
-		/// <summary>
-		/// 网络连接成功事件回调
-		/// </summary>
-		/// <param name="sender">事件源</param>
-		/// <param name="e">事件参数</param>
-		private void OnNetworkConnectedEventArgs(object sender, GameEventArgs e)
-		{
-			if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogInfo("网络连接成功");
-		}
-
-		/// <summary>
-		/// 网络连接关闭事件回调
-		/// </summary>
-		/// <param name="sender">事件源</param>
-		/// <param name="e">事件参数</param>
-		private void OnNetworkClosedEventArgs(object sender, GameEventArgs e)
-		{
-			if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogInfo("网络连接关闭");
-		}
-
-		/// <summary>
-		/// 网络心跳丢失事件回调
-		/// </summary>
-		/// <param name="sender">事件源</param>
-		/// <param name="e">事件参数</param>
-		private void OnNetworkMissHeartBeatEventArgs(object sender, GameEventArgs e)
-		{
-			if (e is not NetworkMissHeartBeatEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogWarning($"网络心跳连续丢失 {ne.MissCount} 次。");
-		}
-
-		/// <summary>
-		/// 网络错误事件回调
-		/// </summary>
-		/// <param name="sender">事件源</param>
-		/// <param name="e">事件参数</param>
-		private void OnNetworkErrorEventArgs(object sender, GameEventArgs e)
-		{
-			if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != m_networkChannel) return;
-			FuLogger.LogError($"网络错误，错误码：'{ne.ErrorCode}'，错误消息：'{ne.ErrorMessage}'。");
-			ne.NetworkChannel.Close(ENetworkCloseReason.Lost);
 		}
 	}
 }

@@ -45,11 +45,11 @@ namespace Hotfix.Framework.Network
 		public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj)
 			where TResponse : MessageObject, IResponseMessage
 		{
-			msgObj.NotNull(nameof(msgObj));
 			// 生成器产出的 Req 消息均为 MessageObject 子类；显式转换以便复用发送管线与 RPC 登记。
 			// 顺序说明：此处先 Send 后登记不会丢配对——
 			// Send 仅入队，序列化/网络发出/响应派发都在后续主线程阶段，登记在同一调用内先于任何响应消费完成。
 			// 该安全性依赖「Call 必须在主线程调用」这一前提；若未来允许后台线程 Call，必须改为先登记再发包。
+			msgObj.NotNull(nameof(msgObj));
 			Send((MessageObject)msgObj);
 			var result = await m_rpcState.Call((MessageObject)msgObj);
 			if (result is TResponse response) return response;

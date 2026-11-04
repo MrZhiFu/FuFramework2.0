@@ -48,10 +48,12 @@ namespace Hotfix.Framework.Network
 				}
 			}
 
-			// 以下操作必须在心跳锁之外执行：SendHeartBeat 会获取发送包池锁，
+			// 以下操作必须在心跳锁之外执行：Send 会获取发送包池锁，
 			// Close 会获取关闭锁，若仍在心跳锁内执行会与 Close 内的加锁形成 ABBA 死锁。
-			if (sendHeartBeat && m_NetworkChannelHelper.SendHeartBeat())
+			if (sendHeartBeat)
 			{
+				Send(HeartBeatReqCreator.CreateHeartBeatReq());
+
 				if (missHeartBeatCount > 0 && m_NetworkChannelMissHeartBeat != null)
 				{
 					m_NetworkChannelMissHeartBeat(this, missHeartBeatCount);

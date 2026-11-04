@@ -100,12 +100,13 @@ namespace Hotfix.Framework.Network
 		/// 接收调试日志（仅 ENABLE_NETWORK_RSP_LOG 宏开启时输出）
 		/// </summary>
 		/// <param name="msgObj">已接收的消息对象</param>
-		protected void DebugReceiveLog(MessageObject msgObj)
+		/// <param name="messageId">本次接收的消息 ID（由包头解析返回）</param>
+		protected void DebugReceiveLog(MessageObject msgObj, int messageId)
 		{
 #if ENABLE_NETWORK_RSP_LOG
-			if (!m_IgnoreReceiveIds.Contains(m_NetworkChannelHelper.LastReceivedMessageId))
+			if (!m_IgnoreReceiveIds.Contains(messageId))
 			{
-				FuLogger.LogInfo($"收到消息:[{msgObj.GetType().Name}({m_NetworkChannelHelper.LastReceivedMessageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
+				FuLogger.LogInfo($"收到消息:[{msgObj.GetType().Name}({messageId}),{msgObj.UniqueId}] 消息内容:{UtilityAOT.Json.ToJson(msgObj)}");
 			}
 #endif
 		}

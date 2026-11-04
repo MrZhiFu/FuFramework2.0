@@ -20,6 +20,11 @@ namespace Hotfix.Framework.Network
 		private ConnectState m_connectState;
 
 		/// <summary>
+		/// 当前正在接收的包头解析结果（包头期写入、包体期消费）
+		/// </summary>
+		private PacketHeader m_currentPacketHeader;
+
+		/// <summary>
 		/// 系统 Socket 封装
 		/// </summary>
 		private SystemNetSocket m_systemNetSocket;
@@ -61,7 +66,7 @@ namespace Hotfix.Framework.Network
 				return;
 			}
 
-			m_NetworkChannelHelper.PrepareForConnecting();
+			PrepareForConnecting();
 
 			ConnectAsync();
 		}
@@ -214,16 +219,22 @@ namespace Hotfix.Framework.Network
 			var headerLength = NetworkModule.PACKET_HEADER_LENGTH;
 			var buffer       = new byte[headerLength];
 			_ = m_ReceiveState.Stream.Read(buffer, 0, headerLength);
-			var processSuccess = m_NetworkChannelHelper.DeserializePacketHeader(buffer);
-			if (!processSuccess)
+
+			PacketHeader header;
+			try
 			{
-				// 包头解析失败：恢复为“等待包头”的状态，避免流状态与网络数据错位。
+				header = NetworkChannelHelper.ParseHeader(buffer);
+			}
+			catch (InvalidOperationException)
+			{
+				// 包头解析失败（包长非法/超上限）：恢复为“等待包头”的状态，避免流状态与网络数据错位。
 				m_ReceiveState.PrepareForPacketHeader();
 				return false;
 			}
 
-			var bodyLength = m_NetworkChannelHelper.ValidateAndGetPacketBodyLength();
-			m_ReceiveState.ZipFlag      = m_NetworkChannelHelper.LastReceivedZipFlag;
+			m_currentPacketHeader = header;
+			var bodyLength = (int)(header.PacketLength - NetworkModule.PACKET_HEADER_LENGTH);
+			m_ReceiveState.ZipFlag      = header.ZipFlag;
 			m_ReceiveState.Reset(bodyLength);
 			m_ReceiveState.IsAwaitingBody = true;
 			return true;
@@ -245,20 +256,20 @@ namespace Hotfix.Framework.Network
 				buffer = Utility.Zip.Decompress(buffer);
 			}
 
-			var processSuccess = m_NetworkChannelHelper.DeserializePacketBody(buffer, m_NetworkChannelHelper.LastReceivedMessageId, out var msgObj);
+			var processSuccess = NetworkChannelHelper.DeserializePacketBody(buffer, m_currentPacketHeader.MessageId, out var msgObj);
 			if (processSuccess)
 			{
-				msgObj.SetUniqueId(m_NetworkChannelHelper.LastReceivedUniqueId);
+				msgObj.SetUniqueId(m_currentPacketHeader.UniqueId);
 
 #if UNITY_EDITOR
-				// 网络调试面板接收埋点：解码点成条——LastReceivedMessageId 是解码线程更新的单字段，
-				// 主线程派发时读会错位；此处 msgObj/消息号/未压缩包体一把抓全，Seq 反映到达序
-				NetworkDebug.RecordReceived(msgObj, m_NetworkChannelHelper.LastReceivedMessageId, buffer);
+				// 网络调试面板接收埋点：解码点成条——消息号取自本包解析结果（显式传递，非共享字段），
+				// 此处 msgObj/消息号/未压缩包体一把抓全，Seq 反映到达序
+				NetworkDebug.RecordReceived(msgObj, m_currentPacketHeader.MessageId, buffer);
 #endif
 			}
 
 #if ENABLE_NETWORK_RSP_LOG
-			DebugReceiveLog(msgObj);
+			DebugReceiveLog(msgObj, m_currentPacketHeader.MessageId);
 #endif
 
 			// 将收到的消息加入到链表最后（接收回调在线程池线程，需与主线程消费互斥）
@@ -279,8 +290,8 @@ namespace Hotfix.Framework.Network
 		/// 处理待发送消息：频道未激活时报错，序列化失败则抛出异常
 		/// </summary>
 		/// <param name="msgObj">待发送的消息对象</param>
-		/// <returns>是否序列化成功</returns>
-		protected override bool ProcessSendMessage(MessageObject msgObj)
+		/// <returns>本次发送的消息 ID</returns>
+		protected override int ProcessSendMessage(MessageObject msgObj)
 		{
 			if (IsOpen == false)
 			{
@@ -289,13 +300,10 @@ namespace Hotfix.Framework.Network
 				                      errorCode: ENetworkErrorCode.SocketError,
 				                      socketError: SocketError.Disconnecting,
 				                      errorMessage: "网络频道正在关闭。");
-				return false;
+				return -1;
 			}
 
-			var serializeResult = base.ProcessSendMessage(msgObj);
-			if (serializeResult) return true;
-			const string errorMessage = "序列化消息失败。";
-			throw new InvalidOperationException(errorMessage);
+			return base.ProcessSendMessage(msgObj);
 		}
 
 
