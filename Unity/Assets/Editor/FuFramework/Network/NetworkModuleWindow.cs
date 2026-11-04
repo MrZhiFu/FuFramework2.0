@@ -13,14 +13,11 @@ using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
 namespace FuFramework.Network.Editor
 {
 	/// <summary>
-	/// 网络调试面板：实时查看 TCP 链路的请求/响应/推送收发历史，支撑联调排错。
-	/// 功能：
-	///     1. 实时列表（虚拟化绘制，最多 2000 条循环记录）：Tab 筛选 + 搜索 + 消息号忽略，颜色区分消息类型与状态。
-	///     2. 详情查看：基本信息 + JSON 结构查看（折叠）+ 二进制 Hex 查看 + 请求重发（受总开关把守）。
-	///     3. 暂停/继续、清空记录；面板打开即开启录制、关闭即停（经基座 OnPanelEnabled/OnPanelDisabled 钩子）。
-	/// 说明：
-	///     1. 数据源为 Hotfix 侧 NetworkDebug 静态采集器（不进包），经 HotfixReflection 反射访问（Editor 程序集不引用 HotFix 程序集的既定模式）。
-	///     2. HTTP 链路的监控不在此面板——Web 模块调试面板已完整覆盖。
+	/// 网络调试面板：实时查看 TCP 链路的请求/响应/推送/心跳收发历史，支撑联调排错。
+	/// 功能：虚拟化消息列表（页签筛选/搜索/消息号忽略）+ 底部操作条（JSON 折叠视图 / Hex 视图 /
+	/// JSON 重发 / 忽略消息号）+ 工具栏（触发断线 / 暂停 / 清空 / 连接状态指示）。
+	/// 数据源为 Hotfix 侧 NetworkDebug 静态采集器（#if UNITY_EDITOR 不进包），经 HotfixReflection 反射访问；
+	/// 面板打开即录制、关闭即停。HTTP 链路不在此面板——Web 模块调试面板已完整覆盖。
 	/// </summary>
 	public sealed class NetworkModuleWindow : DebugWindowBase
 	{
@@ -496,7 +493,7 @@ namespace FuFramework.Network.Editor
 		#region 概览与主体绘制
 
 		/// <summary>
-		/// 绘制概览区：页签 + 统计摘要 + 重发总开关
+		/// 绘制概览区：页签（带消息计数）+ 重发入口（概览区尾）
 		/// </summary>
 		protected override void DrawOverview()
 		{
@@ -783,7 +780,7 @@ namespace FuFramework.Network.Editor
 				}
 			}
 
-			// 仅请求可重发（Editor 开发工具默认可用，无总开关）
+			// 仅请求可重发
 			using (new EditorGUI.DisabledScope(RecKind(selected) != "Request"))
 			{
 				if (GUILayout.Button("再次发送", GUI.skin.button, barOptions))

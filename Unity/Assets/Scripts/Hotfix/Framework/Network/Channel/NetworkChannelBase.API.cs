@@ -75,7 +75,7 @@ namespace Hotfix.Framework.Network
 		/// 网络调试面板重发专用的非泛型 RPC 调用（仅供 NetworkDebug.Resend 编排使用）。
 		/// 说明：运行时 Type 无法调泛型 <see cref="Call{TResponse}"/>（TResponse 编译期推断），
 		/// 此为等价的非泛型路径——第一步 Send 复用发送管线，随后按 UniqueId 挂表等待配对回包。
-		/// UniqueId 沿用消息对象新分配值（重发编排不重置），响应/超时/取消经既有 RpcState 终点自然入监控记录。
+		/// UniqueId 沿用消息对象新分配值（重发编排不重置），响应/超时/取消经既有 RpcState 终点自然入调试面板记录列表。
 		/// </summary>
 		/// <param name="msgObj">请求消息对象</param>
 		/// <returns>服务器响应消息</returns>

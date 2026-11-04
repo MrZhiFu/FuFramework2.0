@@ -78,11 +78,6 @@ namespace Hotfix.Framework.Network
 			public EChannelLifecycleEventType m_Type;
 
 			/// <summary>
-			/// 用户自定义数据
-			/// </summary>
-	
-
-			/// <summary>
 			/// 网络错误码
 			/// </summary>
 			public ENetworkErrorCode m_ErrorCode;
@@ -147,7 +142,7 @@ namespace Hotfix.Framework.Network
 		protected NetworkChannelBase()
 		{
 			m_SendPacketPool              = new FuLinkedList<MessageObject>();
-			m_NetworkChannelHelper        = new NetworkChannelHelper();   // 凭据内化：helper 恒定唯一类型，无外部注入点，在频道构造内统一创建
+			m_NetworkChannelHelper        = new NetworkChannelHelper(); // helper 内化：恒定唯一类型无外部注入点，频道构造内统一创建
 			m_Socket                      = null;
 			m_SendState                   = new SendState();
 			m_ReceiveState                = new ReceiveState();

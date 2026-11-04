@@ -7,11 +7,8 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Network
 {
 	/// <summary>
-	/// 网络管理模块。
-	/// 功能：
-	///     1. 持有唯一的网络频道（单连接模型；传输实现由编译宏在创建时决定 TCP/WS）。
-	///     2. 网络事件广播。
-	///     3. 驱动网络频道Update轮询。
+	/// 网络管理模块：持有唯一网络频道（单连接模型，传输由编译宏决定 TCP/WS），
+	/// 驱动频道轮询并将频道生命周期转发为网络事件广播。
 	/// </summary>
 	public sealed partial class NetworkModule : ModuleBase
 	{

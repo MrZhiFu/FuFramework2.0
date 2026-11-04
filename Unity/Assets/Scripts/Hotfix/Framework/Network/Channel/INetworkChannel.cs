@@ -21,14 +21,14 @@ namespace Hotfix.Framework.Network
 		bool Connected { get; }
 
 		/// <summary>
-		/// 心跳提供者（游戏侧派生实现，经生成物注册；提供心跳参数与心跳包构造）
+		/// 心跳请求创建器（游戏侧实现，经生成物注册；仅承担心跳包创建，参数统一见 <see cref="NetworkModule"/>）
 		/// </summary>
 		IHeartBeatReqCreator HeartBeatReqCreator { get; }
 
 		/// <summary>
-		/// 注册心跳提供者（覆盖频道默认的心跳间隔与判死阈值）
+		/// 注册心跳请求创建器
 		/// </summary>
-		/// <param name="handler">心跳提供者对象</param>
+		/// <param name="handler">心跳请求创建器实现</param>
 		void RegisterHeartBeatReqCreator(IHeartBeatReqCreator handler);
 
 		/// <summary>

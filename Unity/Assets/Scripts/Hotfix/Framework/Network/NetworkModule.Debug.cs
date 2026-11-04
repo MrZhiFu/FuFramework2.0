@@ -8,7 +8,7 @@ namespace Hotfix.Framework.Network
 	/// <summary>
 	/// 网络管理模块——调试分部（仅编辑器调试使用）：消息重发的发起入口。
 	/// 由 NetworkDebug.Resend 编排调用；真正的响应/超时/取消终点复用既有 RpcState 链路，
-	/// 结果自然落入监控记录列表（IsResend 标记）。
+	/// 结果自然落入调试面板记录列表（IsResend 标记）。
 	/// </summary>
 	public sealed partial class NetworkModule
 	{
