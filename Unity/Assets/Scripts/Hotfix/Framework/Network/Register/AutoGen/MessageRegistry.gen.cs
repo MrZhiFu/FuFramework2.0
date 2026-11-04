@@ -31,7 +31,7 @@ namespace Hotfix.Framework.Network
         /// <summary>
         /// 框架外包处理器的注册是否已执行（NetworkModule.OnInit 失败重试时避免重复追加委托）。
         /// </summary>
-        private static bool s_ExternalPacketHandlersRegistered;
+        private static bool s_ExtPacketHandlerIsRegistered;
 
         /// <summary>
         /// 注册全部协议消息、用户消息处理方法与框架外包处理器。
@@ -46,7 +46,6 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 注册「消息ID &lt;-&gt; 类型」映射。
-        /// 共 23 条。
         /// </summary>
         private static void RegisterMessageIds()
         {
@@ -77,8 +76,6 @@ namespace Hotfix.Framework.Network
 
         /// <summary>
         /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
-        /// 共 3 条绑定，来自 2 个宿主类型。
-        /// 委托形如 static msgObj =&gt; Handler.Instance.OnX((X)msgObj)：
         /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterNotifyHandlers()
@@ -86,25 +83,26 @@ namespace Hotfix.Framework.Network
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
                 static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj),
                 priority: 0);
+
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyPrompt),
                 static msgObj => Hotfix.Game.Network.ReconnectManager.Instance.OnNotifyPrompt((NotifyPrompt)msgObj),
                 priority: 0);
+
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyHeartBeat),
                 static msgObj => Hotfix.Game.Network.ReconnectManager.Instance.OnNotifyHeartBeat((NotifyHeartBeat)msgObj),
                 priority: 0);
+
             NotifyMessageHandlerRegistry.SortByPriority();
         }
 
         /// <summary>
-        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口，
-        /// 由 <see cref="NetworkChannelBase"/> 构造经 RunExternalPacketHandlers 装配）。
-        /// 共 1 个。
+        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口）。
         /// 多个实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
         private static void RegisterExtPacketHandlers()
         {
-            if (s_ExternalPacketHandlersRegistered) return;
-            s_ExternalPacketHandlersRegistered = true;
+            if (s_ExtPacketHandlerIsRegistered) return;
+            s_ExtPacketHandlerIsRegistered = true;
 
             NetworkChannelHelper.RegisterExtPacketHandler(channel =>
             {
