@@ -95,9 +95,9 @@ namespace Hotfix.Framework.Network
 			msgObj.NotNull(nameof(msgObj));
 			cacheStream.NotNull(nameof(cacheStream));
 
-			var header       = new byte[NetworkModule.PACKET_HEADER_LENGTH];
-			var offset       = 0;
-			var messageId    = MessageIdRegistry.GetIdByType(msgObj.GetType());
+			var header    = new byte[NetworkModule.PACKET_HEADER_LENGTH];
+			var offset    = 0;
+			var messageId = MessageIdRegistry.GetIdByType(msgObj.GetType());
 
 			msgBodyBuffer = SerializerHelper.Serialize(msgObj);
 
@@ -122,8 +122,8 @@ namespace Hotfix.Framework.Network
 			header.WriteUInt(packetLength, ref offset);                                // 数据包总大小
 			header.WriteByte((byte)(msgObj is IHeartBeatMessage ? 1 : 4), ref offset); // 消息操作类型
 			header.WriteByte(isZip,                                       ref offset); // 消息压缩标记
-			header.WriteInt(msgObj.UniqueId,   ref offset);                            // 消息编号
-			header.WriteInt(messageId,         ref offset);                            // 消息ID
+			header.WriteInt(msgObj.UniqueId, ref offset);                              // 消息编号
+			header.WriteInt(messageId,       ref offset);                              // 消息ID
 			cacheStream.Write(header, 0, NetworkModule.PACKET_HEADER_LENGTH);
 			return messageId;
 		}
