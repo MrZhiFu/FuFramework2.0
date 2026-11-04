@@ -91,8 +91,8 @@ namespace Hotfix.Game.Network
 		private void OnNetworkClosed(object sender, GameEventArgs e)
 		{
 			if (e is not NetworkClosedEventArgs ne) return;
-			if (ne.CloseReason                    != ENetworkCloseReason.Lost) return; // 主动关闭（登出/销毁）不重连
-			if (PlayerManager.Instance.PlayerInfo.Id <= 0) return;                     // 未进游戏（登录期）不自动重连，由按钮兜底（PlayerInfo 由构造初始化为空对象，判空无效，用 Id 判定"已登录"）
+			if (ne.CloseReason                       != ENetworkCloseReason.Lost) return; // 主动关闭（登出/销毁）不重连
+			if (PlayerManager.Instance.PlayerInfo.Id <= 0) return;                        // 未进游戏（登录期）不自动重连，由按钮兜底（PlayerInfo 由构造初始化为空对象，判空无效，用 Id 判定"已登录"）
 
 			if (m_isKickedByTopLogin)
 			{
@@ -130,7 +130,7 @@ namespace Hotfix.Game.Network
 			{
 				var playerId = PlayerManager.Instance.PlayerInfo.Id; // 断线未登出，PlayerInfo 仍在
 
-				await GlobalModule.UIModule.OpenAsync<WinReconnecting>();   // 转圈框在所有出口经 CloseAll 关闭，无需持有引用
+				await GlobalModule.UIModule.OpenAsync<WinReconnecting>(); // 转圈框在所有出口经 CloseAll 关闭，无需持有引用
 
 				try
 				{
@@ -151,8 +151,8 @@ namespace Hotfix.Game.Network
 					// 重连失败（退避耗尽或重登失败）：交玩家手选
 					GlobalModule.UIModule.CloseAll();
 					var dialogData = new WinDialogMessageBox.DialogMessageBoxData("重连失败，请重试或返回登录。",
-					                                                              () => StartReconnectFlow(address).Forget(), // 再试一次：重头再来，计数天然重置
-					                                                              () => GameSessionFlow.LogoutFlowAsync().Forget());   // 返回登录
+					                                                              () => StartReconnectFlow(address).Forget(),        // 再试一次：重头再来，计数天然重置
+					                                                              () => GameSessionFlow.LogoutFlowAsync().Forget()); // 返回登录
 					await GlobalModule.UIModule.OpenAsync<WinDialogMessageBox>(dialogData);
 				}
 			}

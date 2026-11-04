@@ -1,13 +1,13 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using AOT.Framework.Core.Utility;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Network;
 using Hotfix.Framework.Scene;
 using Hotfix.Game.Proto;
 using Hotfix.Game.UI;
 using Hotfix.Game.Manager_ToDelete;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 
 namespace Hotfix.Game.Network
 {
