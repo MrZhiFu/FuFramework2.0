@@ -71,9 +71,9 @@ namespace Hotfix.Framework.Network
 		/// </summary>
 		/// <param name="networkChannel">网络频道</param>
 		/// <param name="userData">用户自定义数据</param>
-		private void OnNetworkChannelConnected(NetworkChannelBase networkChannel, object userData)
+		private void OnNetworkChannelConnected(NetworkChannelBase networkChannel)
 		{
-			var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel, userData);
+			var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel);
 			m_eventModule.Broadcast(this, networkConnectedEventArgs);
 		}
 

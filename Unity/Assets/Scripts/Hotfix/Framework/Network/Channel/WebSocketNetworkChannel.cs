@@ -39,20 +39,18 @@ namespace Hotfix.Framework.Network
 		/// 连接到远程主机。
 		/// </summary>
 		/// <param name="address">远程主机的地址。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		public override void Connect(Uri address, object userData = null)
+		public override void Connect(Uri address)
 		{
 			if (m_IsConnecting) return;
 
 			m_lastAddress = address;
-			base.Connect(address, userData);
+			base.Connect(address);
 		}
 
 		/// <summary>
 		/// 地址解析完成后创建 WebSocket 客户端并发起连接。
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		protected override void OnConnectEndPointReady(object userData)
+		protected override void OnConnectEndPointReady()
 		{
 			// 旧 CTS 可能已在 Close 中被 Cancel，这里必须重建，否则新连接会立刻被判定为已取消。
 			m_cancellationTokenSource?.Dispose();
@@ -71,7 +69,7 @@ namespace Hotfix.Framework.Network
 			}
 
 			m_NetworkChannelHelper.PrepareForConnecting();
-			ConnectAsync(userData).Forget();
+			ConnectAsync().Forget();
 		}
 
 		/// <summary>
@@ -195,8 +193,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 异步连接远程主机（超时与取消由 CancellationTokenSource 控制）
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		private async UniTaskVoid ConnectAsync(object userData)
+		private async UniTaskVoid ConnectAsync()
 		{
 			var cancellationTokenSource = m_cancellationTokenSource;
 			try
@@ -208,7 +205,7 @@ namespace Hotfix.Framework.Network
 				cancellationTokenSource.CancelAfter(NetworkModule.CONNECT_TIMEOUT_MILLISECONDS);
 
 				await socketClient.ConnectAsync(cancellationTokenSource.Token);
-				ConnectCallback(new ConnectState(m_Socket, userData));
+				ConnectCallback(new ConnectState(m_Socket));
 			}
 			catch (OperationCanceledException)
 			{
@@ -246,8 +243,8 @@ namespace Hotfix.Framework.Network
 			m_IsConnecting = false;
 			try
 			{
-				var socketUserData = (WebSocketNetSocket)m_Socket;
-				if (!socketUserData.IsConnected)
+				var webSocketNetSocket = (WebSocketNetSocket)m_Socket;
+				if (!webSocketNetSocket.IsConnected)
 					throw new SocketException((int)ENetworkErrorCode.ConnectError);
 			}
 			catch (ObjectDisposedException)
@@ -270,7 +267,7 @@ namespace Hotfix.Framework.Network
 
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();
 			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
-			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, connectState.UserData);
+			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected);
 			IsOpen = true;
 		}
 

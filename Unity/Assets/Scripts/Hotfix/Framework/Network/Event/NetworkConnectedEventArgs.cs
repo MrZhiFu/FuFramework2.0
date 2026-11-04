@@ -28,19 +28,18 @@ namespace Hotfix.Framework.Network
 		/// 获取用户自定义数据。
 		/// </summary>
 		// ReSharper disable once UnusedAutoPropertyAccessor.Global
-		public object UserData { get; private set; }
+
 
 		/// <summary>
 		/// 创建网络连接成功事件。
 		/// </summary>
 		/// <param name="networkChannel">网络频道。</param>
-		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>创建的网络连接成功事件。</returns>
-		public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel, object userData)
+		public static NetworkConnectedEventArgs Create(INetworkChannel networkChannel)
 		{
 			var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
 			networkConnectedEventArgs.NetworkChannel = networkChannel;
-			networkConnectedEventArgs.UserData       = userData;
+	
 			return networkConnectedEventArgs;
 		}
 
@@ -50,7 +49,7 @@ namespace Hotfix.Framework.Network
 		public override void Clear()
 		{
 			NetworkChannel = null;
-			UserData       = null;
+	
 		}
 	}
 }

@@ -37,12 +37,11 @@ namespace Hotfix.Framework.Network
 		/// 连接到远程主机。
 		/// </summary>
 		/// <param name="address">远程主机的地址。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		public virtual void Connect(Uri address, object userData = null)
+		public virtual void Connect(Uri address)
 		{
 			if (m_Socket != null)
 			{
-				Close(ENetworkCloseReason.Active);
+				Close();
 				m_Socket = null;
 			}
 
@@ -52,28 +51,27 @@ namespace Hotfix.Framework.Network
 			if (IPAddress.TryParse(address.Host, out var ipAddress))
 			{
 				m_ConnectEndPoint = new IPEndPoint(ipAddress, address.Port);
-				CompleteConnectAddress(userData);
+				CompleteConnectAddress();
 				return;
 			}
 
 			if (!NeedResolveHost)
 			{
 				// 子类自行处理主机名（例如 WebSocket 的 URL 由底层客户端解析）。
-				CompleteConnectAddress(userData);
+				CompleteConnectAddress();
 				return;
 			}
 
 			// 域名解析（Dns.GetHostEntry）是同步阻塞调用，放在主线程会卡帧，
 			// 因此丢到线程池执行，解析完成后再回到主线程继续连接流程。
-			ResolveHostAsync(address, userData).Forget();
+			ResolveHostAsync(address).Forget();
 		}
 
 		/// <summary>
 		/// 在线程池解析域名，随后在主线程完成连接流程。
 		/// </summary>
 		/// <param name="uri">远程主机地址</param>
-		/// <param name="userData">用户自定义数据</param>
-		private async UniTaskVoid ResolveHostAsync(Uri uri, object userData)
+		private async UniTaskVoid ResolveHostAsync(Uri uri)
 		{
 			var host = uri.Host;
 			var port = uri.Port;
@@ -101,14 +99,13 @@ namespace Hotfix.Framework.Network
 				m_Socket = null;
 			}
 
-			CompleteConnectAddress(userData);
+			CompleteConnectAddress();
 		}
 
 		/// <summary>
 		/// 地址解析完成后校验地址族并通知子类创建 Socket 发起连接。
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		private void CompleteConnectAddress(object userData)
+		private void CompleteConnectAddress()
 		{
 			if (m_IsVerifyAddress && m_ConnectEndPoint != null)
 			{
@@ -133,13 +130,12 @@ namespace Hotfix.Framework.Network
 			m_SendState.Reset();
 			m_ReceiveState.PrepareForPacketHeader();
 
-			OnConnectEndPointReady(userData);
+			OnConnectEndPointReady();
 		}
 
 		/// <summary>
 		/// 连接目标地址已解析完成（或已确认解析失败）时由子类实现：创建 Socket 并发起连接。
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		protected abstract void OnConnectEndPointReady(object userData);
+		protected abstract void OnConnectEndPointReady();
 	}
 }

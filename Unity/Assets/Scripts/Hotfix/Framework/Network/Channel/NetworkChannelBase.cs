@@ -80,7 +80,7 @@ namespace Hotfix.Framework.Network
 			/// <summary>
 			/// 用户自定义数据
 			/// </summary>
-			public object m_UserData;
+	
 
 			/// <summary>
 			/// 网络错误码
@@ -114,7 +114,7 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 连接成功回调（参数：频道、用户自定义数据）
 		/// </summary>
-		public Action<NetworkChannelBase, object> m_NetworkChannelConnected;
+		public Action<NetworkChannelBase> m_NetworkChannelConnected;
 
 		/// <summary>
 		/// 连接关闭回调（参数：频道、关闭原因）
@@ -257,7 +257,7 @@ namespace Hotfix.Framework.Network
 		/// 将生命周期事件入队，由主线程 Update 排水时触发（封送，替代跨线程直接 Invoke）。
 		/// 调用方保留「订阅者为 null 时抛异常」的既有行为，本方法不做判空。
 		/// </summary>
-		protected void EnqueueLifecycleEvent(EChannelLifecycleEventType type, object userData = null,
+		protected void EnqueueLifecycleEvent(EChannelLifecycleEventType type,
 		                                     ENetworkErrorCode errorCode = ENetworkErrorCode.SocketError,
 		                                     SocketError socketError = SocketError.Success,
 		                                     string errorMessage = null,
@@ -266,7 +266,6 @@ namespace Hotfix.Framework.Network
 			var lifecycleEvent = new LifecycleEvent
 			{
 				m_Type         = type,
-				m_UserData     = userData,
 				m_ErrorCode    = errorCode,
 				m_SocketError  = socketError,
 				m_ErrorMessage = errorMessage,
@@ -297,7 +296,7 @@ namespace Hotfix.Framework.Network
 				switch (lifecycleEvent.m_Type)
 				{
 					case EChannelLifecycleEventType.Connected:
-						m_NetworkChannelConnected?.Invoke(this, lifecycleEvent.m_UserData);
+						m_NetworkChannelConnected?.Invoke(this);
 						break;
 					case EChannelLifecycleEventType.Closed:
 						m_NetworkChannelClosed?.Invoke(this, lifecycleEvent.m_CloseReason);

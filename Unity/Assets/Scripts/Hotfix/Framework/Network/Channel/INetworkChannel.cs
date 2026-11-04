@@ -42,8 +42,7 @@ namespace Hotfix.Framework.Network
 		/// 连接到远程主机。
 		/// </summary>
 		/// <param name="address">远程主机的地址。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		void Connect(Uri address, object userData = null);
+		void Connect(Uri address);
 
 		/// <summary>
 		/// 关闭连接并释放所有相关资源。

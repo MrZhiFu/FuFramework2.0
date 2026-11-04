@@ -33,18 +33,16 @@ namespace Hotfix.Framework.Network
 		/// 连接到远程主机。
 		/// </summary>
 		/// <param name="address">远程主机的地址。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		public override void Connect(Uri address, object userData = null)
+		public override void Connect(Uri address)
 		{
 			if (m_IsConnecting) return;
-			base.Connect(address, userData);
+			base.Connect(address);
 		}
 
 		/// <summary>
 		/// 目标地址解析完成（或确认解析失败）后创建 Socket 并发起连接。
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		protected override void OnConnectEndPointReady(object userData)
+		protected override void OnConnectEndPointReady()
 		{
 			if (m_IsVerifyAddress)
 			{
@@ -65,7 +63,7 @@ namespace Hotfix.Framework.Network
 
 			m_NetworkChannelHelper.PrepareForConnecting();
 
-			ConnectAsync(userData);
+			ConnectAsync();
 		}
 
 		/// <summary>
@@ -371,13 +369,12 @@ namespace Hotfix.Framework.Network
 		/// <summary>
 		/// 发起异步连接
 		/// </summary>
-		/// <param name="userData">用户自定义数据</param>
-		private void ConnectAsync(object userData)
+		private void ConnectAsync()
 		{
 			try
 			{
 				m_IsConnecting = true;
-				m_connectState = new ConnectState(m_systemNetSocket, userData);
+				m_connectState = new ConnectState(m_systemNetSocket);
 				((SystemNetSocket)m_Socket).BeginConnect(m_ConnectEndPoint.Address, m_ConnectEndPoint.Port, ConnectCallback, m_connectState);
 			}
 			catch (Exception exception)
@@ -424,7 +421,7 @@ namespace Hotfix.Framework.Network
 			lock (m_SendPacketPool) m_SendPacketPool.Clear();
 			lock (m_HeartBeatLock) m_HeartBeatState.Reset(true);
 
-			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected, m_connectState.UserData);
+			EnqueueLifecycleEvent(EChannelLifecycleEventType.Connected);
 			IsOpen = true;
 			ReceiveAsync();
 		}
