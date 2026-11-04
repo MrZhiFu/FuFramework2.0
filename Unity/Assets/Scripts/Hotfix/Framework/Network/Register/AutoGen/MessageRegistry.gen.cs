@@ -52,6 +52,7 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<ReqHeartBeat>(MessageIds.Basic.ReqHeartBeat);
             MessageIdRegistry.Register<NotifyHeartBeat>(MessageIds.Basic.NotifyHeartBeat);
             MessageIdRegistry.Register<NotifyServerFullyLoaded>(MessageIds.Basic.NotifyServerFullyLoaded);
+
             MessageIdRegistry.Register<ReqBagInfo>(MessageIds.Bag.ReqBagInfo);
             MessageIdRegistry.Register<RespBagInfo>(MessageIds.Bag.RespBagInfo);
             MessageIdRegistry.Register<ReqUseItem>(MessageIds.Bag.ReqUseItem);
@@ -62,6 +63,7 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<RespRemoveItem>(MessageIds.Bag.RespRemoveItem);
             MessageIdRegistry.Register<NotifyBagItem>(MessageIds.Bag.NotifyBagItem);
             MessageIdRegistry.Register<NotifyBagInfoChanged>(MessageIds.Bag.NotifyBagInfoChanged);
+
             MessageIdRegistry.Register<ReqUserLogin>(MessageIds.User.ReqUserLogin);
             MessageIdRegistry.Register<RespUserLogin>(MessageIds.User.RespUserLogin);
             MessageIdRegistry.Register<ReqPlayerCreate>(MessageIds.User.ReqPlayerCreate);
@@ -75,7 +77,7 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
+        /// 绑定全部推送处理方法。
         /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterNotifyHandlers()
@@ -96,8 +98,9 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口）。
+        /// 注册框架外的包处理器接口实现。
         /// 多个实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
+        /// 实现 <see cref="IHeartBeatReqCreator"/>
         /// </summary>
         private static void RegisterExtPacketHandlers()
         {

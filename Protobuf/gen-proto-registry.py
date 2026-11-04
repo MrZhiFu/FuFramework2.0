@@ -666,7 +666,7 @@ namespace Hotfix.Framework.Network
 {message_registrations}        }}
 
         /// <summary>
-        /// 绑定全部 [NotifyMessageHandler] 推送处理方法（静态捕获宿主 static Instance，声明即生效）。
+        /// 绑定全部推送处理方法。
         /// 宿主实例在首次推送时才被触达（惰性），运行时无反射、无按名查找、无 MethodInfo.Invoke。
         /// </summary>
         private static void RegisterNotifyHandlers()
@@ -674,8 +674,9 @@ namespace Hotfix.Framework.Network
 {handler_registrations}        }}
 
         /// <summary>
-        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口）。
+        /// 注册框架外的包处理器接口实现。
         /// 多个实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
+        /// 实现 <see cref="IHeartBeatReqCreator"/>
         /// </summary>
         private static void RegisterExtPacketHandlers()
         {{
@@ -699,7 +700,14 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
 
     # ---- 消息注册 ----
     lines = []
+    last_module = None
     for msg in messages:
+        # 模块分组之间插一个空行（MessageIds.<模块>.<消息> 的第二段即模块名），与 proto 文件的分区横幅对齐
+        module = msg["expr"].split(".")[1] if "." in msg["expr"] else None
+        if last_module is not None and module != last_module:
+            lines.append("\n")
+        last_module = module
+
         lines.append(
             "            MessageIdRegistry.Register<%s>(%s);\n"
             % (msg["type"], msg["expr"])

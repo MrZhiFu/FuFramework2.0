@@ -28,7 +28,7 @@ namespace Hotfix.Framework.Network
 		public void RegisterHeartBeatReqCreator(IHeartBeatReqCreator handler)
 		{
 			handler.NotNull(nameof(handler));
-			HeartBeatReqCreator = handler; // 仅承担心跳包构造；运行时参数统一见 NetworkModule.Const 分部
+			HeartBeatReqCreator = handler;
 		}
 
 		/// <summary>
