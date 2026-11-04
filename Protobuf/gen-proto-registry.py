@@ -637,8 +637,8 @@ namespace Hotfix.Framework.Network
 {{
     /// <summary>
     /// 协议消息注册表（生成物）。
-    /// 说明：静态注册「消息ID &lt;-&gt; 类型」「消息类型 -&gt; 消息处理方法（直接委托）」，
-    /// 并注册框架外的包处理器实现；运行时不再扫描程序集、不再读取特性、不再查找方法。
+    /// 说明：启动时静态登记全部消息的编号，把收到的每条消息绑定到对应的处理方法（直接写好的委托），
+    /// 并注册框架外的包处理器实现；运行时不扫描程序集、不读特性、不查方法。
     /// </summary>
     internal static class MessageRegistry
     {{
@@ -659,7 +659,7 @@ namespace Hotfix.Framework.Network
         }}
 
         /// <summary>
-        /// 注册「消息ID &lt;-&gt; 类型」映射。
+        /// 登记每条消息的编号（收发包都按编号互相识别）。
         /// </summary>
         private static void RegisterMessageIds()
         {{
