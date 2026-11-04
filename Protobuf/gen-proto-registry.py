@@ -659,7 +659,7 @@ namespace Hotfix.Framework.Network
         }}
 
         /// <summary>
-        /// 注册「消息ID &lt;-&gt; 类型」映射、心跳类型集合。
+        /// 注册「消息ID &lt;-&gt; 类型」映射。
         /// 共 {message_count} 条。
         /// </summary>
         private static void RegisterMessageIds()
@@ -677,14 +677,10 @@ namespace Hotfix.Framework.Network
 {handler_registrations}        }}
 
         /// <summary>
-        /// 注册框架外（<c>Framework/Network/Helper/</c> 之外）的具体包处理器。
+        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口，
+        /// 由 <see cref="NetworkChannelBase"/> 构造经 RunExternalPacketHandlers 装配）。
         /// 共 {external_handler_count} 个。
-        ///
-        /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
-        /// <c>NetworkChannelHelper.Initialize</c> 中（信封读写为 helper 内置，无默认装配可覆盖，
-        /// 心跳提供者是当前唯一的外部注册对象）。
-        ///
-        /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
+        /// 多个实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
         private static void RegisterExtPacketHandlers()
         {{
@@ -723,7 +719,6 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
         entries = handlers[(ns, type_name)]
         full_name = ("%s.%s" % (ns, type_name)) if ns else type_name
         registered_types.append((ns, type_name))
-        lines.append("            // %s\n" % full_name)
         for entry in entries:
             handler_entry_count += 1
             lines.append(
@@ -743,7 +738,6 @@ def build_output(messages, proto_namespaces, message_type_namespaces, handlers, 
             "            {\n",
         ]
         for h in external_handlers:
-            lines.append("                // %s\t%s\n" % (h["iface"], h["file"]))
             lines.append("                %s\n" % h["register"])
         lines.append("            });\n")
         external_handler_registrations = "".join(lines)

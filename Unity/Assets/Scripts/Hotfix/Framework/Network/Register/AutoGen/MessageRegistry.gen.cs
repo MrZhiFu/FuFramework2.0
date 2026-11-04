@@ -45,7 +45,7 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册「消息ID &lt;-&gt; 类型」映射、心跳类型集合。
+        /// 注册「消息ID &lt;-&gt; 类型」映射。
         /// 共 23 条。
         /// </summary>
         private static void RegisterMessageIds()
@@ -83,11 +83,9 @@ namespace Hotfix.Framework.Network
         /// </summary>
         private static void RegisterNotifyHandlers()
         {
-            // Hotfix.Game.Manager_ToDelete.BagManager
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyBagInfoChanged),
                 static msgObj => Hotfix.Game.Manager_ToDelete.BagManager.Instance.OnNotifyBagInfoChanged((NotifyBagInfoChanged)msgObj),
                 priority: 0);
-            // Hotfix.Game.Network.ReconnectManager
             NotifyMessageHandlerRegistry.BindNotify(typeof(NotifyPrompt),
                 static msgObj => Hotfix.Game.Network.ReconnectManager.Instance.OnNotifyPrompt((NotifyPrompt)msgObj),
                 priority: 0);
@@ -98,14 +96,10 @@ namespace Hotfix.Framework.Network
         }
 
         /// <summary>
-        /// 注册框架外（<c>Framework/Network/Helper/</c> 之外）的具体包处理器。
+        /// 注册框架外的包处理器（实现 <see cref="IHeartBeatReqCreator"/> 等框架外接口，
+        /// 由 <see cref="NetworkChannelBase"/> 构造经 RunExternalPacketHandlers 装配）。
         /// 共 1 个。
-        ///
-        /// 时序说明：这里只登记「装配委托」，真正的装配发生在每个频道
-        /// <c>NetworkChannelHelper.Initialize</c> 中（信封读写为 helper 内置，无默认装配可覆盖，
-        /// 心跳提供者是当前唯一的外部注册对象）。
-        ///
-        /// 多个框架外实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
+        /// 多个实现命中同一接口时，按「继承更深者后注册」排序，即最具体的实现生效。
         /// </summary>
         private static void RegisterExtPacketHandlers()
         {
@@ -114,7 +108,6 @@ namespace Hotfix.Framework.Network
 
             NetworkChannelHelper.RegisterExtPacketHandler(channel =>
             {
-                // IHeartBeatReqCreator	Unity/Assets/Scripts/Hotfix/Game/Network/HeartBeatReqCreatorImpl.cs
                 channel.RegisterHeartBeatReqCreator(new Hotfix.Game.Network.HeartBeatReqCreatorImpl());
             });
         }
