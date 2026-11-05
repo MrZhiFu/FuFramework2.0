@@ -39,7 +39,7 @@ public class PlayerComponentAgent : StateComponentAgent<PlayerComponent, PlayerS
 
         // 更新连接会话数据
         SessionManager.UpdateSession(workChannel.GameAppSession.SessionID, playerState.Id, playerState.Id.ToString());
-        var respPlayerLogin = new RespPlayerLogin
+        var rspPlayerLogin = new RspPlayerLogin
         {
             UniqueId = reqLogin.UniqueId,
             Code = playerState.State,
@@ -53,7 +53,7 @@ public class PlayerComponentAgent : StateComponentAgent<PlayerComponent, PlayerS
                 Avatar = playerState.Avatar,
             },
         };
-        await workChannel.WriteAsync(respPlayerLogin);
+        await workChannel.WriteAsync(rspPlayerLogin);
 
         //加入在线玩家
         var serverComp = await ActorManager.GetComponentAgent<ServerComponentAgent>();

@@ -14,7 +14,7 @@ message BagItem
 }
 
 // ============================================================
-// 请求 / 响应（Req / Resp）
+// 请求 / 响应（Req / Rsp）
 // ============================================================
 
 // 请求背包数据
@@ -24,7 +24,7 @@ message ReqBagInfo
 }
 
 // 背包数据响应
-message RespBagInfo
+message RspBagInfo
 {
   option opcode = 11;
   map<int32, int64> ItemDic = 1; // 道具字典，key:道具id，value:道具数量
@@ -39,7 +39,7 @@ message ReqUseItem
 }
 
 // 使用道具响应
-message RespUseItem
+message RspUseItem
 {
   option opcode = 13;
   int32 ItemId = 1; // 道具id
@@ -54,7 +54,7 @@ message ReqAddItem
 }
 
 // 增加道具响应
-message RespAddItem
+message RspAddItem
 {
   option opcode = 15;
   map<int32, int64> ItemDic = 1; // 变化的道具，key:道具id，value:数量
@@ -68,7 +68,7 @@ message ReqRemoveItem
 }
 
 // 减少道具响应
-message RespRemoveItem
+message RspRemoveItem
 {
   option opcode = 17;
   map<int32, int64> ItemDic = 1; // 变化的道具，key:道具id，value:数量

@@ -112,8 +112,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("账号登录响应")]
-    [MessageId(MessageIds.User.RespUserLogin)]
-    public sealed class RespUserLogin : MessageObject, IResponseMessage
+    [MessageId(MessageIds.User.RspUserLogin)]
+    public sealed class RspUserLogin : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 返回码
@@ -186,8 +186,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("角色创建响应")]
-    [MessageId(MessageIds.User.RespPlayerCreate)]
-    public sealed class RespPlayerCreate : MessageObject, IResponseMessage
+    [MessageId(MessageIds.User.RspPlayerCreate)]
+    public sealed class RspPlayerCreate : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 角色信息
@@ -225,8 +225,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("角色列表响应")]
-    [MessageId(MessageIds.User.RespPlayerList)]
-    public sealed class RespPlayerList : MessageObject, IResponseMessage
+    [MessageId(MessageIds.User.RspPlayerList)]
+    public sealed class RspPlayerList : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 角色列表
@@ -264,8 +264,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("玩家登录响应")]
-    [MessageId(MessageIds.User.RespPlayerLogin)]
-    public sealed class RespPlayerLogin : MessageObject, IResponseMessage
+    [MessageId(MessageIds.User.RspPlayerLogin)]
+    public sealed class RspPlayerLogin : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 返回码

@@ -57,24 +57,24 @@ namespace Hotfix.Framework.Network
             MessageIdRegistry.Register<NotifyServerFullyLoaded>(MessageIds.Basic.NotifyServerFullyLoaded);
             // Bag
             MessageIdRegistry.Register<ReqBagInfo>(MessageIds.Bag.ReqBagInfo);
-            MessageIdRegistry.Register<RespBagInfo>(MessageIds.Bag.RespBagInfo);
+            MessageIdRegistry.Register<RspBagInfo>(MessageIds.Bag.RspBagInfo);
             MessageIdRegistry.Register<ReqUseItem>(MessageIds.Bag.ReqUseItem);
-            MessageIdRegistry.Register<RespUseItem>(MessageIds.Bag.RespUseItem);
+            MessageIdRegistry.Register<RspUseItem>(MessageIds.Bag.RspUseItem);
             MessageIdRegistry.Register<ReqAddItem>(MessageIds.Bag.ReqAddItem);
-            MessageIdRegistry.Register<RespAddItem>(MessageIds.Bag.RespAddItem);
+            MessageIdRegistry.Register<RspAddItem>(MessageIds.Bag.RspAddItem);
             MessageIdRegistry.Register<ReqRemoveItem>(MessageIds.Bag.ReqRemoveItem);
-            MessageIdRegistry.Register<RespRemoveItem>(MessageIds.Bag.RespRemoveItem);
+            MessageIdRegistry.Register<RspRemoveItem>(MessageIds.Bag.RspRemoveItem);
             MessageIdRegistry.Register<NotifyBagItem>(MessageIds.Bag.NotifyBagItem);
             MessageIdRegistry.Register<NotifyBagInfoChanged>(MessageIds.Bag.NotifyBagInfoChanged);
             // User
             MessageIdRegistry.Register<ReqUserLogin>(MessageIds.User.ReqUserLogin);
-            MessageIdRegistry.Register<RespUserLogin>(MessageIds.User.RespUserLogin);
+            MessageIdRegistry.Register<RspUserLogin>(MessageIds.User.RspUserLogin);
             MessageIdRegistry.Register<ReqPlayerCreate>(MessageIds.User.ReqPlayerCreate);
-            MessageIdRegistry.Register<RespPlayerCreate>(MessageIds.User.RespPlayerCreate);
+            MessageIdRegistry.Register<RspPlayerCreate>(MessageIds.User.RspPlayerCreate);
             MessageIdRegistry.Register<ReqPlayerList>(MessageIds.User.ReqPlayerList);
-            MessageIdRegistry.Register<RespPlayerList>(MessageIds.User.RespPlayerList);
+            MessageIdRegistry.Register<RspPlayerList>(MessageIds.User.RspPlayerList);
             MessageIdRegistry.Register<ReqPlayerLogin>(MessageIds.User.ReqPlayerLogin);
-            MessageIdRegistry.Register<RespPlayerLogin>(MessageIds.User.RespPlayerLogin);
+            MessageIdRegistry.Register<RspPlayerLogin>(MessageIds.User.RspPlayerLogin);
             MessageIdRegistry.Register<NotifyErrorCode>(MessageIds.User.NotifyErrorCode);
             MessageIdRegistry.Register<NotifyPrompt>(MessageIds.User.NotifyPrompt);
         }

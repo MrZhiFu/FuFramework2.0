@@ -16,18 +16,18 @@ internal sealed class ReqRemoveItemHandler : PlayerComponentHandler<BagComponent
 {
     protected override async Task ActionAsync()
     {
-        var resp = new RespRemoveItem();
+        var rsp = new RspRemoveItem();
         try
         {
-            await ComponentAgent.OnRemoveBagItem(NetWorkChannel, Message as ReqRemoveItem, resp);
+            await ComponentAgent.OnRemoveBagItem(NetWorkChannel, Message as ReqRemoveItem, rsp);
         }
         catch (Exception e)
         {
             LogHelper.Fatal(e);
-            resp.ErrorCode = (int)OperationStatusCode.InternalServerError;
+            rsp.ErrorCode = (int)OperationStatusCode.InternalServerError;
         }
 
-        resp.SetUniqueId(Message.UniqueId);
-        await NetWorkChannel.WriteAsync(resp);
+        rsp.SetUniqueId(Message.UniqueId);
+        await NetWorkChannel.WriteAsync(rsp);
     }
 }

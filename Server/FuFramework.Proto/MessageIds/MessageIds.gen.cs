@@ -23,13 +23,13 @@ namespace FuFramework.Proto.Proto
 		public static class Bag   // module 100
 		{
 			public const int ReqBagInfo = ((int)MessageModule.Bag << 16) + 10; // 6553610
-			public const int RespBagInfo = ((int)MessageModule.Bag << 16) + 11; // 6553611
+			public const int RspBagInfo = ((int)MessageModule.Bag << 16) + 11; // 6553611
 			public const int ReqUseItem = ((int)MessageModule.Bag << 16) + 12; // 6553612
-			public const int RespUseItem = ((int)MessageModule.Bag << 16) + 13; // 6553613
+			public const int RspUseItem = ((int)MessageModule.Bag << 16) + 13; // 6553613
 			public const int ReqAddItem = ((int)MessageModule.Bag << 16) + 14; // 6553614
-			public const int RespAddItem = ((int)MessageModule.Bag << 16) + 15; // 6553615
+			public const int RspAddItem = ((int)MessageModule.Bag << 16) + 15; // 6553615
 			public const int ReqRemoveItem = ((int)MessageModule.Bag << 16) + 16; // 6553616
-			public const int RespRemoveItem = ((int)MessageModule.Bag << 16) + 17; // 6553617
+			public const int RspRemoveItem = ((int)MessageModule.Bag << 16) + 17; // 6553617
 			public const int NotifyBagItem = ((int)MessageModule.Bag << 16) + 18; // 6553618
 			public const int NotifyBagInfoChanged = ((int)MessageModule.Bag << 16) + 19; // 6553619
 		}
@@ -42,13 +42,13 @@ namespace FuFramework.Proto.Proto
 		public static class User   // module 300
 		{
 			public const int ReqUserLogin = ((int)MessageModule.User << 16) + 10; // 19660810
-			public const int RespUserLogin = ((int)MessageModule.User << 16) + 11; // 19660811
+			public const int RspUserLogin = ((int)MessageModule.User << 16) + 11; // 19660811
 			public const int ReqPlayerCreate = ((int)MessageModule.User << 16) + 12; // 19660812
-			public const int RespPlayerCreate = ((int)MessageModule.User << 16) + 13; // 19660813
+			public const int RspPlayerCreate = ((int)MessageModule.User << 16) + 13; // 19660813
 			public const int ReqPlayerList = ((int)MessageModule.User << 16) + 14; // 19660814
-			public const int RespPlayerList = ((int)MessageModule.User << 16) + 15; // 19660815
+			public const int RspPlayerList = ((int)MessageModule.User << 16) + 15; // 19660815
 			public const int ReqPlayerLogin = ((int)MessageModule.User << 16) + 16; // 19660816
-			public const int RespPlayerLogin = ((int)MessageModule.User << 16) + 17; // 19660817
+			public const int RspPlayerLogin = ((int)MessageModule.User << 16) + 17; // 19660817
 			public const int NotifyErrorCode = ((int)MessageModule.User << 16) + 18; // 19660818
 			public const int NotifyPrompt = ((int)MessageModule.User << 16) + 19; // 19660819
 		}

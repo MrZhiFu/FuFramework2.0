@@ -30,7 +30,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.Bag.ReqBagInfo)]
-	public sealed class ReqBagInfo : MessageObject, IRequestMessage<RespBagInfo>
+	public sealed class ReqBagInfo : MessageObject, IRequestMessage<RspBagInfo>
 	{
 	}
 
@@ -38,8 +38,8 @@ namespace Hotfix.Game.Proto
 	/// 背包数据响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.Bag.RespBagInfo)]
-	public sealed class RespBagInfo : MessageObject, IResponseMessage
+	[MessageId(MessageIds.Bag.RspBagInfo)]
+	public sealed class RspBagInfo : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 道具字典，key:道具id，value:道具数量
@@ -61,7 +61,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.Bag.ReqUseItem)]
-	public sealed class ReqUseItem : MessageObject, IRequestMessage<RespUseItem>
+	public sealed class ReqUseItem : MessageObject, IRequestMessage<RspUseItem>
 	{
 		/// <summary>
 		/// 道具id
@@ -81,8 +81,8 @@ namespace Hotfix.Game.Proto
 	/// 使用道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.Bag.RespUseItem)]
-	public sealed class RespUseItem : MessageObject, IResponseMessage
+	[MessageId(MessageIds.Bag.RspUseItem)]
+	public sealed class RspUseItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 道具id
@@ -109,7 +109,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.Bag.ReqAddItem)]
-	public sealed class ReqAddItem : MessageObject, IRequestMessage<RespAddItem>
+	public sealed class ReqAddItem : MessageObject, IRequestMessage<RspAddItem>
 	{
 		/// <summary>
 		/// 增加的道具，key:道具id，value:增加数量
@@ -124,8 +124,8 @@ namespace Hotfix.Game.Proto
 	/// 增加道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.Bag.RespAddItem)]
-	public sealed class RespAddItem : MessageObject, IResponseMessage
+	[MessageId(MessageIds.Bag.RspAddItem)]
+	public sealed class RspAddItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 变化的道具，key:道具id，value:数量
@@ -147,7 +147,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.Bag.ReqRemoveItem)]
-	public sealed class ReqRemoveItem : MessageObject, IRequestMessage<RespRemoveItem>
+	public sealed class ReqRemoveItem : MessageObject, IRequestMessage<RspRemoveItem>
 	{
 		/// <summary>
 		/// 减少的道具，key:道具id，value:减少数量
@@ -162,8 +162,8 @@ namespace Hotfix.Game.Proto
 	/// 减少道具响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.Bag.RespRemoveItem)]
-	public sealed class RespRemoveItem : MessageObject, IResponseMessage
+	[MessageId(MessageIds.Bag.RspRemoveItem)]
+	public sealed class RspRemoveItem : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 变化的道具，key:道具id，value:数量

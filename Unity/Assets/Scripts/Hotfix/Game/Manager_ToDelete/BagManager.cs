@@ -60,13 +60,13 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// </summary>
 		public async UniTask RequestGetBagInfoAsync()
 		{
-			var respBagInfo = await NetworkModule.Instance.Call(new ReqBagInfo());
-			if (respBagInfo.ErrorCode != default)
+			var rspBagInfo = await NetworkModule.Instance.Call(new ReqBagInfo());
+			if (rspBagInfo.ErrorCode != default)
 			{
 				return;
 			}
 
-			foreach (var item in respBagInfo.ItemDic)
+			foreach (var item in rspBagInfo.ItemDic)
 			{
 				m_itemDic[item.Key] = new BagItem() { ItemId = item.Key, Count = item.Value };
 			}
@@ -79,18 +79,18 @@ namespace Hotfix.Game.Manager_ToDelete
 		/// <param name="count">道具数量</param>
 		public async UniTask RequestUseItemAsync(int itemId, long count = 1)
 		{
-			var respUseItem = await NetworkModule.Instance.Call(new ReqUseItem() { ItemId = itemId, Count = count });
-			if (respUseItem.ErrorCode != default)
+			var rspUseItem = await NetworkModule.Instance.Call(new ReqUseItem() { ItemId = itemId, Count = count });
+			if (rspUseItem.ErrorCode != default)
 			{
 				return;
 			}
 
-			if (m_itemDic.TryGetValue(respUseItem.ItemId, out var value))
+			if (m_itemDic.TryGetValue(rspUseItem.ItemId, out var value))
 			{
-				value.Count -= respUseItem.Count;
+				value.Count -= rspUseItem.Count;
 				if (value.Count <= 0)
 				{
-					m_itemDic.Remove(respUseItem.ItemId);
+					m_itemDic.Remove(rspUseItem.ItemId);
 				}
 			}
 

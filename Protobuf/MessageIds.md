@@ -7,13 +7,13 @@
 | 消息名 | opcode | 完整 ID |
 |---|---|---|
 | ReqBagInfo | 10 | 6553610 |
-| RespBagInfo | 11 | 6553611 |
+| RspBagInfo | 11 | 6553611 |
 | ReqUseItem | 12 | 6553612 |
-| RespUseItem | 13 | 6553613 |
+| RspUseItem | 13 | 6553613 |
 | ReqAddItem | 14 | 6553614 |
-| RespAddItem | 15 | 6553615 |
+| RspAddItem | 15 | 6553615 |
 | ReqRemoveItem | 16 | 6553616 |
-| RespRemoveItem | 17 | 6553617 |
+| RspRemoveItem | 17 | 6553617 |
 | NotifyBagItem | 18 | 6553618 |
 | NotifyBagInfoChanged | 19 | 6553619 |
 
@@ -40,13 +40,13 @@
 | 消息名 | opcode | 完整 ID |
 |---|---|---|
 | ReqUserLogin | 10 | 19660810 |
-| RespUserLogin | 11 | 19660811 |
+| RspUserLogin | 11 | 19660811 |
 | ReqPlayerCreate | 12 | 19660812 |
-| RespPlayerCreate | 13 | 19660813 |
+| RspPlayerCreate | 13 | 19660813 |
 | ReqPlayerList | 14 | 19660814 |
-| RespPlayerList | 15 | 19660815 |
+| RspPlayerList | 15 | 19660815 |
 | ReqPlayerLogin | 16 | 19660816 |
-| RespPlayerLogin | 17 | 19660817 |
+| RspPlayerLogin | 17 | 19660817 |
 | NotifyErrorCode | 18 | 19660818 |
 | NotifyPrompt | 19 | 19660819 |
 

@@ -43,8 +43,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("背包数据响应")]
-    [MessageId(MessageIds.Bag.RespBagInfo)]
-    public sealed class RespBagInfo : MessageObject, IResponseMessage
+    [MessageId(MessageIds.Bag.RspBagInfo)]
+    public sealed class RspBagInfo : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 道具字典，key:道具id，value:道具数量
@@ -90,8 +90,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("使用道具响应")]
-    [MessageId(MessageIds.Bag.RespUseItem)]
-    public sealed class RespUseItem : MessageObject, IResponseMessage
+    [MessageId(MessageIds.Bag.RspUseItem)]
+    public sealed class RspUseItem : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 道具id
@@ -137,8 +137,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("增加道具响应")]
-    [MessageId(MessageIds.Bag.RespAddItem)]
-    public sealed class RespAddItem : MessageObject, IResponseMessage
+    [MessageId(MessageIds.Bag.RspAddItem)]
+    public sealed class RspAddItem : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 变化的道具，key:道具id，value:数量
@@ -178,8 +178,8 @@ namespace FuFramework.Proto.Proto
     /// </summary>
     [ProtoContract]
     [System.ComponentModel.Description("减少道具响应")]
-    [MessageId(MessageIds.Bag.RespRemoveItem)]
-    public sealed class RespRemoveItem : MessageObject, IResponseMessage
+    [MessageId(MessageIds.Bag.RspRemoveItem)]
+    public sealed class RspRemoveItem : MessageObject, IResponseMessage
     {
         /// <summary>
         /// 变化的道具，key:道具id，value:数量

@@ -114,7 +114,7 @@ namespace FuFramework.ProtoExport
         public string MessageName { get; private set; }
 
         /// <summary>
-        /// 配对的响应消息类型名（如 ReqPlayerLogin → RespPlayerLogin）。
+        /// 配对的响应消息类型名（如 ReqPlayerLogin → RspPlayerLogin）。
         /// 由 MessageHelper 在解析后按 MessageName 配对填充；无配对响应的请求（如心跳）为 null。
         /// </summary>
         public string PairResponseName { get; set; }
@@ -131,7 +131,7 @@ namespace FuFramework.ProtoExport
                 IsRequest = Name.StartsWith("Req");
                 IsNotify = Name.StartsWith("Notify");
                 IsHeartbeat = Name.Contains("Heartbeat", StringComparison.OrdinalIgnoreCase);
-                IsResponse = Name.StartsWith("Resp") || IsNotify || (IsHeartbeat && !IsRequest);
+                IsResponse = Name.StartsWith("Rsp") || IsNotify || (IsHeartbeat && !IsRequest);
                 if (IsRequest)
                 {
                     if (Name.StartsWith("Req"))
@@ -141,9 +141,9 @@ namespace FuFramework.ProtoExport
                 }
                 else
                 {
-                    if (Name.StartsWith("Resp"))
+                    if (Name.StartsWith("Rsp"))
                     {
-                        MessageName = Name[4..];
+                        MessageName = Name[3..];
                     }
                 }
             }

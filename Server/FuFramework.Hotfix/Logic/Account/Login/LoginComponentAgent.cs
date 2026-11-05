@@ -27,7 +27,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
         }
 
         // 构建账号登录返回信息
-        var respLogin = new RespUserLogin
+        var rspLogin = new RspUserLogin
         {
             UniqueId = reqLogin.UniqueId,
             Code = loginState.State,
@@ -36,7 +36,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
             Id = loginState.Id,
             RoleName = loginState.NickName,
         };
-        await workChannel.WriteAsync(respLogin);
+        await workChannel.WriteAsync(rspLogin);
     }
 
 
@@ -48,7 +48,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
     public async Task OnPlayerCreate(INetWorkChannel workChannel, ReqPlayerCreate reqPlayerCreate)
     {
         var playerState = await OwnerComponent.OnPlayerCreate(reqPlayerCreate);
-        var respPlayerCreate = new RespPlayerCreate
+        var rspPlayerCreate = new RspPlayerCreate
         {
             UniqueId = reqPlayerCreate.UniqueId,
             PlayerInfo = new PlayerInfo
@@ -60,7 +60,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
                 Avatar = playerState.Avatar,
             },
         };
-        await workChannel.WriteAsync(respPlayerCreate);
+        await workChannel.WriteAsync(rspPlayerCreate);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
     {
         var playerList = await OwnerComponent.GetPlayerList(reqPlayerList);
 
-        var respPlayerList = new RespPlayerList
+        var rspPlayerList = new RspPlayerList
         {
             UniqueId = reqPlayerList.UniqueId,
             PlayerList = new List<PlayerInfo>(),
@@ -89,10 +89,10 @@ public class LoginComponentAgent : StateComponentAgent<LoginComponent, LoginStat
                 playerInfo.Level = playerState.Level;
                 playerInfo.State = playerState.State;
                 playerInfo.Avatar = playerState.Avatar;
-                respPlayerList.PlayerList.Add(playerInfo);
+                rspPlayerList.PlayerList.Add(playerInfo);
             }
         }
 
-        await workChannel.WriteAsync(respPlayerList);
+        await workChannel.WriteAsync(rspPlayerList);
     }
 }*/

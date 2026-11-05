@@ -41,7 +41,7 @@ namespace Hotfix.Game.Network
 		/// <param name="playerId">角色 ID</param>
 		/// <param name="cancellationToken">取消令牌（铁律 5：调用方生命周期持有者传入）</param>
 		/// <returns>登录响应（含 PlayerInfo）</returns>
-		public static async UniTask<RespPlayerLogin> LoginFlowAsync(long playerId, CancellationToken cancellationToken)
+		public static async UniTask<RspPlayerLogin> LoginFlowAsync(long playerId, CancellationToken cancellationToken)
 		{
 			if (s_isEntering) throw new InvalidOperationException("已有登录事务进行中，请勿重入。");
 			s_isEntering = true;
@@ -53,12 +53,12 @@ namespace Hotfix.Game.Network
 			try
 			{
 				var reqPlayerLogin  = new ReqPlayerLogin { Id = playerId };
-				var respPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin).AttachExternalCancellation(cancellationToken);
-				PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
+				var rspPlayerLogin = await NetworkModule.Instance.Call(reqPlayerLogin).AttachExternalCancellation(cancellationToken);
+				PlayerManager.Instance.PlayerInfo = rspPlayerLogin.PlayerInfo;
 
 				// 基线就绪：恢复派发，缓冲推送按到达顺序回放
 				NetworkModule.Instance.ResumeNotifyDispatch();
-				return respPlayerLogin;
+				return rspPlayerLogin;
 			}
 			catch
 			{

@@ -18,7 +18,7 @@ message PlayerInfo
 }
 
 // ============================================================
-// 请求 / 响应（Req / Resp）
+// 请求 / 响应（Req / Rsp）
 // ============================================================
 
 // 请求账号登录
@@ -34,7 +34,7 @@ message ReqUserLogin
 }
 
 // 账号登录响应
-message RespUserLogin
+message RspUserLogin
 {
   option opcode = 11;
   int32 Code = 1;       // 返回码
@@ -53,7 +53,7 @@ message ReqPlayerCreate
 }
 
 // 角色创建响应
-message RespPlayerCreate
+message RspPlayerCreate
 {
   option opcode = 13;
   PlayerInfo PlayerInfo = 1; // 角色信息
@@ -67,7 +67,7 @@ message ReqPlayerList
 }
 
 // 角色列表响应
-message RespPlayerList
+message RspPlayerList
 {
   option opcode = 15;
   repeated PlayerInfo PlayerList = 1; // 角色列表
@@ -81,7 +81,7 @@ message ReqPlayerLogin
 }
 
 // 玩家登录响应
-message RespPlayerLogin
+message RspPlayerLogin
 {
   option opcode = 17;
   int32 Code = 1;            // 返回码

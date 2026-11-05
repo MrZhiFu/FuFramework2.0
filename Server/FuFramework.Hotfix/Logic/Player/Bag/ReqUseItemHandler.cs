@@ -14,19 +14,19 @@ internal sealed class ReqUseItemHandler : PlayerComponentHandler<BagComponentAge
 {
     protected override async Task ActionAsync()
     {
-        var response = new RespUseItem();
+        var rsp = new RspUseItem();
 
         try
         {
-            await ComponentAgent.OnUseBagItem(NetWorkChannel, Message as ReqUseItem, response);
+            await ComponentAgent.OnUseBagItem(NetWorkChannel, Message as ReqUseItem, rsp);
         }
         catch (Exception e)
         {
             LogHelper.Fatal(e);
-            response.ErrorCode = (int)OperationStatusCode.InternalServerError;
+            rsp.ErrorCode = (int)OperationStatusCode.InternalServerError;
         }
 
-        response.SetUniqueId(Message.UniqueId);
-        await NetWorkChannel.WriteAsync(response);
+        rsp.SetUniqueId(Message.UniqueId);
+        await NetWorkChannel.WriteAsync(rsp);
     }
 }

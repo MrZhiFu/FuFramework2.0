@@ -99,30 +99,30 @@ namespace Hotfix.Game.UI
 			try
 			{
 				// 创建角色
-				var respPlayerCreate =
-					await WebModule.Instance.Post<RespPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_req, Token);
-				if (respPlayerCreate.ErrorCode > 0)
+				var rspPlayerCreate =
+					await WebModule.Instance.Post<RspPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_req, Token);
+				if (rspPlayerCreate.ErrorCode > 0)
 				{
-					FuLogger.LogError("登录失败，错误信息:" + respPlayerCreate.ErrorCode);
+					FuLogger.LogError("登录失败，错误信息:" + rspPlayerCreate.ErrorCode);
 					return;
 				}
 
-				if (respPlayerCreate.PlayerInfo != null)
+				if (rspPlayerCreate.PlayerInfo != null)
 					FuLogger.LogInfo("创建角色成功");
 
 				// 获取角色列表
 				var reqPlayerList = new ReqPlayerList { Id = m_req.Id };
-				var respPlayerList =
-					await WebModule.Instance.Post<RespPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+				var rspPlayerList =
+					await WebModule.Instance.Post<RspPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
 						reqPlayerList, Token);
-				if (respPlayerList.ErrorCode > 0)
+				if (rspPlayerList.ErrorCode > 0)
 				{
-					FuLogger.LogError("登录失败，错误信息:" + respPlayerList.ErrorCode);
+					FuLogger.LogError("登录失败，错误信息:" + rspPlayerList.ErrorCode);
 					return;
 				}
 
 				// 将角色列表保存到Manager中
-				AccountManager.Instance.PlayerList = respPlayerList.PlayerList;
+				AccountManager.Instance.PlayerList = rspPlayerList.PlayerList;
 
 				// 关闭当前界面
 				CloseSelf();

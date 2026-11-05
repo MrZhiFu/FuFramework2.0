@@ -21,10 +21,10 @@ public sealed class ReqUserLoginHttpHandler : BaseHttpHandler
     public override async Task<MessageObject> Action(string ip, string url, Dictionary<string, object> parameters, MessageObject messageObject)
     {
         var reqUserLogin = (ReqUserLogin)messageObject;
-        var respUserLogin = new RespUserLogin();
+        var rspUserLogin = new RspUserLogin();
         if (reqUserLogin.UserName.IsNullOrEmpty() || reqUserLogin.Password.IsNullOrEmpty())
         {
-            respUserLogin.ErrorCode = (int)ResultCode.Failed;
+            rspUserLogin.ErrorCode = (int)ResultCode.Failed;
             return null;
         }
 
@@ -38,12 +38,12 @@ public sealed class ReqUserLoginHttpHandler : BaseHttpHandler
         }
 
         // 构建账号登录返回信息
-        respUserLogin.Code = loginState.State;
-        respUserLogin.CreateTime = loginState.CreateTime;
-        respUserLogin.Level = loginState.Level;
-        respUserLogin.Id = loginState.Id;
-        respUserLogin.RoleName = loginState.NickName;
-        return respUserLogin;
+        rspUserLogin.Code = loginState.State;
+        rspUserLogin.CreateTime = loginState.CreateTime;
+        rspUserLogin.Level = loginState.Level;
+        rspUserLogin.Id = loginState.Id;
+        rspUserLogin.RoleName = loginState.NickName;
+        return rspUserLogin;
     }
 
     public async Task<LoginState> OnUserLogin(ReqUserLogin reqUserLogin)

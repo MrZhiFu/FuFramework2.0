@@ -28,7 +28,7 @@ public partial class ReqConnectServer : MessageObject, IRequestMessage
 /// 请求链接的服务返回
 /// </summary>
 [MessageId(((short.MaxValue - 1) << 16) + 101)]
-public partial class RespConnectServer : MessageObject, IResponseMessage
+public partial class RspConnectServer : MessageObject, IResponseMessage
 {
     /// <summary>
     ///  服务器类型
@@ -71,7 +71,7 @@ public partial class RespConnectServer : MessageObject, IResponseMessage
 /// 服务上线
 /// </summary>
 [MessageId(((short.MaxValue - 1) << 16) + 102)]
-public partial class RespServerOnlineServer : MessageObject, IResponseMessage
+public partial class RspServerOnlineServer : MessageObject, IResponseMessage
 {
     /// <summary>
     ///  服务器类型
@@ -102,7 +102,7 @@ public partial class RespServerOnlineServer : MessageObject, IResponseMessage
 /// 服务下线
 /// </summary>
 [MessageId(((short.MaxValue - 1) << 16) + 103)]
-public partial class RespServerOfflineServer : MessageObject, IResponseMessage
+public partial class RspServerOfflineServer : MessageObject, IResponseMessage
 {
     /// <summary>
     ///  服务器类型

@@ -66,16 +66,16 @@ public static partial class MessageHelper
         // 消息号显式锚定校验
         MessageIdHandler(messageInfo.Infos, packageName, fileName);
 
-        // Req→Resp 配对（供客户端生成请求-响应映射接口）
+        // Req→Rsp 配对（供客户端生成请求-响应映射接口）
         PairRequestResponse(messageInfo.Infos);
         return messageInfo;
     }
 
     /// <summary>
-    /// Req→Resp 配对：MessageName 相同（ReqXxx 与 RespXxx 去前缀后同名）即为一对。
-    /// 配对结果写入请求的 PairResponseName，供客户端生成 IRequestMessage&lt;RespXxx&gt; 映射接口；
+    /// Req→Rsp 配对：MessageName 相同（ReqXxx 与 RspXxx 去前缀后同名）即为一对。
+    /// 配对结果写入请求的 PairResponseName，供客户端生成 IRequestMessage&lt;RspXxx&gt; 映射接口；
     /// 无配对响应的请求（如 ReqHeartBeat）保持基础 IRequestMessage。
-    /// 注意：Req 与 Resp 需在同一 proto 文件内成对声明。
+    /// 注意：Req 与 Rsp 需在同一 proto 文件内成对声明。
     /// </summary>
     private static void PairRequestResponse(List<MessageInfo> infos)
     {
@@ -88,7 +88,7 @@ public static partial class MessageHelper
 
             foreach (var responseInfo in infos)
             {
-                // 仅 Resp 前缀的响应参与配对（Notify 的 IsResponse 为 true 但 MessageName 为空，天然不会误配）
+                // 仅 Rsp 前缀的响应参与配对（Notify 的 IsResponse 为 true 但 MessageName 为空，天然不会误配）
                 if (!responseInfo.IsResponse || responseInfo.IsNotify || responseInfo.MessageName != requestInfo.MessageName)
                 {
                     continue;

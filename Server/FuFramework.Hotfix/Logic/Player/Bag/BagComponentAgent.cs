@@ -19,9 +19,9 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// </summary>
     /// <param name="netWorkChannel"></param>
     /// <param name="message"></param>
-    /// <param name="response"></param>
+    /// <param name="rsp"></param>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task OnAddBagItem(INetWorkChannel netWorkChannel, ReqAddItem message, RespAddItem response)
+    public async Task OnAddBagItem(INetWorkChannel netWorkChannel, ReqAddItem message, RspAddItem rsp)
     {
         // 校验物品是否存在
         foreach (var item in message.ItemDic)
@@ -29,7 +29,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
             var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get((int)item.Key);
             if (hasItem.IsNull())
             {
-                response.ErrorCode = (int)OperationStatusCode.NotFound;
+                rsp.ErrorCode = (int)OperationStatusCode.NotFound;
                 return;
             }
         }
@@ -82,8 +82,8 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// </summary>
     /// <param name="netWorkChannel"></param>
     /// <param name="message"></param>
-    /// <param name="response"></param>
-    public async Task OnRemoveBagItem(INetWorkChannel netWorkChannel, ReqRemoveItem message, RespRemoveItem response)
+    /// <param name="rsp"></param>
+    public async Task OnRemoveBagItem(INetWorkChannel netWorkChannel, ReqRemoveItem message, RspRemoveItem rsp)
     {
         // 校验物品是否存在
         foreach (var item in message.ItemDic)
@@ -91,7 +91,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
             var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get((int)item.Key);
             if (hasItem.IsNull())
             {
-                response.ErrorCode = (int)OperationStatusCode.NotFound;
+                rsp.ErrorCode = (int)OperationStatusCode.NotFound;
                 return;
             }
         }
@@ -107,13 +107,13 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
                     value.Count -= item.Value;
                     if (value.Count < 0)
                     {
-                        response.ErrorCode = (int)OperationStatusCode.Unprocessable;
+                        rsp.ErrorCode = (int)OperationStatusCode.Unprocessable;
                         return;
                     }
                 }
                 else
                 {
-                    response.ErrorCode = (int)OperationStatusCode.NotFound;
+                    rsp.ErrorCode = (int)OperationStatusCode.NotFound;
                     return;
                 }
             }
@@ -128,14 +128,14 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// </summary>
     /// <param name="netWorkChannel"></param>
     /// <param name="message"></param>
-    /// <param name="response"></param>
-    public async Task OnUseBagItem(INetWorkChannel netWorkChannel, ReqUseItem message, RespUseItem response)
+    /// <param name="rsp"></param>
+    public async Task OnUseBagItem(INetWorkChannel netWorkChannel, ReqUseItem message, RspUseItem rsp)
     {
         // 校验物品是否存在
         var hasItem = ConfigComponent.Instance.GetConfig<TbItem>().Get(message.ItemId);
         if (hasItem.IsNull())
         {
-            response.ErrorCode = (int)OperationStatusCode.NotFound;
+            rsp.ErrorCode = (int)OperationStatusCode.NotFound;
             return;
         }
 
@@ -143,7 +143,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
         var bagState = OwnerComponent.State;
         if (bagState.List.TryGetValue(message.ItemId, out var value))
         {
-            response.ItemId = message.ItemId;
+            rsp.ItemId = message.ItemId;
 
             value.Count -= message.Count;
             if (value.Count < 0)
@@ -152,7 +152,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
                 bagState.List.Remove(message.ItemId); // 移除
             }
 
-            response.Count = value.Count;
+            rsp.Count = value.Count;
             var notifyBagInfoChanged = new NotifyBagInfoChanged
             {
                 ItemDic =
@@ -164,7 +164,7 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
         }
         else
         {
-            response.ErrorCode = (int)OperationStatusCode.NotFound;
+            rsp.ErrorCode = (int)OperationStatusCode.NotFound;
             return;
         }
 
@@ -177,13 +177,13 @@ public class BagComponentAgent : StateComponentAgent<BagComponent, BagState>
     /// </summary>
     /// <param name="netWorkChannel"></param>
     /// <param name="message"></param>
-    /// <param name="response"></param>
-    public void OnReqBagInfoAsync(INetWorkChannel netWorkChannel, ReqBagInfo message, RespBagInfo response)
+    /// <param name="rsp"></param>
+    public void OnReqBagInfoAsync(INetWorkChannel netWorkChannel, ReqBagInfo message, RspBagInfo rsp)
     {
         var bagState = OwnerComponent.State;
         if (bagState.IsNotNull())
         {
-            response.ItemDic = bagState.List.ToDictionary(x => x.Key, x => x.Value.Count);
+            rsp.ItemDic = bagState.List.ToDictionary(x => x.Key, x => x.Value.Count);
         }
     }
 }

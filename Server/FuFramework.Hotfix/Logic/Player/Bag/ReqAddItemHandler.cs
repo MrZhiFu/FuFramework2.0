@@ -16,19 +16,19 @@ internal sealed class ReqAddItemHandler : PlayerComponentHandler<BagComponentAge
 {
     protected override async Task ActionAsync()
     {
-        var response = new RespAddItem();
+        var rsp = new RspAddItem();
 
         try
         {
-            await ComponentAgent.OnAddBagItem(NetWorkChannel, Message as ReqAddItem, response);
+            await ComponentAgent.OnAddBagItem(NetWorkChannel, Message as ReqAddItem, rsp);
         }
         catch (Exception e)
         {
             LogHelper.Fatal(e);
-            response.ErrorCode = (int)OperationStatusCode.InternalServerError;
+            rsp.ErrorCode = (int)OperationStatusCode.InternalServerError;
         }
 
-        response.SetUniqueId(Message.UniqueId);
-        await NetWorkChannel.WriteAsync(response);
+        rsp.SetUniqueId(Message.UniqueId);
+        await NetWorkChannel.WriteAsync(rsp);
     }
 }

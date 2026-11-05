@@ -7,7 +7,7 @@ message ReqPing
   int32 Id = 1; // 标识
 }
 
-message RespPing
+message RspPing
 {
   option opcode = 11;
   int32 ErrorCode = 1; // 错误码

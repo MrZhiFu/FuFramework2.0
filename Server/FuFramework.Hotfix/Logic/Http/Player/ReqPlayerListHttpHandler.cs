@@ -22,14 +22,14 @@ public sealed class ReqPlayerListHttpHandler : BaseHttpHandler
     {
         var request = (ReqPlayerList)messageObject;
 
-        var respPlayerList = new RespPlayerList
+        var rspPlayerList = new RspPlayerList
         {
             UniqueId = request.UniqueId,
             PlayerList = new List<PlayerInfo>(),
         };
         if (request.Id == default)
         {
-            return respPlayerList;
+            return rspPlayerList;
         }
 
         var playerList = await GetPlayerList(request);
@@ -46,11 +46,11 @@ public sealed class ReqPlayerListHttpHandler : BaseHttpHandler
                     State = playerState.State,
                     Avatar = playerState.Avatar,
                 };
-                respPlayerList.PlayerList.Add(playerInfo);
+                rspPlayerList.PlayerList.Add(playerInfo);
             }
         }
 
-        return respPlayerList;
+        return rspPlayerList;
     }
 
     private async Task<List<PlayerState>> GetPlayerList(ReqPlayerList reqPlayerList)

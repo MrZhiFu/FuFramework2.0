@@ -54,7 +54,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.User.ReqUserLogin)]
-	public sealed class ReqUserLogin : MessageObject, IRequestMessage<RespUserLogin>
+	public sealed class ReqUserLogin : MessageObject, IRequestMessage<RspUserLogin>
 	{
 		/// <summary>
 		/// 用户名
@@ -98,8 +98,8 @@ namespace Hotfix.Game.Proto
 	/// 账号登录响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.User.RespUserLogin)]
-	public sealed class RespUserLogin : MessageObject, IResponseMessage
+	[MessageId(MessageIds.User.RspUserLogin)]
+	public sealed class RspUserLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 返回码
@@ -144,7 +144,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.User.ReqPlayerCreate)]
-	public sealed class ReqPlayerCreate : MessageObject, IRequestMessage<RespPlayerCreate>
+	public sealed class ReqPlayerCreate : MessageObject, IRequestMessage<RspPlayerCreate>
 	{
 		/// <summary>
 		/// 账号ID
@@ -164,8 +164,8 @@ namespace Hotfix.Game.Proto
 	/// 角色创建响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.User.RespPlayerCreate)]
-	public sealed class RespPlayerCreate : MessageObject, IResponseMessage
+	[MessageId(MessageIds.User.RspPlayerCreate)]
+	public sealed class RspPlayerCreate : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 角色信息
@@ -186,7 +186,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.User.ReqPlayerList)]
-	public sealed class ReqPlayerList : MessageObject, IRequestMessage<RespPlayerList>
+	public sealed class ReqPlayerList : MessageObject, IRequestMessage<RspPlayerList>
 	{
 		/// <summary>
 		/// 账号ID
@@ -200,8 +200,8 @@ namespace Hotfix.Game.Proto
 	/// 角色列表响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.User.RespPlayerList)]
-	public sealed class RespPlayerList : MessageObject, IResponseMessage
+	[MessageId(MessageIds.User.RspPlayerList)]
+	public sealed class RspPlayerList : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 角色列表
@@ -222,7 +222,7 @@ namespace Hotfix.Game.Proto
 	/// </summary>
 	[ProtoContract]
 	[MessageId(MessageIds.User.ReqPlayerLogin)]
-	public sealed class ReqPlayerLogin : MessageObject, IRequestMessage<RespPlayerLogin>
+	public sealed class ReqPlayerLogin : MessageObject, IRequestMessage<RspPlayerLogin>
 	{
 		/// <summary>
 		/// 角色ID
@@ -236,8 +236,8 @@ namespace Hotfix.Game.Proto
 	/// 玩家登录响应
 	/// </summary>
 	[ProtoContract]
-	[MessageId(MessageIds.User.RespPlayerLogin)]
-	public sealed class RespPlayerLogin : MessageObject, IResponseMessage
+	[MessageId(MessageIds.User.RspPlayerLogin)]
+	public sealed class RspPlayerLogin : MessageObject, IResponseMessage
 	{
 		/// <summary>
 		/// 返回码

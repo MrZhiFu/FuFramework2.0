@@ -13,18 +13,18 @@ internal sealed class ReqBagInfoHandler : PlayerComponentHandler<BagComponentAge
 {
     protected override Task ActionAsync()
     {
-        var response = new RespBagInfo();
+        var rsp = new RspBagInfo();
         try
         {
-            ComponentAgent.OnReqBagInfoAsync(NetWorkChannel, Message as ReqBagInfo, response);
+            ComponentAgent.OnReqBagInfoAsync(NetWorkChannel, Message as ReqBagInfo, rsp);
         }
         catch (Exception e)
         {
             LogHelper.Fatal(e);
-            response.ErrorCode = (int)OperationStatusCode.InternalServerError;
+            rsp.ErrorCode = (int)OperationStatusCode.InternalServerError;
         }
 
-        response.SetUniqueId(Message.UniqueId);
-        return NetWorkChannel.WriteAsync(response);
+        rsp.SetUniqueId(Message.UniqueId);
+        return NetWorkChannel.WriteAsync(rsp);
     }
 }

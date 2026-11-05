@@ -23,7 +23,7 @@ public sealed class ReqPlayerCreateHttpHandler : BaseHttpHandler
         var reqPlayerCreate = messageObject as ReqPlayerCreate;
 
         var playerState = await OnPlayerCreate(reqPlayerCreate);
-        var respPlayerCreate = new RespPlayerCreate
+        var rspPlayerCreate = new RspPlayerCreate
         {
             UniqueId = reqPlayerCreate.UniqueId,
             PlayerInfo = new PlayerInfo
@@ -35,7 +35,7 @@ public sealed class ReqPlayerCreateHttpHandler : BaseHttpHandler
                 Avatar = playerState.Avatar,
             },
         };
-        return respPlayerCreate;
+        return rspPlayerCreate;
     }
 
     private async Task<PlayerState> OnPlayerCreate(ReqPlayerCreate reqPlayerCreate)

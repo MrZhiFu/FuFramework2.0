@@ -80,8 +80,8 @@ namespace Hotfix.Framework.Network
 		/// <code>
 		/// // 一问一答：响应类型自动推断（示例取自 WinPlayerList.PlayerLoginAsync）
 		/// var reqPlayerLogin  = new ReqPlayerLogin { Id = 1 };
-		/// var respPlayerLogin = await channel.Call(reqPlayerLogin);
-		/// PlayerManager.Instance.PlayerInfo = respPlayerLogin.PlayerInfo;
+		/// var rspPlayerLogin = await channel.Call(reqPlayerLogin);
+		/// PlayerManager.Instance.PlayerInfo = rspPlayerLogin.PlayerInfo;
 		/// </code>
 		/// </example>
 		UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgObj) where TResponse : MessageObject, IResponseMessage;
