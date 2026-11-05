@@ -1,3 +1,6 @@
+// 本文件整体仅 Editor 编译（发布构建不存在）：内容为 Web 调试面板使用的数据结构，
+// 主调用方 WebModule.Debug.cs 已整文件包裹，运行时构建无引用。
+#if UNITY_EDITOR
 using System;
 
 // ReSharper disable once CheckNamespace
@@ -77,3 +80,4 @@ namespace Hotfix.Framework.Web
 		}
 	}
 }
+#endif
