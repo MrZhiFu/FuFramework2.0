@@ -555,14 +555,19 @@ namespace FuFramework.Network.Editor
 		/// </summary>
 		private void DrawVirtualizedList()
 		{
+			// ExpandHeight 占满基类滚动容器的剩余空间（数据不足时也撑满，数据多时按行高滚动）。
+			// 空/非空两分支都必须先取这同一条布局条目：同一帧 Layout 与 Repaint 两个 GUI 事件间若数据
+			// 发生空↔非空切换（点击"清空记录/忽略此消息号"、搜索过滤边界切换），两事件的布局序列不一致
+			// 会报 Invalid GUILayout state——此前空分支走 HelpBox（复合组）正是该错误的根源
+			var viewRect = GUILayoutUtility.GetRect(1, 1, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
 			if (m_displayRecords.Count == 0)
 			{
-				EditorGUILayout.HelpBox("暂无消息记录（确认已连接服务器并产生了收发）", MessageType.Info);
+				// 空列表：在同一 Rect 区域内画居中提示（组结构与非空分支完全一致）
+				GUI.Label(viewRect, "暂无消息记录（确认已连接服务器并产生了收发）", EditorStyles.centeredGreyMiniLabel);
 				return;
 			}
 
-			// ExpandHeight 占满基类滚动容器的剩余空间（数据不足时也撑满，数据多时按行高滚动）
-			var viewRect = GUILayoutUtility.GetRect(1, 1, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 			// 内容高度 = 表头一行 + 数据行（表头占据内容坐标第 0 行位置，数据从第 1 行起画）
 			var contentHeight = Mathf.Max(viewRect.height, (m_displayRecords.Count + 1) * RowHeight);
 			var contentRect = new Rect(0, 0, viewRect.width - 16f, contentHeight);
