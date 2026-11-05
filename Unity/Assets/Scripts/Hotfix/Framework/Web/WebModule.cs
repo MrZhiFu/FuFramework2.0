@@ -75,7 +75,10 @@ namespace Hotfix.Framework.Web
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
 			var webJsonData = new WebJsonStringData(url, header, true, uniTaskCompletionSource, token, userData);
-			EnqueueJsonReq(webJsonData);
+			m_waitingJsonQueue.Enqueue(webJsonData);
+#if UNITY_EDITOR
+			RecordJsonSubmit(webJsonData);
+#endif
 			return uniTaskCompletionSource.Task;
 		}
 
@@ -97,7 +100,10 @@ namespace Hotfix.Framework.Web
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
 			var webJsonData = new WebJsonBytesData(url, header, true, uniTaskCompletionSource, token, userData);
-			EnqueueJsonReq(webJsonData);
+			m_waitingJsonQueue.Enqueue(webJsonData);
+#if UNITY_EDITOR
+			RecordJsonSubmit(webJsonData);
+#endif
 			return uniTaskCompletionSource.Task;
 		}
 
@@ -122,7 +128,10 @@ namespace Hotfix.Framework.Web
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
 
 			var webJsonData = new WebJsonStringData(url, header, from, uniTaskCompletionSource, token, userData);
-			EnqueueJsonReq(webJsonData);
+			m_waitingJsonQueue.Enqueue(webJsonData);
+#if UNITY_EDITOR
+			RecordJsonSubmit(webJsonData);
+#endif
 			return uniTaskCompletionSource.Task;
 		}
 
@@ -146,7 +155,10 @@ namespace Hotfix.Framework.Web
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 
 			var webJsonData = new WebJsonBytesData(url, header, from, uniTaskCompletionSource, token, userData);
-			EnqueueJsonReq(webJsonData);
+			m_waitingJsonQueue.Enqueue(webJsonData);
+#if UNITY_EDITOR
+			RecordJsonSubmit(webJsonData);
+#endif
 			return uniTaskCompletionSource.Task;
 		}
 
@@ -267,7 +279,9 @@ namespace Hotfix.Framework.Web
 			// 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
 			var capturedToken                              = m_scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
 			var inFlight                                   = m_scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+#if UNITY_EDITOR
 			if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
+#endif
 
 			// 任一 token 取消即 Abort 中断传输，避免在途请求等到超时才被回收；完成回调中注销。
 			// 模块 scope token 恒可取消；仅在存在可取消 token 时创建链接源，减少无谓分配。
@@ -301,13 +315,16 @@ namespace Hotfix.Framework.Web
 					if (capturedToken.IsCancellationRequested || webData.Token.IsCancellationRequested)
 					{
 						webData.CompleteCanceled();
+#if UNITY_EDITOR
 						RecordResult(EWebRequestResult.Canceled, webData, 0, 0, "调用方或模块取消", null);
+#endif
 						return;
 					}
 
 					// 已被调试面板急救取消：终止态已登记，不再写回与重复记账，仅释放资源
 					if (webData.IsDebugCanceled) return;
 
+#if UNITY_EDITOR
 					// 收发字节数与响应体预览仅供调试记账（RecordResult 关闭时直接短路），且访问 downloadHandler 会产生分配，
 					// 故仅在调试记录开启时统计，关闭时按 0/空传递；Pb 响应解包信封+内层消息成 JSON 快照，JSON 响应直接取 text
 					var debugRecording = DebugRecordingEnabled;
@@ -322,6 +339,7 @@ namespace Hotfix.Framework.Web
 					{
 						responseText = null;
 					}
+#endif
 
 					if (unityWebRequest.result != UnityWebRequest.Result.Success)
 					{
@@ -332,19 +350,25 @@ namespace Hotfix.Framework.Web
 						if (IsTimeout(unityWebRequest))
 						{
 							webData.CompleteError(new TimeoutException(errorText));
+#if UNITY_EDITOR
 							RecordResult(EWebRequestResult.Timeout, webData, sendBytes, recvBytes, errorText, responseText);
+#endif
 						}
 						else
 						{
 							webData.CompleteError(new Exception(errorText));
+#if UNITY_EDITOR
 							RecordResult(EWebRequestResult.Failed, webData, sendBytes, recvBytes, errorText, responseText);
+#endif
 						}
 
 						return;
 					}
 
 					webData.Complete(unityWebRequest);
+#if UNITY_EDITOR
 					RecordResult(EWebRequestResult.Success, webData, sendBytes, recvBytes, null, responseText);
+#endif
 				}
 				finally
 				{
@@ -371,6 +395,7 @@ namespace Hotfix.Framework.Web
 			return unityWebRequest.error.IndexOf("timeout", StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
+#if UNITY_EDITOR
 		/// <summary>
 		/// 获取请求上传的字节数（GET 无上传体时为 0）。须在请求释放前调用。
 		/// </summary>
@@ -391,5 +416,6 @@ namespace Hotfix.Framework.Web
 		/// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
 		/// <returns>响应体文本；无下载处理器时为空字符串。</returns>
 		private static string GetResponseText(UnityWebRequest unityWebRequest) => unityWebRequest.downloadHandler?.text ?? string.Empty;
+#endif
 	}
 }

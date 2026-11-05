@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -100,10 +101,10 @@ namespace Hotfix.Framework.Web
 		#region 请求入队统计
 
 		/// <summary>
-		/// JSON 请求入队并登记调试计数（调试开关关闭时仅入队，不做打点）。
+		/// JSON 请求提交打点（调试专用）：登记入队时刻与提交计数（调试开关关闭时跳过）。入队本身由主文件负责。
 		/// </summary>
 		/// <param name="webJsonData">JSON 请求数据。</param>
-		private void EnqueueJsonReq(WebJsonDataBase webJsonData)
+		private void RecordJsonSubmit(WebJsonDataBase webJsonData)
 		{
 			if (DebugRecordingEnabled)
 			{
@@ -111,15 +112,13 @@ namespace Hotfix.Framework.Web
 				m_jsonSubmitCount++;
 				m_submitCount++;
 			}
-
-			m_waitingJsonQueue.Enqueue(webJsonData);
 		}
 
 		/// <summary>
-		/// Pb 请求入队并登记调试计数（调试开关关闭时仅入队，不做打点）。
+		/// Pb 请求提交打点（调试专用）：登记入队时刻与提交计数（调试开关关闭时跳过）。入队本身由主文件负责。
 		/// </summary>
 		/// <param name="webPbData">Pb 请求数据。</param>
-		private void EnqueuePbReq(WebPbData webPbData)
+		private void RecordPbSubmit(WebPbData webPbData)
 		{
 			if (DebugRecordingEnabled)
 			{
@@ -127,8 +126,6 @@ namespace Hotfix.Framework.Web
 				m_pbSubmitCount++;
 				m_submitCount++;
 			}
-
-			m_waitingPbQueue.Enqueue(webPbData);
 		}
 
 		#endregion
@@ -639,3 +636,4 @@ namespace Hotfix.Framework.Web
 		#endregion
 	}
 }
+#endif

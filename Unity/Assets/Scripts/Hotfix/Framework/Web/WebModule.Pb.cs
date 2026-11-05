@@ -51,7 +51,9 @@ namespace Hotfix.Framework.Web
 				// 构建/发送失败：释放原生资源并回写异常，避免调用方永久挂起
 				unityWebRequest?.Dispose();
 				webData.CompleteError(e);
+#if UNITY_EDITOR
 				RecordBuildFailed(webData, e);
+#endif
 				return false;
 			}
 
@@ -113,7 +115,8 @@ namespace Hotfix.Framework.Web
 			var sendData = SerializerHelper.Serialize(messageHttpObject);
 			var webData  = new WebPbData(url, sendData, uniTaskCompletionSource, token, userData);
 
-			// 记录 Pb 请求消息的类 JSON 预览（仅调试开启时生成；存紧凑文本，面板端缩进美化），序列化异常则留空
+			// 记录 Pb 请求消息的类 JSON 预览（仅编辑器且调试开启时生成；存紧凑文本，面板端缩进美化），序列化异常则留空
+#if UNITY_EDITOR
 			if (DebugRecordingEnabled)
 			{
 				try
@@ -125,8 +128,12 @@ namespace Hotfix.Framework.Web
 					webData.DebugRequestBody = null;
 				}
 			}
+#endif
 
-			EnqueuePbReq(webData);
+			m_waitingPbQueue.Enqueue(webData);
+#if UNITY_EDITOR
+			RecordPbSubmit(webData);
+#endif
 			return uniTaskCompletionSource.Task;
 		}
 	}

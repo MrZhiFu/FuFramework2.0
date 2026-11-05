@@ -37,16 +37,15 @@ namespace Hotfix.Framework.Web
 		/// <returns>是否成功发起并登记在途；构建失败返回 false（已回写异常，调用方不会挂起）。</returns>
 		private bool SendJsonReq(WebJsonDataBase webJsonData)
 		{
-			// Header/Form 明细各需一次 JSON 序列化 + 拼接，仅在调试记录开启时输出（与同文件请求体预览同一开关）；
-			// 关闭时退化为只输出 URL，避免每次请求为日志做两次无谓序列化
-			if (DebugRecordingEnabled)
-			{
-				FuLogger.LogInfo($"Web Request: {webJsonData.URL} \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}");
-			}
-			else
-			{
-				FuLogger.LogInfo($"Web Request: {webJsonData.URL}");
-			}
+			// Header/Form 明细各需一次 JSON 序列化 + 拼接，仅编辑器且调试记录开启时输出（与同文件请求体预览同一开关）；
+			// 其余（含真机构建）退化为只输出 URL，避免每次请求为日志做两次无谓序列化
+			FuLogger.LogInfo($"Web Request: {webJsonData.URL}"
+#if UNITY_EDITOR
+				+ (DebugRecordingEnabled
+					? $" \n Header: {UtilityAOT.Json.ToJson(webJsonData.Header)} \n  Form: {UtilityAOT.Json.ToJson(webJsonData.Form)}"
+					: string.Empty)
+#endif
+			);
 
 			// 前置构建 + 发送请求：非法 URL/Header 或发送异常在此抛，回写异常并返回，不登记在途、不注册回调
 			UnityWebRequest               unityWebRequest = null;
@@ -61,7 +60,9 @@ namespace Hotfix.Framework.Web
 				// 构建/发送失败：释放原生资源并回写异常，避免调用方永久挂起
 				unityWebRequest?.Dispose();
 				webJsonData.CompleteError(e);
+#if UNITY_EDITOR
 				RecordBuildFailed(webJsonData, e);
+#endif
 				return false;
 			}
 
@@ -95,8 +96,10 @@ namespace Hotfix.Framework.Web
 					var body     = UtilityAOT.Json.ToJson(webJsonData.Form);
 					var postData = Encoding.UTF8.GetBytes(body);
 
-					// 记录请求体紧凑文本供调试面板展开预览（仅调试开启时；面板端再缩进美化，避免运行期多余序列化）
+					// 记录请求体紧凑文本供调试面板展开预览（仅编辑器且调试开启时；面板端再缩进美化，避免运行期多余序列化）
+#if UNITY_EDITOR
 					if (DebugRecordingEnabled) webJsonData.DebugRequestBody = body;
+#endif
 					unityWebRequest.uploadHandler = new UploadHandlerRaw(postData);
 				}
 				else if (!webJsonData.IsGet)
