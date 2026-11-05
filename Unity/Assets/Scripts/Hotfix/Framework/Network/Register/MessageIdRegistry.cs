@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -59,6 +60,24 @@ namespace Hotfix.Framework.Network
 		{
 			sr_messageDict.TryGetKeyByValue(type, out var value);
 			return value;
+		}
+
+		/// <summary>
+		/// 按消息类型名查找已注册类型（调试辅助，如 Web 调试面板由 URL 末段反推请求类型；未注册时返回 null）。
+		/// 注册量级有限且仅调试低频调用，直接遍历匹配，无需额外按名索引。
+		/// </summary>
+		/// <param name="typeName">消息类型名（如 ReqUserLogin）。</param>
+		/// <returns>已注册的消息类型；未注册返回 null。</returns>
+		public static Type GetTypeByName(string typeName)
+		{
+			if (string.IsNullOrEmpty(typeName)) return null;
+
+			foreach (var type in sr_messageDict.Values)
+			{
+				if (type.Name == typeName) return type;
+			}
+
+			return null;
 		}
 	}
 }

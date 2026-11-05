@@ -1,7 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using AOT.Framework.Core.Utility;
+using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
-using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
+using ProtoBuf;
+using Hotfix.Framework.Core;
+using Hotfix.Framework.Network;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Web
@@ -218,6 +223,65 @@ namespace Hotfix.Framework.Web
 			}
 		}
 
+		/// <summary>
+		/// 解包 Pb 响应为可读文本（调试专用）：从 UnityWebRequest 提取响应字节后走 <see cref="FormatPbEnvelope"/> 解包。
+		/// </summary>
+		/// <param name="unityWebRequest">Unity 网络请求（须在释放前调用）。</param>
+		/// <returns>可读文本；解不出内容时为描述性提示。</returns>
+		private static string GetPbResponseText(UnityWebRequest unityWebRequest)
+		{
+			var data = unityWebRequest.downloadHandler?.data;
+			if (data == null || data.Length == 0) return string.Empty;
+
+			return FormatPbEnvelope(data);
+		}
+
+		/// <summary>
+		/// 将 Pb 响应字节解包为可读文本：先解 HTTP 信封（MessageHttpObject），按信封 Id 反查响应类型，
+		/// 再反序列化内层 Body 成 JSON 快照。任何一步失败都降级为描述性文本，不影响调用方逻辑。
+		/// </summary>
+		/// <param name="data">Pb 响应字节（MessageHttpObject 序列化产物）。</param>
+		/// <returns>可读文本；解不出内容时为描述性提示。</returns>
+		private static string FormatPbEnvelope(byte[] data)
+		{
+			if (data == null || data.Length == 0) return string.Empty;
+
+			MessageHttpObject envelope;
+			try
+			{
+				envelope = SerializerHelper.Deserialize<MessageHttpObject>(data);
+			}
+			catch (Exception e)
+			{
+				return $"（Pb 响应信封解包失败，共 {data.Length} 字节：{e.Message}）";
+			}
+
+			if (envelope == null) return $"（Pb 响应信封为空，共 {data.Length} 字节）";
+
+			// 信封 Id 反查响应类型；类型未注册属异常降级
+			var messageType = MessageIdRegistry.GetTypeById(envelope.Id);
+			if (messageType == null)
+			{
+				return $"（信封 JSON）{envelope}";
+			}
+
+			// 内层 Body 为空是正常业务情况：protobuf 空消息（所有字段均为默认值，如空列表）序列化不产生字节
+			if (envelope.Body == null || envelope.Body.Length == 0)
+			{
+				return $"{messageType.Name}: Null";
+			}
+
+			try
+			{
+				var msgObj = SerializerHelper.Deserialize(envelope.Body, messageType) as MessageObject;
+				return msgObj == null ? $"（信封 JSON）{envelope}" : UtilityAOT.Json.ToJson(msgObj);
+			}
+			catch (Exception e)
+			{
+				return $"（Body 反序列化失败：{e.Message}；信封 JSON）{envelope}";
+			}
+		}
+
 		#endregion
 
 		#region 调试查询接口
@@ -389,13 +453,14 @@ namespace Hotfix.Framework.Web
 		public string DebugManualMessage { get; private set; } = "";
 
 		/// <summary>
-		/// 发送手动测试请求（调试专用）。GET 直接请求；POST 将请求体按 JSON 解析后发送。
+		/// 发送手动测试请求（调试专用）。0=GET 直接请求；1=POST(JSON) 请求体按 JSON 表单发送；
+		/// 2=POST(Pb) 由 URL 末段反推请求消息类型、请求体 JSON 转消息对象后走 Pb 通道发送。
 		/// 请求会走模块既有入队/发送管道，因此自动进入最近请求记录。
 		/// </summary>
 		/// <param name="url">请求 URL。</param>
-		/// <param name="isPost">是否为 POST（false 为 GET）。</param>
-		/// <param name="postBody">POST 请求体（JSON 文本），仅 isPost 为 true 时生效。</param>
-		public void SendDebugRequest(string url, bool isPost, string postBody)
+		/// <param name="method">请求模式（0 GET / 1 POST(JSON) / 2 POST(Pb)）。</param>
+		/// <param name="postBody">POST 请求体（JSON 文本），仅 method 为 1/2 时生效。</param>
+		public void SendDebugRequest(string url, int method, string postBody)
 		{
 			if (DebugManualRunning) return;
 
@@ -406,16 +471,16 @@ namespace Hotfix.Framework.Web
 				return;
 			}
 
-			SendDebugRequestAsync(url, isPost, postBody).Forget();
+			SendDebugRequestAsync(url, method, postBody).Forget();
 		}
 
 		/// <summary>
 		/// 手动测试请求异步执行体。
 		/// </summary>
 		/// <param name="url">请求 URL。</param>
-		/// <param name="isPost">是否为 POST。</param>
+		/// <param name="method">请求模式（0 GET / 1 POST(JSON) / 2 POST(Pb)）。</param>
 		/// <param name="postBody">POST 请求体（JSON 文本）。</param>
-		private async UniTaskVoid SendDebugRequestAsync(string url, bool isPost, string postBody)
+		private async UniTaskVoid SendDebugRequestAsync(string url, int method, string postBody)
 		{
 			DebugManualRunning = true;
 			DebugManualStatus  = "请求中";
@@ -424,7 +489,42 @@ namespace Hotfix.Framework.Web
 			try
 			{
 				string responseText;
-				if (isPost)
+				if (method == 2)
+				{
+					// Pb 模式：URL 末段反推请求消息类型（与 ConvertToSnakeCase 互逆约定），请求体 JSON 转消息对象后走 Pb 通道
+					var parts     = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
+					var typeName  = SnakeToPascal(parts.Length > 0 ? parts[^1] : string.Empty);
+					var messageType = MessageIdRegistry.GetTypeByName(typeName);
+					if (messageType == null)
+					{
+						DebugManualStatus  = "参数错误";
+						DebugManualMessage = $"无法从 URL 反推请求消息类型：{typeName} 未注册（约定：URL 末段为消息名的 snake_case）";
+						return;
+					}
+
+					MessageObject reqObj;
+					try
+					{
+						reqObj = UtilityAOT.Json.ToObject(messageType, string.IsNullOrWhiteSpace(postBody) ? "{}" : postBody) as MessageObject;
+					}
+					catch (Exception e)
+					{
+						DebugManualStatus  = "参数错误";
+						DebugManualMessage = $"请求体不是合法的 JSON：{e.Message}";
+						return;
+					}
+
+					if (reqObj == null)
+					{
+						DebugManualStatus  = "参数错误";
+						DebugManualMessage = "请求体反序列化结果为空";
+						return;
+					}
+
+					var webBufferResult = await PostPbReq(url, reqObj, m_scope.Token);
+					responseText = webBufferResult.IsNull() ? "（Pb 请求未返回结果）" : FormatPbEnvelope(webBufferResult.Result);
+				}
+				else if (method == 1)
 				{
 					Dictionary<string, object> form = null;
 					if (!string.IsNullOrWhiteSpace(postBody))
@@ -467,6 +567,27 @@ namespace Hotfix.Framework.Web
 			{
 				DebugManualRunning = false;
 			}
+		}
+
+		/// <summary>
+		/// snake_case 转 PascalCase（与 <c>ConvertToSnakeCase</c> 互逆），用于由 URL 末段反推消息类型名。
+		/// </summary>
+		/// <param name="snake">snake_case 文本（如 req_user_login）。</param>
+		/// <returns>PascalCase 文本（如 ReqUserLogin）。</returns>
+		private static string SnakeToPascal(string snake)
+		{
+			if (string.IsNullOrEmpty(snake)) return string.Empty;
+
+			var sb = new StringBuilder(snake.Length);
+			foreach (var part in snake.Split('_'))
+			{
+				if (part.Length == 0) continue;
+
+				sb.Append(char.ToUpperInvariant(part[0]));
+				if (part.Length > 1) sb.Append(part, 1, part.Length - 1);
+			}
+
+			return sb.ToString();
 		}
 
 		/// <summary>

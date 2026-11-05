@@ -309,11 +309,19 @@ namespace Hotfix.Framework.Web
 					if (webData.IsDebugCanceled) return;
 
 					// 收发字节数与响应体预览仅供调试记账（RecordResult 关闭时直接短路），且访问 downloadHandler 会产生分配，
-					// 故仅在调试记录开启时统计，关闭时按 0/空传递
+					// 故仅在调试记录开启时统计，关闭时按 0/空传递；Pb 响应解包信封+内层消息成 JSON 快照，JSON 响应直接取 text
 					var debugRecording = DebugRecordingEnabled;
 					var sendBytes      = debugRecording ? GetUploadBytes(unityWebRequest) : 0;
 					var recvBytes      = debugRecording ? GetDownloadBytes(unityWebRequest) : 0;
-					var responseText   = debugRecording ? GetResponseText(unityWebRequest) : null;
+					string responseText;
+					if (debugRecording)
+					{
+						responseText = webData is WebPbData ? GetPbResponseText(unityWebRequest) : GetResponseText(unityWebRequest);
+					}
+					else
+					{
+						responseText = null;
+					}
 
 					if (unityWebRequest.result != UnityWebRequest.Result.Success)
 					{

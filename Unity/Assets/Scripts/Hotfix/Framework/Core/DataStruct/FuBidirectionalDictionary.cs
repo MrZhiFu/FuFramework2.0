@@ -32,6 +32,11 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public int Count { get; private set; }
 
+		/// <summary>
+		/// 全部值的只读集合（反向字典的键集，遍历用）。
+		/// </summary>
+		public ICollection<TValue> Values => m_reverseDict.Keys;
+
 
 		public FuBidirectionalDictionary(int capacity = 8)
 		{
