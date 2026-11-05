@@ -10,7 +10,7 @@ namespace Hotfix.Framework.Web
 	/// Web 管理模块的调试埋点与调试查询接口。
 	/// 功能：
 	///     1. 在请求入队/发送/完成咽喉点累计计数（发起/成功/失败/超时/取消、收发字节）。
-	///     2. 以环形缓冲保留最近 200 条请求终结记录，供调试面板查看失败/取消明细。
+	///     2. 以环形缓冲保留最近 200 条请求终结记录（含请求体与响应体预览），供调试面板展开查看。
 	///     3. 提供实时请求快照（等待/发送中）与模块级统计快照查询。
 	///     4. 提供急救操作：清空全部等待/发送中请求并取消调用方任务（仅调试使用）。
 	/// 说明：
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Web
 		/// <param name="exception">构建/发送异常。</param>
 		private void RecordBuildFailed(WebDataBase webData, Exception exception)
 		{
-			RecordResult(EWebRequestResult.Failed, webData, 0, 0, exception?.Message);
+			RecordResult(EWebRequestResult.Failed, webData, 0, 0, exception?.Message, null);
 		}
 
 		/// <summary>
@@ -148,7 +148,8 @@ namespace Hotfix.Framework.Web
 		/// <param name="sendBytes">发送字节数。</param>
 		/// <param name="recvBytes">接收字节数。</param>
 		/// <param name="error">失败/取消原因，成功时为空。</param>
-		private void RecordResult(EWebRequestResult result, WebDataBase webData, int sendBytes, int recvBytes, string error)
+		/// <param name="responseBody">响应体文本（成功为服务器返回内容，失败为服务器错误详情），取消时为空。</param>
+		private void RecordResult(EWebRequestResult result, WebDataBase webData, int sendBytes, int recvBytes, string error, string responseBody)
 		{
 			// 调试开关关闭时短路，避免正式运行承担计数与记录开销
 			if (!DebugRecordingEnabled) return;
@@ -176,14 +177,26 @@ namespace Hotfix.Framework.Web
 			var totalMs = webData.EnqueueTimeUtc == default ? 0 : Math.Max(0, (int)(nowUtc              - webData.EnqueueTimeUtc).TotalMilliseconds);
 			var waitMs  = webData.SendTimeUtc    == default ? 0 : Math.Max(0, (int)(webData.SendTimeUtc - webData.EnqueueTimeUtc).TotalMilliseconds);
 
-			// 请求体预览（JSON POST / Pb 类 JSON 文本）；过长则截断以控制环形记录内存
-			var requestBody = webData.DebugRequestBody;
-			if (!string.IsNullOrEmpty(requestBody) && requestBody.Length > DEBUG_LOG_BODY_MAX_LENGTH)
+			// 请求体/响应体预览；过长则截断以控制环形记录内存
+			var requestBody       = TruncateBody(webData.DebugRequestBody);
+			var responseBodyText  = TruncateBody(responseBody);
+
+			PushLog(new WebLogEntry(nowUtc, result, webData is WebPbData, webData.IsGet, webData.URL, waitMs, totalMs, sendBytes, recvBytes, error, requestBody, responseBodyText));
+		}
+
+		/// <summary>
+		/// 截断记录正文文本，超出上限的部分以省略提示结尾。
+		/// </summary>
+		/// <param name="text">原始文本。</param>
+		/// <returns>截断后的文本；空文本原样返回。</returns>
+		private static string TruncateBody(string text)
+		{
+			if (string.IsNullOrEmpty(text) || text.Length <= DEBUG_LOG_BODY_MAX_LENGTH)
 			{
-				requestBody = requestBody.Substring(0, DEBUG_LOG_BODY_MAX_LENGTH) + "\n...（已截断）";
+				return text;
 			}
 
-			PushLog(new WebLogEntry(nowUtc, result, webData is WebPbData, webData.IsGet, webData.URL, waitMs, totalMs, sendBytes, recvBytes, error, requestBody));
+			return text.Substring(0, DEBUG_LOG_BODY_MAX_LENGTH) + "\n...（已截断）";
 		}
 
 		/// <summary>
@@ -353,7 +366,7 @@ namespace Hotfix.Framework.Web
 			// 发送中请求标记后在途完成回调不再重复记账；等待中请求无完成回调，标记无害
 			webData.IsDebugCanceled = true;
 			webData.Dispose();
-			RecordResult(EWebRequestResult.Canceled, webData, 0, 0, reason);
+			RecordResult(EWebRequestResult.Canceled, webData, 0, 0, reason, null);
 		}
 
 		#endregion

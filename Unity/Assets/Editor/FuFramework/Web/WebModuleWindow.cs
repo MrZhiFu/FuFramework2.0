@@ -18,7 +18,7 @@ namespace FuFramework.Web.Editor
 	/// 功能：
 	///     1. 模块概览：累计计数（发起/成功/失败/超时/取消）、收发字节与速率、并发占用，超时/并发上限实时调整。
 	///     2. 实时请求：展示当前等待/发送中的 JSON 与 Pb 请求，支持按 URL 过滤，调用方已取消的滞留请求红色告警。
-	///     3. 最近请求记录：环形保留最近 200 条终结摘要，可按结果类型与关键字过滤；每行可复制 URL，POST 记录可展开查看/复制请求体。
+	///     3. 最近请求记录：环形保留最近 200 条终结摘要，可按结果类型与关键字过滤；每行可复制 URL，含请求体/响应体的记录可展开查看/复制。
 	///     4. 操作：重置统计/清空记录、清空等待并取消在途请求（急救，需二次确认）。
 	///     5. 手动测试请求：输入 URL、GET/POST 切换（POST 可填 JSON 请求体）直接发请求，展示响应/错误，并自动进入最近请求记录。
 	/// </summary>
@@ -171,6 +171,16 @@ namespace FuFramework.Web.Editor
 		/// WebModule.GetRecentLogs 方法
 		/// </summary>
 		private MethodInfo m_getRecentLogsMethod;
+
+		/// <summary>
+		/// 本帧缓存的实时请求列表（Layout 事件拉取，同帧其余 GUI 事件复用，保证布局序列一致）
+		/// </summary>
+		private List<object> m_cachedLiveInfos;
+
+		/// <summary>
+		/// 本帧缓存的最近请求记录列表（Layout 事件拉取，同帧其余 GUI 事件复用，保证布局序列一致）
+		/// </summary>
+		private List<object> m_cachedLogInfos;
 
 		/// <summary>
 		/// WebModule.ClearDebugHistory 方法
@@ -924,6 +934,7 @@ namespace FuFramework.Web.Editor
 			var sendBytes = GetIntProp(logInfo, "SendBytes");
 			var recvBytes = GetIntProp(logInfo, "RecvBytes");
 			var error     = GetStringProp(logInfo, "Error");
+			var response  = GetStringProp(logInfo, "ResponseBody");
 			var time      = GetDateTimeProp(logInfo, "CompleteTimeUtc");
 
 			if (string.IsNullOrEmpty(url)) return;
@@ -947,9 +958,9 @@ namespace FuFramework.Web.Editor
 			var oldColor = GUI.color;
 			EditorGUILayout.BeginHorizontal();
 
-			// POST 记录：前置展开/折叠箭头按钮，展开可查看/复制请求体；GET 记录无折叠
+			// 含请求体（POST）或响应体（成功/失败响应均记录）的记录：前置展开/折叠箭头按钮，展开可查看/复制正文
 			var isOpen = false;
-			if (isPost)
+			if (isPost || !string.IsNullOrEmpty(response))
 			{
 				var key = BuildLogKey(logInfo);
 				m_logFoldoutStates.TryGetValue(key, out isOpen);
@@ -972,51 +983,88 @@ namespace FuFramework.Web.Editor
 
 			EditorGUILayout.EndHorizontal();
 
-			// 展开的 POST 记录：展示请求体并支持复制
-			if (isPost && isOpen)
+			// 展开的记录：展示请求体与响应体并支持复制
+			if (isOpen)
 			{
-				DrawLogRequestBody(logInfo, isPb, sendBytes);
+				DrawLogBodies(logInfo, isPb, isGet, sendBytes);
 			}
 		}
 
 		/// <summary>
-		/// 绘制展开后的 POST 记录请求体（含复制按钮）
+		/// 绘制展开后的记录正文（请求体 + 响应体，含复制按钮）
 		/// </summary>
 		/// <param name="logInfo">记录条目（装箱对象）</param>
 		/// <param name="isPb">是否为 Pb 请求</param>
+		/// <param name="isGet">是否为 GET 请求</param>
 		/// <param name="sendBytes">发送字节数</param>
-		private void DrawLogRequestBody(object logInfo, bool isPb, int sendBytes)
+		private void DrawLogBodies(object logInfo, bool isPb, bool isGet, int sendBytes)
 		{
 			EditorGUILayout.BeginVertical("box");
 
-			var body = GetStringProp(logInfo, "RequestBody");
-			if (string.IsNullOrEmpty(body))
+			// 请求体段
+			var requestBody = GetStringProp(logInfo, "RequestBody");
+			if (string.IsNullOrEmpty(requestBody))
 			{
-				DrawGrayLabel(isPb
-								  ? $"Pb 请求体为二进制，共 {FormatBytes(sendBytes)} 字节，未能生成类 JSON 预览。"
-								  : "POST 无请求体（空表单）。");
+				if (isGet)
+				{
+					DrawGrayLabel("GET 请求，无请求体。");
+				}
+				else if (isPb)
+				{
+					DrawGrayLabel($"Pb 请求体为二进制，共 {FormatBytes(sendBytes)} 字节，未能生成类 JSON 预览。");
+				}
+				else
+				{
+					DrawGrayLabel("POST 无请求体（空表单）。");
+				}
 			}
 			else
 			{
 				GUILayout.Label(isPb ? "请求体（Pb 类 JSON 预览）:" : "请求体:");
 				// 运行时存紧凑文本，展示时若仍为单行紧凑 JSON 则缩进美化（已美化的直接显示），避免运行期序列化开销
-				var displayBody   = body.IndexOf('\n') >= 0 ? body : IndentJson(body);
-				var wrapStyle     = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
-				var previewHeight = CalcContentHeight(displayBody, wrapStyle);
-				EditorGUILayout.SelectableLabel(displayBody, wrapStyle, GUILayout.Height(previewHeight));
+				var displayBody = requestBody.IndexOf('\n') >= 0 ? requestBody : IndentJson(requestBody);
+				DrawSelectableBody(displayBody, "复制请求体");
+			}
 
-				EditorGUILayout.BeginHorizontal();
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("复制请求体", GUILayout.Width(90)))
-				{
-					EditorGUIUtility.systemCopyBuffer = displayBody;
-				}
-
-				EditorGUILayout.EndHorizontal();
+			// 响应体段（成功为服务器返回内容，失败为服务器错误详情）
+			var responseBody = GetStringProp(logInfo, "ResponseBody");
+			if (string.IsNullOrEmpty(responseBody))
+			{
+				DrawGrayLabel("无响应体（取消/发送前失败或空响应）。");
+			}
+			else
+			{
+				GUILayout.Label("响应体:");
+				// 单行且形如 JSON 的响应做缩进美化，其余（HTML/纯文本等）原样展示
+				var displayResponse = responseBody.IndexOf('\n') < 0 && (responseBody[0] == '{' || responseBody[0] == '[')
+					? IndentJson(responseBody)
+					: responseBody;
+				DrawSelectableBody(displayResponse, "复制响应体");
 			}
 
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.Separator();
+		}
+
+		/// <summary>
+		/// 绘制正文预览框（自动换行 + 自适应高度 + 复制按钮）
+		/// </summary>
+		/// <param name="text">预览文本</param>
+		/// <param name="copyLabel">复制按钮文本</param>
+		private void DrawSelectableBody(string text, string copyLabel)
+		{
+			var wrapStyle     = new GUIStyle(EditorStyles.textArea) { wordWrap = true };
+			var previewHeight = CalcContentHeight(text, wrapStyle);
+			EditorGUILayout.SelectableLabel(text, wrapStyle, GUILayout.Height(previewHeight));
+
+			EditorGUILayout.BeginHorizontal();
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button(copyLabel, GUILayout.Width(90)))
+			{
+				EditorGUIUtility.systemCopyBuffer = text;
+			}
+
+			EditorGUILayout.EndHorizontal();
 		}
 
 		/// <summary>
@@ -1294,6 +1342,8 @@ namespace FuFramework.Web.Editor
 			m_getSnapshotMethod        = null;
 			m_getCurrentRequestsMethod = null;
 			m_getRecentLogsMethod      = null;
+			m_cachedLiveInfos          = null; // 缓存列表持有装箱热更对象，随反射一并释放
+			m_cachedLogInfos           = null;
 			m_clearDebugHistoryMethod  = null;
 			m_cancelAllPendingMethod   = null;
 			m_sendDebugRequestMethod   = null;
@@ -1323,38 +1373,54 @@ namespace FuFramework.Web.Editor
 		}
 
 		/// <summary>
-		/// 获取全部实时请求（装箱列表）
+		/// 获取全部实时请求（装箱列表）。仅在本帧 Layout 事件拉取一次并缓存，同帧 Repaint 等其余 GUI 事件复用——
+		/// 两次独立拉取之间若请求恰好在游戏主线程完成，实时区空↔非空的布局条目序列会不一致，
+		/// 报 Invalid GUILayout state（与 NetworkModuleWindow 清空按钮同款问题）
 		/// </summary>
 		/// <returns>实时请求列表</returns>
 		private List<object> GetAllLiveInfos()
 		{
-			var list   = new List<object>();
-			var result = m_getCurrentRequestsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
-			if (result == null) return list;
-
-			foreach (var item in result)
+			if (UnityEngine.Event.current.type != UnityEngine.EventType.Layout && m_cachedLiveInfos != null)
 			{
-				if (item != null) list.Add(item);
+				return m_cachedLiveInfos;
 			}
 
+			var list   = new List<object>();
+			var result = m_getCurrentRequestsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
+			if (result != null)
+			{
+				foreach (var item in result)
+				{
+					if (item != null) list.Add(item);
+				}
+			}
+
+			m_cachedLiveInfos = list;
 			return list;
 		}
 
 		/// <summary>
-		/// 获取全部最近请求记录（装箱列表）
+		/// 获取全部最近请求记录（装箱列表）。缓存策略同 <see cref="GetAllLiveInfos"/>：Layout 拉取、同帧其余事件复用。
 		/// </summary>
 		/// <returns>记录列表</returns>
 		private List<object> GetAllLogInfos()
 		{
-			var list   = new List<object>();
-			var result = m_getRecentLogsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
-			if (result == null) return list;
-
-			foreach (var item in result)
+			if (UnityEngine.Event.current.type != UnityEngine.EventType.Layout && m_cachedLogInfos != null)
 			{
-				if (item != null) list.Add(item);
+				return m_cachedLogInfos;
 			}
 
+			var list   = new List<object>();
+			var result = m_getRecentLogsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
+			if (result != null)
+			{
+				foreach (var item in result)
+				{
+					if (item != null) list.Add(item);
+				}
+			}
+
+			m_cachedLogInfos = list;
 			return list;
 		}
 

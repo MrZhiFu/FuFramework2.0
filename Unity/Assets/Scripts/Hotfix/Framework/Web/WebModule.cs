@@ -301,18 +301,19 @@ namespace Hotfix.Framework.Web
 					if (capturedToken.IsCancellationRequested || webData.Token.IsCancellationRequested)
 					{
 						webData.CompleteCanceled();
-						RecordResult(EWebRequestResult.Canceled, webData, 0, 0, "调用方或模块取消");
+						RecordResult(EWebRequestResult.Canceled, webData, 0, 0, "调用方或模块取消", null);
 						return;
 					}
 
 					// 已被调试面板急救取消：终止态已登记，不再写回与重复记账，仅释放资源
 					if (webData.IsDebugCanceled) return;
 
-					// 收发字节数仅供调试记账（RecordResult 关闭时直接短路），且计长会二次访问 downloadHandler.data，
-					// 故仅在调试记录开启时统计，关闭时按 0 传递
+					// 收发字节数与响应体预览仅供调试记账（RecordResult 关闭时直接短路），且访问 downloadHandler 会产生分配，
+					// 故仅在调试记录开启时统计，关闭时按 0/空传递
 					var debugRecording = DebugRecordingEnabled;
 					var sendBytes      = debugRecording ? GetUploadBytes(unityWebRequest) : 0;
 					var recvBytes      = debugRecording ? GetDownloadBytes(unityWebRequest) : 0;
+					var responseText   = debugRecording ? GetResponseText(unityWebRequest) : null;
 
 					if (unityWebRequest.result != UnityWebRequest.Result.Success)
 					{
@@ -323,19 +324,19 @@ namespace Hotfix.Framework.Web
 						if (IsTimeout(unityWebRequest))
 						{
 							webData.CompleteError(new TimeoutException(errorText));
-							RecordResult(EWebRequestResult.Timeout, webData, sendBytes, recvBytes, errorText);
+							RecordResult(EWebRequestResult.Timeout, webData, sendBytes, recvBytes, errorText, responseText);
 						}
 						else
 						{
 							webData.CompleteError(new Exception(errorText));
-							RecordResult(EWebRequestResult.Failed, webData, sendBytes, recvBytes, errorText);
+							RecordResult(EWebRequestResult.Failed, webData, sendBytes, recvBytes, errorText, responseText);
 						}
 
 						return;
 					}
 
 					webData.Complete(unityWebRequest);
-					RecordResult(EWebRequestResult.Success, webData, sendBytes, recvBytes, null);
+					RecordResult(EWebRequestResult.Success, webData, sendBytes, recvBytes, null, responseText);
 				}
 				finally
 				{
@@ -375,5 +376,12 @@ namespace Hotfix.Framework.Web
 		/// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
 		/// <returns>下载字节数。</returns>
 		private static int GetDownloadBytes(UnityWebRequest unityWebRequest) => unityWebRequest.downloadHandler?.data?.Length ?? 0;
+
+		/// <summary>
+		/// 获取响应体文本（失败时为服务器返回的错误详情，可能为空）。须在请求释放前调用。
+		/// </summary>
+		/// <param name="unityWebRequest">请求对象（未释放前调用）。</param>
+		/// <returns>响应体文本；无下载处理器时为空字符串。</returns>
+		private static string GetResponseText(UnityWebRequest unityWebRequest) => unityWebRequest.downloadHandler?.text ?? string.Empty;
 	}
 }

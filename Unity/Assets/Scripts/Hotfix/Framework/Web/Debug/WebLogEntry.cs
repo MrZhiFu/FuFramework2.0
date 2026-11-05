@@ -8,7 +8,7 @@ namespace Hotfix.Framework.Web
 	/// 功能：
 	///     1. 记录请求的完成时刻、结果类型、协议与方法。
 	///     2. 记录等待耗时、总耗时与收发字节数。
-	///     3. 记录失败/取消原因。
+	///     3. 记录失败/取消原因与请求体/响应体预览。
 	/// </summary>
 	public readonly struct WebLogEntry
 	{
@@ -68,6 +68,11 @@ namespace Hotfix.Framework.Web
 		public string RequestBody { get; }
 
 		/// <summary>
+		/// 响应体文本（成功为服务器返回内容，失败为服务器错误详情，超长截断），供调试面板展开记录时展示/复制；取消时为空。
+		/// </summary>
+		public string ResponseBody { get; }
+
+		/// <summary>
 		/// 初始化 Web 最近请求记录条目的新实例。
 		/// </summary>
 		/// <param name="completeTimeUtc">请求完成时刻（UTC）。</param>
@@ -81,8 +86,9 @@ namespace Hotfix.Framework.Web
 		/// <param name="recvBytes">接收字节数。</param>
 		/// <param name="error">失败/取消原因。</param>
 		/// <param name="requestBody">请求体文本（JSON POST 序列化文本）。</param>
+		/// <param name="responseBody">响应体文本（成功为服务器返回内容，失败为服务器错误详情），取消时为空。</param>
 		public WebLogEntry(DateTime completeTimeUtc, EWebRequestResult result, bool isPb, bool isGet, string url, int waitMs, int totalMs, int sendBytes, int recvBytes, string error,
-		                   string requestBody)
+		                   string requestBody, string responseBody)
 		{
 			CompleteTimeUtc = completeTimeUtc;
 			Result          = result;
@@ -95,6 +101,7 @@ namespace Hotfix.Framework.Web
 			RecvBytes       = recvBytes;
 			Error           = error;
 			RequestBody     = requestBody;
+			ResponseBody    = responseBody;
 		}
 	}
 }
