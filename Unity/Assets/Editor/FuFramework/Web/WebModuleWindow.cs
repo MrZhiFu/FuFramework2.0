@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using FuMenuPriority   = FuFramework.Core.Editor.FuMenuPriority;
 using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
+using DebugWindowBase  = FuFramework.Core.Editor.DebugWindowBase;
 
 // ReSharper disable once CheckNamespace
 namespace FuFramework.Web.Editor
@@ -20,9 +21,9 @@ namespace FuFramework.Web.Editor
 	///     2. 实时请求：展示当前等待/发送中的 JSON 与 Pb 请求，支持按 URL 过滤，调用方已取消的滞留请求红色告警。
 	///     3. 最近请求记录：环形保留最近 200 条终结摘要，可按结果类型与关键字过滤；每行可复制 URL，含请求体/响应体的记录可展开查看/复制。
 	///     4. 操作：重置统计/清空记录、清空等待并取消在途请求（急救，需二次确认）。
-	///     5. 手动测试请求：输入 URL、GET/POST 切换（POST 可填 JSON 请求体）直接发请求，展示响应/错误，并自动进入最近请求记录。
+	///     5. 手动测试请求：输入 URL、GET/POST(JSON)/POST(Pb) 三态切换（POST 可填 JSON 请求体；Pb 模式由 URL 末段反推消息类型，响应解包为 JSON）直接发请求，展示响应/错误，并自动进入最近请求记录。
 	/// </summary>
-	public class WebModuleWindow : EditorWindow
+	public class WebModuleWindow : DebugWindowBase
 	{
 		/// <summary>
 		/// 打开调试面板
@@ -42,26 +43,6 @@ namespace FuFramework.Web.Editor
 		}
 
 		#region 私有字段
-
-		/// <summary>
-		/// 滚动位置
-		/// </summary>
-		private Vector2 m_scrollPos;
-
-		/// <summary>
-		/// 搜索过滤字符串
-		/// </summary>
-		private string m_searchFilter = "";
-
-		/// <summary>
-		/// 是否自动刷新
-		/// </summary>
-		private bool m_autoRefresh = true;
-
-		/// <summary>
-		/// 上次刷新时间
-		/// </summary>
-		private double m_lastRefreshTime;
 
 		/// <summary>
 		/// 最近记录结果类型过滤（依次为 成功/超时/失败/取消）
@@ -173,14 +154,19 @@ namespace FuFramework.Web.Editor
 		private MethodInfo m_getRecentLogsMethod;
 
 		/// <summary>
-		/// 本帧缓存的实时请求列表（Layout 事件拉取，同帧其余 GUI 事件复用，保证布局序列一致）
+		/// 最近一次刷新拉取的调试快照（装箱对象；OnRefresh 节拍重建，同帧各 GUI 事件复用）
 		/// </summary>
-		private List<object> m_cachedLiveInfos;
+		private object m_debugInfo;
 
 		/// <summary>
-		/// 本帧缓存的最近请求记录列表（Layout 事件拉取，同帧其余 GUI 事件复用，保证布局序列一致）
+		/// 最近一次刷新拉取的实时请求列表（OnRefresh 节拍重建，同帧各 GUI 事件复用，保证布局序列一致）
 		/// </summary>
-		private List<object> m_cachedLogInfos;
+		private List<object> m_liveInfos;
+
+		/// <summary>
+		/// 最近一次刷新拉取的最近请求记录列表（OnRefresh 节拍重建，同帧各 GUI 事件复用，保证布局序列一致）
+		/// </summary>
+		private List<object> m_logInfos;
 
 		/// <summary>
 		/// WebModule.ClearDebugHistory 方法
@@ -254,120 +240,89 @@ namespace FuFramework.Web.Editor
 
 		#endregion
 
-		#region 生命周期
+		#region 基类钩子实现
 
 		/// <summary>
-		/// 启用：订阅 EditorApplication.update
+		/// 模块显示名（反射初始化失败提示中展示）
 		/// </summary>
-		private void OnEnable()
+		protected override string ModuleDisplayName => "WebModule";
+
+		/// <summary>
+		/// 无全局展开/折叠需求（实时/记录区的折叠状态各自管理）
+		/// </summary>
+		protected override bool HasExpandCollapse => false;
+
+		/// <summary>
+		/// 工具栏搜索框宽度（URL 较长，加宽过滤输入）
+		/// </summary>
+		protected override int SearchFieldWidth => 200;
+
+		/// <summary>
+		/// 面板启用：开启模块调试记录开关
+		/// </summary>
+		protected override void OnPanelEnabled()
 		{
-			EditorApplication.update += OnEditorUpdate;
+			ApplyDebugRecording(true);
 		}
 
 		/// <summary>
-		/// 禁用：取消订阅 EditorApplication.update，并关闭模块调试记录开关
+		/// 面板禁用：关闭模块调试记录开关
 		/// </summary>
-		private void OnDisable()
+		protected override void OnPanelDisabled()
 		{
-			EditorApplication.update -= OnEditorUpdate;
 			ApplyDebugRecording(false);
 		}
 
 		/// <summary>
-		/// 编辑器帧更新：定时重绘
+		/// 刷新动作：拉取调试快照与实时/记录列表（每节拍一次快照，
+		/// 同帧 Layout 与 Repaint 两个 GUI 事件复用同一份数据，保证布局序列一致）
 		/// </summary>
-		private void OnEditorUpdate()
+		protected override void OnRefresh()
 		{
-			if (!m_autoRefresh || !Application.isPlaying) return;
-			if (EditorApplication.timeSinceStartup - m_lastRefreshTime < 0.5f) return;
+			// 录制开关补应用：面板开着进 Play（或域重载）时 OnEnable 早于 Hotfix 加载，OnPanelEnabled 里的
+			// ApplyDebugRecording(true) 会因模块实例未就绪而静默跳过，之后再无人开启——面板"正常显示但永不录制"
+			//（与 NetworkModuleWindow 审查 I-2 同款修复）。SetDebugRecording 幂等（重复开启不清历史），每节拍调用无害
+			ApplyDebugRecording(true);
 
-			m_lastRefreshTime = EditorApplication.timeSinceStartup;
-			Repaint();
+			m_debugInfo = GetDebugSnapshot();
+			m_liveInfos = FetchAllLiveInfos();
+			m_logInfos  = FetchAllLogInfos();
 		}
 
 		/// <summary>
-		/// 绘制 GUI
+		/// 工具栏扩展按钮：最近记录的结果类型过滤（绘制于 FlexibleSpace 之后、「刷新」按钮之前）
 		/// </summary>
-		private void OnGUI()
+		protected override void DrawToolbarExtraButtons()
 		{
-			DrawToolbar();
+			GUILayout.Label("记录过滤:", EditorStyles.miniLabel, GUILayout.Width(60));
+			m_resultFilters[0] = GUILayout.Toggle(m_resultFilters[0], "成功", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[1] = GUILayout.Toggle(m_resultFilters[1], "超时", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[2] = GUILayout.Toggle(m_resultFilters[2], "失败", EditorStyles.toolbarButton, GUILayout.Width(48));
+			m_resultFilters[3] = GUILayout.Toggle(m_resultFilters[3], "取消", EditorStyles.toolbarButton, GUILayout.Width(48));
+		}
 
-			// 非 Play 模式：先关闭调试记录开关再重置反射缓存，避免停止运行后持有已失效的热更实例
-			if (!Application.isPlaying)
-			{
-				ApplyDebugRecording(false);
-				ResetReflection();
-				EditorGUILayout.HelpBox("需要在 Play 模式下使用", MessageType.Info);
-				return;
-			}
-
-			if (!EnsureReflection())
-			{
-				EditorGUILayout.HelpBox("未能通过反射访问 WebModule，请确认 Hotfix 已加载", MessageType.Warning);
-				return;
-			}
-
-			// 面板打开期间开启调试记录；关闭面板时 OnDisable 置回 false
-			ApplyDebugRecording(true);
-
-			m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos);
-
-			var debugInfo = GetDebugSnapshot();
-			if (debugInfo == null)
+		/// <summary>
+		/// 绘制主体内容（已处于 Play 模式且反射就绪；在基类滚动容器内调用）：
+		/// 模块概览 → 手动测试请求 → 实时请求 → 最近请求记录
+		/// </summary>
+		protected override void DrawContent()
+		{
+			if (m_debugInfo == null)
 			{
 				EditorGUILayout.HelpBox("未获取到 WebModule 调试快照", MessageType.Warning);
-				EditorGUILayout.EndScrollView();
 				return;
 			}
 
-			DrawModuleOverview(debugInfo);
+			DrawModuleOverview(m_debugInfo);
 			DrawSectionDivider();
 
 			DrawManualRequest();
 			DrawSectionDivider();
 
-			var liveInfos = GetAllLiveInfos();
-			DrawLiveSection(liveInfos);
+			DrawLiveSection(m_liveInfos);
 			DrawSectionDivider();
 
-			var logInfos = GetAllLogInfos();
-			DrawLogSection(logInfos);
-
-			EditorGUILayout.EndScrollView();
-		}
-
-		#endregion
-
-		#region 工具栏
-
-		/// <summary>
-		/// 绘制顶部工具栏
-		/// </summary>
-		private void DrawToolbar()
-		{
-			EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-
-			GUILayout.Label("搜索:", GUILayout.Width(40));
-			m_searchFilter = GUILayout.TextField(m_searchFilter, EditorStyles.toolbarTextField, GUILayout.Width(200));
-
-			GUILayout.Space(10);
-			m_autoRefresh = GUILayout.Toggle(m_autoRefresh, "自动刷新", EditorStyles.toolbarButton, GUILayout.Width(80));
-
-			GUILayout.Space(10);
-			GUILayout.Label("记录过滤:", GUILayout.Width(60));
-			m_resultFilters[0] = GUILayout.Toggle(m_resultFilters[0], "成功", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_resultFilters[1] = GUILayout.Toggle(m_resultFilters[1], "超时", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_resultFilters[2] = GUILayout.Toggle(m_resultFilters[2], "失败", EditorStyles.toolbarButton, GUILayout.Width(48));
-			m_resultFilters[3] = GUILayout.Toggle(m_resultFilters[3], "取消", EditorStyles.toolbarButton, GUILayout.Width(48));
-
-			GUILayout.FlexibleSpace();
-
-			if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
-			{
-				Repaint();
-			}
-
-			EditorGUILayout.EndHorizontal();
+			DrawLogSection(m_logInfos);
 		}
 
 		#endregion
@@ -515,15 +470,17 @@ namespace FuFramework.Web.Editor
 			var running = ReadManualRunning();
 
 			EditorGUILayout.BeginHorizontal();
-			var methodNames = new[] { "GET", "POST" };
-			m_manualMethod = GUILayout.Toolbar(m_manualMethod, methodNames, GUILayout.Width(120));
+			var methodNames = new[] { "GET", "POST(JSON)", "POST(Pb)" };
+			m_manualMethod = GUILayout.Toolbar(m_manualMethod, methodNames, GUILayout.Width(250));
 			m_manualUrl    = GUILayout.TextField(m_manualUrl, GUILayout.ExpandWidth(true));
 			EditorGUILayout.EndHorizontal();
 
-			if (m_manualMethod == 1)
+			if (m_manualMethod >= 1)
 			{
-				GUILayout.Label("POST 请求体（JSON）:", EditorStyles.miniLabel);
-				m_manualBody = EditorGUILayout.TextArea(m_manualBody, GUILayout.Height(60));
+				GUILayout.Label(m_manualMethod == 2 ? "POST 请求体（JSON，按消息字段填；URL 末段须为消息名的 snake_case）:" : "POST 请求体（JSON）:", EditorStyles.miniLabel);
+				// 高度随文本行数自适应（与记录区预览框同一策略，最少 60px）
+				var bodyHeight = Mathf.Max(60f, CalcContentHeight(m_manualBody ?? string.Empty, EditorStyles.textArea));
+				m_manualBody = EditorGUILayout.TextArea(m_manualBody, GUILayout.Height(bodyHeight));
 			}
 
 			EditorGUILayout.BeginHorizontal();
@@ -553,7 +510,8 @@ namespace FuFramework.Web.Editor
 
 			if (!string.IsNullOrEmpty(message))
 			{
-				EditorGUILayout.SelectableLabel(message, GUILayout.MinHeight(48));
+				// 与最近请求记录展开区同款正文组件：自动换行 + 自适应高度 + 复制按钮
+				DrawSelectableBody(message, "复制响应体");
 			}
 		}
 
@@ -588,8 +546,8 @@ namespace FuFramework.Web.Editor
 			try
 			{
 				var url  = m_manualUrl ?? "";
-				var body = m_manualMethod == 1 ? (m_manualBody ?? "") : "";
-				m_sendDebugRequestMethod?.Invoke(m_moduleInstance, new object[] { url, m_manualMethod == 1, body });
+				var body = m_manualMethod >= 1 ? (m_manualBody ?? "") : "";
+				m_sendDebugRequestMethod?.Invoke(m_moduleInstance, new object[] { url, m_manualMethod, body });
 			}
 			catch (Exception e)
 			{
@@ -1026,7 +984,7 @@ namespace FuFramework.Web.Editor
 				DrawSelectableBody(displayBody, "复制请求体");
 			}
 
-			// 响应体段（成功为服务器返回内容，失败为服务器错误详情）
+			// 响应体段（JSON 为服务器返回内容；Pb 为解包后的消息 JSON 快照；失败为服务器错误详情）
 			var responseBody = GetStringProp(logInfo, "ResponseBody");
 			if (string.IsNullOrEmpty(responseBody))
 			{
@@ -1255,10 +1213,10 @@ namespace FuFramework.Web.Editor
 		#region 反射查询与调用
 
 		/// <summary>
-		/// 确保反射缓存已初始化
+		/// 确保反射缓存已初始化（基类每次 GUI 事件调用，内部幂等短路）
 		/// </summary>
 		/// <returns>初始化成功返回 true</returns>
-		private bool EnsureReflection()
+		protected override bool EnsureReflection()
 		{
 			if (m_moduleInstance != null) return true;
 
@@ -1326,9 +1284,9 @@ namespace FuFramework.Web.Editor
 		}
 
 		/// <summary>
-		/// 重置反射缓存（停止运行时调用，避免持有失效的热更实例）
+		/// 重置反射缓存（基类在 Play→非 Play 跳变时调用，避免持有失效的热更实例）
 		/// </summary>
-		private void ResetReflection()
+		protected override void ResetReflection()
 		{
 			m_moduleType               = null;
 			m_debugInfoType            = null;
@@ -1342,8 +1300,9 @@ namespace FuFramework.Web.Editor
 			m_getSnapshotMethod        = null;
 			m_getCurrentRequestsMethod = null;
 			m_getRecentLogsMethod      = null;
-			m_cachedLiveInfos          = null; // 缓存列表持有装箱热更对象，随反射一并释放
-			m_cachedLogInfos           = null;
+			m_debugInfo                = null; // 快照持有装箱热更对象，随反射一并释放
+			m_liveInfos                = null;
+			m_logInfos                 = null;
 			m_clearDebugHistoryMethod  = null;
 			m_cancelAllPendingMethod   = null;
 			m_sendDebugRequestMethod   = null;
@@ -1373,54 +1332,39 @@ namespace FuFramework.Web.Editor
 		}
 
 		/// <summary>
-		/// 获取全部实时请求（装箱列表）。仅在本帧 Layout 事件拉取一次并缓存，同帧 Repaint 等其余 GUI 事件复用——
-		/// 两次独立拉取之间若请求恰好在游戏主线程完成，实时区空↔非空的布局条目序列会不一致，
-		/// 报 Invalid GUILayout state（与 NetworkModuleWindow 清空按钮同款问题）
+		/// 拉取全部实时请求（装箱列表）。仅供 <see cref="OnRefresh"/> 调用——快照每节拍重建一次，
+		/// 同帧 Layout 与 Repaint 两个 GUI 事件复用同一份数据，保证布局序列一致
 		/// </summary>
 		/// <returns>实时请求列表</returns>
-		private List<object> GetAllLiveInfos()
+		private List<object> FetchAllLiveInfos()
 		{
-			if (UnityEngine.Event.current.type != UnityEngine.EventType.Layout && m_cachedLiveInfos != null)
-			{
-				return m_cachedLiveInfos;
-			}
-
 			var list   = new List<object>();
 			var result = m_getCurrentRequestsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
-			if (result != null)
+			if (result == null) return list;
+
+			foreach (var item in result)
 			{
-				foreach (var item in result)
-				{
-					if (item != null) list.Add(item);
-				}
+				if (item != null) list.Add(item);
 			}
 
-			m_cachedLiveInfos = list;
 			return list;
 		}
 
 		/// <summary>
-		/// 获取全部最近请求记录（装箱列表）。缓存策略同 <see cref="GetAllLiveInfos"/>：Layout 拉取、同帧其余事件复用。
+		/// 拉取全部最近请求记录（装箱列表）。仅供 <see cref="OnRefresh"/> 调用，快照策略同 <see cref="FetchAllLiveInfos"/>。
 		/// </summary>
 		/// <returns>记录列表</returns>
-		private List<object> GetAllLogInfos()
+		private List<object> FetchAllLogInfos()
 		{
-			if (UnityEngine.Event.current.type != UnityEngine.EventType.Layout && m_cachedLogInfos != null)
-			{
-				return m_cachedLogInfos;
-			}
-
 			var list   = new List<object>();
 			var result = m_getRecentLogsMethod?.Invoke(m_moduleInstance, null) as IEnumerable;
-			if (result != null)
+			if (result == null) return list;
+
+			foreach (var item in result)
 			{
-				foreach (var item in result)
-				{
-					if (item != null) list.Add(item);
-				}
+				if (item != null) list.Add(item);
 			}
 
-			m_cachedLogInfos = list;
 			return list;
 		}
 
