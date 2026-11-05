@@ -58,7 +58,7 @@ module 在 short 正域、opcode ∈ [10,65535] 时 `(module, opcode) ↔ ID` �
 
 规则：
 
-- 每条 Req/Resp/Notify 消息体内必须写 `option opcode = N;`（取值 [10, 65535]），缺失或越界**导出报错中止**；
+- 每条 Req/Rsp/Notify 消息体内必须写 `option opcode = N;`（取值 [10, 65535]），缺失或越界**导出报错中止**；
 - 非消息 DTO（如 `PlayerInfo`）**禁止**标注 option opcode（不占消息号），标注即报错；
 - 同文件内 opcode 重复、模块号/模块名跨文件重复、`(module, opcode)` 跨文件冲突均在 `Post()` 阶段报错中止；
 - 导出物额外生成 `MessageIds.gen.cs`（`MessageModule` 枚举 + 语义常量，行尾注释带数值）与

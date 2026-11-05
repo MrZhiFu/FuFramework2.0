@@ -19,14 +19,14 @@
 
 ```csharp
 // HTTP 侧 —— 登录、建角色、拉列表（低频一次性）
-var respLogin = await WebModule.Instance.Post<RespUserLogin>(            // WinLogin.cs:138
+var rspLogin = await WebModule.Instance.Post<RspUserLogin>(            // WinLogin.cs:138
     "http://127.0.0.1:28080/game/api/req_user_login", req, Token);
-await WebModule.Instance.Post<RespPlayerCreate>(                          // WinPlayerCreate.cs:103
+await WebModule.Instance.Post<RspPlayerCreate>(                          // WinPlayerCreate.cs:103
     "http://127.0.0.1:28080/game/api/req_player_create", m_req, Token);
 var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, ...); // CustomLoader.cs:308（下远程图片）
 
 // TCP 侧 —— 进游戏后的实时玩法
-await NetworkModule.Instance.Call<RespPlayerLogin>(new ReqPlayerLogin { ... }); // 06 篇的 RPC
+await NetworkModule.Instance.Call<RspPlayerLogin>(new ReqPlayerLogin { ... }); // 06 篇的 RPC
 ```
 
 服务器也分成了**两个独立应用**（`Server/FuFramework.Apps/`，故障域与扩缩容分离）：

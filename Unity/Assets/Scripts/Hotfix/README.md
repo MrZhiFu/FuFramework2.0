@@ -48,7 +48,7 @@ proto 变更后请运行 Unity 菜单 **`FuFramework/网络/导出Proto—全部
 
 ### 3.3 添加协议
 
-1. 在 `Protobuf/Proto/<模块>.proto` 中定义消息：文件头写 `option module = N;`，每条 Req/Resp/Notify 消息体内写 `option opcode = M;` 显式锚定（取值 [10, 65535]，缺失导出报错；DTO 禁止标注）
+1. 在 `Protobuf/Proto/<模块>.proto` 中定义消息：文件头写 `option module = N;`，每条 Req/Rsp/Notify 消息体内写 `option opcode = M;` 显式锚定（取值 [10, 65535]，缺失导出报错；DTO 禁止标注）
 2. 运行 Unity 菜单 `FuFramework/网络/导出Proto—全部` 导出两端 C# 与语义常量 `MessageIds.gen.cs`
 3. 请求-响应（RPC）：业务侧 `await NetworkModule.Instance.Call(new ReqXxx { ... })`——响应类型自动推断，超时/断线以异常抛出（须捕获）
 4. 服务器推送：业务类上标注 `[NotifyMessageHandler(typeof(NotifyXxx), nameof(OnXxx))]` 声明即生效（宿主须继承 `Singleton<T>` 或提供 `static Instance`，方法 `internal` 以上，方法名用 `On` 前缀）；跑一次 `FuFramework/网络/重新生成推送注册表`，之后由编译期守卫保证不漏

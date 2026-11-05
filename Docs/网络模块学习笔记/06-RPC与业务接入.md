@@ -10,11 +10,11 @@
 **RPC = Remote Procedure Call（远程过程调用）**——把"让服务器干活"伪装成"本地函数调用"：
 
 ```
-你想做的（像调本地函数）：   RespPlayerLogin resp = 请服务器让角色进游戏(角色ID);
+你想做的（像调本地函数）：   RspPlayerLogin rsp = 请服务器让角色进游戏(角色ID);
 RPC 实际发生的：
   ① 把"请登录"变成一条消息 req 发过去           ← "打电话"
   ② await：我什么都不干，只等回信               ← "等对方回话"
-  ③ 收到回复 resp → 当"返回值"拿回来            ← "对方回话，挂断"
+  ③ 收到回复 rsp → 当"返回值"拿回来            ← "对方回话，挂断"
 ```
 心电、`Send` 都不是 RPC（它们不等回复）；"**发了还要 await 等回话**"才是 RPC。项目实现（`NetworkChannelBase.API.cs` 的 Call）就三行：
 
@@ -61,17 +61,17 @@ public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgOb
 业务   await NetworkModule.Instance.Call(new ReqPlayerLogin { ... })（响应类型自动推断）
            ↓ NetworkModule/Channel.Call: Send(req) → RpcState.Call → 挂起表登记（key=req.UniqueId）
         —— 到这里调用方就"悬起"了，什么都不占，等 Task 恢复 ——
-           ↓ 服务器处理，响应 RespPlayerLogin 回来 → 收包全链路 → 信封读回 UniqueId → SetUniqueId
+           ↓ 服务器处理，响应 RspPlayerLogin 回来 → 收包全链路 → 信封读回 UniqueId → SetUniqueId
 主线程 ProcessReceived:
    ↓ （心跳回包已在此前按 is IHeartBeatMessage 截流，不进业务派发）
-   └─ m_rpcState.TryReply(resp)
+   └─ m_rpcState.TryReply(rsp)
         ├─ 判断是不是 IResponseMessage（is 模式匹配，无缓存）
-        ├─ TryRemove(resp.UniqueId) 在挂起表找配对
-        ├─ 配上 → data.Reply(resp) → UniTaskCompletionSource.TrySetResult → await 恢复
+        ├─ TryRemove(rsp.UniqueId) 在挂起表找配对
+        ├─ 配上 → data.Reply(rsp) → UniTaskCompletionSource.TrySetResult → await 恢复
         │        （错误码由响应体 Code / NotifyErrorCode 旁路推送承载，无独立回调）
         └─ 没配上 → DispatchNotify（当普通推送走 [NotifyMessageHandler]）
         ↓
-   await 恢复：返回强类型 RespPlayerLogin → 调用方拿到响应 ✅
+   await 恢复：返回强类型 RspPlayerLogin → 调用方拿到响应 ✅
 ```
 
 ### 3.2 三种结局
@@ -80,7 +80,7 @@ public async UniTask<TResponse> Call<TResponse>(IRequestMessage<TResponse> msgOb
 
 | 结局 | 触发方 | 机制 | await 表现 |
 |------|--------|------|-----------|
-| 正常响应 | 收包主线程 | `TryReply` → `m_tcs.TrySetResult(resp)` | 恢复返回 RespPlayerLogin |
+| 正常响应 | 收包主线程 | `TryReply` → `m_tcs.TrySetResult(rsp)` | 恢复返回 RspPlayerLogin |
 | 超时 | `RpcState.Update` 每帧 | 逐项 `IncrementalElapseTime` → 超时 `TrySetException(TimeoutException)` | 抛超时异常 |
 | 断线 | 频道 Close | `RpcState.Dispose` → 每个挂起 `Cancel()` → `TrySetException(OperationCanceledException)` | 抛取消异常 |
 
@@ -99,8 +99,8 @@ DispatchNotify(messageObject);               // 没配上 → 当 [NotifyMessage
 ```csharp
 try
 {
-    var resp = await NetworkModule.Instance.Call(new ReqPlayerLogin { Id = playerId });
-    if (resp.ErrorCode == 0) { /* 进游戏 */ }
+    var rsp = await NetworkModule.Instance.Call(new ReqPlayerLogin { Id = playerId });
+    if (rsp.ErrorCode == 0) { /* 进游戏 */ }
     else { /* 弹错误码 */ }
 }
 catch (OperationCanceledException) { /* 断线：提示重连 */ }
@@ -109,7 +109,7 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 
 - 每个异步链必须有**生命周期所有者**：这个 `Call` 的调用方（登录窗口）负责 try/catch 接手异常，而不是放任 await 悬着。
 - fire-and-forget 起步请 `.Forget()`；**不要**在 RPC 里做"等等等 + 不取消"的长等待——断线那下 `Cancel` 就是给你兜底的。
-- 响应能同时被 `[NotifyMessageHandler]` 订阅吗？**不能**：特性构造期校验消息必须实现 `INotifyMessage`，Resp 类型挂不上（Resp 的消费者是 `Call` 的 await）。Resp 配不上对（无宿主等待）时会在派发链上查无绑定、警告后丢弃。
+- 响应能同时被 `[NotifyMessageHandler]` 订阅吗？**不能**：特性构造期校验消息必须实现 `INotifyMessage`，Rsp 类型挂不上（Rsp 的消费者是 `Call` 的 await）。Rsp 配不上对（无宿主等待）时会在派发链上查无绑定、警告后丢弃。
 
 ### 3.5 登录为什么分两段：HTTP 管账号，TCP 管游戏
 
@@ -135,7 +135,7 @@ catch (TimeoutException)           { /* 超时：提示网络差 */ }
 与本篇阀门的呼应：**增量推送只存在于 TCP 会话中**（HTTP 一问一答，不存在"响应没回来时服务器主动推东西"），基线竞态也从 `Call(ReqPlayerLogin)` 才开始存在——所以 `SuspendNotifyDispatch` 挂在 `WinPlayerList.PlayerLoginAsync` 的基线窗口；`WinLogin.UserLoginAsync` 里没有它的位置——那个阶段 `NetworkModule.Channel` 还是 null，TCP 连接要到选完角色才创建。
 **失败分支**：登录失败（Call 抛超时/取消）时，基线没建立、缓冲里的增量全是脏数据——`catch { ClearNotifyBuffer(); throw; }` 清缓冲而非回放，异常原样抛给上层上重连提示。
 
-将来多服/分区时的完整形态（网关分发，proto 已预留 `RespConnectServer` 的 TargetIP/TargetPort）：
+将来多服/分区时的完整形态（网关分发，proto 已预留 `RspConnectServer` 的 TargetIP/TargetPort）：
 
 ```
 HTTP 登录账号 → 服务器告知"该去哪台游戏服" → TCP 连那台 → Call(ReqPlayerLogin) 进游戏
@@ -150,7 +150,7 @@ HTTP 登录账号 → 服务器告知"该去哪台游戏服" → TCP 连那台 �
 ### 题目
 
 1. 为什么配对用 `UniqueId` 而不用消息 ID？
-2. 客户端收到的响应 `RespPlayerLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
+2. 客户端收到的响应 `RspPlayerLogin`，它的 `UniqueId` 是怎么来的？（指出是哪一行代码填的）
 3. 为什么断线必须 `Cancel` 而不是只 `Clear()` 字典？
 4. 同一条响应，`TryReply` 和 `DispatchNotify` 谁先执行？什么时候会落到后者？
 5. "RPC 是远程过程调用" —— 用三句话给一个没听过的人解释。
