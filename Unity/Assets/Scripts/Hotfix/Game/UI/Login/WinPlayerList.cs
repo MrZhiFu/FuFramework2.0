@@ -69,10 +69,13 @@ namespace Hotfix.Game.UI
 		/// 界面关闭
 		/// 退订网络订阅：窗口关闭（进游戏后对象池待复用）后订阅仍存活，会在重连拨通广播 Connected 时
 		/// 被幽灵触发——用已关闭界面的过期数据再跑一次登录事务（双事务竞态）。
+		/// 必须按 id 精确退订，不能用 UnSubscribeAll：后者会连同框架在 Init 时订阅的语言变更事件一并退掉，
+		/// 而池复用路径 Init 早退（WinBase.Init 直接 return）不会重订，二次打开后窗口开着时语言切换将不再刷新。
 		/// </summary>
 		protected override void OnClose()
 		{
-			UnSubscribeAll();
+			UnSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
+			UnSubscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
 		}
 
 		/// <summary>
