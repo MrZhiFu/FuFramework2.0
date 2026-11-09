@@ -104,7 +104,7 @@ namespace Hotfix.Framework.RedDot
 			var tbRedDot = ConfigModule.Instance?.GetConfig<TbRedDot>();
 			if (tbRedDot == null || tbRedDot.Count == 0)
 			{
-				FuLogger.LogWarning("[RedDotModule] 红点配置表不存在或为空，跳过树构建.");
+				FuLogger.LogWarning("红点配置表不存在或为空，跳过树构建.");
 				return;
 			}
 
@@ -119,7 +119,7 @@ namespace Hotfix.Framework.RedDot
 
 				if (!NodeDict.TryAdd(row.Id, node))
 				{
-					FuLogger.LogError($"[RedDotModule] 重复的节点key: {row.Id}");
+					FuLogger.LogError($"重复的节点key: {row.Id}");
 					ReferencePool.Recycle(node);
 				}
 			}
@@ -150,7 +150,7 @@ namespace Hotfix.Framework.RedDot
 			// 加载已读状态
 			LoadReadState();
 
-			FuLogger.LogInfo($"[RedDotModule] 初始化红点模块成功. 节点总数量: {NodeDict.Count}");
+			FuLogger.LogInfo($"初始化红点模块成功. 节点总数量: {NodeDict.Count}");
 		}
 
 		/// <summary>
@@ -222,7 +222,7 @@ namespace Hotfix.Framework.RedDot
 					}
 					catch (Exception ex)
 					{
-						FuLogger.LogError($"[RedDotModule] 红点计算函数执行异常: {ex.Message}");
+						FuLogger.LogError($"红点计算函数执行异常: {ex.Message}");
 					}
 				}
 
@@ -333,7 +333,7 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (!NodeDict.TryGetValue(parentKey, out var parentNode))
 			{
-				FuLogger.LogError($"[RedDotModule] 父节点不存在: {parentKey}");
+				FuLogger.LogError($"父节点不存在: {parentKey}");
 				return null;
 			}
 
@@ -344,7 +344,7 @@ namespace Hotfix.Framework.RedDot
 			node.m_OnTotalCountChanged = OnNodeTotalCountChanged;
 			parentNode.AddChild(node);
 			NodeDict.Add(childKey, node);
-			FuLogger.LogInfo($"[RedDotModule] 创建动态节点: {childKey}，父节点: {parentKey}");
+			FuLogger.LogInfo($"创建动态节点: {childKey}，父节点: {parentKey}");
 			return node;
 		}
 
@@ -374,7 +374,7 @@ namespace Hotfix.Framework.RedDot
 			{
 				if (!Enum.IsDefined(typeof(ERedDotKey), id))
 				{
-					FuLogger.LogWarning($"[RedDotModule] 已读状态中存在无效的枚举值: {id}，已跳过");
+					FuLogger.LogWarning($"已读状态中存在无效的枚举值: {id}，已跳过");
 					continue;
 				}
 
@@ -479,7 +479,7 @@ namespace Hotfix.Framework.RedDot
 
 			if (state[parent] == 1)
 			{
-				FuLogger.LogError($"[RedDotModule] 检测到循环依赖: {node.Key} -> {parent.Key}，切断该关系");
+				FuLogger.LogError($"检测到循环依赖: {node.Key} -> {parent.Key}，切断该关系");
 				parent.RemoveChild(node);
 				node.SetParent(null);
 				state[node] = 2;

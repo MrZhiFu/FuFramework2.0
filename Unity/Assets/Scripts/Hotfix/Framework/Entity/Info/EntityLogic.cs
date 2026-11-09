@@ -68,7 +68,7 @@ namespace Hotfix.Framework.Entity
 			{
 				if (!Available)
 				{
-					FuLogger.LogWarning($"[EntityLogic] 设置实体是否可见失败, 实体 '{Name}' 不可用");
+					FuLogger.LogWarning($"设置实体是否可见失败, 实体 '{Name}' 不可用");
 					return;
 				}
 

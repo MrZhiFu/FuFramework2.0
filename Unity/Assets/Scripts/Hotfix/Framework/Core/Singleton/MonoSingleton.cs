@@ -68,7 +68,7 @@ namespace Hotfix.Framework.Core
 			// 防止在场景中手动放置了多个单例组件而导致创建重复实例
 			if (s_instance && s_instance != this)
 			{
-				FuLogger.LogWarning($"[MonoSingleton] 场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
+				FuLogger.LogWarning($"场景中已存在同类型的单例组件 '{typeof(T)}', 该单例{gameObject.name}被立即销毁!");
 				DestroyImmediate(gameObject);
 				return;
 			}

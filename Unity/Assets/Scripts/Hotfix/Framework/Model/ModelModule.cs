@@ -63,7 +63,7 @@ namespace Hotfix.Framework.Model
 			// 先摘除字典项并按结果判定：不存在时不可再索引取值（否则键不存在必抛 KeyNotFoundException）
 			if (!m_modelDict.Remove(key, out var model))
 			{
-				FuLogger.LogError($"[ModelModule] 删除Model失败! '{key.Name}' 不存在");
+				FuLogger.LogError($"删除Model失败! '{key.Name}' 不存在");
 				return;
 			}
 
@@ -91,7 +91,7 @@ namespace Hotfix.Framework.Model
 		private T CreateModel<T>() where T : BaseModel, new()
 		{
 			var key = typeof(T);
-			if (m_modelDict.ContainsKey(key)) FuLogger.LogError($"[ModelModule] 创建Model失败! '{key.Name}' 已存在");
+			if (m_modelDict.ContainsKey(key)) FuLogger.LogError($"创建Model失败! '{key.Name}' 已存在");
 
 			var model = new T();
 			model.Init();

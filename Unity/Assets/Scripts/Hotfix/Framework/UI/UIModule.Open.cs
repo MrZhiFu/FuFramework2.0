@@ -62,21 +62,21 @@ namespace Hotfix.Framework.UI
 
 			if (token.IsCancellationRequested)
 			{
-				FuLogger.LogWarning($"[UIModule] 界面 {winName} 打开中止：UI模块已销毁。");
+				FuLogger.LogWarning($"界面 {winName} 打开中止：UI模块已销毁。");
 				return null;
 			}
 
 			// 检查是否已经在加载中
 			if (IsLoading(winName))
 			{
-				FuLogger.LogWarning($"[UIModule] 界面 {winName} 已经正在加载.");
+				FuLogger.LogWarning($"界面 {winName} 已经正在加载.");
 				return null;
 			}
 
 			// 检查是否已存在该界面
 			if (Has(winName))
 			{
-				FuLogger.LogWarning($"[UIModule] 界面 {winName} 已经存在，不能重复打开.");
+				FuLogger.LogWarning($"界面 {winName} 已经存在，不能重复打开.");
 				return Get<T>();
 			}
 
@@ -282,7 +282,7 @@ namespace Hotfix.Framework.UI
 
 				var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
 				m_eventModule.Broadcast(this, openUIFailureEventArgs);
-				FuLogger.LogError($"[UIModule] 打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
+				FuLogger.LogError($"打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
 				return Get(serialId) as T;
 			}
 		}
@@ -307,7 +307,7 @@ namespace Hotfix.Framework.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"[UIModule] 打开失败时从界面组移除界面 '{win.WinName}' 出现异常: {e.Message}");
+				FuLogger.LogWarning($"打开失败时从界面组移除界面 '{win.WinName}' 出现异常: {e.Message}");
 			}
 		}
 
@@ -328,18 +328,18 @@ namespace Hotfix.Framework.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"[UIModule] 销毁池中界面实例前回收失败: {e.Message}");
+				FuLogger.LogWarning($"销毁池中界面实例前回收失败: {e.Message}");
 			}
 
 			try
 			{
 				// Dispose 内部经 WinObject.OnDispose 销毁 WinUI 并触发 WinBase._OnDispose（半成品时其内部已判空）
 				if (!m_winObjPool.DisposeObject(target))
-					FuLogger.LogWarning("[UIModule] 销毁池中界面实例未成功（可能已被移除）。");
+					FuLogger.LogWarning("销毁池中界面实例未成功（可能已被移除）。");
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"[UIModule] 销毁池中界面实例出现异常: {e.Message}");
+				FuLogger.LogWarning($"销毁池中界面实例出现异常: {e.Message}");
 			}
 		}
 

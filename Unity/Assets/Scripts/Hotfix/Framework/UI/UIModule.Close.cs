@@ -21,7 +21,7 @@ namespace Hotfix.Framework.UI
 			var win = Get(serialId);
 			if (win == null)
 			{
-				FuLogger.LogError($"[UIModule] 需要关闭的UI界面View为空 '{serialId}'.");
+				FuLogger.LogError($"需要关闭的UI界面View为空 '{serialId}'.");
 				return;
 			}
 
@@ -49,13 +49,13 @@ namespace Hotfix.Framework.UI
 		{
 			if (win == null)
 			{
-				FuLogger.LogError("[UIModule] 需要关闭的UI界面为空");
+				FuLogger.LogError("需要关闭的UI界面为空");
 				return;
 			}
 
 			if (win.UIGroup == null)
 			{
-				FuLogger.LogError("[UIModule] 需要关闭的UI界面组为空");
+				FuLogger.LogError("需要关闭的UI界面组为空");
 				return;
 			}
 
@@ -96,7 +96,7 @@ namespace Hotfix.Framework.UI
 			var win = Get(serialId);
 			if (win == null)
 			{
-				FuLogger.LogError($"[UIModule] 找不到界面 '{serialId}'");
+				FuLogger.LogError($"找不到界面 '{serialId}'");
 				return;
 			}
 
@@ -124,13 +124,13 @@ namespace Hotfix.Framework.UI
 		{
 			if (win == null)
 			{
-				FuLogger.LogError("[UIModule] 需要关闭的UI界面View为空");
+				FuLogger.LogError("需要关闭的UI界面View为空");
 				return;
 			}
 
 			if (win.UIGroup == null)
 			{
-				FuLogger.LogError("[UIModule] 需要关闭的UI界面组为空");
+				FuLogger.LogError("需要关闭的UI界面组为空");
 				return;
 			}
 

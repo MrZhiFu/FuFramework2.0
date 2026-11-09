@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Guide
 			// 判空引导动作执行器（置于 Add 监听之前）
 			if (GuideAction == null)
 			{
-				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：引导动作执行器为null，跳过该步骤");
+				FuLogger.LogWarning($"步骤 {StepInfo.Id} 无法执行：引导动作执行器为null，跳过该步骤");
 				GuideModule.Instance?.ForceNextStep();
 				return;
 			}
@@ -44,7 +44,7 @@ namespace Hotfix.Framework.Guide
 			var uiModule = ModuleManager.GetModule<UIModule>();
 			if (uiModule == null)
 			{
-				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 无法执行：UIModule 不存在，跳过该步骤");
+				FuLogger.LogWarning($"步骤 {StepInfo.Id} 无法执行：UIModule 不存在，跳过该步骤");
 				GuideModule.Instance?.ForceNextStep();
 				return;
 			}
@@ -53,7 +53,7 @@ namespace Hotfix.Framework.Guide
 			var targetWin = uiModule.Get(StepInfo.TargetWindow);
 			if (targetWin == null)
 			{
-				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标界面: {StepInfo.TargetWindow}，跳过该步骤");
+				FuLogger.LogWarning($"步骤 {StepInfo.Id} 找不到目标界面: {StepInfo.TargetWindow}，跳过该步骤");
 				GuideModule.Instance?.ForceNextStep();
 				return;
 			}
@@ -61,7 +61,7 @@ namespace Hotfix.Framework.Guide
 			// 查找目标点击UI
 			if (targetWin.WinUI.GetChild(StepInfo.TargetUI) is not GComponent targetClickUI)
 			{
-				FuLogger.LogWarning($"[ClickUIStep] 步骤 {StepInfo.Id} 找不到目标点击UI: {StepInfo.TargetUI}，跳过该步骤");
+				FuLogger.LogWarning($"步骤 {StepInfo.Id} 找不到目标点击UI: {StepInfo.TargetUI}，跳过该步骤");
 				GuideModule.Instance?.ForceNextStep();
 				return;
 			}

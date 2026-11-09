@@ -36,7 +36,7 @@ namespace Hotfix.Framework.UI
 		{
 			if (listener == null)
 			{
-				FuLogger.LogError("[FuiEventRegister] 添加FUI监听事件失败, 监听器为空");
+				FuLogger.LogError("添加FUI监听事件失败, 监听器为空");
 				return;
 			}
 
@@ -58,13 +58,13 @@ namespace Hotfix.Framework.UI
 		{
 			if (listener == null)
 			{
-				FuLogger.LogError("[FuiEventRegister] 移除FUI监听事件失败, 监听器为空");
+				FuLogger.LogError("移除FUI监听事件失败, 监听器为空");
 				return;
 			}
 
 			if (!m_uiEventListenerDic.TryGetValue(listener, out var handlers))
 			{
-				FuLogger.LogError($"[FuiEventRegister] 移除FUI监听事件失败, 监听器 {listener} 不存在");
+				FuLogger.LogError($"移除FUI监听事件失败, 监听器 {listener} 不存在");
 				return;
 			}
 
@@ -86,7 +86,7 @@ namespace Hotfix.Framework.UI
 		{
 			if (listener == null)
 			{
-				FuLogger.LogError("[FuiEventRegister] 设置FUI监听事件失败, 监听器为空");
+				FuLogger.LogError("设置FUI监听事件失败, 监听器为空");
 				return;
 			}
 
@@ -120,13 +120,13 @@ namespace Hotfix.Framework.UI
 		{
 			if (listener == null)
 			{
-				FuLogger.LogError("[FuiEventRegister] 清理FUI监听事件失败, 监听器为空");
+				FuLogger.LogError("清理FUI监听事件失败, 监听器为空");
 				return;
 			}
 
 			if (!m_uiEventListenerDic.TryGetValue(listener, out var handlers))
 			{
-				FuLogger.LogError($"[FuiEventRegister] 清理FUI监听事件失败, 监听器 {listener} 不存在");
+				FuLogger.LogError($"清理FUI监听事件失败, 监听器 {listener} 不存在");
 				return;
 			}
 

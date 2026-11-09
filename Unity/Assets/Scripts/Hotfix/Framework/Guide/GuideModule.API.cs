@@ -135,7 +135,7 @@ namespace Hotfix.Framework.Guide
 		{
 			if (!m_guideDict.TryGetValue(guideId, out var guide))
 			{
-				FuLogger.LogError($"[GuideModule] 找不到引导: {guideId}");
+				FuLogger.LogError($"找不到引导: {guideId}");
 				return false;
 			}
 
@@ -156,7 +156,7 @@ namespace Hotfix.Framework.Guide
 
 			if (firstGuide == null)
 			{
-				FuLogger.LogError("[GuideModule] 没有可用的引导");
+				FuLogger.LogError("没有可用的引导");
 				return false;
 			}
 
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.Guide
 			}
 
 			OnGuideInterrupted?.Invoke(guideId ?? 0, markAsCompleted);
-			FuLogger.LogInfo($"[GuideModule] 引导中断: {guideId}, 标记完成: {markAsCompleted}");
+			FuLogger.LogInfo($"引导中断: {guideId}, 标记完成: {markAsCompleted}");
 
 			ClearGuideData();
 		}
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.Guide
 
 			if (!completedStep.CanComplete())
 			{
-				FuLogger.LogWarning($"[GuideModule] 步骤 {completedStep.StepInfo.Id} 当前无法完成");
+				FuLogger.LogWarning($"步骤 {completedStep.StepInfo.Id} 当前无法完成");
 				return;
 			}
 
@@ -231,7 +231,7 @@ namespace Hotfix.Framework.Guide
 			catch (Exception e)
 			{
 				// StepInfo 可能已被回收（FinishGuide → ClearGuideData 会置空），故用 ?. 取 ID
-				FuLogger.LogError($"[GuideModule] 完成步骤失败 {completedStep.StepInfo?.Id}: {e.Message}");
+				FuLogger.LogError($"完成步骤失败 {completedStep.StepInfo?.Id}: {e.Message}");
 				ForceNextStep();
 			}
 		}
@@ -245,14 +245,14 @@ namespace Hotfix.Framework.Guide
 
 			if (m_currentStep.StepInfo.CanJump)
 			{
-				FuLogger.LogInfo($"[GuideModule] 跳过可选步骤: {m_currentStep.StepInfo.Id}");
+				FuLogger.LogInfo($"跳过可选步骤: {m_currentStep.StepInfo.Id}");
 				m_currentStep.Cancel();
 				PushStepHistory(m_currentStep);
 				MoveToNextStep();
 			}
 			else
 			{
-				FuLogger.LogWarning($"[GuideModule] 步骤 {m_currentStep.StepInfo.Id} 不可跳过");
+				FuLogger.LogWarning($"步骤 {m_currentStep.StepInfo.Id} 不可跳过");
 			}
 		}
 
@@ -263,7 +263,7 @@ namespace Hotfix.Framework.Guide
 		{
 			if (m_stepHistoryStack.Count == 0)
 			{
-				FuLogger.LogWarning("[GuideModule] 没有历史步骤可返回");
+				FuLogger.LogWarning("没有历史步骤可返回");
 				return;
 			}
 
@@ -272,14 +272,14 @@ namespace Hotfix.Framework.Guide
 			var previousStepId = m_stepHistoryStack.Pop();
 			if (!m_allStepDict.TryGetValue(previousStepId, out var previousStep))
 			{
-				FuLogger.LogWarning($"[GuideModule] 历史步骤已不可用: {previousStepId}");
+				FuLogger.LogWarning($"历史步骤已不可用: {previousStepId}");
 				return;
 			}
 
 			m_currentStep = previousStep;
 			ExecuteCurrentStep();
 
-			FuLogger.LogInfo($"[GuideModule] 返回步骤: {previousStepId}");
+			FuLogger.LogInfo($"返回步骤: {previousStepId}");
 		}
 
 		/// <summary>
@@ -291,7 +291,7 @@ namespace Hotfix.Framework.Guide
 		{
 			if (!m_allStepDict.ContainsKey(stepId))
 			{
-				FuLogger.LogError($"[GuideModule] 步骤ID不存在: {stepId}");
+				FuLogger.LogError($"步骤ID不存在: {stepId}");
 				return false;
 			}
 
@@ -304,7 +304,7 @@ namespace Hotfix.Framework.Guide
 			m_currentStep = m_allStepDict[stepId];
 			ExecuteCurrentStep();
 
-			FuLogger.LogInfo($"[GuideModule] 跳转到步骤: {stepId}");
+			FuLogger.LogInfo($"跳转到步骤: {stepId}");
 			return true;
 		}
 
@@ -363,7 +363,7 @@ namespace Hotfix.Framework.Guide
 			m_guideDataDirty                    = true;
 			m_guideCompletionCacheDict[guideId] = true;
 
-			FuLogger.LogInfo($"[GuideModule] 标记引导为已完成: {guideId}");
+			FuLogger.LogInfo($"标记引导为已完成: {guideId}");
 		}
 
 		/// <summary>
@@ -378,7 +378,7 @@ namespace Hotfix.Framework.Guide
 			// 删除同样是未落盘的改动，与 MarkGuideAsCompleted 共用同一延迟落盘路径
 			m_guideDataDirty = true;
 
-			FuLogger.LogInfo($"[GuideModule] 重置引导状态: {guideId}");
+			FuLogger.LogInfo($"重置引导状态: {guideId}");
 		}
 
 		#endregion

@@ -130,7 +130,7 @@ namespace AOT.Launch
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogError($"[Launch] 获取远端更新配置异常：{e.Message}");
+					FuLogger.LogError($"获取远端更新配置异常：{e.Message}");
 				}
 
 				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_req_remote_update_config_fail));
@@ -204,13 +204,13 @@ namespace AOT.Launch
 				// 加载失败：LoadRawFileBytesAsync 返回 null，禁止把 null 传给 RuntimeApi，记录路径并中止移交。
 				if (bytes == null)
 				{
-					FuLogger.LogError($"[Launch] 加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
+					FuLogger.LogError($"加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
 					s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
 					return;
 				}
 
 				RuntimeApi.LoadMetadataForAOTAssembly(bytes, HomologousImageMode.SuperSet);
-				FuLogger.LogInfo($"[Launch] 补充 AOT 元数据：{aotDll}");
+				FuLogger.LogInfo($"补充 AOT 元数据：{aotDll}");
 			}
 
 			// 加载 Hotfix.dll 并反射进入热更入口
@@ -220,13 +220,13 @@ namespace AOT.Launch
 			// 加载失败：禁止把 null 传给 Assembly.Load，记录路径并中止移交。
 			if (dllBytes == null)
 			{
-				FuLogger.LogError($"[Launch] 加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
+				FuLogger.LogError($"加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
 				s_launchView.SetTip(LaunchLocalization.GetLanguage(LaunchL10nKey.aot_res_load_fail));
 				return;
 			}
 
 			System.Reflection.Assembly.Load(dllBytes);
-			FuLogger.LogInfo("[Launch] Hotfix 程序集加载完成");
+			FuLogger.LogInfo("Hotfix 程序集加载完成");
 
 			await EnterHotfixAsync();
 		}
@@ -247,7 +247,7 @@ namespace AOT.Launch
 
 			if (hotfixAssembly == null)
 			{
-				FuLogger.LogError("[Launch] 未找到已加载的 Hotfix 程序集，无法进入热更入口。");
+				FuLogger.LogError("未找到已加载的 Hotfix 程序集，无法进入热更入口。");
 				return;
 			}
 
@@ -255,7 +255,7 @@ namespace AOT.Launch
 			var mainMethod = entryType?.GetMethod("MainAsync", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
 			if (mainMethod == null)
 			{
-				FuLogger.LogError("[Launch] 未找到热更入口 Hotfix.HotfixLauncher.MainAsync。");
+				FuLogger.LogError("未找到热更入口 Hotfix.HotfixLauncher.MainAsync。");
 				return;
 			}
 

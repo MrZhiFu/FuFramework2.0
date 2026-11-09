@@ -36,13 +36,13 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (!NodeDict.TryGetValue(key, out var node))
 			{
-				FuLogger.LogError($"[RedDotModule] Register 未找到节点: {key}");
+				FuLogger.LogError($"Register 未找到节点: {key}");
 				return;
 			}
 
 			if (node.GetChildren().Count > 0)
 			{
-				FuLogger.LogError($"[RedDotModule] Register 只能给叶子节点注册 Calculator: {key}");
+				FuLogger.LogError($"Register 只能给叶子节点注册 Calculator: {key}");
 				return;
 			}
 
@@ -107,7 +107,7 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (!NodeDict.TryGetValue(parentKey, out var parentNode))
 			{
-				FuLogger.LogError($"[RedDotModule] SyncDynamicNode 未找到父节点: {parentKey}");
+				FuLogger.LogError($"SyncDynamicNode 未找到父节点: {parentKey}");
 				return;
 			}
 

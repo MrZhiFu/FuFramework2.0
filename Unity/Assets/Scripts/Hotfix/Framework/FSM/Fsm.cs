@@ -255,7 +255,7 @@ namespace Hotfix.Framework.FSM
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[Fsm] 状态 {CurrentStateBase?.GetType().Name} OnLeave 异常: {e.Message}");
+				FuLogger.LogError($"状态 {CurrentStateBase?.GetType().Name} OnLeave 异常: {e.Message}");
 			}
 
 			foreach (var (_, state) in m_stateDict)
@@ -266,7 +266,7 @@ namespace Hotfix.Framework.FSM
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogError($"[Fsm] 状态 {state.GetType().Name} OnDestroy 异常: {e.Message}");
+					FuLogger.LogError($"状态 {state.GetType().Name} OnDestroy 异常: {e.Message}");
 				}
 			}
 
@@ -290,7 +290,7 @@ namespace Hotfix.Framework.FSM
 					}
 					catch (Exception e)
 					{
-						FuLogger.LogError($"[Fsm] 数据对象回收异常: {e.Message}");
+						FuLogger.LogError($"数据对象回收异常: {e.Message}");
 					}
 				}
 				m_recycledData.Clear();

@@ -308,7 +308,7 @@ namespace Hotfix.Framework.UI
 			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_cancellation.Token);
 			if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
 			{
-				FuLogger.LogError($"[CustomLoader] 网络图片下载失败: {textureURL}");
+				FuLogger.LogError($"网络图片下载失败: {textureURL}");
 				return null;
 			}
 
@@ -316,7 +316,7 @@ namespace Hotfix.Framework.UI
 			var tempTexture = new Texture2D(2, 2);
 			if (!tempTexture.LoadImage(webBufferResult.Result))
 			{
-				FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {textureURL}");
+				FuLogger.LogError($"加载图片数据失败: {textureURL}");
 				Object.Destroy(tempTexture);
 				return null;
 			}
@@ -350,7 +350,7 @@ namespace Hotfix.Framework.UI
 				var buffer = UtilityAOT.File.ReadAllBytes(path);
 				if (buffer.IsNull() || buffer.Length == 0)
 				{
-					FuLogger.LogError($"[CustomLoader] 读取文件失败或文件为空: {path}");
+					FuLogger.LogError($"读取文件失败或文件为空: {path}");
 					return null;
 				}
 
@@ -358,7 +358,7 @@ namespace Hotfix.Framework.UI
 				var tempTexture = new Texture2D(2, 2);
 				if (!tempTexture.LoadImage(buffer))
 				{
-					FuLogger.LogError($"[CustomLoader] 加载图片数据失败: {path}");
+					FuLogger.LogError($"加载图片数据失败: {path}");
 					Object.Destroy(tempTexture);
 					return null;
 				}
@@ -367,7 +367,7 @@ namespace Hotfix.Framework.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[CustomLoader] 从文件加载纹理异常: {path}, {e.Message}");
+				FuLogger.LogError($"从文件加载纹理异常: {path}, {e.Message}");
 				return null;
 			}
 		}

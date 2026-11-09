@@ -152,7 +152,7 @@ namespace Hotfix.Framework.Guide
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[GuideActionImpl] 执行点击UI引导失败: {e.Message}\n{e.StackTrace}");
+				FuLogger.LogError($"执行点击UI引导失败: {e.Message}\n{e.StackTrace}");
 				GlobalModule.UIModule.Close<WinClickGuide>();
 			}
 		}
@@ -190,7 +190,7 @@ namespace Hotfix.Framework.Guide
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[GuideActionImpl] 执行对话引导失败: {e.Message}\n{e.StackTrace}");
+				FuLogger.LogError($"执行对话引导失败: {e.Message}\n{e.StackTrace}");
 				GlobalModule.UIModule.Close<WinDialogGuide>();
 			}
 		}

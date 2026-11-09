@@ -147,7 +147,7 @@ namespace Hotfix.Framework.UI
 			foreach (EUILayer layer in Enum.GetValues(typeof(EUILayer)))
 			{
 				if (AddGroup(layer)) continue;
-				FuLogger.LogError($"[UIModule] 添加UI组 '{layer.ToString()}' 失败 .");
+				FuLogger.LogError($"添加UI组 '{layer.ToString()}' 失败 .");
 			}
 
 			// 初始化 UI 背景模糊功能（挂载截屏组件 + 预热 Shader）
@@ -175,7 +175,7 @@ namespace Hotfix.Framework.UI
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[UIModule] 回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
 				}
 			}
 
@@ -202,7 +202,7 @@ namespace Hotfix.Framework.UI
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[UIModule] 更新界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"更新界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
 				}
 			}
 		}
@@ -238,7 +238,7 @@ namespace Hotfix.Framework.UI
 					}
 					catch (Exception e)
 					{
-						FuLogger.LogWarning($"[UIModule] 释放时回收界面信息 '{win.WinName}' 出现异常: {e}");
+						FuLogger.LogWarning($"释放时回收界面信息 '{win.WinName}' 出现异常: {e}");
 					}
 					finally
 					{
@@ -265,7 +265,7 @@ namespace Hotfix.Framework.UI
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[UIModule] 释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"释放时回收界面 '{ui?.WinName}' 出现异常: {e.Message}");
 				}
 			}
 
@@ -282,7 +282,7 @@ namespace Hotfix.Framework.UI
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[UIModule] 释放界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"释放界面组 '{group.Layer.ToString()}' 出现异常: {e.Message}");
 				}
 			}
 

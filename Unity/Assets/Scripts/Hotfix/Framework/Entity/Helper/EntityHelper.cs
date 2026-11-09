@@ -24,7 +24,7 @@ namespace Hotfix.Framework.Entity
 			// 句柄仅在本方法内使用（局部变量），不长期持有引用，避免保留已释放句柄的误导性死状态
 			if (entityAssetHandle is not AssetHandle assetOperationHandle)
 			{
-				FuLogger.LogError("[EntityHelper]实例化实体失败，要实例化的实体资源句柄为空!");
+				FuLogger.LogError("实例化实体失败，要实例化的实体资源句柄为空!");
 				return null;
 			}
 
@@ -42,7 +42,7 @@ namespace Hotfix.Framework.Entity
 			var go = entityGo as GameObject;
 			if (!go)
 			{
-				FuLogger.LogError("[EntityHelper]创建实体失败，实体实例不是GameObject.");
+				FuLogger.LogError("创建实体失败，实体实例不是GameObject.");
 				return null;
 			}
 
@@ -59,7 +59,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (entityAssetHandle is not AssetHandle assetOperationHandle)
 			{
-				FuLogger.LogError("[EntityHelper]释放实体失败, 实体资源句柄为空!");
+				FuLogger.LogError("释放实体失败, 实体资源句柄为空!");
 				return;
 			}
 

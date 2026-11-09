@@ -91,13 +91,13 @@ namespace Hotfix.Framework.ObjectPool
 					}
 					catch (Exception e)
 					{
-						FuLogger.LogWarning($"[ObjectPoolModule] 更新对象池 {objPool.FullName} 时出现异常: {e.Message}");
+						FuLogger.LogWarning($"更新对象池 {objPool.FullName} 时出现异常: {e.Message}");
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"[ObjectPoolModule] 遍历对象池列表时出现异常: {e.Message}");
+				FuLogger.LogWarning($"遍历对象池列表时出现异常: {e.Message}");
 			}
 		}
 
@@ -124,7 +124,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {objPool.FullName} 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"销毁对象池 {objPool.FullName} 时出现异常: {e.Message}");
 				}
 			}
 
@@ -138,7 +138,7 @@ namespace Hotfix.Framework.ObjectPool
 		/// </summary>
 		private void OnLowMemory()
 		{
-			FuLogger.LogInfo("[ObjectPoolModule] 低内存警告, 销毁对象池中所有未使用的资源...");
+			FuLogger.LogInfo("低内存警告, 销毁对象池中所有未使用的资源...");
 			DisposeAllUnused();
 		}
 
@@ -203,7 +203,7 @@ namespace Hotfix.Framework.ObjectPool
 			catch (Exception e)
 			{
 				// 池已完成销毁收尾且已摘除登记：异常不应逃逸中断调用方（如模块 teardown 循环）。
-				FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
+				FuLogger.LogWarning($"销毁对象池 {typeNamePair} 时出现异常: {e.Message}");
 			}
 
 			return true;

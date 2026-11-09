@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Procedure
 			// 显式告警并销毁旧状态机后按本次传入的流程集合重建。
 			if (m_procedureFsm != null)
 			{
-				FuLogger.LogWarning("[ProcedureModule] 流程状态机已存在，销毁旧实例并按本次传入的流程集合重建.");
+				FuLogger.LogWarning("流程状态机已存在，销毁旧实例并按本次传入的流程集合重建.");
 				m_fsmModule.DestroyFsm(m_procedureFsm);
 				m_procedureFsm = null;
 			}

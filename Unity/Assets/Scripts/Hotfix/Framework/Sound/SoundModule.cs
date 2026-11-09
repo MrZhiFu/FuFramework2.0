@@ -162,14 +162,14 @@ namespace Hotfix.Framework.Sound
 			m_assetModule = ModuleManager.GetModule<AssetModule>();
 			if (m_assetModule == null)
 			{
-				FuLogger.LogFatal("[SoundModule] 资源管理模块不存在!");
+				FuLogger.LogFatal("资源管理模块不存在!");
 				return;
 			}
 
 			m_eventModule = ModuleManager.GetModule<EventModule>();
 			if (m_eventModule == null)
 			{
-				FuLogger.LogFatal("[SoundModule] 事件组件不存在!");
+				FuLogger.LogFatal("事件组件不存在!");
 				return;
 			}
 
@@ -186,7 +186,7 @@ namespace Hotfix.Framework.Sound
 			var tbSoundGroup = ConfigModule.Instance.GetConfig<TbSoundGroup>();
 			if (tbSoundGroup == null || tbSoundGroup.Count == 0)
 			{
-				FuLogger.LogFatal("[SoundModule] 声音组配置表未加载，SoundModule 初始化失败!");
+				FuLogger.LogFatal("声音组配置表未加载，SoundModule 初始化失败!");
 				return;
 			}
 
@@ -197,7 +197,7 @@ namespace Hotfix.Framework.Sound
 			foreach (var row in tbSoundGroup.All)
 			{
 				if (AddSoundGroup(row)) continue;
-				FuLogger.LogWarning($"[SoundModule] 添加声音组 '{row.Id}' 失败!");
+				FuLogger.LogWarning($"添加声音组 '{row.Id}' 失败!");
 			}
 
 			// 监听场景加载和卸载事件
@@ -308,7 +308,7 @@ namespace Hotfix.Framework.Sound
 			var groupName = row.Id.ToString();
 			if (HasSoundGroup(groupName))
 			{
-				FuLogger.LogInfo($"[SoundModule]声音组 '{groupName}' 已存在，不可重复添加!");
+				FuLogger.LogInfo($"声音组 '{groupName}' 已存在，不可重复添加!");
 				return false;
 			}
 
@@ -712,7 +712,7 @@ namespace Hotfix.Framework.Sound
 				// 故此处是本分支内唯一的回收点，恰好回收一次，不存在二次回收。
 				try
 				{
-					FuLogger.LogInfo($"[SoundModule]播放声音 '{playSoundInfo.SoundAssetPath}' 成功, 声音组 '{playSoundInfo.SoundGroup.Name}'");
+					FuLogger.LogInfo($"播放声音 '{playSoundInfo.SoundAssetPath}' 成功, 声音组 '{playSoundInfo.SoundGroup.Name}'");
 					if (playSoundInfo.SoundParams3D != null)
 					{
 						// 播放3D声音设置，如果绑定了实体，则设置的绑定实体，否则设置世界坐标
@@ -818,13 +818,13 @@ namespace Hotfix.Framework.Sound
 					if (handle.Status == EOperationStatus.Succeeded)
 						m_audioMixer = handle.GetAssetObject<AudioMixer>();
 					else
-						FuLogger.LogFatal($"[SoundModule] AudioMixer 加载失败: {AUDIO_MIXER_ASSET_PATH} - {handle.Error}");
+						FuLogger.LogFatal($"AudioMixer 加载失败: {AUDIO_MIXER_ASSET_PATH} - {handle.Error}");
 
 					handle.Release(); // 释放句柄，AudioMixer 对象已由 m_audioMixer 持有
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogFatal($"[SoundModule] AudioMixer 加载异常: {AUDIO_MIXER_ASSET_PATH} - {e.Message}");
+					FuLogger.LogFatal($"AudioMixer 加载异常: {AUDIO_MIXER_ASSET_PATH} - {e.Message}");
 				}
 			}
 		}

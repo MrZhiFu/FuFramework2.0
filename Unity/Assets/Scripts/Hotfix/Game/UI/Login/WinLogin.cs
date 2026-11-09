@@ -168,7 +168,7 @@ namespace Hotfix.Game.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[WinLogin] 登录请求异常: {e.Message}");
+				FuLogger.LogError($"登录请求异常: {e.Message}");
 			}
 		}
 

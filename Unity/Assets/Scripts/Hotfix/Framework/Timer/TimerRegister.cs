@@ -46,7 +46,7 @@ namespace Hotfix.Framework.Timer
 			//（引用池「使用中」计数永久虚高）。
 			if (register.m_timerModule == null)
 			{
-				FuLogger.LogError("[TimerRegister] 计时器管理模块不存在，创建计时器注册器失败.");
+				FuLogger.LogError("计时器管理模块不存在，创建计时器注册器失败.");
 				ReferencePool.Recycle(register);
 				return null;
 			}

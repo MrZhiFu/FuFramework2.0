@@ -145,13 +145,13 @@ namespace Hotfix.Framework.Scene
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath))
 			{
-				FuLogger.LogError("[SceneModule] 场景资源路径无效!");
+				FuLogger.LogError("场景资源路径无效!");
 				return false;
 			}
 
 			if (!sceneAssetPath.StartsWith("Assets/", StringComparison.Ordinal) || !sceneAssetPath.EndsWith(".unity", StringComparison.Ordinal))
 			{
-				FuLogger.LogError($"[SceneModule] 场景资源路径 '{sceneAssetPath}' 格式错误!");
+				FuLogger.LogError($"场景资源路径 '{sceneAssetPath}' 格式错误!");
 				return false;
 			}
 
@@ -201,14 +201,14 @@ namespace Hotfix.Framework.Scene
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath))
 			{
-				FuLogger.LogError("[SceneModule] 场景资源路径无效!");
+				FuLogger.LogError("场景资源路径无效!");
 				return null;
 			}
 
 			var sceneNamePosition = sceneAssetPath.LastIndexOf('/');
 			if (sceneNamePosition + 1 >= sceneAssetPath.Length)
 			{
-				FuLogger.LogError($"[SceneModule] 场景资源路径 '{sceneAssetPath}' 格式错误!");
+				FuLogger.LogError($"场景资源路径 '{sceneAssetPath}' 格式错误!");
 				return null;
 			}
 
@@ -414,7 +414,7 @@ namespace Hotfix.Framework.Scene
 					// 卸载成功
 					m_unloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
 					if (sceneHandle == null) return;
-					FuLogger.LogInfo($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 成功！");
+					FuLogger.LogInfo($"卸载场景 '{sceneHandle.SceneName}' 成功！");
 					var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
 					m_unloadingSceneDict.Remove(sceneAssetPath);
 					m_loadedSceneDict.Remove(sceneAssetPath);
@@ -425,7 +425,7 @@ namespace Hotfix.Framework.Scene
 					// 卸载失败：场景仍已加载，恢复登记以便重试卸载（不释放句柄——场景仍存在，YooAsset 的 sceneUnloaded 钩子不会触发，句柄仍有效）
 					m_unloadingSceneDict.TryGetValue(sceneAssetPath, out var sceneHandle);
 					if (sceneHandle == null) return;
-					FuLogger.LogError($"[SceneModule] 卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
+					FuLogger.LogError($"卸载场景 '{sceneHandle.SceneName}' 失败!, 加载状态 '{sceneHandle.Status}', 错误信息 '{sceneHandle.Error}'.");
 					m_unloadingSceneDict.Remove(sceneAssetPath);
 
 					// 模块已销毁（OnDispose 已清空登记字典）：不再恢复登记（避免残留），显式释放句柄兜底，防卸载失败句柄泄漏
@@ -483,7 +483,7 @@ namespace Hotfix.Framework.Scene
 			{
 				// 加载成功：登记已加载字典（失败不登记，否则 IsLoaded 恒 true 导致无法重试）
 				m_loadedSceneDict.Add(assetPath, sceneHandle);
-				FuLogger.LogInfo($"[SceneModule] 加载场景 '{sceneHandle.SceneName}' 成功！");
+				FuLogger.LogInfo($"加载场景 '{sceneHandle.SceneName}' 成功！");
 				var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.m_UserData);
 				EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
 			}

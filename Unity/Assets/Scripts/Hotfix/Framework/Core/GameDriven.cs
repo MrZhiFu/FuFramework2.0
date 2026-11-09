@@ -205,7 +205,7 @@ namespace Hotfix.Framework.Core
 			catch (OperationCanceledException)
 			{
 				// 生命周期结束（OnDispose 取消）导致的取消属预期路径，不视为错误上报
-				FuLogger.LogInfo("[GameDriven] 重启流程随 GameDriven 销毁被取消。");
+				FuLogger.LogInfo("重启流程随 GameDriven 销毁被取消。");
 			}
 			finally
 			{

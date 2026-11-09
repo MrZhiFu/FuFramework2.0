@@ -115,7 +115,7 @@ namespace Hotfix.Framework.UI
 				return sharedSource.Task;
 			}
 
-			FuLogger.LogInfo($"[FuiPkgManager] 添加UIPackage包: {pkgName}");
+			FuLogger.LogInfo($"添加UIPackage包: {pkgName}");
 
 			// 创建取消令牌源
 			var cts = new CancellationTokenSource();
@@ -217,12 +217,12 @@ namespace Hotfix.Framework.UI
 			}
 			catch (OperationCanceledException)
 			{
-				FuLogger.LogInfo($"[FuiPkgManager] 包加载被取消: {pkgName}");
+				FuLogger.LogInfo($"包加载被取消: {pkgName}");
 				throw;
 			}
 			catch (Exception ex)
 			{
-				FuLogger.LogError($"[FuiPkgManager] 加载包失败: {pkgName}, 错误: {ex.Message}");
+				FuLogger.LogError($"加载包失败: {pkgName}, 错误: {ex.Message}");
 				throw;
 			}
 		}
@@ -320,7 +320,7 @@ namespace Hotfix.Framework.UI
 			{
 				// 加载失败或装载器已被 RemovePkg/RemoveAllPkg Dispose（在途任务）：记录日志，跳过资源绑定，
 				// 避免 fire-and-forget 未观察异常静默（包项缺资源下次 ReloadAssets 可恢复）
-				FuLogger.LogError($"[FuiPkgManager] 包 '{pkgItem.owner.name}' 资源 '{assetName}' 加载失败: {e.Message}");
+				FuLogger.LogError($"包 '{pkgItem.owner.name}' 资源 '{assetName}' 加载失败: {e.Message}");
 			}
 		}
 
@@ -341,7 +341,7 @@ namespace Hotfix.Framework.UI
 				// 已存在且未归零 → 自增；不存在或已归零 → 初始化为 1
 				m_pkgRefCountDict[pkgName] = wasZero ? 1 : count + 1;
 
-				FuLogger.LogInfo($"[FuiPkgManager] 增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_pkgRefCountDict[pkgName]}");
+				FuLogger.LogInfo($"增加UIPackage包资源引用: {pkgName}，当前引用计数: {m_pkgRefCountDict[pkgName]}");
 
 				// 0→1 时恢复纹理/音频资源 + 递归递增依赖包引用
 				if (m_loadedPkgDict.TryGetValue(pkgName, out var pkg))
@@ -387,7 +387,7 @@ namespace Hotfix.Framework.UI
 				if (count <= 0) return;
 
 				count = --m_pkgRefCountDict[pkgName];
-				FuLogger.LogInfo($"[FuiPkgManager] 减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
+				FuLogger.LogInfo($"减少UIPackage包资源引用: {pkgName}，当前引用计数: {count}");
 
 				// 递归递减依赖包引用（对称于 AddPkgRef）+ 归零时卸载资源
 				if (m_loadedPkgDict.TryGetValue(pkgName, out var pkg))
@@ -404,7 +404,7 @@ namespace Hotfix.Framework.UI
 					{
 						pkg.UnloadAssets();
 						m_unloadedAssetPkgSet.Add(pkgName); // 标记资源已卸载，缓存命中时需恢复
-						FuLogger.LogInfo($"[FuiPkgManager] 卸载UIPackage资源: {pkgName}（包元数据保留）");
+						FuLogger.LogInfo($"卸载UIPackage资源: {pkgName}（包元数据保留）");
 
 						// 释放 YooAsset 资源句柄，让 AssetBundle 得以卸载（避免句柄悬挂导致内存泄漏）
 						if (m_pkgAssetLoaderDict.TryGetValue(pkgName, out var loader))
@@ -458,7 +458,7 @@ namespace Hotfix.Framework.UI
 			if (m_loadingCts.TryGetValue(pkgName, out var cts))
 			{
 				cts.Cancel();
-				FuLogger.LogInfo($"[FuiPkgManager] 取消正在加载的UIPackage: {pkgName}");
+				FuLogger.LogInfo($"取消正在加载的UIPackage: {pkgName}");
 				return;
 			}
 
@@ -488,7 +488,7 @@ namespace Hotfix.Framework.UI
 			{
 				// 永久废弃：释放 YooAsset 句柄让 AssetBundle 可卸载 + 标记废弃（在途加载据此中止）
 				assetLoader.Dispose();
-				FuLogger.LogInfo($"[FuiPkgManager] 释放UIPackage-{pkgName}内的资源完成.");
+				FuLogger.LogInfo($"释放UIPackage-{pkgName}内的资源完成.");
 			}
 
 			// 7.移除引用计数和卸载标记

@@ -103,7 +103,7 @@ namespace Hotfix.Framework.Config
 			cfgValue.NotNull(nameof(cfgValue));
 			if (m_cfgDataDict.ContainsKey(cfgName))
 			{
-				FuLogger.LogWarning($"[ConfigModule] 配置表 '{cfgName}' 已存在，忽略重复添加。");
+				FuLogger.LogWarning($"配置表 '{cfgName}' 已存在，忽略重复添加。");
 				return false;
 			}
 

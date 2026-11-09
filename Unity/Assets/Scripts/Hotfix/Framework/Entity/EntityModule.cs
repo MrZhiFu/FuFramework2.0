@@ -108,19 +108,19 @@ namespace Hotfix.Framework.Entity
 
 			if (m_assetModule == null)
 			{
-				FuLogger.LogFatal("[EntityModule] 资源管理模块不存在!");
+				FuLogger.LogFatal("资源管理模块不存在!");
 				return;
 			}
 
 			if (m_eventModule == null)
 			{
-				FuLogger.LogFatal("[EntityModule] 事件模块不存在!");
+				FuLogger.LogFatal("事件模块不存在!");
 				return;
 			}
 
 			if (m_objectPoolModule == null)
 			{
-				FuLogger.LogFatal("[EntityModule] 对象池模块不存在!");
+				FuLogger.LogFatal("对象池模块不存在!");
 				return;
 			}
 
@@ -138,14 +138,14 @@ namespace Hotfix.Framework.Entity
 			var tbEntityGroup = ConfigModule.Instance.GetConfig<TbEntityGroup>();
 			if (tbEntityGroup == null || tbEntityGroup.Count == 0)
 			{
-				FuLogger.LogFatal("[EntityModule] 实体组配置表未加载，EntityModule 初始化失败!");
+				FuLogger.LogFatal("实体组配置表未加载，EntityModule 初始化失败!");
 				return;
 			}
 
 			foreach (var row in tbEntityGroup.All)
 			{
 				if (AddEntityGroup(row)) continue;
-				FuLogger.LogWarning($"[EntityModule] 添加实体组 '{row.Id}' 失败.");
+				FuLogger.LogWarning($"添加实体组 '{row.Id}' 失败.");
 			}
 		}
 
@@ -180,7 +180,7 @@ namespace Hotfix.Framework.Entity
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[EntityModule] 回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
 				}
 				finally
 				{
@@ -223,7 +223,7 @@ namespace Hotfix.Framework.Entity
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[EntityModule] 释放时回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
+					FuLogger.LogWarning($"释放时回收实体 '{entityInfo.Entity?.EntityAssetName}' 出现异常: {e.Message}");
 				}
 				finally
 				{
@@ -245,7 +245,7 @@ namespace Hotfix.Framework.Entity
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[EntityModule] 销毁实体组 '{entityGroup.Name}' 的对象池时出现异常: {e.Message}");
+					FuLogger.LogWarning($"销毁实体组 '{entityGroup.Name}' 的对象池时出现异常: {e.Message}");
 				}
 			}
 

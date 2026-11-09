@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Core
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[TaskPool] 任务回收失败 (SerialId: {task.SerialId}): {e.Message}");
+				FuLogger.LogError($"任务回收失败 (SerialId: {task.SerialId}): {e.Message}");
 			}
 		}
 

@@ -209,11 +209,11 @@ namespace Hotfix.Framework.UI
 				m_blurShader       = shader;
 				m_blurMat          = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
 				loadTaskSource.TrySetResult(shader);
-				FuLogger.LogInfo("[UIModule] UI背景模糊 Shader 加载完成。");
+				FuLogger.LogInfo("UI背景模糊 Shader 加载完成。");
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[UIModule] UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
+				FuLogger.LogError($"UI背景模糊 Shader 加载失败，模糊功能禁用：'{e.Message}'。");
 
 				// 释放可能残留的失败句柄（加载失败/类型不匹配），避免 provider 引用残留
 				handle?.Release();

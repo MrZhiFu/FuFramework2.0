@@ -309,7 +309,7 @@ namespace Hotfix.Framework.Asset
 			{
 				// 跨生命周期释放：旧生命周期结果携带的 Token 与当前不同，直接忽略防误卸载新生命周期同路径引用；
 				// 属调用方违反"重启后不得对旧实例释放"契约，告警便于定位
-				FuLogger.LogWarning($"[AssetModule]忽略跨生命周期实例化释放：{result.Path}（结果 Token 属于旧生命周期）。重启后请勿对旧生命周期实例调用 ReleaseInstantiate。");
+				FuLogger.LogWarning($"忽略跨生命周期实例化释放：{result.Path}（结果 Token 属于旧生命周期）。重启后请勿对旧生命周期实例调用 ReleaseInstantiate。");
 				return;
 			}
 

@@ -154,7 +154,7 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (m_children.Contains(child))
 			{
-				FuLogger.LogWarning($"[RedDotNode] 无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
+				FuLogger.LogWarning($"无法添加重复的子节点, 在节点{Key}下已经存在子节点{child.Key}");
 				return;
 			}
 

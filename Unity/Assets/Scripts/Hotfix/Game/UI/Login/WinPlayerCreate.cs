@@ -136,7 +136,7 @@ namespace Hotfix.Game.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[WinPlayerCreate] 创建角色请求异常: {e.Message}");
+				FuLogger.LogError($"创建角色请求异常: {e.Message}");
 			}
 		}
 

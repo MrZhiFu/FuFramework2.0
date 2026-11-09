@@ -59,19 +59,19 @@ namespace Hotfix.Framework.Entity
 			}
 			else if (EntityGroup != entityGroup)
 			{
-				FuLogger.LogError("[Entity]初始化实体失败, 非新实例实体的实体组不一致!");
+				FuLogger.LogError("初始化实体失败, 非新实例实体的实体组不一致!");
 				return false;
 			}
 
 			if (showEntityInfoEx is null)
 			{
-				FuLogger.LogError("[Entity]初始化实体失败, 显示的实体额外信息为空!");
+				FuLogger.LogError("初始化实体失败, 显示的实体额外信息为空!");
 				return false;
 			}
 
 			if (showEntityInfoEx.EntityLogicType is null)
 			{
-				FuLogger.LogError("[Entity]初始化实体失败, 显示的实体的逻辑类型为空!");
+				FuLogger.LogError("初始化实体失败, 显示的实体的逻辑类型为空!");
 				return false;
 			}
 
@@ -93,7 +93,7 @@ namespace Hotfix.Framework.Entity
 				Logic = gameObject.AddComponent(showEntityInfoEx.EntityLogicType) as EntityLogic;
 				if (Logic is null)
 				{
-					FuLogger.LogError($"[Entity]初始化实体失败, 添加实体{entityAssetName}逻辑组件失败!");
+					FuLogger.LogError($"初始化实体失败, 添加实体{entityAssetName}逻辑组件失败!");
 					return false;
 				}
 			}
@@ -106,7 +106,7 @@ namespace Hotfix.Framework.Entity
 			{
 				// 保持原有宽容语义：逻辑组件 OnInit 抛异常只记录，实体仍视为初始化成功
 				//（Logic 非空，后续回调仍有对象可调）。本方法只对「Logic 为空」的致命失败返回 false。
-				FuLogger.LogError($"[Entity]初始化实体失败, 实体'[{Id}]-{entityAssetName}逻辑组件(OnInit)时发生异常: {exception}");
+				FuLogger.LogError($"初始化实体失败, 实体'[{Id}]-{entityAssetName}逻辑组件(OnInit)时发生异常: {exception}");
 			}
 
 			return true;
@@ -125,7 +125,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 轮询(OnUpdate)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 轮询(OnUpdate)时发生异常: {exception}'.");
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 显示(OnShow)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 显示(OnShow)时发生异常: {exception}'.");
 			}
 		}
 
@@ -158,7 +158,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 隐藏(OnHide)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 隐藏(OnHide)时发生异常: {exception}'.");
 			}
 		}
 
@@ -174,7 +174,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 回收(OnRecycle)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 回收(OnRecycle)时发生异常: {exception}'.");
 			}
 
 			Id = 0;
@@ -189,7 +189,7 @@ namespace Hotfix.Framework.Entity
 		{
 			if (userData is not AttachEntityInfo attachEntityInfo)
 			{
-				FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
+				FuLogger.LogError("实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
 				return;
 			}
 
@@ -199,7 +199,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 附加子实体(OnAttached)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 附加子实体(OnAttached)时发生异常: {exception}'.");
 			}
 		}
 
@@ -216,7 +216,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 解除附加的子实体(OnDetached)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 解除附加的子实体(OnDetached)时发生异常: {exception}'.");
 			}
 		}
 
@@ -234,7 +234,7 @@ namespace Hotfix.Framework.Entity
 			{
 				if (userData is not AttachEntityInfo attachEntityInfo)
 				{
-					FuLogger.LogError("[Entity]实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
+					FuLogger.LogError("实体附加子实体失败, 附加实体信息不是AttachEntityInfo类型!");
 					return;
 				}
 
@@ -242,7 +242,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 被附加到父实体上(OnAttachTo)时发生异常: {exception}'.");
 			}
 			finally
 			{
@@ -264,7 +264,7 @@ namespace Hotfix.Framework.Entity
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[Entity]实体 '[{Id}]-{EntityAssetName}' 被从父实体上解除时触发(OnDetachFrom)时发生异常: {exception}'.");
+				FuLogger.LogError($"实体 '[{Id}]-{EntityAssetName}' 被从父实体上解除时触发(OnDetachFrom)时发生异常: {exception}'.");
 			}
 		}
 	}

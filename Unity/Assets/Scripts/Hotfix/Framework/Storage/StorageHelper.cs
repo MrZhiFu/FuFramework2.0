@@ -125,7 +125,7 @@ namespace Hotfix.Framework.Storage
 			var currentTime = Time.realtimeSinceStartup;
 			if (currentTime - m_lastSaveTime >= AutoSaveInterval)
 			{
-				FuLogger.LogInfo($"[[DataSaveHelper] 自动保存数据文件: {FileName}");
+				FuLogger.LogInfo($"自动保存数据文件: {FileName}");
 				Save();
 			}
 		}
@@ -158,7 +158,7 @@ namespace Hotfix.Framework.Storage
 			{
 				if (!File.Exists(FilePath))
 				{
-					FuLogger.LogWarning($"[[DataSaveHelper] 加载数据文件失败，文件不存在: {FileName}");
+					FuLogger.LogWarning($"加载数据文件失败，文件不存在: {FileName}");
 					return false;
 				}
 
@@ -185,12 +185,12 @@ namespace Hotfix.Framework.Storage
 					Serializer.Deserialize(fileStream);
 				}
 
-				FuLogger.LogInfo($"[[DataSaveHelper] 加载数据文件成功: {FileName}");
+				FuLogger.LogInfo($"加载数据文件成功: {FileName}");
 				return true;
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogError($"[[DataSaveHelper] 加载数据文件失败 {FileName}：'{exception}'.");
+				FuLogger.LogError($"加载数据文件失败 {FileName}：'{exception}'.");
 				return false;
 			}
 		}
@@ -220,7 +220,7 @@ namespace Hotfix.Framework.Storage
 					var       result       = Serializer.Serialize(memoryStream, Data);
 					if (!result)
 					{
-						FuLogger.LogWarning($"[[DataSaveHelper] 序列化数据失败: {FileName}");
+						FuLogger.LogWarning($"序列化数据失败: {FileName}");
 						return false;
 					}
 
@@ -234,7 +234,7 @@ namespace Hotfix.Framework.Storage
 					using var fileStream = new FileStream(FilePath, FileMode.Create, FileAccess.Write);
 					fileStream.Write(encryptedBytes, 0, encryptedBytes.Length);
 
-					FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功（已加密）: {FileName}");
+					FuLogger.LogInfo($"保存数据文件成功（已加密）: {FileName}");
 					IsDirty        = false;                     // 清除脏数据标记
 					m_lastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
 					return true;
@@ -246,7 +246,7 @@ namespace Hotfix.Framework.Storage
 					var       result     = Serializer.Serialize(fileStream, Data);
 					if (result)
 					{
-						FuLogger.LogInfo($"[[DataSaveHelper] 保存数据文件成功: {FileName}");
+						FuLogger.LogInfo($"保存数据文件成功: {FileName}");
 						IsDirty        = false;                     // 清除脏数据标记
 						m_lastSaveTime = Time.realtimeSinceStartup; // 更新最后保存时间
 					}
@@ -256,7 +256,7 @@ namespace Hotfix.Framework.Storage
 			}
 			catch (Exception exception)
 			{
-				FuLogger.LogWarning($"[[DataSaveHelper] 保存数据文件失败 {FileName}：'{exception}'.");
+				FuLogger.LogWarning($"保存数据文件失败 {FileName}：'{exception}'.");
 				return false;
 			}
 		}

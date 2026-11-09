@@ -66,7 +66,7 @@ namespace Hotfix.Framework.Entity
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[EntityModule] 回收显示实体额外信息(ShowEntityInfoEx)时出现异常: {e.Message}");
+					FuLogger.LogWarning($"回收显示实体额外信息(ShowEntityInfoEx)时出现异常: {e.Message}");
 				}
 			}
 

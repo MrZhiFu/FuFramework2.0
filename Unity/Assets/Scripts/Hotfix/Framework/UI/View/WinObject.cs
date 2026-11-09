@@ -42,7 +42,7 @@ namespace Hotfix.Framework.UI
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogWarning($"[WinObject] 销毁 WinUI 时出现异常: {e.Message}");
+				FuLogger.LogWarning($"销毁 WinUI 时出现异常: {e.Message}");
 			}
 
 			winBase._OnDispose();

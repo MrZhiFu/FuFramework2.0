@@ -95,7 +95,7 @@ namespace Hotfix.Framework.Timer
 				{
 					// 单计时器回调异常只终结它自己（与其余计时器隔离，同原异步链「异常只终结本链」的行为），
 					// 回收后继续驱动其余计时器。
-					FuLogger.LogError($"[TimerModule] 计时器{timer.Id}({timer.GetType().Name})更新异常，已终止: {e.Message}\n{e.StackTrace}");
+					FuLogger.LogError($"计时器{timer.Id}({timer.GetType().Name})更新异常，已终止: {e.Message}\n{e.StackTrace}");
 					m_errorCount++;
 					ReleaseTimer(timer.Id);
 				}
@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Timer
 		{
 			if (duration <= 0)
 			{
-				FuLogger.LogError("[TimerModule] 计时器持续时间必须大于0");
+				FuLogger.LogError("计时器持续时间必须大于0");
 				return -1;
 			}
 
@@ -157,13 +157,13 @@ namespace Hotfix.Framework.Timer
 		{
 			if (interval <= 0)
 			{
-				FuLogger.LogError("[TimerModule] 间隔时间必须大于0");
+				FuLogger.LogError("间隔时间必须大于0");
 				return -1;
 			}
 
 			if (intervalCallback == null)
 			{
-				FuLogger.LogError("[TimerModule] 时间间隔计时器回调函数不能为null");
+				FuLogger.LogError("时间间隔计时器回调函数不能为null");
 				return -1;
 			}
 
@@ -182,13 +182,13 @@ namespace Hotfix.Framework.Timer
 		{
 			if (frameInterval <= 0)
 			{
-				FuLogger.LogError("[TimerModule] 帧间隔必须大于0");
+				FuLogger.LogError("帧间隔必须大于0");
 				return -1;
 			}
 
 			if (intervalCallback == null)
 			{
-				FuLogger.LogError("[TimerModule] 帧间隔计时器回调函数不能为null");
+				FuLogger.LogError("帧间隔计时器回调函数不能为null");
 				return -1;
 			}
 
@@ -214,13 +214,13 @@ namespace Hotfix.Framework.Timer
 			{
 				// 兜底：Create 内的 Acquire/字段初始化失败时无实例可回收（引用池 Acquire 失败返回 null 而非抛异常），
 				// 此处只保证不把异常抛给调用方（与其它失败路径一致返回 -1）。
-				FuLogger.LogError($"[TimerModule] 启动{timerTypeName}失败: {e.Message}\n{e.StackTrace}");
+				FuLogger.LogError($"启动{timerTypeName}失败: {e.Message}\n{e.StackTrace}");
 				return -1;
 			}
 
 			if (timerInfo == null)
 			{
-				FuLogger.LogError($"[TimerModule] 启动{timerTypeName}失败，计时器创建失败！");
+				FuLogger.LogError($"启动{timerTypeName}失败，计时器创建失败！");
 				return -1;
 			}
 
@@ -245,18 +245,18 @@ namespace Hotfix.Framework.Timer
 		{
 			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
-				FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}失败，不存在该计时器！");
+				FuLogger.LogWarning($"暂停计时器{timerId}失败，不存在该计时器！");
 				return;
 			}
 
 			if (timerInfo.IsPaused)
 			{
-				FuLogger.LogWarning($"[TimerModule] 暂停计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于暂停状态！");
+				FuLogger.LogWarning($"暂停计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于暂停状态！");
 				return;
 			}
 
 			timerInfo.IsPaused = true;
-			FuLogger.LogInfo($"[TimerModule] 暂停计时器{timerId}({timerInfo.GetType().Name})成功");
+			FuLogger.LogInfo($"暂停计时器{timerId}({timerInfo.GetType().Name})成功");
 		}
 
 		/// <summary>
@@ -267,18 +267,18 @@ namespace Hotfix.Framework.Timer
 		{
 			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
-				FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}失败，不存在该计时器！");
+				FuLogger.LogWarning($"恢复计时器{timerId}失败，不存在该计时器！");
 				return;
 			}
 
 			if (!timerInfo.IsPaused)
 			{
-				FuLogger.LogWarning($"[TimerModule] 恢复计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于运行状态！");
+				FuLogger.LogWarning($"恢复计时器{timerId}({timerInfo.GetType().Name})失败，该计时器已处于运行状态！");
 				return;
 			}
 
 			timerInfo.IsPaused = false;
-			FuLogger.LogInfo($"[TimerModule] 恢复计时器{timerId}({timerInfo.GetType().Name})成功");
+			FuLogger.LogInfo($"恢复计时器{timerId}({timerInfo.GetType().Name})成功");
 		}
 
 		/// <summary>
@@ -289,7 +289,7 @@ namespace Hotfix.Framework.Timer
 		{
 			if (!m_timerDict.ContainsKey(timerId))
 			{
-				FuLogger.LogWarning($"[TimerModule] 停止计时器{timerId}失败，不存在该计时器！");
+				FuLogger.LogWarning($"停止计时器{timerId}失败，不存在该计时器！");
 				return;
 			}
 
@@ -306,7 +306,7 @@ namespace Hotfix.Framework.Timer
 		{
 			if (!m_timerDict.TryGetValue(timerId, out var timerInfo))
 			{
-				FuLogger.LogWarning($"[TimerModule] 重置计时器{timerId}失败，不存在该计时器！");
+				FuLogger.LogWarning($"重置计时器{timerId}失败，不存在该计时器！");
 				return;
 			}
 
@@ -446,7 +446,7 @@ namespace Hotfix.Framework.Timer
 #if UNITY_EDITOR
 			ClearStartStackTrace(timerId);
 #endif
-			FuLogger.LogInfo($"[TimerModule] 清理计时器{timerId}");
+			FuLogger.LogInfo($"清理计时器{timerId}");
 			ReferencePool.Recycle(timerInfo);
 			OnTimerFinished?.Invoke(timerId);
 		}

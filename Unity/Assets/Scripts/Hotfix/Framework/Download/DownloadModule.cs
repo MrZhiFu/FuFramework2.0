@@ -113,7 +113,7 @@ namespace Hotfix.Framework.Download
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogError($"[DownloadModule] 完成下载任务 '{downloadData.SerialId}' 的等待方时发生异常: {e.Message}");
+					FuLogger.LogError($"完成下载任务 '{downloadData.SerialId}' 的等待方时发生异常: {e.Message}");
 				}
 			}
 		}
@@ -133,7 +133,7 @@ namespace Hotfix.Framework.Download
 			m_eventModule = ModuleManager.GetModule<EventModule>();
 			if (m_eventModule == null)
 			{
-				FuLogger.LogFatal("[DownloadModule] 事件管理模块为空!");
+				FuLogger.LogFatal("事件管理模块为空!");
 				return;
 			}
 
@@ -209,7 +209,7 @@ namespace Hotfix.Framework.Download
 			// 检查sender.Task是否为null，避免空引用异常
 			if (sender.Task == null)
 			{
-				FuLogger.LogWarning("[DownloadModule]下载开始事件被触发，但下载任务为null。");
+				FuLogger.LogWarning("下载开始事件被触发，但下载任务为null。");
 				return;
 			}
 
@@ -225,7 +225,7 @@ namespace Hotfix.Framework.Download
 			// 检查sender.Task是否为null，避免空引用异常
 			if (sender.Task == null)
 			{
-				FuLogger.LogWarning("[DownloadModule]下载更新事件被触发，但下载任务为null。");
+				FuLogger.LogWarning("下载更新事件被触发，但下载任务为null。");
 				return;
 			}
 
@@ -242,7 +242,7 @@ namespace Hotfix.Framework.Download
 			// 检查sender.Task是否为null，避免空引用异常
 			if (sender.Task == null)
 			{
-				FuLogger.LogWarning("[DownloadModule]下载成功事件被触发，但下载任务为null。");
+				FuLogger.LogWarning("下载成功事件被触发，但下载任务为null。");
 				return;
 			}
 
@@ -262,14 +262,14 @@ namespace Hotfix.Framework.Download
 			// 检查sender.Task是否为null，避免空引用异常
 			if (sender.Task == null)
 			{
-				FuLogger.LogError($"[DownloadModule]下载失败! 下载任务为null，错误信息 '{errorMessage}'.");
+				FuLogger.LogError($"下载失败! 下载任务为null，错误信息 '{errorMessage}'.");
 				return;
 			}
 
 			// 检查是否为416 Range Not Satisfiable错误
 			if (errorMessage.Contains("416") || errorMessage.Contains("Range Not Satisfiable"))
 			{
-				FuLogger.LogWarning($"[DownloadModule]检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载后存放全路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}'.");
+				FuLogger.LogWarning($"检测到416 Range Not Satisfiable错误，将重新从头开始下载。下载任务序列编号 '{sender.Task.SerialId}', 下载后存放全路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}'.");
 
 				// 删除损坏的下载文件
 				var downloadFile = $"{sender.Task.DownloadedFullPath}.download";
@@ -283,7 +283,7 @@ namespace Hotfix.Framework.Download
 				{
 					// 重新添加下载任务，从头开始下载
 					var newSerialId = AddDownload(sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.Task.Tag, sender.Task.Priority, sender.Task.UserData);
-					FuLogger.LogInfo($"[DownloadModule]已重新添加下载任务，新的序列编号为 '{newSerialId}'。");
+					FuLogger.LogInfo($"已重新添加下载任务，新的序列编号为 '{newSerialId}'。");
 
 					// 完成原任务（返回false表示失败，但新任务会继续）
 					downloadData01.Tcs.TrySetResult(false);
@@ -292,7 +292,7 @@ namespace Hotfix.Framework.Download
 				return;
 			}
 
-			FuLogger.LogError($"[DownloadModule]下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
+			FuLogger.LogError($"下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
 			var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
 			m_eventModule.Broadcast(this, downloadFailureEventArgs);
 			if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))

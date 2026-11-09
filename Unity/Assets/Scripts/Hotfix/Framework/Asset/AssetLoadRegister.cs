@@ -243,7 +243,7 @@ namespace Hotfix.Framework.Asset
 
 					// 保存资源句柄
 					m_handleDict[new LoadKey(path, assetType)] = assetHandle;
-					FuLogger.LogInfo($"[AssetLoadRegister]加载{path}资源完成");
+					FuLogger.LogInfo($"加载{path}资源完成");
 					return assetHandle;
 				}
 				catch
@@ -288,7 +288,7 @@ namespace Hotfix.Framework.Asset
 				m_assetModule.UnloadAsset(path);
 
 				m_handleDict.Remove(key);
-				FuLogger.LogInfo($"[AssetLoadRegister]释放{path}资源完成.");
+				FuLogger.LogInfo($"释放{path}资源完成.");
 			}
 		}
 
@@ -314,7 +314,7 @@ namespace Hotfix.Framework.Asset
 				m_assetModule.UnloadAsset(key.m_Path);
 
 				m_handleDict.Remove(key);
-				FuLogger.LogInfo($"[AssetLoadRegister]释放{key.m_Path}资源完成.");
+				FuLogger.LogInfo($"释放{key.m_Path}资源完成.");
 			}
 		}
 

@@ -21,7 +21,7 @@ namespace Hotfix.Framework.Guide
 			// 否则 NRE 会被 GuideModule 的 catch 吞成静默跳步。
 			if (GuideAction == null)
 			{
-				FuLogger.LogWarning("[DialogStep] 无法执行引导，引导动作执行器为null");
+				FuLogger.LogWarning("无法执行引导，引导动作执行器为null");
 				return;
 			}
 

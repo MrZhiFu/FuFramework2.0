@@ -36,7 +36,7 @@ namespace Hotfix.Framework.Network
 			m_eventModule = ModuleManager.GetModule<EventModule>();
 			if (m_eventModule == null)
 			{
-				FuLogger.LogFatal("[NetworkModule] 事件模块不存在!");
+				FuLogger.LogFatal("事件模块不存在!");
 			}
 
 			// 初始化协议注册表(先 Reset 保证「注册失败后重试」不残留半成品，再由生成物写入全部静态注册数据。)

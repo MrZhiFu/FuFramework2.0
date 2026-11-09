@@ -116,7 +116,7 @@ namespace Hotfix.Framework.Entity
 			var groupName = row.Id.ToString();
 			if (HasEntityGroup(groupName))
 			{
-				FuLogger.LogWarning($"[EntityModule] 添加实体组'{groupName}'失败, 实体组已存在.");
+				FuLogger.LogWarning($"添加实体组'{groupName}'失败, 实体组已存在.");
 				return false;
 			}
 
@@ -378,7 +378,7 @@ namespace Hotfix.Framework.Entity
 						}
 						catch (Exception e)
 						{
-							FuLogger.LogWarning($"[EntityModule] 取消显示实体 '{entityAssetName}' 时释放资源句柄出现异常: {e.Message}");
+							FuLogger.LogWarning($"取消显示实体 '{entityAssetName}' 时释放资源句柄出现异常: {e.Message}");
 						}
 						finally
 						{
@@ -390,7 +390,7 @@ namespace Hotfix.Framework.Entity
 							}
 							catch (Exception e)
 							{
-								FuLogger.LogWarning($"[EntityModule] 回收显示实体额外信息时出现异常: {e.Message}");
+								FuLogger.LogWarning($"回收显示实体额外信息时出现异常: {e.Message}");
 							}
 
 							tcs.TrySetException(new OperationCanceledException(capturedToken));
@@ -696,7 +696,7 @@ namespace Hotfix.Framework.Entity
 				parentTransform = parentEntity.Logic.CachedTransform.Find(parentTransformPath);
 				if (parentTransform is null)
 				{
-					FuLogger.LogWarning($"[EntityModule] 找不到父实体 '{parentEntity.Logic.Name}' 下的Transform路径 '{parentTransformPath}', 将直接附加到父实体的Transform上.");
+					FuLogger.LogWarning($"找不到父实体 '{parentEntity.Logic.Name}' 下的Transform路径 '{parentTransformPath}', 将直接附加到父实体的Transform上.");
 					parentTransform = parentEntity.Logic.CachedTransform;
 				}
 			}

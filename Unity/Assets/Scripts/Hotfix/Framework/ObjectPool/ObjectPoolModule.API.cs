@@ -211,7 +211,7 @@ namespace Hotfix.Framework.ObjectPool
 		/// </summary>
 		public void DisposeOverCapacity()
 		{
-			FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中超过容量的可销毁对象...");
+			FuLogger.LogInfo("销毁所有对象池中超过容量的可销毁对象...");
 
 			// 使用本 API 专属的快照字段，与 DisposeAllUnused / OnUpdate / OnDispose 的缓存互不干扰
 			GetAllObjectPools(true, m_cachedDisposeOverCapacityPoolList);
@@ -226,7 +226,7 @@ namespace Hotfix.Framework.ObjectPool
 		/// </summary>
 		public void DisposeAllUnused()
 		{
-			FuLogger.LogInfo("[ObjectPoolModule] 销毁所有对象池中的所有未使用对象...");
+			FuLogger.LogInfo("销毁所有对象池中的所有未使用对象...");
 
 			// 使用本 API 专属的快照字段，与 DisposeOverCapacity / OnUpdate / OnDispose 的缓存互不干扰
 			GetAllObjectPools(true, m_cachedDisposeAllUnusedPoolList);

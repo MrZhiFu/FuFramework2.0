@@ -76,7 +76,7 @@ namespace Hotfix.Framework.UI
 		{
 			if (Screen.safeArea == s_lastSafeArea) return;
 
-			FuLogger.LogInfo("[SafeAreaHelper]屏幕安全区刷新, "           +
+			FuLogger.LogInfo("屏幕安全区刷新, "           +
 			                 $"旧安全区:{s_lastSafeArea}, "            +
 			                 $"新安全区:{Screen.safeArea}, "           +
 			                 $"安全区偏移量:({OffsetX}, {OffsetY}), "    +

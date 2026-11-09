@@ -238,7 +238,7 @@ namespace Hotfix.Framework.ObjectPool
 
 			// 获取所有可销毁的对象
 			GetCanDisposeObjects(m_cachedCanDisposeObjectList);
-			FuLogger.LogInfo($"[ObjectPoolModule] 尝试销毁对象池中的可销毁对象-对象数量: '{m_cachedCanDisposeObjectList.Count}'");
+			FuLogger.LogInfo($"尝试销毁对象池中的可销毁对象-对象数量: '{m_cachedCanDisposeObjectList.Count}'");
 
 			// 再次按照过滤器函数筛选需要销毁的对象
 			var filteredObjects = releaseObjectFilterCallback(m_cachedCanDisposeObjectList, toDisposeCount, expireTimeThreshold);
@@ -342,7 +342,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象 '{toDisposeObjectName}' 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"销毁对象 '{toDisposeObjectName}' 时出现异常: {e.Message}");
 				}
 			}
 		}
@@ -393,7 +393,7 @@ namespace Hotfix.Framework.ObjectPool
 
 			// 提前捕获名称：OnDispose 会清空对象状态（Name 置空），后续告警需要它
 			var objName = obj.Name;
-			FuLogger.LogInfo($"[ObjectPoolModule] 真正销毁对象池中的可销毁对象 '{objName}'");
+			FuLogger.LogInfo($"真正销毁对象池中的可销毁对象 '{objName}'");
 
 			m_objectMultiDict.Remove(objName, obj);
 			m_targetObjectDict.Remove(obj.Target);
@@ -413,7 +413,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 回收已销毁的对象 '{objName}' 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"回收已销毁的对象 '{objName}' 时出现异常: {e.Message}");
 				}
 			}
 

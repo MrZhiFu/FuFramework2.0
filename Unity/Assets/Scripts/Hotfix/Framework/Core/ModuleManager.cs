@@ -157,7 +157,7 @@ namespace Hotfix.Framework.Core
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ModuleManager] 释放模块 {module.GetType().Name} 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"释放模块 {module.GetType().Name} 时出现异常: {e.Message}");
 				}
 				finally
 				{

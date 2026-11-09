@@ -1,5 +1,4 @@
 using System.IO;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -10,7 +9,7 @@ namespace AOT.Framework.Core.Log
 	/// 功能：
 	///     1. Color 转十六进制色值（#RRGGBB）。
 	///     2. 文本富文本染色（&lt;color=#RRGGBB&gt; 包裹）。
-	///     3. 编译期自动生成染色的 [模块名] 前缀。
+	///     3. 按调用方源文件生成染色的 [类名] 标签（供 FuLogger 自动前缀使用）。
 	/// </summary>
 	public static class LogColorEx
 	{
@@ -95,26 +94,21 @@ namespace AOT.Framework.Core.Log
 		}
 
 		/// <summary>
-		/// 编译期自动生成染色的 [模块名] 前缀。
-		/// 模块名取调用方源文件名（剥去扩展名与部分类后缀，如 WebModule.Debug.cs → WebModule），
-		/// 颜色默认按模块名 FNV-1a 哈希从调色板稳定取色，可显式传参覆盖。
-		/// 注意：消息本身不应再手写 [前缀]，已有手写前缀的场景请直接使用 Color 扩展；
-		/// 应内联进 FuLogger 日志调用使用，随条件编译宏整体裁剪，真机零成本。
+		/// 由调用方源文件路径生成染色的 [类名] 标签（供 FuLogger 自动前缀使用）。
+		/// 类名取源文件名（剥去扩展名与部分类后缀，如 WebModule.Debug.cs → WebModule），
+		/// 颜色按类名 FNV-1a 哈希从调色板稳定取色。
 		/// </summary>
-		/// <param name="message">日志内容（不含前缀）。</param>
-		/// <param name="color">前缀颜色；null 时按模块名自动取色。</param>
-		/// <param name="callerFile">编译器注入的调用方源文件路径，调用时无需传参。</param>
-		/// <returns>带染色 [模块名] 前缀的日志内容。</returns>
-		public static string Module(this string message, Color? color = null, [CallerFilePath] string callerFile = "")
+		/// <param name="callerFile">调用方源文件路径。</param>
+		/// <returns>染色后的 [类名] 标签；路径为空时返回空字符串。</returns>
+		internal static string ModuleTag(string callerFile)
 		{
-			if (string.IsNullOrEmpty(callerFile)) return message;
+			if (string.IsNullOrEmpty(callerFile)) return string.Empty;
 
-			var fileName    = Path.GetFileNameWithoutExtension(callerFile);
-			var dotIndex    = fileName.IndexOf('.');
-			var moduleName  = dotIndex > 0 ? fileName.Substring(0, dotIndex) : fileName;
-			var prefixColor = color ?? Palette[PaletteIndexOf(moduleName)];
+			var fileName   = Path.GetFileNameWithoutExtension(callerFile);
+			var dotIndex   = fileName.IndexOf('.');
+			var moduleName = dotIndex > 0 ? fileName.Substring(0, dotIndex) : fileName;
 
-			return $"[{moduleName}]".Color(prefixColor) + message;
+			return $"[{moduleName}]".Color(Palette[PaletteIndexOf(moduleName)]);
 		}
 
 		/// <summary>

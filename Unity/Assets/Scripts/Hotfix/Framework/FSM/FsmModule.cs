@@ -83,7 +83,7 @@ namespace Hotfix.Framework.FSM
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogError($"[FsmModule] 销毁有限状态机失败 {fsm.Name}: {e.Message}");
+					FuLogger.LogError($"销毁有限状态机失败 {fsm.Name}: {e.Message}");
 				}
 			}
 

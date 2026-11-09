@@ -268,7 +268,7 @@ namespace Hotfix.Framework.ObjectPool
 
 			if (inUseCount > 0)
 			{
-				FuLogger.LogWarning($"[ObjectPoolModule] 对象池 {Name} 关闭时仍有 {inUseCount} 个对象处于使用中，将被强制回收（存在未归还对象，请检查回收时序）。");
+				FuLogger.LogWarning($"对象池 {Name} 关闭时仍有 {inUseCount} 个对象处于使用中，将被强制回收（存在未归还对象，请检查回收时序）。");
 			}
 
 			foreach (var obj in objects)
@@ -298,7 +298,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 销毁对象池 {Name} 中的对象时出现异常: {e.Message}");
+					FuLogger.LogWarning($"销毁对象池 {Name} 中的对象时出现异常: {e.Message}");
 				}
 				finally
 				{
@@ -309,7 +309,7 @@ namespace Hotfix.Framework.ObjectPool
 					}
 					catch (Exception e)
 					{
-						FuLogger.LogWarning($"[ObjectPoolModule] 回收对象池 {Name} 中的对象时出现异常: {e.Message}");
+						FuLogger.LogWarning($"回收对象池 {Name} 中的对象时出现异常: {e.Message}");
 					}
 				}
 			}

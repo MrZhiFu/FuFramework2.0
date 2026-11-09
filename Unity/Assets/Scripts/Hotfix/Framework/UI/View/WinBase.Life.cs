@@ -27,7 +27,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private void _OnInit()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]初始化-OnInit().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]初始化-OnInit().");
 			m_uiModule.PkgManager?.AddPkgRef(PackageName);
 			m_pkgRefAdded = true; // 置位后 _OnDispose 才允许 SubPkgRef，保证加/减引用严格对称
 			OnInit();
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnOpen()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]打开-OnOpen().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]打开-OnOpen().");
 			m_cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
 			Visible     = true;
 			WinUI.alpha = 0;
@@ -83,7 +83,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnPause()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]暂停-OnPause().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]暂停-OnPause().");
 			Visible = false;
 			OnPause();
 		}
@@ -93,7 +93,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnResume()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]恢复-OnResume().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]恢复-OnResume().");
 			Visible = true;
 			// 暂停期间语言可能已切换（隐藏窗口不参与切换刷新），恢复时重应用声明式 L10n 文本
 			GObject.RefreshAllL10n(WinUI);
@@ -105,7 +105,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnBeCover()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被遮挡-OnBeCover().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]被遮挡-OnBeCover().");
 			if (!AdjustNotch) Visible = false;
 			OnBeCover();
 		}
@@ -115,7 +115,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnReveal()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被遮挡恢复-OnReveal().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]被遮挡恢复-OnReveal().");
 			Visible = true;
 			// 遮挡期间语言可能已切换（隐藏窗口不参与切换刷新），恢复时重应用声明式 L10n 文本
 			GObject.RefreshAllL10n(WinUI);
@@ -127,7 +127,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnClose()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]关闭-OnClose().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]关闭-OnClose().");
 			m_cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
 			Visible = false;
 
@@ -163,7 +163,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnRecycle()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]回收-OnRecycle().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]回收-OnRecycle().");
 
 			// 终止挂在 WinUI 上的补间动画（打开/关闭渐变）：
 			// _OnClose 若走 Fade/Custom 分支，会给 WinUI 挂一个 OnComplete(OnClose) 的 tween；窗口回收
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		internal void _OnDispose()
 		{
-			FuLogger.LogInfo($"[WinBase] UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
+			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
 
 			// 终止 WinUI 上残留的补间：不清 complete——WinObject.OnDispose 已先 WinUI.Dispose()，
 			// 此时驱动 tween 走到终点会向已销毁的 GObject 写属性（NRE）。这里只解除注册、丢弃补间即可。

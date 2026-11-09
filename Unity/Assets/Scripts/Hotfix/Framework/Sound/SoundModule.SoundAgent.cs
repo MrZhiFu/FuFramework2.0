@@ -258,7 +258,7 @@ namespace Hotfix.Framework.Sound
 				// 应用没有暂停，且声音没有播放，且声音资源存在，且播放位置大于等于声音长度，说明播放完成，则重置声音相关设置
 				if (!m_isAppPause && !IsPlaying && m_audioSource.clip && Time >= Length)
 				{
-					FuLogger.LogInfo($"[SoundModule.SoundAgent] 声音 '{m_audioSource.clip.name}' 播放完成!");
+					FuLogger.LogInfo($"声音 '{m_audioSource.clip.name}' 播放完成!");
 					try
 					{
 						m_onPlayEnd?.Invoke();

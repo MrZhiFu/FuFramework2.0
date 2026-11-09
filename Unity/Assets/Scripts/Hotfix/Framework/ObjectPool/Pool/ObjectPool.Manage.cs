@@ -137,7 +137,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 剔除对象池“{new TypeNamePair(typeof(T), Name)}”中的无效对象 '{deadObjectName}' 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"剔除对象池“{new TypeNamePair(typeof(T), Name)}”中的无效对象 '{deadObjectName}' 时出现异常: {e.Message}");
 				}
 			}
 		}
@@ -161,7 +161,7 @@ namespace Hotfix.Framework.ObjectPool
 		{
 			// 提前捕获对象名：OnDispose 会清理对象状态（Name 置空），后续告警与移除登记都需要它
 			var objName = obj.Name;
-			FuLogger.LogWarning($"[ObjectPoolModule] 对象池“{new TypeNamePair(typeof(T), Name)}”中的对象 '{objName}' 的目标真实对象已被 Unity 销毁（假 null），视为无效对象，已从对象池中剔除。");
+			FuLogger.LogWarning($"对象池“{new TypeNamePair(typeof(T), Name)}”中的对象 '{objName}' 的目标真实对象已被 Unity 销毁（假 null），视为无效对象，已从对象池中剔除。");
 
 			if (!string.IsNullOrEmpty(objName))
 				m_objectMultiDict.Remove(objName, obj);
@@ -183,7 +183,7 @@ namespace Hotfix.Framework.ObjectPool
 				}
 				catch (Exception e)
 				{
-					FuLogger.LogWarning($"[ObjectPoolModule] 回收被剔除的无效对象 '{objName}' 时出现异常: {e.Message}");
+					FuLogger.LogWarning($"回收被剔除的无效对象 '{objName}' 时出现异常: {e.Message}");
 				}
 			}
 		}
@@ -238,7 +238,7 @@ namespace Hotfix.Framework.ObjectPool
 			var obj = GetObject(target);
 			if (obj == null)
 			{
-				FuLogger.LogWarning($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象，回收失败（已忽略），目标类型为“{target.GetType().FullName}”。");
+				FuLogger.LogWarning($"在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象，回收失败（已忽略），目标类型为“{target.GetType().FullName}”。");
 				return false;
 			}
 

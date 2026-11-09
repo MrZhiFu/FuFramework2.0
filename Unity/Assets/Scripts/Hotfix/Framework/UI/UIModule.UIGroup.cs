@@ -84,7 +84,7 @@ namespace Hotfix.Framework.UI
 		{
 			if (HasGroup(layer))
 			{
-				FuLogger.LogWarning($"[UIModule] UI界面组{layer}已存在!");
+				FuLogger.LogWarning($"UI界面组{layer}已存在!");
 				return false;
 			}
 

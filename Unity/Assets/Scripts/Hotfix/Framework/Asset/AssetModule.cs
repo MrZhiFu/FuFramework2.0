@@ -56,8 +56,8 @@ namespace Hotfix.Framework.Asset
 			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
 			DefaultPackageName = GameSetting.Instance.DefaultPackageName;
 
-			FuLogger.LogInfo($"[AssetModule]资源系统运行模式：{GameSetting.Instance.PlayMode}");
-			FuLogger.LogInfo("[AssetModule]资源系统初始化完毕！");
+			FuLogger.LogInfo($"资源系统运行模式：{GameSetting.Instance.PlayMode}");
+			FuLogger.LogInfo("资源系统初始化完毕！");
 		}
 
 		/// <summary>
@@ -115,7 +115,7 @@ namespace Hotfix.Framework.Asset
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[AssetModule]onProgress 回调异常：{e.Message}");
+				FuLogger.LogError($"onProgress 回调异常：{e.Message}");
 			}
 		}
 

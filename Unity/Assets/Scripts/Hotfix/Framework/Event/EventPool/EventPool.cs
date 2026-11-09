@@ -156,7 +156,7 @@ namespace Hotfix.Framework.Event
 			var batch = m_cachedEventBatch;
 #if UNITY_ASSERTIONS
 			if (m_isUpdatingEvents)
-				FuLogger.LogError("[EventPool]检测到嵌套 Update：禁止在事件处理函数内手动驱动帧更新，外层批次将被打断。");
+				FuLogger.LogError("检测到嵌套 Update：禁止在事件处理函数内手动驱动帧更新，外层批次将被打断。");
 #endif
 			m_isUpdatingEvents = true;
 
@@ -188,7 +188,7 @@ namespace Hotfix.Framework.Event
 						}
 						catch (Exception exception)
 						{
-							FuLogger.LogError($"[EventPool]回收已分发事件节点异常:{exception}");
+							FuLogger.LogError($"回收已分发事件节点异常:{exception}");
 						}
 					}
 				}
@@ -212,7 +212,7 @@ namespace Hotfix.Framework.Event
 							}
 							catch (Exception exception)
 							{
-								FuLogger.LogError($"[EventPool]兜底回收未分发事件参数异常:{exception}");
+								FuLogger.LogError($"兜底回收未分发事件参数异常:{exception}");
 							}
 						}
 
@@ -222,7 +222,7 @@ namespace Hotfix.Framework.Event
 						}
 						catch (Exception exception)
 						{
-							FuLogger.LogError($"[EventPool]兜底回收事件节点异常:{exception}");
+							FuLogger.LogError($"兜底回收事件节点异常:{exception}");
 						}
 					}
 				}
@@ -267,7 +267,7 @@ namespace Hotfix.Framework.Event
 				}
 				catch (Exception exception)
 				{
-					FuLogger.LogError($"[EventPool]清理事件时回收事件参数异常:{exception}");
+					FuLogger.LogError($"清理事件时回收事件参数异常:{exception}");
 				}
 
 				try
@@ -276,7 +276,7 @@ namespace Hotfix.Framework.Event
 				}
 				catch (Exception exception)
 				{
-					FuLogger.LogError($"[EventPool]清理事件时回收事件节点异常:{exception}");
+					FuLogger.LogError($"清理事件时回收事件节点异常:{exception}");
 				}
 			}
 		}
@@ -549,7 +549,7 @@ namespace Hotfix.Framework.Event
 							}
 							catch (Exception exception)
 							{
-								FuLogger.LogError($"[EventPool]处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
+								FuLogger.LogError($"处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
 							}
 						}
 					}
@@ -562,7 +562,7 @@ namespace Hotfix.Framework.Event
 						}
 						catch (Exception exception)
 						{
-							FuLogger.LogError($"[EventPool]处理事件 '{eventId}' 的默认处理函数时发生异常:{exception}");
+							FuLogger.LogError($"处理事件 '{eventId}' 的默认处理函数时发生异常:{exception}");
 						}
 					}
 					// 无处理器且无默认处理器：静默丢弃（原宽松模式语义，现为唯一语义）。
@@ -589,7 +589,7 @@ namespace Hotfix.Framework.Event
 					// 有意不重抛：回收失败不应中断调用方（Update）的分发与节点回收流程。
 					// 但降级为可观测告警而非静默吞没——此处异常通常意味着「重复归还」这一硬保护被触发，
 					// 静默会掩盖 ABA 误用信号；记录告警即可保留可追溯性，同时不影响上层流程。
-					FuLogger.LogWarning($"[EventPool]回收事件参数异常（疑似重复归还误用）:{exception}");
+					FuLogger.LogWarning($"回收事件参数异常（疑似重复归还误用）:{exception}");
 				}
 			}
 		}
@@ -624,7 +624,7 @@ namespace Hotfix.Framework.Event
 		private void AssertMainThread()
 		{
 			if (Thread.CurrentThread.ManagedThreadId != m_creatorThreadId)
-				FuLogger.LogError($"[EventPool]事件池仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
+				FuLogger.LogError($"事件池仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
 		}
 	}
 }

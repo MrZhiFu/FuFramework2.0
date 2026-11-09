@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Localization
 			var localization = m_tbLocalization?.Get(key);
 			if (localization == null)
 			{
-				FuLogger.LogError($"[LocalizationProvider] 多语言key '{key}' 没找到，请检查多语言配置表!");
+				FuLogger.LogError($"多语言key '{key}' 没找到，请检查多语言配置表!");
 				return string.Empty;
 			}
 

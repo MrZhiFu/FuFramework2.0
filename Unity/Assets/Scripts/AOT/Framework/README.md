@@ -13,7 +13,7 @@ Framework/
 ├── Log/                         # 日志系统
 │   ├── ELogLevel.cs             # 日志级别枚举
 │   ├── FuLogger.cs              # 日志输出封装（条件编译控制）
-│   └── LogColorEx.cs            # 日志颜色扩展（富文本染色、自动模块前缀）
+│   └── LogColorEx.cs            # 日志颜色扩展（富文本染色、类名标签取色）
 ├── Extension/                   # 扩展方法
 │   └── TypeEx.cs                # Type 扩展方法
 ├── Localization/                # 本地化辅助
@@ -35,6 +35,8 @@ Framework/
 
 **日志级别：**`LogInfo`、`LogWarning`、`LogError`、`LogFatal`
 
+**自动类名前缀：**所有日志自动携带调用方类名前缀——编译期经 `[CallerFilePath]` 注入调用方源文件路径，剥去扩展名与部分类后缀得到类名（如 `WebModule.Debug.cs` → `WebModule`），按类名 FNV-1a 哈希从调色板稳定取色染色，输出形如 `[WebModule] 初始化完毕`。消息内不要再手写 `[前缀]`；包装方法内部转发调用 FuLogger 时，标签会显示包装方法所在文件。
+
 **条件编译宏：**
 - `ENABLE_LOG` — 启用所有日志
 - `ENABLE_INFO_LOG` / `ENABLE_DEBUG_AND_ABOVE_LOG` / `ENABLE_INFO_AND_ABOVE_LOG` / `ENABLE_WARNING_AND_ABOVE_LOG` / `ENABLE_ERROR_AND_ABOVE_LOG` / `ENABLE_FATAL_AND_ABOVE_LOG` — 按级别控制
@@ -42,7 +44,6 @@ Framework/
 **颜色扩展（LogColorEx）：**
 - `color.ToHex()` — Color 转 `#RRGGBB` 色值字符串
 - `"文本".Color(color)` — 富文本染色（`<color=#RRGGBB>` 包裹）
-- `"内容".Module()` — 编译期经 `[CallerFilePath]` 取调用方源文件名自动生成 `[模块名]` 前缀（剥部分类后缀，如 `WebModule.Debug.cs` → `WebModule`），按模块名 FNV-1a 哈希从调色板稳定取色；`Module(color)` 可显式覆盖
 - 命名色常量：`Green` / `Teal` / `Red` / `Orange` / `Yellow` / `SkyBlue` / `Blue` / `Purple` / `Pink` / `Lime`（含迁移自历史横幅的 `#43F656` 与模块日志的 `#00FBD5`）
 - 注意：颜色拼串应内联进 FuLogger 调用使用，随条件编译宏整体裁剪；勿先赋值给变量再传（会在真机包留存）
 

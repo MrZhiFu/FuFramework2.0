@@ -197,7 +197,7 @@ namespace Hotfix.Framework.UI
 				// 标记失败：调用方（UIModule.CreateFuiWin）据此走失败分支（销毁半成品 + 广播失败事件），
 				// 不能吞掉异常后照常把半初始化窗口上屏（后续访问未就绪成员会 NRE）。
 				m_initFailed = true;
-				FuLogger.LogError($"[WinBase] UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
+				FuLogger.LogError($"UI界面[{SerialId}]{WinName}] 初始化发生异常：'{exception}'.");
 			}
 		}
 

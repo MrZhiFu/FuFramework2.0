@@ -93,7 +93,7 @@ namespace Hotfix.Framework.Guide
 			var tbGuideStep = ConfigModule.Instance?.GetConfig<TbGuideStep>();
 			if (tbGuide == null || tbGuideStep == null)
 			{
-				FuLogger.LogError("[GuideModule] 引导配置表不存在，跳过初始化.");
+				FuLogger.LogError("引导配置表不存在，跳过初始化.");
 				return;
 			}
 
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Guide
 			{
 				if (m_guideDict.ContainsKey(guide.Id))
 				{
-					FuLogger.LogError($"[GuideModule] 重复的引导 ID: {guide.Id}");
+					FuLogger.LogError($"重复的引导 ID: {guide.Id}");
 					continue;
 				}
 
@@ -114,11 +114,11 @@ namespace Hotfix.Framework.Guide
 			{
 				if (!m_stepDataDict.TryAdd(step.Id, step))
 				{
-					FuLogger.LogError($"[GuideModule] 重复的步骤 ID: {step.Id}");
+					FuLogger.LogError($"重复的步骤 ID: {step.Id}");
 				}
 			}
 
-			FuLogger.LogInfo($"[GuideModule] 引导管理模块初始化完成. 引导数量: {m_guideDict.Count}, 步骤总数量: {m_stepDataDict.Count}");
+			FuLogger.LogInfo($"引导管理模块初始化完成. 引导数量: {m_guideDict.Count}, 步骤总数量: {m_stepDataDict.Count}");
 		}
 
 		/// <summary>
@@ -210,17 +210,17 @@ namespace Hotfix.Framework.Guide
 			{
 				if (m_currentGuide?.Id == guide.Id && !forceRestart)
 				{
-					FuLogger.LogWarning($"[GuideModule] 引导 {guide.Id} 已在运行中");
+					FuLogger.LogWarning($"引导 {guide.Id} 已在运行中");
 					return false;
 				}
 
-				FuLogger.LogWarning($"[GuideModule] 中断当前引导 {m_currentGuide?.Id}，开始新引导 {guide.Id}");
+				FuLogger.LogWarning($"中断当前引导 {m_currentGuide?.Id}，开始新引导 {guide.Id}");
 				InterruptGuide();
 			}
 
 			if (IsGuideCompleted(guide.Id) && !forceRestart)
 			{
-				FuLogger.LogInfo($"[GuideModule] 引导 {guide.Id} 已完成，跳过");
+				FuLogger.LogInfo($"引导 {guide.Id} 已完成，跳过");
 				return false;
 			}
 
@@ -242,13 +242,13 @@ namespace Hotfix.Framework.Guide
 				ExecuteCurrentStep();
 
 				OnGuideStarted?.Invoke(guide.Id);
-				FuLogger.LogInfo($"[GuideModule] 开始引导: {guide.Name} ({guide.Id})");
+				FuLogger.LogInfo($"开始引导: {guide.Name} ({guide.Id})");
 
 				return true;
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[GuideModule] 开始引导失败 {guide.Id}: {e.Message}\n{e.StackTrace}");
+				FuLogger.LogError($"开始引导失败 {guide.Id}: {e.Message}\n{e.StackTrace}");
 				ClearGuideData();
 				return false;
 			}
@@ -307,7 +307,7 @@ namespace Hotfix.Framework.Guide
 			{
 				if (step.StepInfo.NextStepId.HasValue && !m_allStepDict.ContainsKey(step.StepInfo.NextStepId.Value))
 				{
-					FuLogger.LogWarning($"[GuideModule] 步骤 {step.StepInfo.Id} 的下一步ID无效: {step.StepInfo.NextStepId}");
+					FuLogger.LogWarning($"步骤 {step.StepInfo.Id} 的下一步ID无效: {step.StepInfo.NextStepId}");
 				}
 			}
 		}
@@ -326,7 +326,7 @@ namespace Hotfix.Framework.Guide
 
 			if (!step.CanExecute())
 			{
-				FuLogger.LogWarning($"[GuideModule] 步骤 {step.StepInfo.Id} 条件不满足，尝试跳过");
+				FuLogger.LogWarning($"步骤 {step.StepInfo.Id} 条件不满足，尝试跳过");
 				ForceNextStep();
 				return;
 			}
@@ -351,11 +351,11 @@ namespace Hotfix.Framework.Guide
 				if (ReferenceEquals(m_currentStep, step))
 					step.Execute();
 
-				FuLogger.LogInfo($"[GuideModule] 执行步骤: {stepId} ({stepType})");
+				FuLogger.LogInfo($"执行步骤: {stepId} ({stepType})");
 			}
 			catch (Exception e)
 			{
-				FuLogger.LogError($"[GuideModule] 执行步骤失败 {stepId}: {e.Message}");
+				FuLogger.LogError($"执行步骤失败 {stepId}: {e.Message}");
 				ForceNextStep();
 			}
 		}
@@ -418,7 +418,7 @@ namespace Hotfix.Framework.Guide
 			{
 				MarkGuideAsCompleted(finishedGuideId.Value);
 				OnGuideFinished?.Invoke(finishedGuideId.Value);
-				FuLogger.LogInfo($"[GuideModule] 引导完成: {finishedGuideId.Value}");
+				FuLogger.LogInfo($"引导完成: {finishedGuideId.Value}");
 			}
 
 			ClearGuideData();

@@ -81,7 +81,7 @@ namespace AOT.Launch
 			var initOperation = InitByPlayMode(url, backupUrl);
 			if (initOperation == null)
 			{
-				FuLogger.LogError($"[Launch] 未知的资源运行模式: {PlayMode}");
+				FuLogger.LogError($"未知的资源运行模式: {PlayMode}");
 				return;
 			}
 
@@ -89,7 +89,7 @@ namespace AOT.Launch
 			await initOperation;
 			if (initOperation.Status != EOperationStatus.Succeeded)
 			{
-				FuLogger.LogError($"[Launch] 资源包初始化失败: {initOperation.Error}");
+				FuLogger.LogError($"资源包初始化失败: {initOperation.Error}");
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace AOT.Launch
 				// 加载失败：记录错误并以 null 结果完成，避免回调抛异常导致 await 永久挂起。
 				if (h.Status != EOperationStatus.Succeeded)
 				{
-					FuLogger.LogError($"[Launch] 加载原始文件失败: {location}, 错误信息: {h.Error}");
+					FuLogger.LogError($"加载原始文件失败: {location}, 错误信息: {h.Error}");
 					h.Release();
 					DefaultPackage.TryUnloadUnusedAsset(location); // AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载 bundle
 					tcs.TrySetResult(null);
@@ -213,7 +213,7 @@ namespace AOT.Launch
 				var textAsset = h.GetAssetObject<TextAsset>();
 				if (textAsset == null)
 				{
-					FuLogger.LogError($"[Launch] 加载的资源不是 TextAsset 或为空: {location}");
+					FuLogger.LogError($"加载的资源不是 TextAsset 或为空: {location}");
 					h.Release();
 					DefaultPackage.TryUnloadUnusedAsset(location);
 					tcs.TrySetResult(null);

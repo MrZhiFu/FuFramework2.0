@@ -53,7 +53,7 @@ namespace AOT.Launch.Localization
 			var textAsset = Resources.Load<TextAsset>(DATA_PATH);
 			if (textAsset == null)
 			{
-				FuLogger.LogError($"[LaunchLocalization] Resources 下未找到 {DATA_PATH}，AOT 本地化不可用!");
+				FuLogger.LogError($"Resources 下未找到 {DATA_PATH}，AOT 本地化不可用!");
 				return;
 			}
 
@@ -70,7 +70,7 @@ namespace AOT.Launch.Localization
 			catch (Exception e)
 			{
 				// 数据解析失败（变体错配/数据损坏）仅记录错误并清空半解析数据，不阻断启动流程
-				FuLogger.LogError($"[LaunchLocalization] AOT 本地化数据解析失败，AOT 本地化不可用：{e.Message}");
+				FuLogger.LogError($"AOT 本地化数据解析失败，AOT 本地化不可用：{e.Message}");
 				s_Rows.Clear();
 			}
 
@@ -89,7 +89,7 @@ namespace AOT.Launch.Localization
 
 			if (!s_Rows.TryGetValue(key, out var row))
 			{
-				FuLogger.LogError($"[LaunchLocalization] 多语言key '{key}' 没找到，请检查AOT多语言配置表!");
+				FuLogger.LogError($"多语言key '{key}' 没找到，请检查AOT多语言配置表!");
 				return string.Empty;
 			}
 

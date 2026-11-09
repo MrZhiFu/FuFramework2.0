@@ -118,7 +118,7 @@ namespace Hotfix.Framework.Localization
 			// 数据保存模块缺失（模块注册顺序调整/初始化失败）时退化为系统语言，不能直接解引用（否则 NRE 中断本模块初始化）
 			if (m_storageModule == null)
 			{
-				FuLogger.LogError("[LocalizationModule] 初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
+				FuLogger.LogError("初始化失败，数据保存模块未找到，语言设置将无法读取与保存!");
 				m_language = FromSystemLanguage();
 				return;
 			}
@@ -152,7 +152,7 @@ namespace Hotfix.Framework.Localization
 		{
 			if (LocalizationProvider is null)
 			{
-				FuLogger.LogWarning("[LocalizationModule] 本地化多语言提供者未设置，请先设置");
+				FuLogger.LogWarning("本地化多语言提供者未设置，请先设置");
 				return $"[{key}]";
 			}
 
