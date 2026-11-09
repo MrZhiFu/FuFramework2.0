@@ -40,7 +40,7 @@ namespace AOT.Launch
 		/// <returns>异步流程</returns>
 		public static async UniTask RunAsync()
 		{
-			FuLogger.LogInfo("<color=#43f656>------进入启动流程------</color>");
+			FuLogger.LogInfo("------进入启动流程------".Color(LogColorEx.Green));
 
 			// 初始化 AOT 本地化（加载 AOT 多语言表并确定语言，供启动流程文本使用）
 			// 必须先于加载界面创建：界面上的声明式 L10n 绑定在构建（Setup）时即解析文本，委托此时必须已注入
@@ -186,7 +186,7 @@ namespace AOT.Launch
 		/// </summary>
 		private static async UniTask LoadHotfixAndHandoffAsync()
 		{
-			FuLogger.LogInfo("<color=#43f656>------进入代码热更流程------</color>");
+			FuLogger.LogInfo("------进入代码热更流程------".Color(LogColorEx.Green));
 
 			// 编辑器模拟模式：程序集已在域中，直接进入热更入口
 			if (UtilityAOT.Application.IsEditor && LaunchAssetHelper.PlayMode == EPlayMode.EditorSimulateMode)

@@ -12,7 +12,8 @@ AOT Framework 是框架在 AOT 侧的基础设施层，提供**日志、文件�
 Framework/
 ├── Log/                         # 日志系统
 │   ├── ELogLevel.cs             # 日志级别枚举
-│   └── FuLogger.cs              # 日志输出封装（条件编译控制）
+│   ├── FuLogger.cs              # 日志输出封装（条件编译控制）
+│   └── LogColorEx.cs            # 日志颜色扩展（富文本染色、自动模块前缀）
 ├── Extension/                   # 扩展方法
 │   └── TypeEx.cs                # Type 扩展方法
 ├── Localization/                # 本地化辅助
@@ -37,6 +38,13 @@ Framework/
 **条件编译宏：**
 - `ENABLE_LOG` — 启用所有日志
 - `ENABLE_INFO_LOG` / `ENABLE_DEBUG_AND_ABOVE_LOG` / `ENABLE_INFO_AND_ABOVE_LOG` / `ENABLE_WARNING_AND_ABOVE_LOG` / `ENABLE_ERROR_AND_ABOVE_LOG` / `ENABLE_FATAL_AND_ABOVE_LOG` — 按级别控制
+
+**颜色扩展（LogColorEx）：**
+- `color.ToHex()` — Color 转 `#RRGGBB` 色值字符串
+- `"文本".Color(color)` — 富文本染色（`<color=#RRGGBB>` 包裹）
+- `"内容".Module()` — 编译期经 `[CallerFilePath]` 取调用方源文件名自动生成 `[模块名]` 前缀（剥部分类后缀，如 `WebModule.Debug.cs` → `WebModule`），按模块名 FNV-1a 哈希从调色板稳定取色；`Module(color)` 可显式覆盖
+- 命名色常量：`Green` / `Teal` / `Red` / `Orange` / `Yellow` / `SkyBlue` / `Blue` / `Purple` / `Pink` / `Lime`（含迁移自历史横幅的 `#43F656` 与模块日志的 `#00FBD5`）
+- 注意：颜色拼串应内联进 FuLogger 调用使用，随条件编译宏整体裁剪；勿先赋值给变量再传（会在真机包留存）
 
 ## 4. 工具类（Utility）
 

@@ -55,7 +55,7 @@ namespace Hotfix
 		/// <param name="launchView">AOT 启动加载界面句柄，登录界面打开后关闭。</param>
 		public static async UniTask MainAsync(ILaunchView launchView)
 		{
-			FuLogger.LogInfo("<color=#43f656>------热更逻辑完毕，进入热更后的代码逻辑入口------</color>");
+			FuLogger.LogInfo("------热更逻辑完毕，进入热更后的代码逻辑入口------".Color(LogColorEx.Green));
 
 			// 初始化协议消息处理器：
 

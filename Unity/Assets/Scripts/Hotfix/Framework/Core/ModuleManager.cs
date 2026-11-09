@@ -55,7 +55,7 @@ namespace Hotfix.Framework.Core
 			if (module != null)
 			{
 				// 模块单例已存活，重新初始化，避免重复注册
-				FuLogger.LogInfo($"<color=#00FBD5>------重新初始化模块: {typeof(T).Name}</color>");
+				FuLogger.LogInfo($"------重新初始化模块: {typeof(T).Name}".Color(LogColorEx.Teal));
 				try
 				{
 					module.OnInit();
@@ -79,7 +79,7 @@ namespace Hotfix.Framework.Core
 			{
 				newModule.OnInit();
 				newModule.IsAlive = true;
-				FuLogger.LogInfo($"<color=#00FBD5>------注册模块 {typeof(T).Name} 成功!</color>");
+				FuLogger.LogInfo($"------注册模块 {typeof(T).Name} 成功!".Color(LogColorEx.Teal));
 			}
 			catch (Exception e)
 			{
@@ -153,7 +153,7 @@ namespace Hotfix.Framework.Core
 				try
 				{
 					module.OnDispose();
-					FuLogger.LogInfo($"<color=#00FBD5>------释放模块: {i + 1}.{module.GetType().Name}</color>");
+					FuLogger.LogInfo($"------释放模块: {i + 1}.{module.GetType().Name}".Color(LogColorEx.Teal));
 				}
 				catch (Exception e)
 				{
