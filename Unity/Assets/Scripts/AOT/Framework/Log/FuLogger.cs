@@ -124,7 +124,7 @@ namespace AOT.Framework.Core.Log
 		/// <param name="callerFile">调用方源文件路径，由公开方法经 [CallerFilePath] 注入。</param>
 		private static void Log(ELogLevel level, object message, string callerFile)
 		{
-			var tag  = LogColorEx.ModuleTag(callerFile);
+			var tag  = LogColorEx.ClassTag(callerFile);
 			var text = string.IsNullOrEmpty(tag) ? $"{message}" : $"{tag} {message}";
 
 			switch (level)

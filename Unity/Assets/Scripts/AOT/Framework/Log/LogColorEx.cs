@@ -64,9 +64,9 @@ namespace AOT.Framework.Core.Log
 		public static readonly Color Lime = new Color32(0xC6, 0xFF, 0x00, 0xFF);
 
 		/// <summary>
-		/// 模块自动取色调色板（深色控制台底可读；顺序不影响同模块的稳定取色）。
+		/// 类名自动取色调色板（深色控制台底可读；顺序不影响同类名的稳定取色）。
 		/// </summary>
-		private static readonly Color[] Palette =
+		private static readonly Color[] palette =
 		{
 			Green, Teal, Red, Orange, Yellow, SkyBlue, Blue, Purple, Pink, Lime
 		};
@@ -100,34 +100,34 @@ namespace AOT.Framework.Core.Log
 		/// </summary>
 		/// <param name="callerFile">调用方源文件路径。</param>
 		/// <returns>染色后的 [类名] 标签；路径为空时返回空字符串。</returns>
-		internal static string ModuleTag(string callerFile)
+		internal static string ClassTag(string callerFile)
 		{
 			if (string.IsNullOrEmpty(callerFile)) return string.Empty;
 
-			var fileName   = Path.GetFileNameWithoutExtension(callerFile);
-			var dotIndex   = fileName.IndexOf('.');
-			var moduleName = dotIndex > 0 ? fileName.Substring(0, dotIndex) : fileName;
+			var fileName  = Path.GetFileNameWithoutExtension(callerFile);
+			var dotIndex  = fileName.IndexOf('.');
+			var className = dotIndex > 0 ? fileName.Substring(0, dotIndex) : fileName;
 
-			return $"[{moduleName}]".Color(Palette[PaletteIndexOf(moduleName)]);
+			return $"[{className}]".Color(palette[PaletteIndexOf(className)]);
 		}
 
 		/// <summary>
-		/// 按模块名从调色板确定性取色（FNV-1a 哈希，同模块永远同色）。
+		/// 按类名从调色板确定性取色（FNV-1a 哈希，同类名永远同色）。
 		/// </summary>
-		/// <param name="moduleName">模块名。</param>
+		/// <param name="className">类名。</param>
 		/// <returns>调色板索引。</returns>
-		private static int PaletteIndexOf(string moduleName)
+		private static int PaletteIndexOf(string className)
 		{
 			unchecked
 			{
 				uint hash = 2166136261;
-				foreach (var c in moduleName)
+				foreach (var c in className)
 				{
-					hash ^= (uint)c;
+					hash ^= c;
 					hash *= 16777619;
 				}
 
-				return (int)(hash % Palette.Length);
+				return (int)(hash % palette.Length);
 			}
 		}
 
