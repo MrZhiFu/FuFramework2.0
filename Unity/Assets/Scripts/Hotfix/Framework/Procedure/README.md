@@ -226,13 +226,13 @@ public class LobbyProcedure : ProcedureBase
     protected internal override void OnInit(Fsm procedureOwner)
     {
         base.OnInit(procedureOwner);
-        FuLogger.LogInfo("[LobbyProcedure] 初始化");
+        FuLogger.LogInfo("初始化");
     }
 
     protected internal override void OnEnter()
     {
         base.OnEnter();
-        FuLogger.LogInfo("[LobbyProcedure] 进入大厅");
+        FuLogger.LogInfo("进入大厅");
 
         // 打开大厅 UI
         // UIModule.OpenUI<LobbyView>();
@@ -253,8 +253,8 @@ public class LobbyProcedure : ProcedureBase
     {
         base.OnLeave(isShutdown);
         FuLogger.LogInfo(isShutdown
-            ? "[LobbyProcedure] 流程销毁"
-            : "[LobbyProcedure] 离开大厅");
+            ? "流程销毁"
+            : "离开大厅");
     }
 
     private bool IsMatchRequested => false; // 实际匹配逻辑
@@ -275,7 +275,7 @@ public class MatchmakingProcedure : ProcedureBase
     {
         base.OnEnter();
         m_elapsed = 0f;
-        FuLogger.LogInfo("[MatchmakingProcedure] 开始匹配");
+        FuLogger.LogInfo("开始匹配");
 
         // 显示匹配界面
         // UIModule.OpenUI<MatchmakingView>();
@@ -291,7 +291,7 @@ public class MatchmakingProcedure : ProcedureBase
         // 匹配成功 → 进入战斗（模拟：3 秒后匹配成功）
         if (m_elapsed >= 3f)
         {
-            FuLogger.LogInfo("[MatchmakingProcedure] 匹配成功，进入战斗");
+            FuLogger.LogInfo("匹配成功，进入战斗");
             ChangeState<BattleProcedure>();
         }
     }
@@ -299,7 +299,7 @@ public class MatchmakingProcedure : ProcedureBase
     protected internal override void OnLeave(bool isShutdown)
     {
         base.OnLeave(isShutdown);
-        FuLogger.LogInfo("[MatchmakingProcedure] 离开匹配");
+        FuLogger.LogInfo("离开匹配");
 
         // 如果流程被销毁（非正常切换），取消匹配请求
         if (isShutdown)
@@ -321,7 +321,7 @@ public class BattleProcedure : ProcedureBase
     protected internal override void OnEnter()
     {
         base.OnEnter();
-        FuLogger.LogInfo("[BattleProcedure] 进入战斗");
+        FuLogger.LogInfo("进入战斗");
 
         // 加载战斗场景 + 初始化战斗系统
         // SceneModule.LoadSceneAsync("BattleScene");
@@ -343,7 +343,7 @@ public class BattleProcedure : ProcedureBase
     protected internal override void OnLeave(bool isShutdown)
     {
         base.OnLeave(isShutdown);
-        FuLogger.LogInfo("[BattleProcedure] 离开战斗");
+        FuLogger.LogInfo("离开战斗");
     }
 
     private bool BattleFinished => false; // 实际战斗逻辑
@@ -367,7 +367,7 @@ public class SettlementProcedure : ProcedureBase
 
         // 读取战斗结果
         var result = Fsm.GetData<BattleResult>("BattleResult");
-        FuLogger.LogInfo($"[SettlementProcedure] 战斗结果 — 胜利:{result.Win}, 得分:{result.Score}");
+        FuLogger.LogInfo($"战斗结果 — 胜利:{result.Win}, 得分:{result.Score}");
 
         // 显示结算界面
         // UIModule.OpenUI<SettlementView>(result);
