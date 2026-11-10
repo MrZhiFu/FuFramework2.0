@@ -128,7 +128,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private static void OnNetworkClosed(object sender, GameEventArgs e)
+		private void OnNetworkClosed(object sender, GameEventArgs e)
 		{
 	        FuLogger.LogInfo(nameof(OnNetworkClosed));
 		}
