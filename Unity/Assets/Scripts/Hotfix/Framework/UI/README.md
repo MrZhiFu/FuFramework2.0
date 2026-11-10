@@ -795,6 +795,8 @@ public class UIGroupExample : MonoBehaviour
 
 ### 4.6 事件订阅与广播
 
+订阅放 `OnInit`（每实例一次）：框架在窗口关闭时自动挂起订阅（总线退订、账本保留）、打开时自动重放，业务无需在 OnClose 手动退订——也**不要**用 `UnSubscribeAll`（全清语义，会连同框架自身订阅一起清掉）。
+
 ```csharp
 public class EventExampleWin : WinBase
 {
@@ -802,21 +804,15 @@ public class EventExampleWin : WinBase
     
     protected override void OnInit()
     {
-        // 订阅事件
+        // 订阅事件（OnInit 期，每实例一次；关窗自动挂起、开窗自动重放）
         Subscribe("PlayerLevelUp", OnPlayerLevelUp);
         Subscribe("GoldChanged", OnGoldChanged);
     }
     
     protected override void OnOpen()
     {
-        // 广播事件
+        // 广播事件（OnOpen 只做数据刷新，勿在此订阅）
         Broadcast(this, new GameEventArgs("UIOpened", this));
-    }
-    
-    protected override void OnClose()
-    {
-        // 取消所有订阅
-        UnSubscribeAll();
     }
     
     private void OnPlayerLevelUp(object sender, GameEventArgs e)
@@ -830,6 +826,8 @@ public class EventExampleWin : WinBase
     }
 }
 ```
+
+> 机制细节（挂起/重放触发时机、账本对称性、Clear 复位）见 Event 模块 README §4.2 生命周期契约。
 
 ### 4.7 计时器使用
 

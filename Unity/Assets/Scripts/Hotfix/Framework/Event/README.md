@@ -96,10 +96,21 @@ void Broadcast(object sender, GameEventArgs eventArgs)
 void Broadcast(object sender, string eventId)
 void BroadcastNow(object sender, GameEventArgs eventArgs)
 
+// 挂起/重放（由框架在窗口生命周期自动调用，业务勿手动调）
+void Suspend()                          // 窗口关闭时：按账本逐条总线退订，账本保留即重放清单
+void Resume()                           // 窗口打开时（先于业务 OnOpen）：按账本重放订阅
+
 // 释放
-void Clear()                            // 清理（自动调用 UnSubscribeAll）
+void Clear()                            // 清理（自动调用 UnSubscribeAll，并复位挂起标志）
 void Release()                          // 归还引用池
 ```
+
+生命周期契约（窗口订阅挂起）：
+
+- 窗口关闭（`WinBase._OnClose`）时框架调用 `Suspend()`：按账本逐条从总线退订，账本保留即重放清单；同时窗口计时器终止（`StopAllTimers`，破坏性不重放）
+- 窗口打开（`WinBase._OnOpen`）时框架调用 `Resume()`：按账本逐条重放订阅，先于业务 `OnOpen` 执行
+- 挂起态下的 `Subscribe` 只记账本不进总线（重开时由 `Resume` 统一重放）；`Subscribe` 幂等去重（重复登记警告+忽略），保证账本与总线 1:1、挂起/重放严格对称
+- `Clear()` 复位挂起标志：寄存器经引用池回池复用且 Acquire 不重置字段，漏复位会让新窗口的订阅只进账本不进总线（事件静默失效）
 
 ***
 
