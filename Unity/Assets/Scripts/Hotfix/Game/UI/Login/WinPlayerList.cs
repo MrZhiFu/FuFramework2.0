@@ -32,6 +32,7 @@ namespace Hotfix.Game.UI
 		{
 			InitUIComp();
 			InitUIEvent();
+			InitEvent();
 		}
 
 		/// <summary>
@@ -45,7 +46,8 @@ namespace Hotfix.Game.UI
 		}
 
 		/// <summary>
-		/// 注册网络事件订阅。每次打开重订（OnClose 已退订，见下）。
+		/// 注册网络事件订阅。订阅放 OnInit（每实例一次）：框架在关窗时自动挂起、开窗时自动重放，
+		/// 业务不再手动配对退订（历史幽灵触发与 UnSubscribeAll 误杀问题见设计稿 2026-11-08 §1.2）。
 		/// </summary>
 		private void InitEvent()
 		{
@@ -61,21 +63,7 @@ namespace Hotfix.Game.UI
 		{
 			playerList = AccountManager.Instance.PlayerList;
 			listPlayer.numItems = playerList.Count;
-			InitEvent();
 			Refresh();
-		}
-
-		/// <summary>
-		/// 界面关闭
-		/// 退订网络订阅：窗口关闭（进游戏后对象池待复用）后订阅仍存活，会在重连拨通广播 Connected 时
-		/// 被幽灵触发——用已关闭界面的过期数据再跑一次登录事务（双事务竞态）。
-		/// 必须按 id 精确退订，不能用 UnSubscribeAll：后者会连同框架在 Init 时订阅的语言变更事件一并退掉，
-		/// 而池复用路径 Init 早退（WinBase.Init 直接 return）不会重订，二次打开后窗口开着时语言切换将不再刷新。
-		/// </summary>
-		protected override void OnClose()
-		{
-			UnSubscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
-			UnSubscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
 		}
 
 		/// <summary>
