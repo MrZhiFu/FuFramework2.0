@@ -869,7 +869,16 @@ namespace FuFramework.Network.Editor
 			}
 
 			var moduleInstance = m_moduleInstanceProperty?.GetValue(null);
-			var state = m_getConnectionStateMethod?.Invoke(moduleInstance, null) as string ?? "未知";
+			if (moduleInstance == null || m_getConnectionStateMethod == null)
+			{
+				// 非 Play 模式/模块未存活：单例属性返回 null，实例方法空目标 Invoke 会抛 TargetException
+				// 且炸在 BeginHorizontal 中途连带损坏 GUILayout 状态（工具栏先于 OnGUI 各守卫绘制，此处必须自防）
+				m_connectionStyle.normal.textColor = new Color(0.6f, 0.6f, 0.6f);
+				GUILayout.Label("● 未连接", m_connectionStyle, GUILayout.Width(180));
+				return;
+			}
+
+			var state = m_getConnectionStateMethod.Invoke(moduleInstance, null) as string ?? "未知";
 			m_connectionStyle.normal.textColor = state.StartsWith("已连接") ? ConnectionOkColor
 				: state.StartsWith("已断开")   ? ErrorStatusColor
 				: new Color(0.6f, 0.6f, 0.6f);
