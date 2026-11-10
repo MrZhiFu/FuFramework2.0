@@ -129,7 +129,7 @@ namespace Hotfix.Framework.UI
 		internal void _OnClose()
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]关闭-OnClose().");
-			m_cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
+			m_cancellation.Cancel();  // 关闭即取消本生命周期在途异步任务
 			EventRegister?.Suspend(); // 关窗挂起订阅：总线退订、账本保留（半成品实例注册器为 null，?. 跳过）
 			StopAllTimers();          // 关窗终止计时器（破坏性不重放，与异步取消同立场）
 			Visible = false;
