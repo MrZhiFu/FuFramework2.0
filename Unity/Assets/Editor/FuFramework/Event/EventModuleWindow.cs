@@ -21,8 +21,8 @@ namespace FuFramework.Event.Editor
 	///     2. 订阅明细：按事件 ID 分组折叠，展示每个 handler 的方法名/所属类型/静态或实例标记，支持跳转源码。
 	///     3. 待分发队列：展示队列中每条事件的 eventId/sender/参数类型，支持一键清空。
 	///     4. 搜索过滤（事件 ID 或 handler 所属类型）、自动刷新、全部展开/折叠。
-	/// 数据源全部为 EventModule 公共 API（EventCount/EventHandlerCount/ForEachHandler/ForEachEvent），
-	/// 仅「清空待分发队列」经反射取 EventModule 私有字段 m_eventPool 调用池的 Clear（EventModule 未转发该方法）。
+	/// 数据源全部为 EventModule 调试分部 EventModule.Debug.cs（EventCount/EventHandlerCount/ForEachHandler/ForEachEvent，#if UNITY_EDITOR 仅编辑器存在），
+	/// 仅「清空待分发队列」经反射调用 EventModule 私有 Clear（破坏性调试操作，不进公开契约）。
 	/// 回调绑定：ForEachHandler/ForEachEvent 的回调委托签名为 (string, EventHandler&lt;GameEventArgs&gt;) 与 (object, GameEventArgs)，
 	/// 经窗口内泛型适配方法 MakeGenericMethod + CreateDelegate 精确签名绑定，无需动态发射。
 	/// </summary>
@@ -213,12 +213,7 @@ namespace FuFramework.Event.Editor
 		private MethodInfo m_forEachEventMethod;
 
 		/// <summary>
-		/// EventModule 私有字段 m_eventPool（清空队列时经池实例调用 Clear）
-		/// </summary>
-		private FieldInfo m_eventPoolField;
-
-		/// <summary>
-		/// 池实例类型的 Clear 方法
+		/// EventModule 私有 Clear 方法（清空队列用；破坏性调试操作，不进公开契约）
 		/// </summary>
 		private MethodInfo m_poolClearMethod;
 
@@ -250,7 +245,7 @@ namespace FuFramework.Event.Editor
 			try
 			{
 				// 把回调作为实参传入 ForEachHandler/ForEachEvent（模块内部遍历订阅/队列时逐条回调）：
-				// 不能直接 DynamicInvoke 回调本身——它需要 (id, handler)/(sender, eArgs) 实参，那些由模块提供
+				// 不能直接 DynamicInvoke 回调本身——它需要 (id, handler)/(sender, e) 实参，那些由模块提供
 				m_forEachHandlerMethod?.Invoke(m_moduleInstance, new object[] { m_forEachHandlerCallback });
 				m_forEachEventMethod?.Invoke(m_moduleInstance, new object[] { m_forEachEventCallback });
 			}
@@ -496,7 +491,7 @@ namespace FuFramework.Event.Editor
 		}
 
 		/// <summary>
-		/// 剥离类型名中的泛型元数（如 EventPool`1 的 `1）与嵌套分隔，得到可与文件名/简单名比对的形态
+		/// 剥离类型名中的泛型元数（如 Queue`1 的 `1）与嵌套分隔，得到可与文件名/简单名比对的形态
 		/// </summary>
 		private static string SimplifyTypeName(string name)
 		{
@@ -576,7 +571,7 @@ namespace FuFramework.Event.Editor
 			EditorGUILayout.BeginVertical("box");
 
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button(new GUIContent("清空待分发队列", "调用事件池 Clear：丢弃队列中全部未分发事件（含参数回收）。"), GUILayout.Width(140)))
+			if (GUILayout.Button(new GUIContent("清空待分发队列", "调用 EventModule 私有 Clear：丢弃队列中全部未分发事件（含参数回收）。"), GUILayout.Width(140)))
 			{
 				ClearPendingEvents();
 			}
@@ -612,21 +607,14 @@ namespace FuFramework.Event.Editor
 		}
 
 		/// <summary>
-		/// 清空待分发队列：经反射取 EventModule 私有字段 m_eventPool 调用池的 Clear
-		/// （EventModule 未转发 Clear；Clear 会丢弃全部未分发事件并回收其参数，属破坏性调试操作）
+		/// 清空待分发队列：经反射调用 EventModule 私有 Clear
+		/// （Clear 会丢弃全部未分发事件并回收其参数，属破坏性调试操作，不进公开契约）
 		/// </summary>
 		private void ClearPendingEvents()
 		{
 			try
 			{
-				var pool = m_eventPoolField?.GetValue(m_moduleInstance);
-				if (pool == null)
-				{
-					Debug.LogError("[事件调试]获取事件池实例失败，无法清空队列.");
-					return;
-				}
-
-				m_poolClearMethod?.Invoke(pool, null);
+				m_poolClearMethod?.Invoke(m_moduleInstance, null);
 				OnRefresh();
 				Repaint();
 			}
@@ -665,16 +653,16 @@ namespace FuFramework.Event.Editor
 
 		/// <summary>
 		/// ForEachEvent 回调的泛型适配（经 MakeGenericMethod 绑定为精确签名委托）：
-		/// 把队列中的 (sender, eArgs) 折叠进行快照
+		/// 把队列中的 (sender, e) 折叠进行快照
 		/// </summary>
-		private void EventEntry<T>(object sender, T eArgs) where T : EventArgs
+		private void EventEntry<T>(object sender, T e) where T : EventArgs
 		{
 			m_eventRows.Add(new EventRow
 			{
 				m_Index          = m_eventRows.Count + 1,
-				m_EventId        = m_eventIdProperty?.GetValue(eArgs) as string ?? "(unknown)",
+				m_EventId        = m_eventIdProperty?.GetValue(e) as string ?? "(unknown)",
 				m_SenderTypeName = sender?.GetType().Name ?? string.Empty,
-				m_ArgsTypeName   = eArgs?.GetType().Name ?? "(null)",
+				m_ArgsTypeName   = e?.GetType().Name ?? "(null)",
 			});
 		}
 
@@ -718,14 +706,12 @@ namespace FuFramework.Event.Editor
 			m_eventHandlerCountProperty = m_moduleType.GetProperty("EventHandlerCount", BindingFlags.Public | BindingFlags.Instance);
 			m_forEachHandlerMethod      = m_moduleType.GetMethod("ForEachHandler",      BindingFlags.Public | BindingFlags.Instance);
 			m_forEachEventMethod        = m_moduleType.GetMethod("ForEachEvent",        BindingFlags.Public | BindingFlags.Instance);
-			m_eventPoolField            = m_moduleType.GetField("m_eventPool", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			// GameEventArgs 成员
 			m_eventIdProperty = m_gameEventArgsType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
 
-			// 事件池 Clear（清空队列用）
-			var eventPoolType = m_eventPoolField?.FieldType;
-			m_poolClearMethod = eventPoolType?.GetMethod("Clear", BindingFlags.Public | BindingFlags.Instance);
+			// 私有 Clear（清空队列用；原为「反射取 m_eventPool 字段再调池 Clear」，事件池并入模块后直接绑定模块私有方法）
+			m_poolClearMethod = m_moduleType.GetMethod("Clear", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			if (m_forEachHandlerMethod == null || m_forEachEventMethod == null || m_eventIdProperty == null) return false;
 
@@ -760,7 +746,6 @@ namespace FuFramework.Event.Editor
 			m_eventIdProperty         = null;
 			m_forEachHandlerMethod    = null;
 			m_forEachEventMethod      = null;
-			m_eventPoolField          = null;
 			m_poolClearMethod         = null;
 			m_forEachHandlerCallback  = null;
 			m_forEachEventCallback    = null;

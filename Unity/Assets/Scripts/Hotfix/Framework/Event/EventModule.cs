@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace
@@ -7,43 +11,60 @@ namespace Hotfix.Framework.Event
 	/// <summary>
 	/// 事件管理模块。
 	/// 功能：
-	///     1. 管理事件，提供便捷方法。
-	///     2. 支持事件的抛出和订阅。
-	///     3. 包装事件池，实际交由事件池管理。
+	///     1. 管理事件，提供订阅/退订/抛出等便捷方法（原独立事件池 EventPool 已并入本模块）。
+	///     2. 支持多播订阅与幂等去重；同一事件的不同处理函数各自独立条目。
+	///     3. 事件默认延迟到下一帧统一分发（Broadcast），亦可立即同步分发（BroadcastNow）。
+	/// 线程契约：仅允许主线程访问（跨线程产生的事件由网络频道封送到主线程后再 Broadcast）。
 	/// </summary>
-	public sealed class EventModule : ModuleBase
+	public sealed partial class EventModule : ModuleBase
 	{
 		/// <summary>
-		/// 事件池。
+		/// 事件队列
 		/// </summary>
-		private EventPool<GameEventArgs> m_eventPool;
+		private Queue<Event> m_eventQueue;
 
 		/// <summary>
-		/// 获取事件处理函数的数量。
+		/// 帧分发批次缓存（复用同一列表，避免每次 OnUpdate 分配新列表产生 GC）
 		/// </summary>
-		public int EventHandlerCount => m_eventPool.EventHandlerCount;
+		private readonly List<Event> m_cachedEventBatch = new();
 
 		/// <summary>
-		/// 获取事件数量。
+		/// 事件处理器多值字典，key为事件Id，value为事件处理函数列表
 		/// </summary>
-		public int EventCount => m_eventPool.EventCount;
+		private FuMultiDictionary<string, EventHandler<GameEventArgs>> m_eventHandlerMultiDict;
+
+		/// <summary>
+		/// 分发 handler 前的快照缓存（复用同一列表，避免每次分发分配新列表产生 GC）。
+		/// 快照用于隔离「分发过程中的订阅与退订」——新订阅的 handler 本轮不调用、已退订的 handler 本轮仍调用完；
+		/// 仅非重入分发使用。
+		/// </summary>
+		private readonly List<EventHandler<GameEventArgs>> m_cachedHandlerSnapshot = new();
+
+		/// <summary>
+		/// 是否正在分发 handler（用于识别重入的嵌套分发，避免嵌套时覆盖外层快照）
+		/// </summary>
+		private bool m_isHandlingEvent;
+
+		/// <summary>
+		/// 是否正在执行帧批次分发（用于检测嵌套 OnUpdate——嵌套时内层 batch.Clear() 会清掉
+		/// 外层正在遍历的批次，契约上禁止嵌套驱动；检测到即拒绝本次调用，守卫保留进发布版防静默泄漏）。
+		/// </summary>
+		private bool m_isUpdatingEvents;
+
+		/// <summary>
+		/// 构造线程 ID（断言期校验公共入口仅被该线程访问）。
+		/// 模块由 ModuleManager 在框架启动（主线程）时构造，捕获时机与原事件池构造一致。
+		/// 无条件编译：[Conditional] 语义要求被断言方法及其依赖字段始终存在。
+		/// </summary>
+		private readonly int m_creatorThreadId = Thread.CurrentThread.ManagedThreadId;
 
 		/// <summary>
 		/// 初始化。
 		/// </summary>
 		protected internal override void OnInit()
 		{
-			m_eventPool = new EventPool<GameEventArgs>();
-		}
-
-		/// <summary>
-		/// 帧更新。
-		/// </summary>
-		/// <param name="deltaTime">帧间隔时间。</param>
-		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
-		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
-		{
-			m_eventPool.Update(deltaTime, unscaledDeltaTime);
+			m_eventQueue            = new Queue<Event>();
+			m_eventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<GameEventArgs>>();
 		}
 
 		/// <summary>
@@ -51,97 +72,56 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_eventPool.Shutdown();
+			AssertMainThread();
+			Clear();
+			m_eventHandlerMultiDict.Clear();
 		}
 
 		/// <summary>
-		/// 获取事件处理函数的数量。
+		/// 清理事件（私有：破坏性调试操作，不进公开契约，编辑器面板经反射调用）。
+		/// 逐个出队并回收池节点：直接 Clear() 会把队列中的 Event 节点（池对象）丢弃，导致 ReferencePool 计数泄漏。
+		/// 队列中的节点全部是「已入队、未分发」，其 EventArgs 也由本模块持有，必须一并回收：
+		/// Event.Clear() 只置 null 不回收，只回收节点会让事件参数计数跨关停/重启持续累积（ClearAll 保留计数）。
 		/// </summary>
-		/// <param name="id">事件类型编号。</param>
-		/// <returns>事件处理函数的数量。</returns>
-		public int Count(string id) => m_eventPool.Count(id);
-
-		/// <summary>
-		/// 检查是否已存在指定事件对应的处理函数。
-		/// </summary>
-		/// <param name="id">事件类型编号。</param>
-		/// <param name="handler">要检查的事件处理函数。</param>
-		/// <returns>是否存在事件处理函数。</returns>
-		public bool Check(string id, EventHandler<GameEventArgs> handler)
+		private void Clear()
 		{
-			return m_eventPool.Check(id, handler);
+			AssertMainThread();
+
+			// 逐项隔离回收：ReferencePool.Recycle 一旦抛异常，不得中断整轮排水，
+			// 否则其后节点与事件参数全部不再归还（ReferencePool 计数永久漂移）；故各自 try/catch 吞掉并继续。
+			while (m_eventQueue.Count > 0)
+			{
+				var eventNode = m_eventQueue.Dequeue();
+				try
+				{
+					ReferencePool.Recycle(eventNode.EventArgs);
+				}
+				catch (Exception exception)
+				{
+					FuLogger.LogError($"清理事件时回收事件参数异常:{exception}");
+				}
+
+				try
+				{
+					ReferencePool.Recycle(eventNode);
+				}
+				catch (Exception exception)
+				{
+					FuLogger.LogError($"清理事件时回收事件节点异常:{exception}");
+				}
+			}
 		}
 
 		/// <summary>
-		/// 订阅事件处理函数。
-		/// 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 EventRegister、多个模块）同时订阅，
-		/// 由事件池按 (id, handler) 条目引用计数，退订时各自递减自己那一份。
-		/// 此处若因已存在而早退，后者的订阅不会被计数，前者的退订会把它一并移除（静默丢订阅）。
+		/// 断言当前线程为构造线程（主线程）；违规立即报错定位，而非静默产生数据竞争。
+		/// [Conditional("UNITY_ASSERTIONS")]：该符号仅在 Editor/Development 构建定义，
+		/// 发布版所有调用点被编译器剥离，零运行时开销。
 		/// </summary>
-		/// <param name="id">事件类型编号。</param>
-		/// <param name="handler">要订阅的事件处理函数。</param>
-		public void Subscribe(string id, EventHandler<GameEventArgs> handler)
+		[Conditional("UNITY_ASSERTIONS")]
+		private void AssertMainThread()
 		{
-			m_eventPool.Subscribe(id, handler);
+			if (Thread.CurrentThread.ManagedThreadId != m_creatorThreadId)
+				FuLogger.LogError($"事件模块仅允许主线程访问，检测到跨线程调用（线程 ID:{Thread.CurrentThread.ManagedThreadId}）。");
 		}
-
-		/// <summary>
-		/// 取消订阅事件处理函数。
-		/// 只递减本订阅者那一份计数，其余订阅者不受影响；未订阅过（条目不存在）时直接忽略。
-		/// 退订契约：各订阅者只能退订自己登记的那一份，超额退订会静默消耗其他订阅者的计数（详见 EventPool.Unsubscribe）。
-		/// </summary>
-		/// <param name="id">事件类型编号。</param>
-		/// <param name="handler">要取消订阅的事件处理函数。</param>
-		public void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
-		{
-			if (!Check(id, handler)) return;
-			m_eventPool.Unsubscribe(id, handler);
-		}
-
-		/// <summary>
-		/// 设置默认事件处理函数。
-		/// </summary>
-		/// <param name="handler">要设置的默认事件处理函数。</param>
-		public void SetDefaultHandler(EventHandler<GameEventArgs> handler) => m_eventPool.SetDefaultHandler(handler);
-
-		/// <summary>
-		/// 抛出事件，事件会延迟到抛出后的下一帧由主线程分发。
-		/// 事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用）；
-		/// 跨线程产生的事件须先由网络频道等来源封送至主线程，再调用本方法。
-		/// </summary>
-		/// <param name="sender">事件源。</param>
-		/// <param name="e">事件参数。</param>
-		public void Broadcast(object sender, GameEventArgs e) => m_eventPool.Broadcast(sender, e);
-
-		/// <summary>
-		/// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
-		/// 主线程限制与分发时机同 Broadcast(object, GameEventArgs)：仅限主线程调用，事件会延迟到下一帧主线程分发。
-		/// </summary>
-		/// <param name="sender">事件发送者。</param>
-		/// <param name="eventId">事件编号。</param>
-		public void Broadcast(object sender, string eventId)
-		{
-			eventId.NotNullOrEmpty(nameof(eventId));
-			m_eventPool.Broadcast(sender, EmptyEventArgs.Create(eventId));
-		}
-
-		/// <summary>
-		/// 立即抛出事件，事件会立刻在主线程分发。事件池仅允许主线程访问（开发期以 UNITY_ASSERTIONS 断言拦截跨线程误用），故仅限主线程调用。
-		/// </summary>
-		/// <param name="sender">事件源。</param>
-		/// <param name="e">事件参数。</param>
-		public void BroadcastNow(object sender, GameEventArgs e) => m_eventPool.BroadcastNow(sender, e);
-
-		/// <summary>
-		/// 遍历所有事件处理函数。
-		/// 仅限主线程调用（重入识别标志非原子，主线程限制口径同 BroadcastNow）。
-		/// </summary>
-		public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action) => m_eventPool.ForEachHandler(action);
-
-		/// <summary>
-		/// 遍历所有事件。
-		/// 仅限主线程调用（主线程限制口径同 BroadcastNow）；回调内不得修改或回收未分发的事件参数。
-		/// </summary>
-		public void ForEachEvent(Action<object, GameEventArgs> action) => m_eventPool.ForEachEvent(action);
 	}
 }

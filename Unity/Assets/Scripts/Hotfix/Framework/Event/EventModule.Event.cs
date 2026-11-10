@@ -3,7 +3,10 @@ using Hotfix.Framework.Core;
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
 {
-	public sealed partial class EventPool<T> where T : BaseEventArgs
+	/// <summary>
+	/// 事件管理模块分部：事件节点定义。
+	/// </summary>
+	public sealed partial class EventModule
 	{
 		/// <summary>
 		/// 事件定义。
@@ -20,7 +23,7 @@ namespace Hotfix.Framework.Event
 			/// <summary>
 			/// 事件参数
 			/// </summary>
-			public T EventArgs { get; private set; }
+			public GameEventArgs EventArgs { get; private set; }
 
 			/// <summary>
 			/// 创建事件节点
@@ -28,7 +31,7 @@ namespace Hotfix.Framework.Event
 			/// <param name="sender"></param>
 			/// <param name="eventArgs"></param>
 			/// <returns></returns>
-			public static Event Create(object sender, T eventArgs)
+			public static Event Create(object sender, GameEventArgs eventArgs)
 			{
 				var eventNodeNode = ReferencePool.Acquire<Event>();
 				eventNodeNode.Sender    = sender;

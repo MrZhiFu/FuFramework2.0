@@ -10,7 +10,7 @@ FuFramework Event 模块是一个高性能的事件管理系统。它提供了�
 
 - 仅主线程   ：公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）有断言拦截跨线程误用
 - 延迟处理   ：事件默认在下一帧统一处理，避免在处理事件时修改订阅列表导致的异常
-- 多播支持   ：支持一个事件对应多个处理函数；同一处理函数被多个订阅者订阅时按引用计数每事件只调用一次
+- 多播支持   ：支持一个事件对应多个处理函数；同一处理函数重复订阅被幂等去重（记录警告日志），每事件只调用一次
 - 对象池集成 ：事件参数和事件节点都通过引用池管理，减少GC压力
 - 模块级管理 ：`EventRegister` 提供模块级的事件订阅管理，自动处理生命周期
 
@@ -48,12 +48,7 @@ EmptyEventArgs
 
 事件管理模块，继承自 `ModuleBase`，是事件系统的核心管理类。
 
-核心属性：
-
-```csharp
-int EventHandlerCount { get; }      // 已注册的事件处理函数总数
-int EventCount { get; }             // 当前待处理的事件数量
-```
+核心属性：无（`EventCount` / `EventHandlerCount` 为编辑器调试分部成员，见 7.1）。
 
 主要方法：
 
@@ -63,8 +58,7 @@ void Subscribe(string id, EventHandler<GameEventArgs> handler)
 void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
 
 // 检查订阅状态
-bool Check(string id, EventHandler<GameEventArgs> handler)
-int Count(string id)                    // 获取指定事件的处理函数数量
+bool IsExist(string id, EventHandler<GameEventArgs> handler)
 
 // 抛出事件（延迟到下一帧主线程分发）
 void Broadcast(object sender, GameEventArgs e)
@@ -72,17 +66,10 @@ void Broadcast(object sender, string eventId)   // 使用空事件包装事件ID
 
 // 立即抛出事件（同步处理，仅限主线程调用）
 void BroadcastNow(object sender, GameEventArgs e)
-
-// 设置默认事件处理器
-void SetDefaultHandler(EventHandler<GameEventArgs> handler)
-
-// 遍历
-void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action)
-void ForEachEvent(Action<object, GameEventArgs> action)
 ```
 
-> `Subscribe` 不做「已存在即早退」的去重：同一 handler 可被多个订阅者（多个 `EventRegister`、多个模块）共享订阅，
-> 由事件池按 `(id, handler)` 引用计数，`Unsubscribe` 只递减本订阅者那一份（详见 4.3）。
+> `Subscribe` 幂等去重：同一 `(id, handler)` 重复订阅只保留首次登记并记录警告日志，分发时只调用一次；
+> `Unsubscribe` 立即整体摘除条目。本框架中同一处理函数只有一个所有者，不存在跨订阅者共享场景（详见 4.3）。
 
 ***
 
@@ -119,24 +106,25 @@ void Release()                          // 归还引用池
 
 ***
 
-### 4.3 EventPool<T>
+### 4.3 EventModule 内部机制
 
-事件池，事件处理的核心容器，管理事件的订阅、发布和处理。
+事件管理模块的核心容器（原独立事件池 `EventPool<T>` 已并入 `EventModule`），管理事件的订阅、发布和处理。
 
 核心机制：
 
 - 事件队列  ：使用 `Queue<Event>` 存储待处理事件，仅主线程访问
 - 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
-- 延迟取消订阅  ：使用 `m_waitRemoveHandlerList` 把退订延迟到下一帧生效（同一 (id, handler) 只登记一条，重新订阅即撤销登记）
-- 引用计数订阅  ：同一 `(id, handler)` 被多个订阅者（多个 `EventRegister`、多个模块）共享时按份计数，`Subscribe` 计 +1、`Unsubscribe` 计 -1，归零才真正移除条目；单个订阅者退订不影响其他订阅者
-- 退订契约  ：各订阅者只能退订自己登记的那一份；超额退订（次数超过自身订阅数）会继续消耗其他订阅者的计数，导致他人订阅被静默移除且无告警
+- 幂等订阅  ：同一 `(id, handler)` 重复订阅只保留首次登记（分发时只调用一次），重复订阅记录警告日志——
+  本框架中同一处理函数只有一个所有者，重复订阅几乎必然是「池化对象重复订阅未退订」类误用
+- 即时退订  ：`Unsubscribe` 立即从订阅字典移除条目，未订阅过的 `(id, handler)` 静默忽略；
+  分发前快照保证分发过程中的订阅/退订不影响本轮（被退订的 handler 本轮仍收到当次事件）
 - 主线程契约  ：无锁设计，公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）断言拦截跨线程误用
 
 工作流程：
 
-1. 订阅阶段  ：`Subscribe` 将处理函数添加到多值字典（已存在则引用计数 +1，不重复入字典）
-2. 取消订阅阶段  ：`Unsubscribe` 引用计数递减，归零才把 handler 添加到待删除列表
-3. 事件处理阶段  ：`Update` 从队列取出事件，先处理待删除列表，再调用处理函数
+1. 订阅阶段  ：`Subscribe` 将处理函数添加到多值字典（已存在则警告并忽略，不重复入字典）
+2. 取消订阅阶段  ：`Unsubscribe` 立即从多值字典移除条目
+3. 事件处理阶段  ：`OnUpdate` 从队列取出事件，快照该事件的 handler 列表后逐个调用
 4. 清理阶段  ：事件处理完成后，通过引用池释放事件参数
 
 > 注意：事件参数在分发结束（`Broadcast` 的下一帧分发或 `BroadcastNow` 立即分发）后即被回收并 `Clear`，
@@ -445,34 +433,7 @@ public class UIModule : MonoBehaviour
 }
 ```
 
-### 5.5 使用默认事件处理器
-
-```csharp
-public class EventDebugger : MonoBehaviour
-{
-    private EventModule m_eventModule;
-    
-    private void Start()
-    {
-        m_eventModule = ModuleManager.GetModule<EventModule>();
-        
-        // 设置默认事件处理器（处理未被订阅的事件）
-        m_eventModule.SetDefaultHandler(OnDefaultEvent);
-    }
-    
-    private void OnDefaultEvent(object sender, GameEventArgs e)
-    {
-        Debug.LogWarning($"未处理的事件: {e.Id}, 发送者: {sender}");
-    }
-    
-    private void OnDestroy()
-    {
-        m_eventModule?.SetDefaultHandler(null);
-    }
-}
-```
-
-### 5.6 立即处理事件（同步处理）
+### 5.5 立即处理事件（同步处理）
 
 ```csharp
 public class CriticalSystem : MonoBehaviour
@@ -506,38 +467,38 @@ public class CriticalSystem : MonoBehaviour
 
 ```
 1. 订阅阶段
-   Subscribe(id, handler) -> 添加到 m_eventHandlerMultiDict
+   Subscribe(id, handler) -> 添加到 m_eventHandlerMultiDict（已存在则警告并忽略）
 
 2. 取消订阅阶段
-   Unsubscribe(id, handler) -> 引用计数递减，归零才登记到 m_waitRemoveHandlerList
+   Unsubscribe(id, handler) -> 立即从 m_eventHandlerMultiDict 移除条目
 
 3. 发布阶段
    Broadcast(sender, args) -> 创建 Event 节点 -> 加入 m_eventQueue
 
-4. 处理阶段（Update）
+4. 处理阶段（OnUpdate）
    从 m_eventQueue 取出事件
-   -> ProcessWaitRemoveHandlers() 处理待删除列表
+   -> 快照该事件的 handler 列表（隔离分发过程中的订阅/退订）
    -> 调用所有匹配的 handler
    -> ReferencePool.Recycle(args) 释放事件参数
 ```
 
 ### 6.2 主线程契约说明
 
-事件池仅允许主线程访问：公共 API 入口均有 `AssertMainThread` 断言（`[Conditional("UNITY_ASSERTIONS")]`，仅 Editor/Development 构建生效，发布版被剥离、零运行时开销），跨线程调用在开发期立即报错定位。
+事件模块仅允许主线程访问：公共 API 入口均有 `AssertMainThread` 断言（`[Conditional("UNITY_ASSERTIONS")]`，仅 Editor/Development 构建生效，发布版被剥离、零运行时开销），跨线程调用在开发期立即报错定位。
 
 | 方法                                                                                                       | 处理时机 | 说明 |
 | -------------------------------------------------------------------------------------------------------- | ---- | --------- |
 | `Broadcast`    | 下一帧  | 事件入队，`Update` 时统一分发，通用场景，推荐   |
 | `BroadcastNow` | 立即（同步）   | 仅限主线程，需要同步处理的场景 |
-| `Subscribe` / `Unsubscribe` / `Check` / `Count` / `SetDefaultHandler` / `EventCount` / `EventHandlerCount` | 立即    | 仅限主线程   |
-| `ForEachHandler` / `ForEachEvent`                                                                          | 立即    | 仅限主线程；回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
+| `Subscribe` / `Unsubscribe` / `IsExist` | 立即    | 仅限主线程   |
+| `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent`（仅 Editor，见 `EventModule.Debug.cs`） | 立即    | 仅限主线程；遍历回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
 
-跨线程产生的事件（如网络 Socket 回调）不得直接调用事件池，由网络频道封送到主线程后（channel.Update 排水）再 `Broadcast`。
+跨线程产生的事件（如网络 Socket 回调）不得直接调用事件模块，由网络频道封送到主线程后（channel.Update 排水）再 `Broadcast`。
 
 实现机制：
 
 - 无锁设计  ：单线程契约下无需加锁，事件队列与处理器字典均仅主线程访问
-- 取消订阅使用延迟删除机制，避免在处理事件时修改集合
+- 分发前快照 handler 列表，分发过程中的订阅/退订不影响本轮（快照隔离）
 
 ***
 
@@ -549,6 +510,7 @@ public class CriticalSystem : MonoBehaviour
 
 功能：
 
+- 数据源  ：`EventModule.Debug.cs` 调试分部（`#if UNITY_EDITOR` 整文件包裹，真机包不编译）提供 `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent`
 - 模块总览  ：显示待分发事件数、订阅事件 ID 数、handler 总数
 - 订阅明细  ：按事件 ID 分组，展示每个 handler 的方法名/所属类型/静态或实例标记，支持跳转源码
 - 事件队列  ：显示待分发队列中的每条事件，支持一键清空
@@ -565,11 +527,12 @@ public class CriticalSystem : MonoBehaviour
 
 ```text
 Event/
-├── EventModule.cs               # 事件管理模块
+├── EventModule.cs               # 事件管理模块（模块生命周期 + 状态字段 + 清理/断言）
+├── EventModule.API.cs           # 事件管理模块公共 API（订阅/退订/查询/抛出）
+├── EventModule.Dispatch.cs      # 帧分发机关（OnUpdate 批次排水 + HandleEvent 单事件分发）
+├── EventModule.Event.cs         # 事件节点定义
+├── EventModule.Debug.cs         # 调试分部（#if UNITY_EDITOR：面板数据源 EventCount/EventHandlerCount/ForEachHandler/ForEachEvent）
 ├── EventRegister.cs             # 事件注册器
-├── EventPool/                   # 事件池
-│   ├── EventPool.cs             # 事件池核心实现
-│   └── EventPool.Event.cs       # 事件节点定义
 ├── Event/                       # 事件参数
 │   ├── BaseEventArgs.cs         # 事件参数基类
 │   ├── GameEventArgs.cs         # 游戏事件参数基类
@@ -739,8 +702,8 @@ private void Update()
 3. 事件处理顺序  ：同一事件的多个处理函数按订阅顺序调用
 4. 异常处理  ：事件处理函数中的异常会被捕获并记录，不会影响其他处理函数
 5. 对象池  ：事件参数对象会自动通过引用池管理，无需手动释放，但需正确实现 `Clear` 方法
-6. 延迟取消订阅  ：取消订阅会在下一帧事件处理前生效，当前帧仍会收到事件
+6. 即时退订  ：退订立即生效；仅分发过程中（handler 内）的退订因快照语义，本轮仍会收到当次事件
 7. 空事件ID  ：`EmptyEventArgs` 的事件ID为实例字段，同帧多个不同ID不会互相覆盖
-8. 生命周期边界  ：事件池关停（模块 `OnDispose`）后不得再调用 `Broadcast`——事件节点「取出 → 入队」之间存在极小竞态窗口，滞留事件将永不分发、永不回收
+8. 生命周期边界  ：事件模块关停（`OnDispose`）后不得再调用 `Broadcast`——事件节点「取出 → 入队」之间存在极小竞态窗口，滞留事件将永不分发、永不回收
 9. 遍历接口  ：`ForEachHandler` / `ForEachEvent` 仅限主线程调用；`ForEachEvent` 回调内不得修改或回收未分发的事件参数
 
