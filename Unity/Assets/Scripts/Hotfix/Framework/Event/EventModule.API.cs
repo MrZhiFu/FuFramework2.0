@@ -2,6 +2,7 @@ using System;
 using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 
+// ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.Event
 {
 	/// <summary>
@@ -92,7 +93,12 @@ namespace Hotfix.Framework.Event
 		/// <param name="eventId">事件编号。</param>
 		public void Broadcast(object sender, string eventId)
 		{
-			eventId.NotNullOrEmpty(nameof(eventId));
+			if (string.IsNullOrEmpty(eventId))
+			{
+				FuLogger.LogError("事件编号为空，已忽略本次抛出");
+				return;
+			}
+
 			Broadcast(sender, EmptyEventArgs.Create(eventId));
 		}
 

@@ -34,9 +34,46 @@ namespace Hotfix.Framework.Event
 				if (count <= 0) return;
 
 				m_cachedEventBatch.Clear();
-				for (var i = 0; i < count; i++)
+
+				// 填充批次（循环同样在保护内）：中途异常时已出队节点按「出队未分发」一并补收
+				// （节点+参数各自 try/catch 隔离，写法同下方分发兜底），随后结束本轮不再分发——
+				// 漏回收会让 ReferencePool 计数永久漂移，异常穿透会打断 ModuleManager.Update 当帧后续模块，
+				// 二者都比「少分发一批」代价高。
+				try
 				{
-					m_cachedEventBatch.Add(m_eventQueue.Dequeue());
+					for (var i = 0; i < count; i++)
+					{
+						m_cachedEventBatch.Add(m_eventQueue.Dequeue());
+					}
+				}
+				catch (Exception fillException)
+				{
+					var filled = m_cachedEventBatch.Count;
+					for (var i = 0; i < filled; i++)
+					{
+						var partialEvent = m_cachedEventBatch[i];
+						try
+						{
+							ReferencePool.Recycle(partialEvent.EventArgs);
+						}
+						catch (Exception exception)
+						{
+							FuLogger.LogError($"填充中断兜底回收事件参数异常:{exception}");
+						}
+
+						try
+						{
+							ReferencePool.Recycle(partialEvent);
+						}
+						catch (Exception exception)
+						{
+							FuLogger.LogError($"填充中断兜底回收事件节点异常:{exception}");
+						}
+					}
+
+					m_cachedEventBatch.Clear();
+					FuLogger.LogError($"批次填充中断（已填充 {filled}/{count}），本轮不再分发，已填充部分已回收:{fillException}");
+					return;
 				}
 
 				// 逐条分发并回收；handler 抛异常时未处理的批次事件仍占用池对象，用 finally 兜底回收
@@ -100,6 +137,8 @@ namespace Hotfix.Framework.Event
 		/// 本方法无条件拥有 e：返回前（含异常路径）必定回收并 Clear 它，故处理函数不得转发或缓存收到的 e，
 		/// 否则转发目标会观测到已清空的数据，且与「回池后可能被复用」形成脏读。需要转发时请新建事件参数对象。
 		/// </summary>
+		/// <param name="sender">事件源。</param>
+		/// <param name="e">事件参数。</param>
 		private void HandleEvent(object sender, GameEventArgs e)
 		{
 			try
