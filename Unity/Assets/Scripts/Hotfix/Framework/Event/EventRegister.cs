@@ -13,6 +13,8 @@ namespace Hotfix.Framework.Event
 	///     3. 派发事件。
 	/// 错误契约：全部守卫以 FuLogger 错误日志表达，不抛异常——未绑定事件模块的订阅器上的
 	/// 所有操作均记日志并忽略，调用流程不中断（失效可观测但不致命）。
+	/// 生命周期契约：窗口关闭时 Suspend（总线退订、账本保留即重放清单），打开时 Resume（按账本重放）；
+	/// 挂起态下的新订阅只记账本不进总线。
 	/// </summary>
 	public sealed class EventRegister : IReference
 	{
@@ -24,6 +26,13 @@ namespace Hotfix.Framework.Event
 		/// 事件处理多值字典，key为事件ID，value为事件处理对象列表。
 		/// </summary>
 		private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_eventHandlerDict = new();
+
+		/// <summary>
+		/// 是否已挂起（窗口关闭态）：挂起时账本仍登记新订阅、总线侧保持退订，Resume 按账本统一重放。
+		/// 寄存器经 ReferencePool 回池复用且 Acquire 不重置任何字段，Clear 必须复位本标志——
+		/// 漏复位会让挂起态寄存器被新窗口领走后订阅全部只进账本不进总线（事件静默失效）。
+		/// </summary>
+		private bool m_suspended;
 
 		/// <summary>
 		/// 创建事件订阅器。
@@ -79,6 +88,12 @@ namespace Hotfix.Framework.Event
 			}
 
 			m_eventHandlerDict.Add(id, handler);
+			if (m_suspended)
+			{
+				// 挂起态只记账不进总线：总线侧当前整体退订中，重开时由 Resume 按账本统一重放
+				return;
+			}
+
 			m_eventModule.Subscribe(id, handler);
 		}
 
@@ -120,6 +135,46 @@ namespace Hotfix.Framework.Event
 			}
 
 			m_eventHandlerDict.Clear();
+		}
+
+		/// <summary>
+		/// 挂起：窗口关闭时调用。按账本逐条从总线退订（模块侧对缺失条目安全空操作），账本保留不清空——账本即重放清单。
+		/// 幂等：已挂起直接返回。
+		/// </summary>
+		public void Suspend()
+		{
+			if (m_suspended) return;
+
+			m_suspended = true;
+			if (m_eventModule == null) return;
+
+			foreach (var (id, eventHandlers) in m_eventHandlerDict)
+			{
+				foreach (var eventHandler in eventHandlers)
+				{
+					m_eventModule.Unsubscribe(id, eventHandler);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 恢复：窗口打开时调用（须先于业务 OnOpen，保证其执行期间订阅已就绪）。按账本逐条向总线重放订阅。
+		/// 幂等：未挂起直接返回。
+		/// </summary>
+		public void Resume()
+		{
+			if (!m_suspended) return;
+
+			m_suspended = false;
+			if (m_eventModule == null) return;
+
+			foreach (var (id, eventHandlers) in m_eventHandlerDict)
+			{
+				foreach (var eventHandler in eventHandlers)
+				{
+					m_eventModule.Subscribe(id, eventHandler);
+				}
+			}
 		}
 
 		/// <summary>
@@ -176,6 +231,7 @@ namespace Hotfix.Framework.Event
 		public void Clear()
 		{
 			UnSubscribeAll();
+			m_suspended = false; // 复位挂起标志：寄存器回池复用且 Acquire 不重置字段，漏复位会让新窗口的订阅只进账本不进总线
 			m_eventModule = null;
 		}
 
