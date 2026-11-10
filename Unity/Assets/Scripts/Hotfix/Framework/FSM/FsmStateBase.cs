@@ -1,4 +1,5 @@
 using System;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.FSM
@@ -59,7 +60,12 @@ namespace Hotfix.Framework.FSM
 		/// <typeparam name="TState">要切换到的状态类型。</typeparam>
 		protected void ChangeState<TState>() where TState : FsmStateBase
 		{
-			if (Fsm is null) throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
+			if (Fsm is null)
+			{
+				FuLogger.LogError("有限状态机为空，已忽略本次切换");
+				return;
+			}
+
 			Fsm.ChangeState<TState>();
 		}
 
@@ -69,13 +75,23 @@ namespace Hotfix.Framework.FSM
 		/// <param name="state">要切换到的状态类型。</param>
 		protected void ChangeState(Type state)
 		{
-			if (state == null) throw new InvalidOperationException("[FsmStateBase] 状态类型不能为空。");
+			if (state == null)
+			{
+				FuLogger.LogError("状态类型为空，已忽略本次切换");
+				return;
+			}
 
 			if (!typeof(FsmStateBase).IsAssignableFrom(state))
-				throw new InvalidOperationException($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类。");
+			{
+				FuLogger.LogError($"状态类型 '{state.FullName}' 不是 FsmStateBase 的子类，已忽略本次切换");
+				return;
+			}
 
 			if (Fsm is null)
-				throw new InvalidOperationException("[FsmStateBase] 有限状态机不能为空。");
+			{
+				FuLogger.LogError("有限状态机为空，已忽略本次切换");
+				return;
+			}
 
 			Fsm.ChangeState(state);
 		}

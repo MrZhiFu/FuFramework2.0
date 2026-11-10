@@ -201,12 +201,21 @@ namespace Hotfix.Framework.FSM
 		/// <typeparam name="TState">要开始的有限状态机状态类型。</typeparam>
 		public void Start<TState>() where TState : FsmStateBase
 		{
-			if (IsRunning) throw new InvalidOperationException("[Fsm] 有限状态机正在运行中，不能重复开始。");
+			if (IsRunning)
+			{
+				FuLogger.LogError("有限状态机正在运行中，已忽略本次开始");
+				return;
+			}
 
 			FsmStateBase stateBase = GetState<TState>();
+			if (stateBase == null)
+			{
+				FuLogger.LogError($"有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在，已忽略本次开始");
+				return;
+			}
 
 			CurrentStateTime = 0f;
-			CurrentStateBase = stateBase ?? throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{typeof(TState).FullName}' 失败，状态不存在。");
+			CurrentStateBase = stateBase;
 			CurrentStateBase.OnEnter();
 		}
 
@@ -216,16 +225,33 @@ namespace Hotfix.Framework.FSM
 		/// <param name="stateType">要开始的有限状态机状态类型。</param>
 		public void Start(Type stateType)
 		{
-			if (IsRunning) throw new InvalidOperationException("[Fsm] 有限状态机正在运行中，不能重复开始。");
-			if (stateType == null) throw new InvalidOperationException("[Fsm] 有限状态机开始失败，需要开始的状态不能为空。");
+			if (IsRunning)
+			{
+				FuLogger.LogError("有限状态机正在运行中，已忽略本次开始");
+				return;
+			}
+
+			if (stateType == null)
+			{
+				FuLogger.LogError("需要开始的状态类型为空，已忽略本次开始");
+				return;
+			}
 
 			if (!typeof(FsmStateBase).IsAssignableFrom(stateType))
-				throw new InvalidOperationException($"State type '{stateType.FullName}' is invalid.");
+			{
+				FuLogger.LogError($"状态类型 '{stateType.FullName}' 不是 FsmStateBase 的子类，已忽略本次开始");
+				return;
+			}
 
 			var state = GetState(stateType);
+			if (state == null)
+			{
+				FuLogger.LogError($"有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在，已忽略本次开始");
+				return;
+			}
 
 			CurrentStateTime = 0f;
-			CurrentStateBase = state ?? throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 开始状态 '{stateType.FullName}' 失败，状态不存在。");
+			CurrentStateBase = state;
 			CurrentStateBase.OnEnter();
 		}
 
@@ -376,7 +402,12 @@ namespace Hotfix.Framework.FSM
 		/// <param name="results">有限状态机的所有状态。</param>
 		public void GetAllStates(List<FsmStateBase> results)
 		{
-			if (results == null) throw new InvalidOperationException("[Fsm] 结果列表不能为空。");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次调用");
+				return;
+			}
+
 			results.Clear();
 			foreach (var (_, state) in m_stateDict)
 			{
@@ -435,7 +466,11 @@ namespace Hotfix.Framework.FSM
 		/// <param name="data">要设置的有限状态机数据。</param>
 		public void SetData(string name, object data)
 		{
-			if (string.IsNullOrEmpty(name)) throw new InvalidOperationException("[Fsm] 需要设置的数据名称不能为空。");
+			if (string.IsNullOrEmpty(name))
+			{
+				FuLogger.LogError("需要设置的数据名称为空，已忽略本次设置");
+				return;
+			}
 
 			m_dataDict ??= new Dictionary<string, object>(StringComparer.Ordinal);
 
@@ -504,9 +539,18 @@ namespace Hotfix.Framework.FSM
 		/// <param name="stateType">要切换到的有限状态机状态类型。</param>
 		internal void ChangeState(Type stateType)
 		{
-			if (CurrentStateBase == null) throw new InvalidOperationException("[Fsm] 有限状态机当前状态为空，切换失败。");
+			if (CurrentStateBase == null)
+			{
+				FuLogger.LogError("有限状态机当前状态为空，已忽略本次切换");
+				return;
+			}
+
 			var state = GetState(stateType);
-			if (state == null) throw new InvalidOperationException($"[Fsm] 有限状态机 '{FullName}' 切换状态 '{stateType.FullName}' 失败，状态不存在。");
+			if (state == null)
+			{
+				FuLogger.LogError($"有限状态机 '{FullName}' 切换状态 '{stateType.FullName}' 失败，状态不存在，已忽略本次切换");
+				return;
+			}
 
 			CurrentStateBase.OnLeave(false);
 			CurrentStateTime = 0f;

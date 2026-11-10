@@ -230,7 +230,12 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		protected void CloseSelf()
 		{
-			if (m_uiModule is null) throw new InvalidOperationException("[WinBase] 关闭自身失败，UI管理模块为空。");
+			if (m_uiModule is null)
+			{
+				FuLogger.LogError("UI管理模块为空，已忽略本次关闭自身");
+				return;
+			}
+
 			m_uiModule.Close(this);
 		}
 	}

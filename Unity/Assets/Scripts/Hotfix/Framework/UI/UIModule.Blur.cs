@@ -184,12 +184,30 @@ namespace Hotfix.Framework.UI
 			{
 				var assetModule = ModuleManager.GetModule<AssetModule>();
 				if (assetModule == null)
-					throw new InvalidOperationException("[UIModule] 资源模块不存在。");
+				{
+					FuLogger.LogError("资源模块不存在，UI背景模糊 Shader 加载失败，模糊功能禁用，已忽略本次加载");
+
+					// 必须置位完成源：OnWinOpeningAsync 可能已 await 它，不置位会永久挂起并卡死整条开窗链
+					loadTaskSource.TrySetCanceled();
+					return;
+				}
 
 				handle = await assetModule.LoadAssetAsync<Shader>(BlurShaderPath, m_scope.Token);
 				var shader = handle.GetAssetObject<Shader>();
 				if (shader == null)
-					throw new InvalidOperationException($"[UIModule] Shader '{BlurShaderPath}' 类型不匹配。");
+				{
+					FuLogger.LogError($"Shader '{BlurShaderPath}' 类型不匹配，UI背景模糊 Shader 加载失败，模糊功能禁用，已忽略本次加载");
+
+					// 释放失败句柄，避免 provider 引用残留；跨生命周期时配对卸载，防 bundle 残留（与成功分支/取消分支口径一致）
+					handle.Release();
+					handle = null;
+					if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token)
+						assetModule.UnloadAsset(BlurShaderPath);
+
+					// 必须置位完成源：OnWinOpeningAsync 可能已 await 它，不置位会永久挂起并卡死整条开窗链
+					loadTaskSource.TrySetCanceled();
+					return;
+				}
 
 				// 模块已销毁/生命周期变更（重启）：释放句柄并放弃写入，防止旧任务覆盖新任务状态导致泄漏
 				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token)

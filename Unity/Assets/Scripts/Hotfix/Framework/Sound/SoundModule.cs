@@ -620,7 +620,7 @@ namespace Hotfix.Framework.Sound
 				if (soundGroup.PauseSound(serialId, fadeOutSeconds)) return;
 			}
 
-			throw new InvalidOperationException($"[SoundModule]找不到声音 '{serialId}'.");
+			FuLogger.LogError($"找不到声音 '{serialId}'，已忽略本次暂停");
 		}
 
 		/// <summary>
@@ -641,7 +641,7 @@ namespace Hotfix.Framework.Sound
 				if (soundGroup.ResumeSound(serialId, fadeInSeconds)) return;
 			}
 
-			throw new InvalidOperationException($"[SoundModule]找不到声音 '{serialId}'.");
+			FuLogger.LogError($"找不到声音 '{serialId}'，已忽略本次恢复");
 		}
 
 		#endregion
@@ -650,11 +650,13 @@ namespace Hotfix.Framework.Sound
 		/// 加载声音资源成功回调。
 		/// </summary>
 		/// <param name="playSoundInfo">播放时的声音信息。</param>
-		/// <exception cref="InvalidOperationException"></exception>
 		private void LoadAssetSuccessCallback(PlaySoundInfo playSoundInfo)
 		{
 			if (playSoundInfo is null)
-				throw new InvalidOperationException("[SoundModule]要播放的声音信息为空!");
+			{
+				FuLogger.LogError("要播放的声音信息为空，已忽略本次播放");
+				return;
+			}
 
 			// 如果正在加载但是又被标记为要释放的声音，则释放资源后和释放播放参数信息对象直接返回
 			if (m_loadingToReleaseSet.Contains(playSoundInfo.SerialId))

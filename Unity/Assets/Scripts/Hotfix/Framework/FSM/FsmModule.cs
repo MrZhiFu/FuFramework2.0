@@ -203,7 +203,12 @@ namespace Hotfix.Framework.FSM
 		/// <param name="results">所有有限状态机。</param>
 		public void GetAllFsms(List<Fsm> results)
 		{
-			if (results == null) throw new InvalidOperationException("[FsmModule] 结果列表不能为空。");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次调用");
+				return;
+			}
+
 			results.Clear();
 			foreach (var (_, fsmBase) in m_fsmDict)
 			{
@@ -234,7 +239,10 @@ namespace Hotfix.Framework.FSM
 			var typeNamePair = new TypeNamePair(ownerType, fsmName);
 
 			if (HasFsm(ownerType))
-				throw new InvalidOperationException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
+			{
+				FuLogger.LogError($"有限状态机 '{typeNamePair}' 已经存在，已忽略本次创建");
+				return null;
+			}
 
 			var fsm = Fsm.Create(fsmName, owner, states);
 			m_fsmDict.Add(typeNamePair, fsm);
@@ -265,7 +273,10 @@ namespace Hotfix.Framework.FSM
 		{
 			var typeNamePair = new TypeNamePair(typeof(T), fsmName);
 			if (HasFsm<T>(fsmName))
-				throw new InvalidOperationException($"[FsmModule] 有限状态机 '{typeNamePair}' 已经存在，不能重复创建。");
+			{
+				FuLogger.LogError($"有限状态机 '{typeNamePair}' 已经存在，已忽略本次创建");
+				return null;
+			}
 
 			var fsm = Fsm.Create(fsmName, owner, states);
 			m_fsmDict.Add(typeNamePair, fsm);

@@ -4,6 +4,7 @@ using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
 using Hotfix.Framework.Core;
+using AOT.Framework.Core.Log;
 
 namespace Hotfix.Framework.Storage
 {
@@ -80,7 +81,12 @@ namespace Hotfix.Framework.Storage
 		/// <param name="results">所有本地存储的数据项的名称。</param>
 		public void GetAllDataNames(List<string> results)
 		{
-			if (results == null) throw new InvalidOperationException("[Data] 结果列表不能为空.");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次获取");
+				return;
+			}
+
 			results.Clear();
 			foreach (var setting in m_dataDict)
 			{

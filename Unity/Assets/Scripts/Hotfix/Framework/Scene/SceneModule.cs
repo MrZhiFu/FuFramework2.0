@@ -239,7 +239,11 @@ namespace Hotfix.Framework.Scene
 		/// <param name="results">已加载场景的资源路径。</param>
 		public void GetAllLoadedSceneAssetPaths(List<string> results)
 		{
-			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次获取");
+				return;
+			}
 			results.Clear();
 			results.AddRange(m_loadedSceneDict.Keys);
 		}
@@ -261,7 +265,11 @@ namespace Hotfix.Framework.Scene
 		/// <param name="results">正在加载场景的资源路径。</param>
 		public void GetAllLoadingSceneAssetPaths(List<string> results)
 		{
-			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次获取");
+				return;
+			}
 			results.Clear();
 			results.AddRange(m_loadingSceneSet);
 		}
@@ -283,7 +291,11 @@ namespace Hotfix.Framework.Scene
 		/// <param name="results">正在卸载场景的资源路径。</param>
 		public void GetAllUnloadingSceneAssetPaths(List<string> results)
 		{
-			if (results == null) throw new InvalidOperationException("[SceneModule] 结果参数列表为空!");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次获取");
+				return;
+			}
 			results.Clear();
 			results.AddRange(m_unloadingSceneDict.Keys);
 		}
@@ -334,19 +346,34 @@ namespace Hotfix.Framework.Scene
 		public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath))
-				throw new InvalidOperationException("[SceneModule] 场景资源路径不能为空!.");
+			{
+				FuLogger.LogError("场景资源路径为空，已忽略本次加载");
+				return null;
+			}
 
 			if (!sceneAssetPath.StartsWith("Assets/", StringComparison.Ordinal) || !sceneAssetPath.EndsWith(".unity", StringComparison.Ordinal))
-				throw new InvalidOperationException($"[SceneModule] 场景资源路径 '{sceneAssetPath}' 格式错误!");
+			{
+				FuLogger.LogError($"场景资源路径 '{sceneAssetPath}' 格式错误，已忽略本次加载");
+				return null;
+			}
 
 			if (IsUnloading(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在卸载中!");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 正在卸载中，已忽略本次加载");
+				return null;
+			}
 
 			if (IsLoading(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 正在加载中!");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 正在加载中，已忽略本次加载");
+				return null;
+			}
 
 			if (IsLoaded(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 场景资源 '{sceneAssetPath}' 已被加载过，不能重复加载!");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 已被加载过，不能重复加载，已忽略本次加载");
+				return null;
+			}
 
 			// await 前置位：先登记 loading 状态拦截并发同路径加载（m_loadingSceneDict 需 await 完成拿到 handle 才能登记）
 			m_loadingSceneSet.Add(sceneAssetPath);
@@ -386,16 +413,29 @@ namespace Hotfix.Framework.Scene
 		/// <param name="userData">用户自定义数据。</param>
 		public void UnloadScene(string sceneAssetPath, object userData = null)
 		{
-			sceneAssetPath.NotNull(nameof(sceneAssetPath));
+			if (string.IsNullOrEmpty(sceneAssetPath))
+			{
+				FuLogger.LogError("场景资源路径为空，已忽略本次卸载");
+				return;
+			}
 
 			if (IsUnloading(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在卸载中!.");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 正在卸载中，已忽略本次卸载");
+				return;
+			}
 
 			if (IsLoading(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景正在加载中!.");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 正在加载中，已忽略本次卸载");
+				return;
+			}
 
 			if (!IsLoaded(sceneAssetPath))
-				throw new InvalidOperationException($"[SceneModule] 卸载场景 '{sceneAssetPath}' 失败, 场景未加载!");
+			{
+				FuLogger.LogError($"场景 '{sceneAssetPath}' 未加载，已忽略本次卸载");
+				return;
+			}
 
 			if (!m_loadedSceneDict.TryGetValue(sceneAssetPath, out var sceneOperationHandle)) return;
 
@@ -466,7 +506,11 @@ namespace Hotfix.Framework.Scene
 		/// <param name="sceneHandle"></param>
 		private void OnLoadSceneCompleted(SceneHandle sceneHandle)
 		{
-			sceneHandle.NotNull(nameof(sceneHandle));
+			if (sceneHandle == null)
+			{
+				FuLogger.LogError("场景句柄为空，已忽略本次加载完成处理");
+				return;
+			}
 
 			var assetPath = sceneHandle.GetAssetInfo().AssetPath;
 			m_loadingSceneDict.Remove(assetPath, out var sceneHandleData);

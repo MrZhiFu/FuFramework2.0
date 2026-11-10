@@ -41,7 +41,11 @@ namespace Hotfix.Framework.Procedure
 		protected internal override void OnInit()
 		{
 			m_fsmModule = ModuleManager.GetModule<FsmModule>();
-			if (m_fsmModule == null) throw new InvalidOperationException("[ProcedureModule] 有限状态机管理模块不能为空");
+			if (m_fsmModule == null)
+			{
+				FuLogger.LogFatal("有限状态机管理模块不存在，流程模块初始化失败");
+				return;
+			}
 		}
 
 		/// <summary>
@@ -64,10 +68,13 @@ namespace Hotfix.Framework.Procedure
 		/// 初始化流程状态机。
 		/// </summary>
 		/// <param name="procedure"></param>
-		/// <exception cref="InvalidOperationException"></exception>
 		public void InitProcedures(ProcedureBase[] procedure)
 		{
-			if (m_fsmModule == null) throw new InvalidOperationException("[ProcedureModule] 有限状态机管理模块不能为空");
+			if (m_fsmModule == null)
+			{
+				FuLogger.LogFatal("有限状态机管理模块不存在，流程模块初始化失败");
+				return;
+			}
 
 			// 二次初始化不静默忽略（原 ??= 会把重复调用当成无事发生，沿用上一份状态集合）：
 			// 显式告警并销毁旧状态机后按本次传入的流程集合重建。
@@ -80,7 +87,11 @@ namespace Hotfix.Framework.Procedure
 
 			// ReSharper disable once CoVariantArrayConversion
 			m_procedureFsm = m_fsmModule.CreateFsm(this, procedure);
-			if (m_procedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 创建流程管理模块失败.");
+			if (m_procedureFsm == null)
+			{
+				FuLogger.LogError("创建流程状态机失败，已忽略本次初始化");
+				return;
+			}
 		}
 
 		/// <summary>
@@ -89,7 +100,12 @@ namespace Hotfix.Framework.Procedure
 		/// <typeparam name="T">要开始的流程类型。</typeparam>
 		public void StartProcedure<T>() where T : ProcedureBase
 		{
-			if (m_procedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
+			if (m_procedureFsm == null)
+			{
+				FuLogger.LogError("流程管理模块尚未初始化，已忽略本次调用");
+				return;
+			}
+
 			m_procedureFsm.Start<T>();
 		}
 
@@ -99,7 +115,12 @@ namespace Hotfix.Framework.Procedure
 		/// <param name="procedureType">要开始的流程类型。</param>
 		public void StartProcedure(Type procedureType)
 		{
-			if (m_procedureFsm == null) throw new InvalidOperationException("[ProcedureModule] 流程管理模块尚未初始化.");
+			if (m_procedureFsm == null)
+			{
+				FuLogger.LogError("流程管理模块尚未初始化，已忽略本次调用");
+				return;
+			}
+
 			m_procedureFsm.Start(procedureType);
 		}
 

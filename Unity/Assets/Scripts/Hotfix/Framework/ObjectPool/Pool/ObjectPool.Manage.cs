@@ -21,24 +21,37 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="inUse">对象注册时是否已处于使用中。</param>
 		public void Register(T obj, bool inUse)
 		{
-			if (obj        == null) throw new InvalidOperationException("[ObjectPoolModule] 要创建并注册对象不能为空.");
-			if (obj.Target == null) throw new InvalidOperationException("[ObjectPoolModule] 要注册的对象目标不能为空.");
+			if (obj == null)
+			{
+				FuLogger.LogError("要注册的对象为空，已忽略本次注册");
+				return;
+			}
+
+			if (obj.Target == null)
+			{
+				FuLogger.LogError($"要注册的对象 '{obj.Name}' 的目标真实对象为空，已忽略本次注册");
+				return;
+			}
 
 			// 目标真实对象（如 GameObject）已被 Unity 销毁时视为无效对象：不注册并剔除可能的残留登记，
-			// 然后抛出异常让调用方感知——否则调用方 Acquire 出来的对象既不注册也不归还，会永久泄漏，
-			// 且调用方误以为已登记。与上方 obj.Target == null 的抛异常风格一致。
+			// 并记录错误日志让调用方感知——否则调用方 Acquire 出来的对象既不注册也不归还，会永久泄漏，
+			// 且调用方误以为已登记。泄漏风险不因转日志消失，但已可观测。
 			// 注意 Target 的静态类型为 object，obj.Target == null 只是引用比较，识别不了 Unity 的"假 null"。
 			if (IsTargetDead(obj))
 			{
 				// 提前捕获名称：RemoveDeadObject 内的 OnDispose 会把对象状态清空（Name 置空）
 				var deadObjName = obj.Name;
 				RemoveDeadObject(obj);
-				throw new InvalidOperationException($"[ObjectPoolModule] 对象池“{new TypeNamePair(typeof(T), Name)}”中要注册的对象 '{deadObjName}' 的目标真实对象已被 Unity 销毁（假 null），无法注册。");
+				FuLogger.LogError($"对象池“{new TypeNamePair(typeof(T), Name)}”中要注册的对象 '{deadObjName}' 的目标真实对象已被 Unity 销毁（假 null），已忽略本次注册");
+				return;
 			}
 
 			// 同一目标对象不允许重复注册，避免双字典写入不一致
 			if (m_targetObjectDict.ContainsKey(obj.Target))
-				throw new InvalidOperationException($"[ObjectPoolModule] 对象池 '{new TypeNamePair(typeof(T), Name)}' 中已存在目标对象.");
+			{
+				FuLogger.LogError($"对象池 '{new TypeNamePair(typeof(T), Name)}' 中已存在目标对象 '{obj.Name}'，已忽略本次注册");
+				return;
+			}
 
 			m_objectMultiDict.Add(obj.Name, obj);
 			m_targetObjectDict.Add(obj.Target, obj);
@@ -194,7 +207,12 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="obj">要回收的对象。</param>
 		public void Recycle(T obj)
 		{
-			if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+			if (obj == null)
+			{
+				FuLogger.LogError("要回收的对象为空，已忽略本次回收");
+				return;
+			}
+
 			Recycle(obj.Target);
 		}
 
@@ -204,11 +222,18 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="target">要回收的对象。</param>
 		public void Recycle(object target)
 		{
-			if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 要回收的目标对象不能为空.");
+			if (target == null)
+			{
+				FuLogger.LogError("要回收的目标对象为空，已忽略本次回收");
+				return;
+			}
 
 			var obj = GetObject(target);
 			if (obj == null)
-				throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'.");
+			{
+				FuLogger.LogError($"在对象池“{new TypeNamePair(typeof(T), Name)}”中找不到目标对象 '{target.GetType().FullName}'，已忽略本次回收");
+				return;
+			}
 
 			RecycleInternal(obj);
 		}
@@ -292,7 +317,12 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="locked">是否被加锁。</param>
 		public void SetLocked(T obj, bool locked)
 		{
-			if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+			if (obj == null)
+			{
+				FuLogger.LogError("要设置加锁状态的对象为空，已忽略本次设置");
+				return;
+			}
+
 			SetLocked(obj.Target, locked);
 		}
 
@@ -303,11 +333,19 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="locked">是否被加锁。</param>
 		public void SetLocked(object target, bool locked)
 		{
-			if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+			if (target == null)
+			{
+				FuLogger.LogError("要设置加锁状态的目标对象为空，已忽略本次设置");
+				return;
+			}
 
 			var obj = GetObject(target);
 			if (obj == null)
-				throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
+			{
+				FuLogger.LogError($"在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标对象 '{target.GetType().FullName}'，已忽略本次加锁设置");
+				return;
+			}
+
 			obj.Locked = locked;
 		}
 
@@ -318,7 +356,12 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="priority">优先级。</param>
 		public void SetPriority(T obj, int priority)
 		{
-			if (obj == null) throw new InvalidOperationException("[ObjectPoolModule] 对象不能为空.");
+			if (obj == null)
+			{
+				FuLogger.LogError("要设置优先级的对象为空，已忽略本次设置");
+				return;
+			}
+
 			SetPriority(obj.Target, priority);
 		}
 
@@ -329,11 +372,19 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="priority">优先级。</param>
 		public void SetPriority(object target, int priority)
 		{
-			if (target == null) throw new InvalidOperationException("[ObjectPoolModule] 目标对象不能为空.");
+			if (target == null)
+			{
+				FuLogger.LogError("要设置优先级的目标对象为空，已忽略本次设置");
+				return;
+			}
 
 			var obj = GetObject(target);
 			if (obj == null)
-				throw new InvalidOperationException($"[ObjectPoolModule] 在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标，目标类型为“{target.GetType().FullName}”，目标值为“{target}”.");
+			{
+				FuLogger.LogError($"在对象池“{new TypeNamePair(typeof(T), Name)}”中未找到目标对象 '{target.GetType().FullName}'，已忽略本次优先级设置");
+				return;
+			}
+
 			obj.Priority = priority;
 		}
 

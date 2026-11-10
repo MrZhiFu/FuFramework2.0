@@ -52,7 +52,12 @@ namespace Hotfix.Framework.Localization
 			get => m_language;
 			set
 			{
-				if (value == ELanguage.Unspecified) throw new InvalidOperationException("[LocalizationModule]设置本地化语言失败，语言未指定.");
+				if (value == ELanguage.Unspecified)
+				{
+					FuLogger.LogError("设置本地化语言失败，语言为 Unspecified（未指定），已忽略本次设置");
+					return;
+				}
+
 				if (value == m_language) return;
 				var oldLanguage = m_language;
 				m_language = value;

@@ -98,8 +98,17 @@ namespace Hotfix.Framework.ObjectPool
 				// 落库后会让 Update 里的“m_autoDisposeTimer >= AutoDisposeCheckInterval”恒为 false，
 				// 自动销毁检查永不触发；正无穷虽等价于“永不检查”，但不是有明文语义的取值，一并拒绝。
 				if (float.IsNaN(value) || float.IsInfinity(value))
-					throw new InvalidOperationException("[ObjectPoolModule] 自动销毁检查间隔秒数不能为 NaN 或 Infinity.");
-				if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 自动销毁检查间隔秒数不能小于0.");
+				{
+					FuLogger.LogError("自动销毁检查间隔秒数不能为 NaN 或 Infinity，已忽略本次设置");
+					return;
+				}
+
+				if (value < 0f)
+				{
+					FuLogger.LogError("自动销毁检查间隔秒数不能小于0，已忽略本次设置");
+					return;
+				}
+
 				if (Mathf.Approximately(m_autoDisposeCheckInterval, value)) return;
 
 				m_autoDisposeCheckInterval = value;
@@ -156,7 +165,12 @@ namespace Hotfix.Framework.ObjectPool
 			set
 			{
 				// Capacity 是 int，不存在 NaN/Infinity，value < 0 已覆盖全部非法取值
-				if (value      < 0) throw new InvalidOperationException("[ObjectPoolModule] 对象池容量不能小于0.");
+				if (value < 0)
+				{
+					FuLogger.LogError("对象池容量不能小于0，已忽略本次设置");
+					return;
+				}
+
 				if (m_capacity == value) return;
 
 				m_capacity = value;
@@ -177,8 +191,17 @@ namespace Hotfix.Framework.ObjectPool
 				// 落库后会让过期判定“now - LastUseTime >= m_expireTimeAfterIdle”恒为 false，对象永不销毁；
 				// 正无穷虽等价于“永不过期”，但不是有明文语义的取值（哨兵是 float.MaxValue），一并拒绝。
 				if (float.IsNaN(value) || float.IsInfinity(value))
-					throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能为 NaN 或 Infinity.");
-				if (value < 0f) throw new InvalidOperationException("[ObjectPoolModule] 对象过期秒数不能小于0.");
+				{
+					FuLogger.LogError("对象过期秒数不能为 NaN 或 Infinity，已忽略本次设置");
+					return;
+				}
+
+				if (value < 0f)
+				{
+					FuLogger.LogError("对象过期秒数不能小于0，已忽略本次设置");
+					return;
+				}
+
 				if (Mathf.Approximately(ExpireTimeAfterIdle, value)) return;
 
 				m_expireTimeAfterIdle = value;

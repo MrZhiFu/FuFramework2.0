@@ -95,7 +95,11 @@ namespace Hotfix.Framework.Storage
 		/// <param name="encryptKey">加密密钥</param>
 		public void Init(string fileName, bool enableAutoSave, float autoSaveInterval, bool enableEncryption = false, string encryptKey = null)
 		{
-			if (string.IsNullOrEmpty(fileName)) throw new InvalidOperationException("[[DataSaveHelper] 文件名不能为空");
+			if (string.IsNullOrEmpty(fileName))
+			{
+				FuLogger.LogError("文件名为空，已忽略本次初始化");
+				return;
+			}
 
 			FileName = fileName;
 			var path = Path.Combine(Application.persistentDataPath, StorageModule.DIR_ROOT, fileName);

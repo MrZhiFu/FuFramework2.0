@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
@@ -49,8 +50,9 @@ namespace Hotfix.Framework.Download
 		/// <param name="downloadAgentHelper">下载代理辅助器。</param>
 		public DownloadAgent(UnityWebRequestDownloadAgentHelper downloadAgentHelper)
 		{
-			m_helper = downloadAgentHelper ?? throw new InvalidOperationException("[DownloadAgent]下载代理辅助器为空!");
+			downloadAgentHelper.CheckNull("[DownloadAgent]下载代理辅助器不能为空!");
 
+			m_helper         = downloadAgentHelper;
 			Task             = null;
 			m_fileStream     = null;
 			m_waitFlushSize  = 0;
@@ -157,8 +159,9 @@ namespace Hotfix.Framework.Download
 		/// <returns>开始处理任务的状态。</returns>
 		public EStartTaskStatus Start(DownloadTask task)
 		{
-			Task = task ?? throw new InvalidOperationException("[DownloadAgent] 任务不能为空.");
+			task.CheckNull("[DownloadAgent] 任务不能为空.");
 
+			Task        = task;
 			Task.Status = DownloadTaskStatus.Doing;
 			var downloadFile = $"{Task.DownloadedFullPath}.download";
 
@@ -340,7 +343,10 @@ namespace Hotfix.Framework.Download
 			DownloadedLength = e.Length;
 
 			if (SavedLength != CurrentLength)
-				throw new InvalidOperationException("[DownloadAgent] 已存储的大小和当前大小不一致");
+			{
+				FuLogger.LogError("已存储的大小和当前大小不一致");
+				return;
+			}
 
 			m_helper.Reset();
 			m_fileStream.Close();

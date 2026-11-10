@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Hotfix.Framework.Core;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Framework.ObjectPool
@@ -89,10 +90,19 @@ namespace Hotfix.Framework.ObjectPool
 		private void _Initialize(string name, object target, bool locked, int priority)
 		{
 			if (string.IsNullOrEmpty(name))
-				throw new InvalidOperationException("[ObjectBase] 对象名称不能为空，对象必须命名后才能注册到对象池.");
+			{
+				FuLogger.LogError("对象名称为空，对象必须命名后才能注册到对象池，已忽略本次初始化");
+				return;
+			}
+
+			if (target == null)
+			{
+				FuLogger.LogError($"对象“{name}”的目标真实对象为空，已忽略本次初始化");
+				return;
+			}
 
 			Name        = name;
-			Target      = target ?? throw new InvalidOperationException($"[ObjectBase] 对象“{name}”为空.");
+			Target      = target;
 			Locked      = locked;
 			Priority    = priority;
 			LastUseTime = Time.unscaledTimeAsDouble;

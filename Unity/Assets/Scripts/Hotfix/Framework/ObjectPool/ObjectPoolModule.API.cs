@@ -150,7 +150,11 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="results">所有对象池。</param>
 		public void GetAllObjectPools(bool sort, List<ObjectPoolBase> results)
 		{
-			if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次获取所有对象池");
+				return;
+			}
 
 			results.Clear();
 			foreach (var (_, objPool) in m_objPoolDict)

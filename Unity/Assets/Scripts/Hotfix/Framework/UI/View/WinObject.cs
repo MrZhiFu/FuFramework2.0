@@ -34,7 +34,10 @@ namespace Hotfix.Framework.UI
 		protected internal override void OnDispose()
 		{
 			if (Target is not WinBase winBase)
-				throw new InvalidOperationException("[WinObject] 需要销毁的目标对象不是界面基类WinBase");
+			{
+				FuLogger.LogError($"界面实例对象 '{Name}' 的目标对象不是界面基类 WinBase，已忽略本次销毁");
+				return;
+			}
 
 			try
 			{

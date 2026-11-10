@@ -3,6 +3,7 @@ using FairyGUI;
 using Hotfix.Framework.Core;
 using System.Collections.Generic;
 using Hotfix.Game.Config;
+using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 namespace Hotfix.Framework.UI
@@ -235,7 +236,10 @@ namespace Hotfix.Framework.UI
 		public void Add(WinBase win)
 		{
 			if (Has(win.SerialId))
-				throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.WinName}'.");
+			{
+				FuLogger.LogError($"UI组 '{Layer.ToString()}' 中已经存在UI界面 '[{win.SerialId}]{win.WinName}'，已忽略本次添加");
+				return;
+			}
 
 			var uiInfo = WinInfo.Create(win);
 			m_uiInfoList.AddFirst(uiInfo);
@@ -249,10 +253,16 @@ namespace Hotfix.Framework.UI
 		{
 			var uiInfo = GetInfo(win);
 			if (uiInfo == null)
-				throw new InvalidOperationException($"[UIGroup] 无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.WinName}' 的UI界面信息.");
+			{
+				FuLogger.LogError($"无法找到界面id为 '{win.SerialId}' ，资源名称为 '{win.WinName}' 的UI界面信息，已忽略本次移除");
+				return;
+			}
 
 			if (!m_uiInfoList.Remove(uiInfo))
-				throw new InvalidOperationException($"[UIGroup] UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.WinName}'.");
+			{
+				FuLogger.LogError($"UI组 '{Layer.ToString()}' 中不存在UI界面 '[{win.SerialId}]{win.WinName}'，已忽略本次移除");
+				return;
+			}
 
 			// 释放界面信息实例
 			ReferencePool.Recycle(uiInfo);

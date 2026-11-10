@@ -218,7 +218,10 @@ namespace Hotfix.Framework.ObjectPool
 		public void Dispose(int toDisposeCount, DisposeObjectFilterCallback<T> releaseObjectFilterCallback)
 		{
 			if (releaseObjectFilterCallback == null)
-				throw new InvalidOperationException("[ObjectPoolModule] 销毁对象筛选函数不能为空.");
+			{
+				FuLogger.LogError("销毁对象筛选函数为空，已忽略本次销毁");
+				return;
+			}
 
 			if (toDisposeCount <= 0) return;
 
@@ -433,7 +436,11 @@ namespace Hotfix.Framework.ObjectPool
 		/// <param name="results">结果列表</param>
 		private void GetCanDisposeObjects(List<T> results)
 		{
-			if (results == null) throw new InvalidOperationException("[ObjectPoolModule] 结果列表不能为空.");
+			if (results == null)
+			{
+				FuLogger.LogError("结果列表为空，已忽略本次收集可销毁对象");
+				return;
+			}
 
 			results.Clear();
 			foreach (var (_, obj) in m_targetObjectDict)
