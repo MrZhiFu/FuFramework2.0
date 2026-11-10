@@ -63,6 +63,16 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		protected internal override void OnInit()
 		{
+			// 幂等守卫：RegisterModule 的重启分支会对存活单例直接再调 OnInit（不经 OnDispose）。
+			// 二次初始化若直接 new 替换，旧队列未分发节点（含参数）不排水即被丢弃 → ReferencePool 计数永久漂移，
+			// 订阅字典也被静默清空。故按 OnDispose 同口径先清后建，并以告警暴露这次非常规初始化。
+			if (m_eventQueue != null)
+			{
+				FuLogger.LogWarning("OnInit 被重复调用（未先 OnDispose），已按关停口径清理旧队列与订阅后重建");
+				Clear();
+				m_eventHandlerMultiDict.Clear();
+			}
+
 			m_eventQueue            = new Queue<Event>();
 			m_eventHandlerMultiDict = new FuMultiDictionary<string, EventHandler<GameEventArgs>>();
 		}

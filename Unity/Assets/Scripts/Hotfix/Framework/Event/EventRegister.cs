@@ -46,11 +46,11 @@ namespace Hotfix.Framework.Event
 			var eventModule = ModuleManager.GetModule<EventModule>();
 			if (eventModule == null)
 			{
-				FuLogger.LogError("[EventRegister] EventModule 尚未注册，本次创建的订阅器未绑定事件模块（其上操作均被忽略）.");
+				FuLogger.LogError("EventModule尚未注册，本次创建的订阅器未绑定事件模块（其上操作均被忽略）.");
 			}
 			else if (!eventModule.IsAlive)
 			{
-				FuLogger.LogError("[EventRegister] EventModule 未初始化或已释放（重启排水窗口），本次创建的订阅器未绑定事件模块（其上操作均被忽略）.");
+				FuLogger.LogError("EventModule未初始化或已释放（重启排水窗口），本次创建的订阅器未绑定事件模块（其上操作均被忽略）.");
 				eventModule = null;
 			}
 
@@ -71,28 +71,26 @@ namespace Hotfix.Framework.Event
 		{
 			if (handler == null)
 			{
-				FuLogger.LogError("[EventRegister]事件处理对象为空，已忽略本次订阅.");
+				FuLogger.LogError("事件处理对象为空，已忽略本次订阅.");
 				return;
 			}
 
 			if (m_eventModule == null)
 			{
-				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次订阅.");
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次订阅.");
 				return;
 			}
 
 			if (m_eventHandlerDict.Contains(id, handler))
 			{
-				FuLogger.LogWarning($"[EventRegister]重复登记事件 '{id}' 的同一处理函数，本次已忽略（账本与总线条目保持 1:1，防挂起重放对账错位）:{handler}");
+				FuLogger.LogWarning($"重复登记事件 '{id}' 的同一处理函数，本次已忽略（账本与总线条目保持 1:1，防挂起重放对账错位）:{handler}");
 				return;
 			}
 
 			m_eventHandlerDict.Add(id, handler);
-			if (m_suspended)
-			{
-				// 挂起态只记账不进总线：总线侧当前整体退订中，重开时由 Resume 按账本统一重放
-				return;
-			}
+
+			// 挂起态只记账不进总线：总线侧当前整体退订中，重开时由 Resume 按账本统一重放
+			if (m_suspended) return;
 
 			m_eventModule.Subscribe(id, handler);
 		}
@@ -106,13 +104,13 @@ namespace Hotfix.Framework.Event
 		{
 			if (m_eventModule == null)
 			{
-				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次退订.");
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次退订.");
 				return;
 			}
 
 			if (!m_eventHandlerDict.Remove(id, handler))
 			{
-				FuLogger.LogError($"[EventRegister]事件订阅器中不存在指定消息ID '{id}' 的处理对象，已忽略本次退订.");
+				FuLogger.LogError($"事件订阅器中不存在指定消息ID '{id}' 的处理对象，已忽略本次退订.");
 				return;
 			}
 
@@ -138,10 +136,58 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
-		/// 挂起：窗口关闭时调用。按账本逐条从总线退订（模块侧对缺失条目安全空操作），账本保留不清空——账本即重放清单。
-		/// 幂等：已挂起直接返回。
+		/// 派发事件(事件会在抛出后的下一帧分发)。
 		/// </summary>
-		public void Suspend()
+		/// <param name="sender">事件发送者。</param>
+		/// <param name="eventArgs">消息对象</param>
+		public void Broadcast(object sender, GameEventArgs eventArgs)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
+				return;
+			}
+
+			m_eventModule.Broadcast(sender, eventArgs);
+		}
+
+		/// <summary>
+		/// 派发事件(事件会在抛出后的下一帧分发)。
+		/// </summary>
+		/// <param name="sender">事件发送者。</param>
+		/// <param name="eventId">事件编号。</param>
+		public void Broadcast(object sender, string eventId)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
+				return;
+			}
+
+			m_eventModule.Broadcast(sender, eventId);
+		}
+
+		/// <summary>
+		/// 立即抛出事件(事件会立刻分发)。
+		/// </summary>
+		/// <param name="sender">事件发送者。</param>
+		/// <param name="eventArgs">事件内容。</param>
+		public void BroadcastNow(object sender, GameEventArgs eventArgs)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
+				return;
+			}
+
+			m_eventModule.BroadcastNow(sender, eventArgs);
+		}
+
+		/// <summary>
+		/// 挂起：窗口关闭时调用。按账本逐条从总线退订（模块侧对缺失条目安全空操作），账本保留不清空——账本即重放清单。
+		/// 幂等：已挂起直接返回。internal：仅框架生命周期（WinBase._OnClose）可调，业务勿手动挂起。
+		/// </summary>
+		internal void Suspend()
 		{
 			if (m_suspended) return;
 
@@ -159,9 +205,9 @@ namespace Hotfix.Framework.Event
 
 		/// <summary>
 		/// 恢复：窗口打开时调用（须先于业务 OnOpen，保证其执行期间订阅已就绪）。按账本逐条向总线重放订阅。
-		/// 幂等：未挂起直接返回。
+		/// 幂等：未挂起直接返回。internal：仅框架生命周期（WinBase._OnOpen）可调，业务勿手动重放。
 		/// </summary>
-		public void Resume()
+		internal void Resume()
 		{
 			if (!m_suspended) return;
 
@@ -178,60 +224,12 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
-		/// 派发事件(事件会在抛出后的下一帧分发)。
-		/// </summary>
-		/// <param name="sender">事件发送者。</param>
-		/// <param name="eventArgs">消息对象</param>
-		public void Broadcast(object sender, GameEventArgs eventArgs)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.Broadcast(sender, eventArgs);
-		}
-
-		/// <summary>
-		/// 派发事件(事件会在抛出后的下一帧分发)。
-		/// </summary>
-		/// <param name="sender">事件发送者。</param>
-		/// <param name="eventId">事件编号。</param>
-		public void Broadcast(object sender, string eventId)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.Broadcast(sender, eventId);
-		}
-
-		/// <summary>
-		/// 立即抛出事件(事件会立刻分发)。
-		/// </summary>
-		/// <param name="sender">事件发送者。</param>
-		/// <param name="eventArgs">事件内容。</param>
-		public void BroadcastNow(object sender, GameEventArgs eventArgs)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.BroadcastNow(sender, eventArgs);
-		}
-
-		/// <summary>
 		/// 清理
 		/// </summary>
 		public void Clear()
 		{
 			UnSubscribeAll();
-			m_suspended = false; // 复位挂起标志：寄存器回池复用且 Acquire 不重置字段，漏复位会让新窗口的订阅只进账本不进总线
+			m_suspended   = false; // 复位挂起标志：寄存器回池复用且 Acquire 不重置字段，漏复位会让新窗口的订阅只进账本不进总线
 			m_eventModule = null;
 		}
 

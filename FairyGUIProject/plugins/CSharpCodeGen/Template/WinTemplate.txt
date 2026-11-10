@@ -28,7 +28,7 @@ namespace #NAMESPACE#
 
         /// <summary>
         /// 注册相关逻辑事件。订阅放此处（OnInit 期，每实例一次）：框架在关窗时自动挂起、开窗时自动重放，
-        /// 勿在 OnOpen 订阅（重复登记会触发警告且造成账本-总线语义漂移）
+        /// 勿在 OnOpen 订阅（重复登记会触发警告且仅首次生效，第二次起被忽略）
         /// </summary>
         private void InitEvent()
         {
