@@ -40,6 +40,7 @@ namespace Hotfix.Framework.UI
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]打开-OnOpen().");
 			m_cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
+			EventRegister?.Resume();   // 开窗重放挂起的订阅：必须在业务 OnOpen 之前，保证其执行期间订阅已就绪
 			Visible     = true;
 			WinUI.alpha = 0;
 
@@ -129,6 +130,8 @@ namespace Hotfix.Framework.UI
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]关闭-OnClose().");
 			m_cancellation.Cancel(); // 关闭即取消本生命周期在途异步任务
+			EventRegister?.Suspend(); // 关窗挂起订阅：总线退订、账本保留（半成品实例注册器为 null，?. 跳过）
+			StopAllTimers();          // 关窗终止计时器（破坏性不重放，与异步取消同立场）
 			Visible = false;
 
 			// 关闭动画需要 WinUI；若为空/已销毁（teardown 阶段关闭仍打开的窗口、或半成品实例）
