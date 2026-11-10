@@ -57,9 +57,6 @@ EmptyEventArgs
 void Subscribe(string id, EventHandler<GameEventArgs> handler)
 void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
 
-// 检查订阅状态
-bool IsExist(string id, EventHandler<GameEventArgs> handler)
-
 // 抛出事件（延迟到下一帧主线程分发）
 void Broadcast(object sender, GameEventArgs e)
 void Broadcast(object sender, string eventId)   // 使用空事件包装事件ID
@@ -490,7 +487,7 @@ public class CriticalSystem : MonoBehaviour
 | -------------------------------------------------------------------------------------------------------- | ---- | --------- |
 | `Broadcast`    | 下一帧  | 事件入队，`Update` 时统一分发，通用场景，推荐   |
 | `BroadcastNow` | 立即（同步）   | 仅限主线程，需要同步处理的场景 |
-| `Subscribe` / `Unsubscribe` / `IsExist` | 立即    | 仅限主线程   |
+| `Subscribe` / `Unsubscribe` | 立即    | 仅限主线程   |
 | `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent`（仅 Editor，见 `EventModule.Debug.cs`） | 立即    | 仅限主线程；遍历回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
 
 跨线程产生的事件（如网络 Socket 回调）不得直接调用事件模块，由网络频道封送到主线程后（channel.Update 排水）再 `Broadcast`。

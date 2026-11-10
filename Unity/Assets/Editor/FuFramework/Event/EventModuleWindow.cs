@@ -608,13 +608,14 @@ namespace FuFramework.Event.Editor
 
 		/// <summary>
 		/// 清空待分发队列：经反射调用 EventModule 私有 Clear
-		/// （Clear 会丢弃全部未分发事件并回收其参数，属破坏性调试操作，不进公开契约）
+		/// （Clear 会丢弃全部未分发事件并回收其参数，属破坏性调试操作，不进公开契约）。
+		/// 绑定非空由 EnsureReflection 必查清单保证，此处直接调用——意外 null 会走下方 catch 记错误日志，不会静默无效。
 		/// </summary>
 		private void ClearPendingEvents()
 		{
 			try
 			{
-				m_poolClearMethod?.Invoke(m_moduleInstance, null);
+				m_poolClearMethod.Invoke(m_moduleInstance, null);
 				OnRefresh();
 				Repaint();
 			}
@@ -713,7 +714,7 @@ namespace FuFramework.Event.Editor
 			// 私有 Clear（清空队列用；原为「反射取 m_eventPool 字段再调池 Clear」，事件池并入模块后直接绑定模块私有方法）
 			m_poolClearMethod = m_moduleType.GetMethod("Clear", BindingFlags.NonPublic | BindingFlags.Instance);
 
-			if (m_forEachHandlerMethod == null || m_forEachEventMethod == null || m_eventIdProperty == null) return false;
+			if (m_forEachHandlerMethod == null || m_forEachEventMethod == null || m_eventIdProperty == null || m_poolClearMethod == null) return false;
 
 			// 回调绑定：窗口内泛型适配方法 MakeGenericMethod 后 CreateDelegate，签名精确匹配
 			var actionOfStringAndHandler = typeof(Action<,>).MakeGenericType(typeof(string), typeof(EventHandler<>).MakeGenericType(m_gameEventArgsType));
