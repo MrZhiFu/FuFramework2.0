@@ -52,6 +52,9 @@ namespace Hotfix.Framework.Event
 
 		/// <summary>
 		/// 订阅事件
+		/// 幂等去重：同一 (id, handler) 重复登记警告+忽略——与 EventModule.Subscribe 的总线级去重对齐，
+		/// 保证账本与总线条目严格 1:1，Suspend/Resume 按账本增删总线时严格对称（否则重复订阅会造成
+		/// 账本 N 份、总线 1 条的失配，挂起重放对账错位、退订自检失效）。
 		/// </summary>
 		/// <param name="id">消息ID</param>
 		/// <param name="handler">处理对象</param>
@@ -66,6 +69,12 @@ namespace Hotfix.Framework.Event
 			if (m_eventModule == null)
 			{
 				FuLogger.LogError("[EventRegister]订阅器未绑定事件模块，已忽略本次订阅.");
+				return;
+			}
+
+			if (m_eventHandlerDict.Contains(id, handler))
+			{
+				FuLogger.LogWarning($"[EventRegister]重复登记事件 '{id}' 的同一处理函数，本次已忽略（账本与总线条目保持 1:1，防挂起重放对账错位）:{handler}");
 				return;
 			}
 
