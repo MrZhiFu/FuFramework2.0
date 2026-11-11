@@ -19,12 +19,12 @@ namespace Hotfix.Framework.Localization
 		/// <summary>
 		/// 当前语言。
 		/// </summary>
-		public ELanguage ELanguage { get; set; } = ELanguage.Unspecified;
+		public ELanguage ELanguage { get; private set; } = ELanguage.Unspecified;
 
 		/// <summary>
 		/// 旧的语言。
 		/// </summary>
-		public ELanguage OldELanguage { get; set; } = ELanguage.Unspecified;
+		public ELanguage OldELanguage { get; private set; } = ELanguage.Unspecified;
 
 
 		/// <summary>
