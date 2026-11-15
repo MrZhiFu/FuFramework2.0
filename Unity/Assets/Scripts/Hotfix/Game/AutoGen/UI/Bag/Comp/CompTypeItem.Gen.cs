@@ -15,11 +15,12 @@ using Hotfix.Framework.Timer;
 
 namespace Hotfix.Game.UI
 {
-    public partial class CompTypeItem : GButton
+    public partial class CompTypeItem : GButton, IWinLifecycleAware
     {
         private TimerRegister m_timerRegister;     // 计时器注册器
         private EventRegister m_eventRegister;     // 业务逻辑事件注册器
         private FuiEventRegister m_uiEventRegister;// UI事件注册器
+        private readonly LifecycleCancellationSource m_cancellation = new(); // 组件生命周期取消源：窗口关闭取消、打开重建（IWinLifecycleAware 广播驱动）
 
 		private Controller button;
 
@@ -63,6 +64,8 @@ namespace Hotfix.Game.UI
 			m_timerRegister = TimerRegister.Create();
 			InitUIEvent();
 			OnInit();
+			displayObject.onAddedToStage.Add(OnWinOpened);     // 挂树/复用兜底：重新入树重建生命周期（列表项出池复用）
+			displayObject.onRemovedFromStage.Add(OnWinClosed); // 摘树/进池兜底：离开组件树即取消在途异步任务
 		}
 
         /// <summary>
@@ -83,6 +86,7 @@ namespace Hotfix.Game.UI
             m_uiEventRegister?.Release();
             m_eventRegister?.Release();
             m_timerRegister?.Release();
+            m_cancellation?.Dispose();
             base.Dispose();
         }
 
@@ -94,9 +98,35 @@ namespace Hotfix.Game.UI
 
         protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
 
+        protected void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback, m_cancellation);
+
+        protected void AddUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback, m_cancellation);
+
+        protected void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback, m_cancellation);
+
+        protected void SetUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback, m_cancellation);
+
+        protected void RemoveUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
+
+        protected void RemoveUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
+
         protected void ClearUIListener(EventListener listener) => m_uiEventRegister.ClearUIListener(listener);
 
         protected void ClearAllUIListener() => m_uiEventRegister.ClearAllUIListener();
+
+        #endregion
+
+        #region 窗口生命周期广播（IWinLifecycleAware）
+
+        /// <summary>
+        /// 窗口关闭通知：取消本组件在途异步处理器（WinBase._OnClose 遍历广播 / 列表项摘树兜底）。
+        /// </summary>
+        public void OnWinClosed() => m_cancellation.Cancel();
+
+        /// <summary>
+        /// 窗口打开通知：重建取消源开启新生命周期（WinBase._OnOpen 遍历广播 / 列表项挂树兜底）。
+        /// </summary>
+        public void OnWinOpened() => m_cancellation.Recreate();
 
         #endregion
 
