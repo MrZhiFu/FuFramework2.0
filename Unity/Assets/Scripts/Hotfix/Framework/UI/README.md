@@ -436,12 +436,22 @@ protected override void OnRelease()
 
 自定义组件（Comp*）继承自 FairyGUI 的 GComponent / GButton 等，自行持有 `FuiEventRegister`、`EventRegister`、`TimerRegister`，在 `ConstructFromXML` 中创建、`Dispose` 中释放，无需依赖 WinBase。
 
+Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `displayObject.onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件）。
+
 代理方法可在组件内部直接使用：
 
 ```csharp
 // UI事件
 protected void AddUIListener(EventListener listener, EventCallback1 callback)
 protected void RemoveUIListener(EventListener listener, EventCallback1 callback)
+
+// UI事件（异步处理器：签名直接写 async UniTask，取消源为组件自持，异常由适配层统一处理）
+protected void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+protected void AddUIListener(EventListener listener, Func<UniTask> callback)
+protected void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+protected void SetUIListener(EventListener listener, Func<UniTask> callback)
+protected void RemoveUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+protected void RemoveUIListener(EventListener listener, Func<UniTask> callback)
 
 // 业务事件
 protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
@@ -869,6 +879,7 @@ private async UniTask OnInputChanged()
 
 - **异常**：`OperationCanceledException` 静默吞（生命周期约定）；其余异常 `FuLogger.LogError`——业务处理器内无需 try/catch；
 - **取消**：由处理器内部 await 点携带 `Token` 实现——网络/资源类 API 按铁律必传 `Token`，延时类须显式传（`UniTask.Delay(5000, cancellationToken: Token)`，注意该重载第二位置参数是 `bool ignoreTimeScale`，Token 必须用命名参数）。窗口关闭（`_OnClose`）时在途处理器于自身 await 点原生取消，`OCE` 沿链传播至适配层静默。未携带 Token 的 await（如裸 `UniTask.Delay`）窗口关闭后**不会**被中断；
+- **Gen 组件内**：取消时机由组件**自持取消源**驱动——`WinBase` 开关窗口时遍历组件树广播（`IWinLifecycleAware`），列表项进池/复用由挂树/摘树事件兜底；业务 await 点携带 Token（组件的取消源 Token）的要求不变；
 - `SetUIListener` / `RemoveUIListener` 提供对称异步重载，移除按原始委托值语义（Target+Method）匹配；
 - **防连点不在框架层**：处理器在途期间重复触发会再次执行，需要互斥的界面自行控制（如点击后 `btn.enabled = false`）。
 
