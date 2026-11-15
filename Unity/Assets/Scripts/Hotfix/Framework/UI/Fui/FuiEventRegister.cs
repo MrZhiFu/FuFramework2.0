@@ -468,6 +468,19 @@ namespace Hotfix.Framework.UI
 			public bool MatchSource(Delegate source) => m_source.Equals(source);
 
 			/// <summary>
+			/// 值语义相等：按原始委托匹配（Target+Method 相同即视为同一绑定）。
+			/// FuMultiDictionary 的 Contains/Remove 经 EqualityComparer&lt;TValue&gt;.Default 走到此比较，
+			/// 保证异步 Add 的幂等判重与对称回收按"用户视角的同一回调"工作——实例方法组每次
+			/// 转换都产生新委托实例，不重写则判重恒 false、重复登记致账本/总线失配。
+			/// </summary>
+			public override bool Equals(object obj) => obj is FuiAsyncBinding other && MatchSource(other.m_source);
+
+			/// <summary>
+			/// 与 Equals 配套：委托哈希（Target+Method 派生，同值语义必同哈希）。
+			/// </summary>
+			public override int GetHashCode() => m_source.GetHashCode();
+
+			/// <summary>
 			/// 完整等待异步处理器，统一消化取消与异常。
 			/// UniTaskVoid + Forget 为框架内部实现细节：await 全程被 try/catch 消化，
 			/// 异常不会进入全局未观察通道，业务侧无需感知。

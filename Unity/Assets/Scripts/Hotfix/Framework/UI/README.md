@@ -436,7 +436,7 @@ protected override void OnRelease()
 
 自定义组件（Comp*）继承自 FairyGUI 的 GComponent / GButton 等，自行持有 `FuiEventRegister`、`EventRegister`、`TimerRegister`，在 `ConstructFromXML` 中创建、`Dispose` 中释放，无需依赖 WinBase。
 
-Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `displayObject.onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件）。
+Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `displayObject.onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件）。**注意**：item 不经池的原地刷新复用（数据更新后直接重绑，不摘/挂树）不会触发兜底事件——上一条数据的在途异步处理器不会被取消，await 返回后会往已被换绑的 item 写旧数据；此类场景应在 renderer 绑定新数据时手动调组件 `OnWinOpened()` 取消在途任务。
 
 代理方法可在组件内部直接使用：
 

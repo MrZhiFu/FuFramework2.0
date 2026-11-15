@@ -216,6 +216,9 @@ namespace Hotfix.Framework.UI
 			}
 		}
 
+		/// <summary>
+		/// 界面销毁.
+		/// </summary>
 		internal void _OnDispose()
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
