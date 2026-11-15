@@ -7,12 +7,12 @@ namespace Hotfix.Framework.Event
 	/// <summary>
 	/// 事件基类。
 	/// </summary>
-	public abstract class BaseEventArgs : EventArgs, IReference
+	public abstract class BaseEventArgs : IReference
 	{
 		/// <summary>
 		/// 获取事件ID。
 		/// </summary>
-		public virtual string Id => GetType().FullName;   // 基类统一派生：具体事件类的 FullName；EmptyEventArgs 仍 override（并存期 string 重载使用）
+		public virtual string Id => GetType().FullName;
 
 		/// <summary>
 		/// 清理引用。

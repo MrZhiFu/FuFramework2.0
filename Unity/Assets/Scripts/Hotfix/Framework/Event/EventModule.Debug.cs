@@ -27,12 +27,11 @@ namespace Hotfix.Framework.Event
 		/// 仅非重入遍历使用（重入识别见 m_isForEachHandler）。
 		/// </summary>
 		private readonly List<(string id, Action<GameEventArgs> handler)> m_cachedHandlerPairSnapshot = new();
-
 		/// <summary>
-		/// ForEachEvent 的 (sender, eventArgs) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
+		/// ForEachEvent 的 eventArgs 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
 		/// 仅非重入遍历使用（重入识别见 m_isForEachEvent）。
 		/// </summary>
-		private readonly List<(object sender, GameEventArgs eventArgs)> m_cachedEventArgsSnapshot = new();
+		private readonly List<GameEventArgs> m_cachedEventArgsSnapshot = new();
 
 		/// <summary>
 		/// 获取事件数量。
@@ -57,11 +56,6 @@ namespace Hotfix.Framework.Event
 			{
 				AssertMainThread();
 				var count = 0;
-				foreach (var (_, handlers) in m_eventHandlerMultiDict)
-				{
-					count += handlers.Count;
-				}
-
 				foreach (var (_, handlers) in m_actionHandlerMultiDict)
 				{
 					count += handlers.Count;
@@ -98,14 +92,6 @@ namespace Hotfix.Framework.Event
 			try
 			{
 				snapshot.Clear();
-				foreach (var (id, handlers) in m_eventHandlerMultiDict)
-				{
-					foreach (var handler in handlers)
-					{
-						snapshot.Add((id, new Action<GameEventArgs>(e => handler(null, e))));   // 并存期包装：EventHandler → Action（诊断遍历一次性快照，不参与订阅/退订，不影响退订对称性；sender 传 null——全库 handler 不使用 sender）
-					}
-				}
-
 				foreach (var (id, handlers) in m_actionHandlerMultiDict)
 				{
 					foreach (var handler in handlers)
@@ -130,17 +116,17 @@ namespace Hotfix.Framework.Event
 		/// 遍历所有事件。
 		/// 仅限主线程调用；回调内不得修改或回收未分发的事件参数（其所有权仍在事件模块，分发结束后回收）。
 		/// </summary>
-		public void ForEachEvent(Action<object, GameEventArgs> action)
+		public void ForEachEvent(Action<GameEventArgs> action)
 		{
 			AssertMainThread();
 
-			// 先快照 (Sender, EventArgs)，再调用回调：
+			// 先快照 EventArgs 再调用回调：
 			// 快照隔离避免回调期间队列被修改，重入识别与 ForEachHandler 一致：
 			// 非重入复用缓存字段、重入改用局部列表，且缓存复用下零分配。
-			List<(object sender, GameEventArgs eventArgs)> snapshot;
+			List<GameEventArgs> snapshot;
 			if (m_isForEachEvent)
 			{
-				snapshot = new List<(object sender, GameEventArgs eventArgs)>();
+				snapshot = new List<GameEventArgs>();
 			}
 			else
 			{
@@ -153,12 +139,12 @@ namespace Hotfix.Framework.Event
 				snapshot.Clear();
 				foreach (var tempEvent in m_eventQueue)
 				{
-					snapshot.Add((tempEvent.Sender, tempEvent.EventArgs));
+					snapshot.Add(tempEvent.EventArgs);
 				}
 
 				for (var i = 0; i < snapshot.Count; i++)
 				{
-					action(snapshot[i].sender, snapshot[i].eventArgs);
+					action(snapshot[i]);
 				}
 			}
 			finally

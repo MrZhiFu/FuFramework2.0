@@ -9,12 +9,7 @@ namespace Hotfix.Framework.Localization
 	/// </summary>
 	public sealed class LanguageChangeEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		public static readonly string EventId = typeof(LanguageChangeEventArgs).FullName;
 
 		/// <summary>
 		/// 当前语言。

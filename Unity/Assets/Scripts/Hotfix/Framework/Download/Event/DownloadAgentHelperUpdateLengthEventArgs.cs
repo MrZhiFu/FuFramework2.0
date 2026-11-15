@@ -10,15 +10,7 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadAgentHelperUpdateLengthEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 下载代理辅助器更新数据大小事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 下载代理辅助器更新数据大小事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(DownloadAgentHelperUpdateLengthEventArgs).FullName;
 
 		/// <summary>
 		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」

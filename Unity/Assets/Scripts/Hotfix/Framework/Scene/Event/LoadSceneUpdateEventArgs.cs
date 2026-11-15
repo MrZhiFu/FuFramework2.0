@@ -10,15 +10,7 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class LoadSceneUpdateEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取加载场景更新事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 加载场景更新事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(LoadSceneUpdateEventArgs).FullName;
 
 		/// <summary>
 		/// 获取场景资源名称。

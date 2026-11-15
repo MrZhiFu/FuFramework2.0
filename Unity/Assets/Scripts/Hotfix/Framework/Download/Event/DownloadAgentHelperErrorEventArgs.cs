@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadAgentHelperErrorEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 下载代理辅助器错误事件编号
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 下载代理辅助器错误事件编号
-		/// </summary>
-		public static readonly string EventId = typeof(DownloadAgentHelperErrorEventArgs).FullName;
 
 		/// <summary>
 		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」

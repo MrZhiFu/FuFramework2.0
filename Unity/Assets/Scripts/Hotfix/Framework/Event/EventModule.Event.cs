@@ -11,15 +11,10 @@ namespace Hotfix.Framework.Event
 		/// <summary>
 		/// 事件定义。
 		/// 功能：
-		///     1. 包装事件发送者和事件参数。
+		///     1. 包装事件参数（sender 随类型键订阅退场一并退役，节点只承载参数）。
 		/// </summary>
 		private sealed class Event : IReference
 		{
-			/// <summary>
-			/// 发送者
-			/// </summary>
-			public object Sender { get; private set; }
-
 			/// <summary>
 			/// 事件参数
 			/// </summary>
@@ -30,24 +25,9 @@ namespace Hotfix.Framework.Event
 			/// </summary>
 			/// <param name="eventArgs"></param>
 			/// <returns></returns>
-		/// <param name="sender">事件发送者。</param>
-			public static Event Create(object sender, GameEventArgs eventArgs)
-			{
-				var eventNodeNode = ReferencePool.Acquire<Event>();
-				eventNodeNode.Sender    = sender;
-				eventNodeNode.EventArgs = eventArgs;
-				return eventNodeNode;
-			}
-
-			/// <summary>
-			/// 创建事件节点（无 sender 形态：新签名广播专用，Sender 置 null）
-			/// </summary>
-			/// <param name="eventArgs"></param>
-			/// <returns></returns>
 			public static Event Create(GameEventArgs eventArgs)
 			{
 				var eventNodeNode = ReferencePool.Acquire<Event>();
-				eventNodeNode.Sender    = null;
 				eventNodeNode.EventArgs = eventArgs;
 				return eventNodeNode;
 			}
@@ -57,7 +37,6 @@ namespace Hotfix.Framework.Event
 			/// </summary>
 			public void Clear()
 			{
-				Sender    = null;
 				EventArgs = null;
 			}
 		}

@@ -10,15 +10,7 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class ActiveSceneChangedEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取激活场景被改变事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 激活场景被改变事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(ActiveSceneChangedEventArgs).FullName;
 
 		/// <summary>
 		/// 获取上一个被激活的场景。

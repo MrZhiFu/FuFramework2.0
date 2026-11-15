@@ -8,8 +8,6 @@ namespace Hotfix.Game.Events
 	/// </summary>
 	public sealed class BagChangedEventArgs : GameEventArgs
 	{
-		public override        string Id => EventId;
-		public static readonly string EventId = typeof(BagChangedEventArgs).FullName;
 
 
 		public override void Clear() { }

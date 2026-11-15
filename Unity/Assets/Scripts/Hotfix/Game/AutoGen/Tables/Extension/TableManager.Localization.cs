@@ -22,7 +22,7 @@ namespace Hotfix.Game.Config
         public void SubscribeLanguageChange()
         {
             m_eventModule = ModuleManager.GetModule<EventModule>();
-            m_eventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+            m_eventModule.Subscribe<LanguageChangeEventArgs>(OnLanguageChanged);
         }
 
         /// <summary>
@@ -30,15 +30,14 @@ namespace Hotfix.Game.Config
         /// </summary>
         public void UnsubscribeLanguageChange()
         {
-            m_eventModule?.Unsubscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+            m_eventModule?.Unsubscribe<LanguageChangeEventArgs>(OnLanguageChanged);
         }
 
         /// <summary>
         /// 语言切换事件处理：重新翻译全部配置表
-        /// </summary>
-        /// <param name="sender">事件发送者</param>
+        /// </summary>
         /// <param name="e">事件参数</param>
-        private void OnLanguageChanged(object sender, GameEventArgs e)
+        private void OnLanguageChanged(GameEventArgs e)
         {
             if (IsLoaded)
                 RefreshTranslateText();

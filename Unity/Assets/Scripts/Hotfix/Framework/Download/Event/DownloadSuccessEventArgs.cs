@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadSuccessEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 下载成功事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 下载成功事件编号
-		/// </summary>
-		public static readonly string EventId = typeof(DownloadSuccessEventArgs).FullName;
 
 		/// <summary>
 		/// 获取下载任务的序列编号。

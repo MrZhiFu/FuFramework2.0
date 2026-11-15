@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkMissHeartBeatEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取网络心跳包丢失事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 网络心跳包丢失事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(NetworkMissHeartBeatEventArgs).FullName;
 
 		/// <summary>
 		/// 获取网络频道。

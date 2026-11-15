@@ -10,15 +10,7 @@ namespace Hotfix.Framework.UI
 	/// </summary>
 	public sealed class OpenUIFailureEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取打开界面失败事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 打开界面失败事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(OpenUIFailureEventArgs).FullName;
 
 		/// <summary>
 		/// 获取界面序列编号。

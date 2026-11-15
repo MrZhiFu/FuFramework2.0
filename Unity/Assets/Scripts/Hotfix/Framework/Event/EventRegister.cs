@@ -22,11 +22,6 @@ namespace Hotfix.Framework.Event
 		/// 原为 static——单实例 Clear 会清空共享引用，后续实例的 UnSubscribeAll 访问 null 抛 NRE）
 		private EventModule m_eventModule;
 
-		/// <summary>
-		/// 事件处理多值字典（账本，旧签名形态），key为事件ID，value为事件处理对象列表。
-		/// 并存期遗留：删除段随旧签名一并退役，届时仅保留 Action 账本。
-		/// </summary>
-		private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_eventHandlerDict = new();
 
 		/// <summary>
 		/// 事件处理多值字典（账本，新签名 Action 形态），key为事件ID，value为事件处理对象列表。
@@ -64,42 +59,6 @@ namespace Hotfix.Framework.Event
 			var register = ReferencePool.Acquire<EventRegister>();
 			register.m_eventModule = eventModule;
 			return register;
-		}
-
-		/// <summary>
-		/// 订阅事件
-		/// 幂等去重：同一 (id, handler) 重复登记警告+忽略——与 EventModule.Subscribe 的总线级去重对齐，
-		/// 保证账本与总线条目严格 1:1，Suspend/Resume 按账本增删总线时严格对称（否则重复订阅会造成
-		/// 账本 N 份、总线 1 条的失配，挂起重放对账错位、退订自检失效）。
-		/// </summary>
-		/// <param name="id">消息ID</param>
-		/// <param name="handler">处理对象</param>
-		public void Subscribe(string id, EventHandler<GameEventArgs> handler)
-		{
-			if (handler == null)
-			{
-				FuLogger.LogError("事件处理对象为空，已忽略本次订阅.");
-				return;
-			}
-
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次订阅.");
-				return;
-			}
-
-			if (m_eventHandlerDict.Contains(id, handler))
-			{
-				FuLogger.LogWarning($"重复登记事件 '{id}' 的同一处理函数，本次已忽略（账本与总线条目保持 1:1，防挂起重放对账错位）:{handler}");
-				return;
-			}
-
-			m_eventHandlerDict.Add(id, handler);
-
-			// 挂起态只记账不进总线：总线侧当前整体退订中，重开时由 Resume 按账本统一重放
-			if (m_suspended) return;
-
-			m_eventModule.Subscribe(id, handler);
 		}
 
 		/// <summary>
@@ -146,28 +105,6 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
-		/// 取消订阅事件
-		/// </summary>
-		/// <param name="id">消息ID</param>
-		/// <param name="handler">处理对象</param>
-		public void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次退订.");
-				return;
-			}
-
-			if (!m_eventHandlerDict.Remove(id, handler))
-			{
-				FuLogger.LogError($"事件订阅器中不存在指定消息ID '{id}' 的处理对象，已忽略本次退订.");
-				return;
-			}
-
-			m_eventModule.Unsubscribe(id, handler);
-		}
-
-		/// <summary>
 		/// 取消订阅事件（类型键：事件参数类型即事件标识，见 BaseEventArgs.Id）。
 		/// </summary>
 		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
@@ -209,14 +146,6 @@ namespace Hotfix.Framework.Event
 				return;
 			}
 
-			foreach (var (id, eventHandlers) in m_eventHandlerDict)
-			{
-				foreach (var eventHandler in eventHandlers)
-				{
-					m_eventModule.Unsubscribe(id, eventHandler);
-				}
-			}
-
 			foreach (var (id, eventHandlers) in m_actionHandlerDict)
 			{
 				foreach (var eventHandler in eventHandlers)
@@ -225,56 +154,7 @@ namespace Hotfix.Framework.Event
 				}
 			}
 
-			m_eventHandlerDict.Clear();
 			m_actionHandlerDict.Clear();
-		}
-
-		/// <summary>
-		/// 派发事件(事件会在抛出后的下一帧分发)。
-		/// </summary>
-		/// <param name="eventArgs">消息对象</param>
-		/// <param name="sender">事件发送者。</param>
-		public void Broadcast(object sender, GameEventArgs eventArgs)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.Broadcast(sender, eventArgs);
-		}
-
-		/// <summary>
-		/// 派发事件(事件会在抛出后的下一帧分发)。
-		/// </summary>
-		/// <param name="eventId">事件编号。</param>
-		/// <param name="sender">事件发送者。</param>
-		public void Broadcast(object sender, string eventId)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.Broadcast(sender, eventId);
-		}
-
-		/// <summary>
-		/// 立即抛出事件(事件会立刻分发)。
-		/// </summary>
-		/// <param name="eventArgs">事件内容。</param>
-		/// <param name="sender">事件发送者。</param>
-		public void BroadcastNow(object sender, GameEventArgs eventArgs)
-		{
-			if (m_eventModule == null)
-			{
-				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
-				return;
-			}
-
-			m_eventModule.BroadcastNow(sender, eventArgs);
 		}
 
 		/// <summary>
@@ -318,14 +198,6 @@ namespace Hotfix.Framework.Event
 			m_suspended = true;
 			if (m_eventModule == null) return;
 
-			foreach (var (id, eventHandlers) in m_eventHandlerDict)
-			{
-				foreach (var eventHandler in eventHandlers)
-				{
-					m_eventModule.Unsubscribe(id, eventHandler);
-				}
-			}
-
 			foreach (var (id, eventHandlers) in m_actionHandlerDict)
 			{
 				foreach (var eventHandler in eventHandlers)
@@ -345,14 +217,6 @@ namespace Hotfix.Framework.Event
 
 			m_suspended = false;
 			if (m_eventModule == null) return;
-
-			foreach (var (id, eventHandlers) in m_eventHandlerDict)
-			{
-				foreach (var eventHandler in eventHandlers)
-				{
-					m_eventModule.Subscribe(id, eventHandler);
-				}
-			}
 
 			foreach (var (id, eventHandlers) in m_actionHandlerDict)
 			{

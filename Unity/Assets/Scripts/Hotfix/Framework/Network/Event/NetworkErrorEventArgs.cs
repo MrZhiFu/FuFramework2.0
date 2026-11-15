@@ -10,15 +10,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkErrorEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取网络错误事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 网络错误事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(NetworkErrorEventArgs).FullName;
 
 		/// <summary>
 		/// 获取网络频道。

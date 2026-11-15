@@ -11,9 +11,7 @@ namespace Hotfix.Framework.Entity
 	/// </summary>
 	public sealed class ShowEntityFailureEventArgs : GameEventArgs
 	{
-		public override string Id => EventId;
 
-		private static readonly string EventId = typeof(ShowEntityFailureEventArgs).FullName;
 
 		/// <summary>
 		/// 获取实体编号。

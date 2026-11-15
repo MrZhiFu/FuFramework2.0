@@ -11,15 +11,7 @@ namespace Hotfix.Framework.RedDot
 	/// </summary>
 	public sealed class RedDotChangedEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取事件编号
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 事件 ID 常量（用于 Subscribe/Unsubscribe）
-		/// </summary>
-		public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
 
 		/// <summary>
 		/// 本帧发生变化的红点节点 Key 列表

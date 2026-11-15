@@ -10,15 +10,7 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class UnloadSceneSuccessEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取加载场景成功事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 加载场景成功事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(UnloadSceneSuccessEventArgs).FullName;
 
 		/// <summary>
 		/// 场景名称。

@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkClosedEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取网络连接关闭事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 网络连接关闭事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(NetworkClosedEventArgs).FullName;
 
 		/// <summary>
 		/// 获取网络频道。

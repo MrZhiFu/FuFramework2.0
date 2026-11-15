@@ -29,25 +29,13 @@ namespace Hotfix.Framework.Event
 		private readonly List<Event> m_cachedEventBatch = new();
 
 		/// <summary>
-		/// 事件处理器多值字典，key为事件Id，value为事件处理函数列表
-		/// </summary>
-		private FuMultiDictionary<string, EventHandler<GameEventArgs>> m_eventHandlerMultiDict;
-
-		/// <summary>
-		/// 新签名订阅多值字典（Action 委托形态），key为事件Id（并存期与旧字典并存，分发时合并快照）。
-		/// 删除段（旧签名退役后）与本字典二选一保留。
+		/// 事件处理器多值字典（Action 委托形态），key为事件Id（事件参数类型 FullName），value为事件处理函数列表
 		/// </summary>
 		private FuMultiDictionary<string, Action<GameEventArgs>> m_actionHandlerMultiDict;
 
 		/// <summary>
 		/// 分发 handler 前的快照缓存（复用同一列表，避免每次分发分配新列表产生 GC）。
 		/// 快照用于隔离「分发过程中的订阅与退订」——新订阅的 handler 本轮不调用、已退订的 handler 本轮仍调用完；
-		/// 仅非重入分发使用。
-		/// </summary>
-		private readonly List<EventHandler<GameEventArgs>> m_cachedHandlerSnapshot = new();
-
-		/// <summary>
-		/// Action 形态订阅的分发快照缓存（与 m_cachedHandlerSnapshot 成对：并存期同一事件的双字典订阅合并分发，见 HandleEventCore）。
 		/// 仅非重入分发使用。
 		/// </summary>
 		private readonly List<Action<GameEventArgs>> m_cachedActionHandlerSnapshot = new();
@@ -82,12 +70,10 @@ namespace Hotfix.Framework.Event
 			{
 				FuLogger.LogWarning("OnInit 被重复调用（未先 OnDispose），已按关停口径清理旧队列与订阅后重建");
 				Clear();
-				m_eventHandlerMultiDict.Clear();
 				m_actionHandlerMultiDict.Clear();
 			}
 
 			m_eventQueue             = new Queue<Event>();
-			m_eventHandlerMultiDict  = new FuMultiDictionary<string, EventHandler<GameEventArgs>>();
 			m_actionHandlerMultiDict = new FuMultiDictionary<string, Action<GameEventArgs>>();
 		}
 
@@ -98,7 +84,6 @@ namespace Hotfix.Framework.Event
 		{
 			AssertMainThread();
 			Clear();
-			m_eventHandlerMultiDict.Clear();
 			m_actionHandlerMultiDict.Clear();
 		}
 

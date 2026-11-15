@@ -10,9 +10,7 @@ namespace Hotfix.Framework.Entity
 	/// </summary>
 	public sealed class HideEntityCompleteEventArgs : GameEventArgs
 	{
-		public override string Id => EventId;
 
-		private static readonly string EventId = typeof(HideEntityCompleteEventArgs).FullName;
 
 		/// <summary>
 		/// 获取实体编号。

@@ -10,15 +10,7 @@ namespace Hotfix.Framework.UI
 	/// </summary>
 	public sealed class ChangeUIVisibleEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取打开界面成功事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 界面可见状态变化事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(ChangeUIVisibleEventArgs).FullName;
 
 		/// <summary>
 		/// 获取打开成功的界面。

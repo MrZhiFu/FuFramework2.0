@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Sound
 	/// </summary>
 	public sealed class PlaySoundFailureEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 播放声音失败事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(PlaySoundFailureEventArgs).FullName;
 
 		/// <summary>
 		/// 声音的序列编号。

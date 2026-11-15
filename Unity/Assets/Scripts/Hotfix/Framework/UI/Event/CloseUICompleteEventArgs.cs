@@ -10,15 +10,7 @@ namespace Hotfix.Framework.UI
 	/// </summary>
 	public sealed class CloseUICompleteEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取关闭界面完成事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 关闭界面完成事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(CloseUICompleteEventArgs).FullName;
 
 		/// <summary>
 		/// 获取界面序列编号。

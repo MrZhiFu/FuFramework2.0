@@ -9,15 +9,7 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkConnectedEventArgs : GameEventArgs
 	{
-		/// <summary>
-		/// 获取网络连接成功事件编号。
-		/// </summary>
-		public override string Id => EventId;
 
-		/// <summary>
-		/// 网络连接成功事件编号。
-		/// </summary>
-		public static readonly string EventId = typeof(NetworkConnectedEventArgs).FullName;
 
 		/// <summary>
 		/// 获取网络频道。
