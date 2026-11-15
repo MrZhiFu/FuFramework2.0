@@ -135,7 +135,7 @@ namespace Hotfix.Framework.UI
 				// 首参是 sender（事件源），不是事件 ID：原先误传 ChangeUIVisibleEventArgs.EventId，
 				// 订阅者拿到的事件源成了字符串。事件 ID 由 EventArgs 自身的 Id 承载（见 ChangeUIVisibleEventArgs.Id），
 				// 查找订阅者不受影响，故此处按框架惯例传 this。
-				Broadcast(this, ChangeUIVisibleEventArgs.Create(this, value, null));
+				Broadcast(ChangeUIVisibleEventArgs.Create(this, value, null));
 			}
 		}
 
@@ -184,7 +184,7 @@ namespace Hotfix.Framework.UI
 				_OnSafeAreaChanged();
 
 				// 注册本地化语言改变事件
-				Subscribe(LanguageChangeEventArgs.EventId, _OnLanguageChanged);
+				Subscribe<LanguageChangeEventArgs>(_OnLanguageChanged);
 
 				// 初始化
 				_OnInit();

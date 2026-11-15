@@ -214,7 +214,7 @@ namespace Hotfix.Framework.Download
 			}
 
 			var downloadStartEventArgs = DownloadStartEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_eventModule.Broadcast(this, downloadStartEventArgs);
+			m_eventModule.Broadcast(downloadStartEventArgs);
 		}
 
 		/// <summary>
@@ -231,7 +231,7 @@ namespace Hotfix.Framework.Download
 
 			m_downloadCounter.RecordDeltaLength(deltaLength);
 			var downloadUpdateEventArgs = DownloadUpdateEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_eventModule.Broadcast(this, downloadUpdateEventArgs);
+			m_eventModule.Broadcast(downloadUpdateEventArgs);
 		}
 
 		/// <summary>
@@ -247,7 +247,7 @@ namespace Hotfix.Framework.Download
 			}
 
 			var downloadSuccessEventArgs = DownloadSuccessEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, sender.CurrentLength, sender.Task.UserData);
-			m_eventModule.Broadcast(this, downloadSuccessEventArgs);
+			m_eventModule.Broadcast(downloadSuccessEventArgs);
 			if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData))
 			{
 				downloadData.Tcs.TrySetResult(true);
@@ -294,7 +294,7 @@ namespace Hotfix.Framework.Download
 
 			FuLogger.LogError($"下载失败! 下载任务序列编号 '{sender.Task.SerialId}', 下载路径 '{sender.Task.DownloadedFullPath}', 下载地址 '{sender.Task.DownloadUri}', 错误信息 '{errorMessage}'.");
 			var downloadFailureEventArgs = DownloadFailureEventArgs.Create(sender.Task.SerialId, sender.Task.DownloadedFullPath, sender.Task.DownloadUri, errorMessage, sender.Task.UserData);
-			m_eventModule.Broadcast(this, downloadFailureEventArgs);
+			m_eventModule.Broadcast(downloadFailureEventArgs);
 			if (m_downloadingTaskDict.TryRemove(sender.Task.SerialId, out var downloadData02))
 			{
 				downloadData02.Tcs.TrySetResult(false);

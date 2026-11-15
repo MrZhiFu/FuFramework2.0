@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Network
 		{
 			FuLogger.LogInfo("网络连接成功");
 			var networkConnectedEventArgs = NetworkConnectedEventArgs.Create(networkChannel);
-			m_eventModule.Broadcast(this, networkConnectedEventArgs);
+			m_eventModule.Broadcast(networkConnectedEventArgs);
 		}
 
 		/// <summary>
@@ -83,7 +83,7 @@ namespace Hotfix.Framework.Network
 		{
 			FuLogger.LogInfo($"网络连接关闭（{closeReason}）");
 			var networkClosedEventArgs = NetworkClosedEventArgs.Create(networkChannel, closeReason);
-			m_eventModule.Broadcast(this, networkClosedEventArgs);
+			m_eventModule.Broadcast(networkClosedEventArgs);
 		}
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace Hotfix.Framework.Network
 		{
 			FuLogger.LogWarning($"网络心跳连续丢失 {missHeartBeatCount} 次");
 			var networkMissHeartBeatEventArgs = NetworkMissHeartBeatEventArgs.Create(networkChannel, missHeartBeatCount);
-			m_eventModule.Broadcast(this, networkMissHeartBeatEventArgs);
+			m_eventModule.Broadcast(networkMissHeartBeatEventArgs);
 		}
 
 		/// <summary>
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Network
 			FuLogger.LogError($"网络错误，错误码：'{errorCode}'，错误消息：'{errorMessage}'");
 			networkChannel.Close(ENetworkCloseReason.Lost); // 错误兜底断线：Lost 驱动自动重连（原 helper 订阅行为归位）
 			var networkErrorEventArgs = NetworkErrorEventArgs.Create(networkChannel, errorCode, socketErrorCode, errorMessage);
-			m_eventModule.Broadcast(this, networkErrorEventArgs);
+			m_eventModule.Broadcast(networkErrorEventArgs);
 		}
 	}
 }

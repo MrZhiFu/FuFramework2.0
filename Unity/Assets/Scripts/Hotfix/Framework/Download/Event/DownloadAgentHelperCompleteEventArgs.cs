@@ -21,6 +21,12 @@ namespace Hotfix.Framework.Download
 		public static readonly string EventId = typeof(DownloadAgentHelperCompleteEventArgs).FullName;
 
 		/// <summary>
+		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」
+		/// （DownloadAgent.IsOwnEvent 据此过滤本代理的辅助器事件）。
+		/// </summary>
+		public object Source { get; private set; }
+
+		/// <summary>
 		/// 获取下载的数据大小。
 		/// </summary>
 		public long Length { get; private set; }
@@ -28,17 +34,23 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 清理下载代理辅助器完成事件。
 		/// </summary>
-		public override void Clear() => Length = 0L;
+		public override void Clear()
+		{
+			Source = null;
+			Length = 0L;
+		}
 
 		/// <summary>
 		/// 创建下载代理辅助器完成事件。
 		/// </summary>
+		/// <param name="source">事件来源（广播方：UnityWebRequestDownloadAgentHelper 或代理自身）。</param>
 		/// <param name="length">下载的数据大小。</param>
 		/// <returns>创建的下载代理辅助器完成事件。</returns>
-		public static DownloadAgentHelperCompleteEventArgs Create(long length)
+		public static DownloadAgentHelperCompleteEventArgs Create(object source, long length)
 		{
 			if (length < 0L) throw new InvalidOperationException("下载的数据大小无效，不能为负数.");
 			var downloadAgentHelperCompleteEventArgs = ReferencePool.Acquire<DownloadAgentHelperCompleteEventArgs>();
+			downloadAgentHelperCompleteEventArgs.Source = source;
 			downloadAgentHelperCompleteEventArgs.Length = length;
 			return downloadAgentHelperCompleteEventArgs;
 		}

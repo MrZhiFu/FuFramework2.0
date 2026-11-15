@@ -68,12 +68,12 @@ namespace Hotfix.Framework.Download
 			var bytes = new byte[dataLength];
 			Buffer.BlockCopy(datas, 0, bytes, 0, dataLength);
 
-			var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(bytes, 0, dataLength);
-			m_eventModule.Broadcast(this, downloadAgentHelperUpdateBytesEventArgs);
+			var downloadAgentHelperUpdateBytesEventArgs = DownloadAgentHelperUpdateBytesEventArgs.Create(this, bytes, 0, dataLength);
+			m_eventModule.Broadcast(downloadAgentHelperUpdateBytesEventArgs);
 
 			// 发送更新数据大小事件
-			var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(dataLength);
-			m_eventModule.Broadcast(this, downloadAgentHelperUpdateLengthEventArgs);
+			var downloadAgentHelperUpdateLengthEventArgs = DownloadAgentHelperUpdateLengthEventArgs.Create(this, dataLength);
+			m_eventModule.Broadcast(downloadAgentHelperUpdateLengthEventArgs);
 
 			return base.ReceiveData(datas, dataLength);
 		}

@@ -158,7 +158,7 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			// 清理事件订阅
+			// 清理事件订阅（订阅时以 Type 形态登记，此处按 Type 反查 FullName 与 m_eventToNodes 键一致）
 			foreach (var eventId in m_eventToNodes.Keys)
 			{
 				GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
@@ -245,8 +245,8 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		/// <param name="node">目标节点</param>
 		/// <param name="calculator">红点数量计算函数</param>
-		/// <param name="triggerEvents">触发重算的事件 ID 列表</param>
-		private void RegisterInternal(RedDotNode node, Func<int> calculator, string[] triggerEvents)
+		/// <param name="triggerEvents">触发重算的事件参数类型列表</param>
+		private void RegisterInternal(RedDotNode node, Func<int> calculator, Type[] triggerEvents)
 		{
 			// 先注销旧的红点
 			UnregisterInternal(node);
@@ -257,9 +257,11 @@ namespace Hotfix.Framework.RedDot
 			if (triggerEvents == null || triggerEvents.Length == 0) return;
 
 			// 订阅事件
-			foreach (var eventId in triggerEvents)
+			foreach (var eventType in triggerEvents)
 			{
-				if (string.IsNullOrEmpty(eventId)) continue;
+				if (eventType == null) continue;
+
+				var eventId = eventType.FullName;
 
 				if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet))
 				{
@@ -270,7 +272,7 @@ namespace Hotfix.Framework.RedDot
 				if (nodeSet.Count == 0)
 				{
 					// 首次订阅此事件 ID
-					GlobalModule.EventModule.Subscribe(eventId, OnTriggerEvent);
+					GlobalModule.EventModule.Subscribe(eventType, OnTriggerEvent);
 				}
 
 				nodeSet.Add(node);
@@ -285,15 +287,17 @@ namespace Hotfix.Framework.RedDot
 		{
 			if (node.TriggerEvents != null)
 			{
-				foreach (var eventId in node.TriggerEvents)
+				foreach (var eventType in node.TriggerEvents)
 				{
-					if (string.IsNullOrEmpty(eventId)) continue;
+					if (eventType == null) continue;
+
+					var eventId = eventType.FullName;
 
 					if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet)) continue;
 					nodeSet.Remove(node);
 
 					if (nodeSet.Count != 0) continue;
-					GlobalModule.EventModule.Unsubscribe(eventId, OnTriggerEvent);
+					GlobalModule.EventModule.Unsubscribe(eventType, OnTriggerEvent);
 					m_eventToNodes.Remove(eventId);
 				}
 			}
@@ -305,9 +309,8 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		///  事件触发回调 — 标记对应节点为脏
 		/// </summary>
-		/// <param name="sender">事件发送者</param>
 		/// <param name="e">事件参数</param>
-		private void OnTriggerEvent(object sender, GameEventArgs e)
+		private void OnTriggerEvent(GameEventArgs e)
 		{
 			if (!m_eventToNodes.TryGetValue(e.Id, out var nodeSet)) return;
 
@@ -437,7 +440,7 @@ namespace Hotfix.Framework.RedDot
 				args.m_ChangedKeys.Add(key);
 			}
 
-			GlobalModule.EventModule.Broadcast(this, args);
+			GlobalModule.EventModule.Broadcast(args);
 
 			m_changedKeySet.Clear();
 		}

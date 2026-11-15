@@ -267,7 +267,7 @@ namespace Hotfix.Framework.UI
 
 				// 广播界面打开成功事件
 				var openUISuccessEventArgs = OpenUISuccessEventArgs.Create(win, userData);
-				m_eventModule.Broadcast(this, openUISuccessEventArgs);
+				m_eventModule.Broadcast(openUISuccessEventArgs);
 
 				return win;
 			}
@@ -281,7 +281,7 @@ namespace Hotfix.Framework.UI
 				DestroyWinObject(win);
 
 				var openUIFailureEventArgs = OpenUIFailureEventArgs.Create(serialId, typeof(T).Name, userData);
-				m_eventModule.Broadcast(this, openUIFailureEventArgs);
+				m_eventModule.Broadcast(openUIFailureEventArgs);
 				FuLogger.LogError($"打开UI界面失败, 资源名称 '{typeof(T).Name}', 错误信息 '{exception}'.");
 				return Get(serialId) as T;
 			}

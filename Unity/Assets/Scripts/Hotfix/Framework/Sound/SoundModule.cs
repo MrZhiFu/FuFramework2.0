@@ -494,7 +494,7 @@ namespace Hotfix.Framework.Sound
 					{
 						FuLogger.LogError(errorMessage);
 						var failureEventArgs = PlaySoundFailureEventArgs.Create(newSerialId, soundAssetPath, groupName, errorCode.Value);
-						m_eventModule.Broadcast(this, failureEventArgs);
+						m_eventModule.Broadcast(failureEventArgs);
 						// 播放未发起，回收模块内部创建的参数对象（调用方传入的不回收），避免泄漏
 						RecycleSoundParams(soundParams);
 						RecycleSoundParams3D(soundParams3D);
@@ -725,7 +725,7 @@ namespace Hotfix.Framework.Sound
 					}
 
 					var successEventArgs = PlaySoundSuccessEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.UserData);
-					m_eventModule.Broadcast(this, successEventArgs);
+					m_eventModule.Broadcast(successEventArgs);
 				}
 				finally
 				{
@@ -764,7 +764,7 @@ namespace Hotfix.Framework.Sound
 			try
 			{
 				var failureEventArgs = PlaySoundFailureEventArgs.Create(playSoundInfo.SerialId, playSoundInfo.SoundAssetPath, playSoundInfo.SoundGroup.Name, errorCodeValue);
-				m_eventModule.Broadcast(this, failureEventArgs);
+				m_eventModule.Broadcast(failureEventArgs);
 			}
 			finally
 			{

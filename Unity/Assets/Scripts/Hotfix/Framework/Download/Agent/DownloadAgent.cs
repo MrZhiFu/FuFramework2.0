@@ -103,10 +103,10 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public void Initialize()
 		{
-			m_eventModule.Subscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
-			m_eventModule.Subscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-			m_eventModule.Subscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
-			m_eventModule.Subscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
+			m_eventModule.Subscribe<DownloadAgentHelperUpdateBytesEventArgs>(_OnDownloadAgentHelperUpdateBytes);
+			m_eventModule.Subscribe<DownloadAgentHelperUpdateLengthEventArgs>(_OnDownloadAgentHelperUpdateLength);
+			m_eventModule.Subscribe<DownloadAgentHelperCompleteEventArgs>(_OnDownloadAgentHelperComplete);
+			m_eventModule.Subscribe<DownloadAgentHelperErrorEventArgs>(_OnDownloadAgentHelperError);
 		}
 
 		/// <summary>
@@ -125,10 +125,10 @@ namespace Hotfix.Framework.Download
 			if (WaitTime < Task.Timeout) return;
 
 			// 调用下载代理辅助器错误事件
-			var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, "Timeout");
+			var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, false, "Timeout");
 			try
 			{
-				_OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+				_OnDownloadAgentHelperError(downloadAgentHelperErrorEventArgs);
 			}
 			finally
 			{
@@ -146,10 +146,10 @@ namespace Hotfix.Framework.Download
 		{
 			Dispose();
 
-			m_eventModule.Unsubscribe(DownloadAgentHelperUpdateBytesEventArgs.EventId,  _OnDownloadAgentHelperUpdateBytes);
-			m_eventModule.Unsubscribe(DownloadAgentHelperUpdateLengthEventArgs.EventId, _OnDownloadAgentHelperUpdateLength);
-			m_eventModule.Unsubscribe(DownloadAgentHelperCompleteEventArgs.EventId,     _OnDownloadAgentHelperComplete);
-			m_eventModule.Unsubscribe(DownloadAgentHelperErrorEventArgs.EventId,        _OnDownloadAgentHelperError);
+			m_eventModule.Unsubscribe<DownloadAgentHelperUpdateBytesEventArgs>(_OnDownloadAgentHelperUpdateBytes);
+			m_eventModule.Unsubscribe<DownloadAgentHelperUpdateLengthEventArgs>(_OnDownloadAgentHelperUpdateLength);
+			m_eventModule.Unsubscribe<DownloadAgentHelperCompleteEventArgs>(_OnDownloadAgentHelperComplete);
+			m_eventModule.Unsubscribe<DownloadAgentHelperErrorEventArgs>(_OnDownloadAgentHelperError);
 		}
 
 		/// <summary>
@@ -196,10 +196,10 @@ namespace Hotfix.Framework.Download
 			}
 			catch (Exception exception)
 			{
-				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
+				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, false, exception.ToString());
 				try
 				{
-					_OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+					_OnDownloadAgentHelperError(downloadAgentHelperErrorEventArgs);
 				}
 				finally
 				{
@@ -259,26 +259,26 @@ namespace Hotfix.Framework.Download
 		/// sender 为 <see cref="DownloadHandler"/> 时须属于本代理的 m_helper；
 		/// sender 为 this（代理内部超时/异常路径的直接调用）则放行。
 		/// </summary>
-		private bool IsOwnEvent(object sender)
+		private bool IsOwnEvent(object source)
 		{
 			// 内部超时/异常路径：代理由自身直接调用回调
-			if (ReferenceEquals(sender, this)) return true;
+			if (ReferenceEquals(source, this)) return true;
 
 			// 完成/错误事件：由 UnityWebRequestDownloadAgentHelper.OnUpdate 以 helper 自身为 sender 广播
 			//（该 helper 并不继承 DownloadHandler，故必须单独判定，否则完成/失败会被拦死、下载永不成功）
-			if (ReferenceEquals(sender, m_helper)) return true;
+			if (ReferenceEquals(source, m_helper)) return true;
 
 			// 数据/长度事件：由 helper 持有的 DownloadHandler 在其 ReceiveData 中以 handler 自身为 sender 广播
-			return sender is DownloadHandler handler && ReferenceEquals(handler.Owner, m_helper);
+			return source is DownloadHandler handler && ReferenceEquals(handler.Owner, m_helper);
 		}
 
 		/// <summary>
 		/// 下载代理辅助器更新数据流事件回调。
 		/// </summary>
-		private void _OnDownloadAgentHelperUpdateBytes(object sender, GameEventArgs eventArgs)
+		private void _OnDownloadAgentHelperUpdateBytes(GameEventArgs eventArgs)
 		{
-			if (!IsOwnEvent(sender)) return;
 			if (eventArgs is not DownloadAgentHelperUpdateBytesEventArgs e) return;
+			if (!IsOwnEvent(e.Source)) return;
 
 			WaitTime = 0f;
 
@@ -299,10 +299,10 @@ namespace Hotfix.Framework.Download
 			}
 			catch (Exception exception)
 			{
-				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(false, exception.ToString());
+				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, false, exception.ToString());
 				try
 				{
-					_OnDownloadAgentHelperError(this, downloadAgentHelperErrorEventArgs);
+					_OnDownloadAgentHelperError(downloadAgentHelperErrorEventArgs);
 				}
 				finally
 				{
@@ -315,10 +315,10 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 下载代理辅助器更新数据大小事件回调。
 		/// </summary>
-		private void _OnDownloadAgentHelperUpdateLength(object sender, GameEventArgs gameEventArgs)
+		private void _OnDownloadAgentHelperUpdateLength(GameEventArgs gameEventArgs)
 		{
-			if (!IsOwnEvent(sender)) return;
 			if (gameEventArgs is not DownloadAgentHelperUpdateLengthEventArgs e) return;
+			if (!IsOwnEvent(e.Source)) return;
 
 			// 检查Task是否为null，避免空引用异常
 			if (Task == null) return;
@@ -331,10 +331,10 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 下载代理辅助器完成事件回调。
 		/// </summary>
-		private void _OnDownloadAgentHelperComplete(object sender, GameEventArgs gameEventArgs)
+		private void _OnDownloadAgentHelperComplete(GameEventArgs gameEventArgs)
 		{
-			if (!IsOwnEvent(sender)) return;
 			if (gameEventArgs is not DownloadAgentHelperCompleteEventArgs e) return;
+			if (!IsOwnEvent(e.Source)) return;
 
 			// 检查Task是否为null，避免空引用异常
 			if (Task == null) return;
@@ -367,10 +367,10 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 下载代理辅助器错误事件回调。
 		/// </summary>
-		private void _OnDownloadAgentHelperError(object sender, GameEventArgs gameEventArgs)
+		private void _OnDownloadAgentHelperError(GameEventArgs gameEventArgs)
 		{
-			if (!IsOwnEvent(sender)) return;
 			if (gameEventArgs is not DownloadAgentHelperErrorEventArgs e) return;
+			if (!IsOwnEvent(e.Source)) return;
 
 			m_helper.Reset();
 			if (m_fileStream != null)

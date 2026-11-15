@@ -112,27 +112,27 @@ namespace Hotfix.Framework.Network
 			timeoutSource.CancelAfter(NetworkModule.CONNECT_TIMEOUT_MILLISECONDS);
 
 			// 一次性事件桥：只认本频道；TCS TrySet 幂等，多事件竞争安全；finally 中全量退订。
-			void OnConnected(object sender, GameEventArgs e)
+			void OnConnected(GameEventArgs e)
 			{
 				if (e is not NetworkConnectedEventArgs ne || ne.NetworkChannel != channel) return;
 				tcs.TrySetResult(true);
 			}
 
-			void OnError(object sender, GameEventArgs e)
+			void OnError(GameEventArgs e)
 			{
 				if (e is not NetworkErrorEventArgs ne || ne.NetworkChannel != channel) return;
 				tcs.TrySetException(new InvalidOperationException($"网络连接失败。错误码：{ne.ErrorCode}，消息：'{ne.ErrorMessage}'。"));
 			}
 
-			void OnClosed(object sender, GameEventArgs e)
+			void OnClosed(GameEventArgs e)
 			{
 				if (e is not NetworkClosedEventArgs ne || ne.NetworkChannel != channel) return;
 				tcs.TrySetException(new InvalidOperationException("连接已关闭。"));
 			}
 
-			GlobalModule.EventModule.Subscribe(NetworkConnectedEventArgs.EventId, OnConnected);
-			GlobalModule.EventModule.Subscribe(NetworkErrorEventArgs.EventId,     OnError);
-			GlobalModule.EventModule.Subscribe(NetworkClosedEventArgs.EventId,    OnClosed);
+			GlobalModule.EventModule.Subscribe<NetworkConnectedEventArgs>(OnConnected);
+			GlobalModule.EventModule.Subscribe<NetworkErrorEventArgs>(OnError);
+			GlobalModule.EventModule.Subscribe<NetworkClosedEventArgs>(OnClosed);
 			Exception capturedException = null;
 			try
 			{
@@ -149,9 +149,9 @@ namespace Hotfix.Framework.Network
 			// 超时/取消的 await 恢复可能在线程池线程（CancelAfter 的 Timer 回调驱动）——切回主线程再退订（EventModule 仅主线程可访问）
 			await UniTask.SwitchToMainThread();
 			timeoutSource.Dispose();
-			GlobalModule.EventModule.Unsubscribe(NetworkConnectedEventArgs.EventId, OnConnected);
-			GlobalModule.EventModule.Unsubscribe(NetworkErrorEventArgs.EventId,     OnError);
-			GlobalModule.EventModule.Unsubscribe(NetworkClosedEventArgs.EventId,    OnClosed);
+			GlobalModule.EventModule.Unsubscribe<NetworkConnectedEventArgs>(OnConnected);
+			GlobalModule.EventModule.Unsubscribe<NetworkErrorEventArgs>(OnError);
+			GlobalModule.EventModule.Unsubscribe<NetworkClosedEventArgs>(OnClosed);
 			if (capturedException != null) throw capturedException;
 			return channel;
 		}

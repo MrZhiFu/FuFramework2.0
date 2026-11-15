@@ -386,7 +386,7 @@ namespace Hotfix.Framework.Entity
 			// 发送显示实体失败事件（事件参数期望 ShowEntityInfoEx，取 UserData 中的）
 			var showEntityInfoEx           = showEntityInfo.UserData as ShowEntityInfoEx;
 			var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(showEntityInfo.EntityId, entityAssetName, showEntityInfo.EntityGroup.Name, exception.ToString(), showEntityInfoEx);
-			m_eventModule.Broadcast(this, showEntityFailureEventArgs);
+			m_eventModule.Broadcast(showEntityFailureEventArgs);
 
 			// 释放 showEntityInfo（其 Clear 会连带释放 UserData 承载的 ShowEntityInfoEx）
 			ReferencePool.Recycle(showEntityInfo);
@@ -456,7 +456,7 @@ namespace Hotfix.Framework.Entity
 
 				// 发送显示实体成功事件
 				var showEntitySuccessEventArgs = ShowEntitySuccessEventArgs.Create(entity, progress, showEntityInfoEx);
-				m_eventModule.Broadcast(this, showEntitySuccessEventArgs);
+				m_eventModule.Broadcast(showEntitySuccessEventArgs);
 
 				tcs.TrySetResult(entity);
 			}
@@ -481,7 +481,7 @@ namespace Hotfix.Framework.Entity
 
 				// 发送显示实体失败事件
 				var showEntityFailureEventArgs = ShowEntityFailureEventArgs.Create(entityId, entityAssetName, entityGroup.Name, exception.ToString(), showEntityInfoEx);
-				m_eventModule.Broadcast(this, showEntityFailureEventArgs);
+				m_eventModule.Broadcast(showEntityFailureEventArgs);
 
 				tcs.TrySetException(exception);
 				throw;
@@ -515,7 +515,7 @@ namespace Hotfix.Framework.Entity
 
 			// 发送隐藏实体成功事件
 			var hideEntityCompleteEventArgs = HideEntityCompleteEventArgs.Create(entity.Id, entity.EntityAssetName, entity.EntityGroup, userData);
-			m_eventModule.Broadcast(this, hideEntityCompleteEventArgs);
+			m_eventModule.Broadcast(hideEntityCompleteEventArgs);
 
 			// 加入待回收队列
 			m_waitRecycleQueue.Enqueue(entityInfo);

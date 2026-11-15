@@ -250,9 +250,8 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 本地化语言改变事件处理函数。
 		/// </summary>
-		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void _OnLanguageChanged(object sender, GameEventArgs e)
+		private void _OnLanguageChanged(GameEventArgs e)
 		{
 			if (Visible)
 			{

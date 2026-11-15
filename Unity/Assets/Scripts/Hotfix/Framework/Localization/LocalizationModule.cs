@@ -76,7 +76,7 @@ namespace Hotfix.Framework.Localization
 
 				// 发送本地化语言改变事件
 				var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
-				m_eventModule.Broadcast(this, languageChangeEventArgs);
+				m_eventModule.Broadcast(languageChangeEventArgs);
 			}
 		}
 

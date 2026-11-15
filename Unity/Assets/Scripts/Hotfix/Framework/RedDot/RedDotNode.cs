@@ -81,9 +81,9 @@ namespace Hotfix.Framework.RedDot
 		public Func<int> Calculator { get; internal set; }
 
 		/// <summary>
-		/// 触发重算的事件ID列表
+		/// 触发重算的事件参数类型列表
 		/// </summary>
-		public string[] TriggerEvents { get; internal set; }
+		public Type[] TriggerEvents { get; internal set; }
 
 		/// <summary>
 		/// TotalCount 变化回调（内部使用，由 RedDotModule 设置）

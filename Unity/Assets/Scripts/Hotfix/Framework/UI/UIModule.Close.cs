@@ -81,7 +81,7 @@ namespace Hotfix.Framework.UI
 
 			// 抛出关闭界面完成事件
 			var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
-			m_eventModule.Broadcast(this, closeUICompleteEventArgs);
+			m_eventModule.Broadcast(closeUICompleteEventArgs);
 
 			m_waitRecycleQueue.Enqueue(win);
 		}
@@ -153,7 +153,7 @@ namespace Hotfix.Framework.UI
 
 			// 抛出关闭界面完成事件
 			var closeUICompleteEventArgs = CloseUICompleteEventArgs.Create(win.SerialId, win.WinName, uiGroup);
-			m_eventModule.Broadcast(this, closeUICompleteEventArgs);
+			m_eventModule.Broadcast(closeUICompleteEventArgs);
 
 			// 立即回收界面实例对象
 			Recycle(win);

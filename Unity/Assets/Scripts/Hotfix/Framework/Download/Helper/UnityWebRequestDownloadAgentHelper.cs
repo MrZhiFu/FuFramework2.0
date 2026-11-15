@@ -71,13 +71,13 @@ namespace Hotfix.Framework.Download
 			var isError = m_UnityWebRequest.result != UnityWebRequest.Result.Success;
 			if (isError)
 			{
-				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(m_UnityWebRequest.responseCode == RANGE_NOT_SATISFIABLE_ERROR_CODE, m_UnityWebRequest.error);
-				m_eventModule.Broadcast(this, downloadAgentHelperErrorEventArgs);
+				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, m_UnityWebRequest.responseCode == RANGE_NOT_SATISFIABLE_ERROR_CODE, m_UnityWebRequest.error);
+				m_eventModule.Broadcast(downloadAgentHelperErrorEventArgs);
 			}
 			else
 			{
-				var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create((long)m_UnityWebRequest.downloadedBytes);
-				m_eventModule.Broadcast(this, downloadAgentHelperCompleteEventArgs);
+				var downloadAgentHelperCompleteEventArgs = DownloadAgentHelperCompleteEventArgs.Create(this, (long)m_UnityWebRequest.downloadedBytes);
+				m_eventModule.Broadcast(downloadAgentHelperCompleteEventArgs);
 			}
 		}
 

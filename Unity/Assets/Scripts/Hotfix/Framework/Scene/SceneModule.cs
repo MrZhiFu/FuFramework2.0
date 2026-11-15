@@ -314,7 +314,7 @@ namespace Hotfix.Framework.Scene
 			if (lastActiveScene == activeScene) return;
 			SceneManager.SetActiveScene(activeScene);
 			var activeSceneChangedEventArgs = ActiveSceneChangedEventArgs.Create(lastActiveScene, activeScene);
-			EventRegister.Broadcast(this, activeSceneChangedEventArgs);
+			EventRegister.Broadcast(activeSceneChangedEventArgs);
 		}
 
 		#endregion
@@ -458,7 +458,7 @@ namespace Hotfix.Framework.Scene
 					var unloadSceneSuccessEventArgs = UnloadSceneSuccessEventArgs.Create(sceneHandle.SceneName, userData);
 					m_unloadingSceneDict.Remove(sceneAssetPath);
 					m_loadedSceneDict.Remove(sceneAssetPath);
-					EventRegister.Broadcast(this, unloadSceneSuccessEventArgs);
+					EventRegister.Broadcast(unloadSceneSuccessEventArgs);
 				}
 				else
 				{
@@ -477,7 +477,7 @@ namespace Hotfix.Framework.Scene
 
 					m_loadedSceneDict.Add(sceneAssetPath, sceneHandle);
 					var unloadSceneFailureEventArgs = UnloadSceneFailureEventArgs.Create(sceneHandle.SceneName, userData);
-					EventRegister.Broadcast(this, unloadSceneFailureEventArgs);
+					EventRegister.Broadcast(unloadSceneFailureEventArgs);
 				}
 			}
 		}
@@ -497,7 +497,7 @@ namespace Hotfix.Framework.Scene
 			// 模块已销毁（热更/卸载，EventRegister 已置 null）：不再广播进度，避免 NRE
 			if (Token.IsCancellationRequested) return;
 			var loadSceneUpdateEventArgs = LoadSceneUpdateEventArgs.Create(sceneName, progress, userData);
-			EventRegister.Broadcast(this, loadSceneUpdateEventArgs);
+			EventRegister.Broadcast(loadSceneUpdateEventArgs);
 		}
 
 		/// <summary>
@@ -529,7 +529,7 @@ namespace Hotfix.Framework.Scene
 				m_loadedSceneDict.Add(assetPath, sceneHandle);
 				FuLogger.LogInfo($"加载场景 '{sceneHandle.SceneName}' 成功！");
 				var loadSceneSuccessEventArgs = LoadSceneSuccessEventArgs.Create(sceneHandle.SceneName, sceneHandleData.m_UserData);
-				EventRegister.Broadcast(this, loadSceneSuccessEventArgs);
+				EventRegister.Broadcast(loadSceneSuccessEventArgs);
 			}
 			else
 			{
@@ -540,7 +540,7 @@ namespace Hotfix.Framework.Scene
 				FuLogger.LogError(errorMessage);
 				sceneHandle.Release();
 				var loadSceneFailureEventArgs = LoadSceneFailureEventArgs.Create(sceneName, status, errorMessage, sceneHandleData.m_UserData);
-				EventRegister.Broadcast(this, loadSceneFailureEventArgs);
+				EventRegister.Broadcast(loadSceneFailureEventArgs);
 			}
 		}
 

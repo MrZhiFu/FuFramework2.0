@@ -213,7 +213,6 @@ namespace Hotfix.Framework.Event
 		/// 删除段旧字典退役后收敛为仅快照新字典。
 		/// </summary>
 		/// <param name="e">事件参数。</param>
-		/// <param name="sender">事件源（新签名广播无 sender，旧订阅收到 null）。</param>
 		private void DispatchToHandlers(GameEventArgs e, object sender)
 		{
 			var eventId = e.Id;

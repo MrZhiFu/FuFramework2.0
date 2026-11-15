@@ -232,8 +232,8 @@ namespace Hotfix.Framework.Event
 		/// <summary>
 		/// 派发事件(事件会在抛出后的下一帧分发)。
 		/// </summary>
-		/// <param name="sender">事件发送者。</param>
 		/// <param name="eventArgs">消息对象</param>
+		/// <param name="sender">事件发送者。</param>
 		public void Broadcast(object sender, GameEventArgs eventArgs)
 		{
 			if (m_eventModule == null)
@@ -248,8 +248,8 @@ namespace Hotfix.Framework.Event
 		/// <summary>
 		/// 派发事件(事件会在抛出后的下一帧分发)。
 		/// </summary>
-		/// <param name="sender">事件发送者。</param>
 		/// <param name="eventId">事件编号。</param>
+		/// <param name="sender">事件发送者。</param>
 		public void Broadcast(object sender, string eventId)
 		{
 			if (m_eventModule == null)
@@ -264,8 +264,8 @@ namespace Hotfix.Framework.Event
 		/// <summary>
 		/// 立即抛出事件(事件会立刻分发)。
 		/// </summary>
-		/// <param name="sender">事件发送者。</param>
 		/// <param name="eventArgs">事件内容。</param>
+		/// <param name="sender">事件发送者。</param>
 		public void BroadcastNow(object sender, GameEventArgs eventArgs)
 		{
 			if (m_eventModule == null)

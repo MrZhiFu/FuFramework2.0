@@ -31,8 +31,8 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		/// <param name="key">红点节点 Key</param>
 		/// <param name="calculator">返回红点数量的计算函数</param>
-		/// <param name="triggerEvents">触发重算的事件ID列表(可变参数)</param>
-		public void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
+		/// <param name="triggerEvents">触发重算的事件参数类型列表(可变参数，如 typeof(BagChangedEventArgs))</param>
+		public void Register(RedDotKey key, Func<int> calculator, params Type[] triggerEvents)
 		{
 			if (!NodeDict.TryGetValue(key, out var node))
 			{

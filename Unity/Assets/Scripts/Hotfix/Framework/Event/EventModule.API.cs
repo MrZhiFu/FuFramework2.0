@@ -50,6 +50,15 @@ namespace Hotfix.Framework.Event
 			=> Subscribe(typeof(T).FullName, handler);
 
 		/// <summary>
+		/// 订阅事件处理函数（运行时类型形态：事件类型编译期未知时使用，身份仍为事件参数类型 FullName）。
+		/// 语义与泛型形态完全一致；典型场景如红点触发事件集合（运行时 Type 数组）。
+		/// </summary>
+		/// <param name="eventType">事件参数类型（事件标识）。</param>
+		/// <param name="handler">要订阅的事件处理函数。</param>
+		public void Subscribe(Type eventType, Action<GameEventArgs> handler)
+			=> Subscribe(eventType.FullName, handler);
+
+		/// <summary>
 		/// 框架簿记专用订阅入口（挂起/重放/账本遍历按 (id, handler) 对调用，泛型无法从运行时 id 反推）。
 		/// 业务订阅走 <see cref="Subscribe{T}(Action{GameEventArgs})"/> 泛型形态，勿直接调用本方法。
 		/// </summary>
@@ -104,6 +113,14 @@ namespace Hotfix.Framework.Event
 			=> Unsubscribe(typeof(T).FullName, handler);
 
 		/// <summary>
+		/// 取消订阅事件处理函数（运行时类型形态：事件类型编译期未知时使用，身份仍为事件参数类型 FullName）。
+		/// </summary>
+		/// <param name="eventType">事件参数类型（事件标识）。</param>
+		/// <param name="handler">要取消订阅的事件处理函数。</param>
+		public void Unsubscribe(Type eventType, Action<GameEventArgs> handler)
+			=> Unsubscribe(eventType.FullName, handler);
+
+		/// <summary>
 		/// 框架簿记专用退订入口（挂起/重放/账本遍历按 (id, handler) 对调用）。
 		/// 业务退订走 <see cref="Unsubscribe{T}(Action{GameEventArgs})"/> 泛型形态，勿直接调用本方法。
 		/// </summary>
@@ -149,8 +166,8 @@ namespace Hotfix.Framework.Event
 		/// 使用事件编号抛出事件，取巧地使用一个空事件包装一个事件编号, 这样可以避免创建过多的无需事件数据的事件对象。
 		/// 主线程限制与分发时机同 Broadcast(object, GameEventArgs)：仅限主线程调用，事件会延迟到下一帧主线程分发。
 		/// </summary>
-		/// <param name="sender">事件发送者。</param>
 		/// <param name="eventId">事件编号。</param>
+		/// <param name="sender">事件发送者。</param>
 		public void Broadcast(object sender, string eventId)
 		{
 			if (string.IsNullOrEmpty(eventId))

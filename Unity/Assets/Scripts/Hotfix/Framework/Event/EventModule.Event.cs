@@ -28,9 +28,9 @@ namespace Hotfix.Framework.Event
 			/// <summary>
 			/// 创建事件节点
 			/// </summary>
-			/// <param name="sender"></param>
 			/// <param name="eventArgs"></param>
 			/// <returns></returns>
+		/// <param name="sender">事件发送者。</param>
 			public static Event Create(object sender, GameEventArgs eventArgs)
 			{
 				var eventNodeNode = ReferencePool.Acquire<Event>();

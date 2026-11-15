@@ -21,6 +21,12 @@ namespace Hotfix.Framework.Download
 		public static readonly string EventId = typeof(DownloadAgentHelperUpdateBytesEventArgs).FullName;
 
 		/// <summary>
+		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」
+		/// （DownloadAgent.IsOwnEvent 据此过滤本代理的辅助器事件）。
+		/// </summary>
+		public object Source { get; private set; }
+
+		/// <summary>
 		/// 下载的数据流。
 		/// </summary>
 		private byte[] m_bytes;
@@ -45,6 +51,7 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public override void Clear()
 		{
+			Source = null;
 			m_bytes = null;
 			Offset  = 0;
 			Length  = 0;
@@ -53,17 +60,19 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 创建下载代理辅助器更新数据流事件。
 		/// </summary>
+		/// <param name="source">事件来源（广播方：DownloadHandler 或代理自身）。</param>
 		/// <param name="bytes">下载的数据流。</param>
 		/// <param name="offset">数据流的偏移。</param>
 		/// <param name="length">数据流的长度。</param>
 		/// <returns>创建的下载代理辅助器更新数据流事件。</returns>
-		public static DownloadAgentHelperUpdateBytesEventArgs Create(byte[] bytes, int offset, int length)
+		public static DownloadAgentHelperUpdateBytesEventArgs Create(object source, byte[] bytes, int offset, int length)
 		{
 			if (bytes == null) throw new InvalidOperationException("下载的数据流不能为空.");
 			if (offset < 0  || offset          >= bytes.Length) throw new InvalidOperationException("数据流的偏移不正确.");
 			if (length <= 0 || offset + length > bytes.Length) throw new InvalidOperationException("数据流的长度不正确.");
 
 			var downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
+			downloadAgentHelperUpdateBytesEventArgs.Source = source;
 			downloadAgentHelperUpdateBytesEventArgs.m_bytes = bytes;
 			downloadAgentHelperUpdateBytesEventArgs.Offset  = offset;
 			downloadAgentHelperUpdateBytesEventArgs.Length  = length;
