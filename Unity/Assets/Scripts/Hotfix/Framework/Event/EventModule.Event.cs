@@ -40,6 +40,19 @@ namespace Hotfix.Framework.Event
 			}
 
 			/// <summary>
+			/// 创建事件节点（无 sender 形态：新签名广播专用，Sender 置 null）
+			/// </summary>
+			/// <param name="eventArgs"></param>
+			/// <returns></returns>
+			public static Event Create(GameEventArgs eventArgs)
+			{
+				var eventNodeNode = ReferencePool.Acquire<Event>();
+				eventNodeNode.Sender    = null;
+				eventNodeNode.EventArgs = eventArgs;
+				return eventNodeNode;
+			}
+
+			/// <summary>
 			/// 释放事件节点
 			/// </summary>
 			public void Clear()

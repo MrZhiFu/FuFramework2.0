@@ -155,9 +155,10 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
-		/// 处理事件结点。
+		/// 处理事件结点（旧签名入口：并存期保留，删除段退役）。
 		/// 本方法无条件拥有 e：返回前（含异常路径）必定回收并 Clear 它，故处理函数不得转发或缓存收到的 e，
 		/// 否则转发目标会观测到已清空的数据，且与「回池后可能被复用」形成脏读。需要转发时请新建事件参数对象。
+		/// 并存期分发范围与旧字典、新字典的合并快照一致（见 DispatchToHandlers）。
 		/// </summary>
 		/// <param name="sender">事件源。</param>
 		/// <param name="e">事件参数。</param>
@@ -165,58 +166,7 @@ namespace Hotfix.Framework.Event
 		{
 			try
 			{
-				var eventId = e.Id;
-				if (string.IsNullOrEmpty(eventId))
-				{
-					FuLogger.LogError($"事件参数 {e.GetType().Name} 的 Id 为空，已跳过本次分发（防异常穿透分发链路）");
-					return;
-				}
-
-				// 分发前先快照再逐个调用：直接遍历链表时，回调内新订阅会插到尾部被本轮再次调用，可致同帧无限循环；
-				// 快照同时隔离分发过程中的订阅/退订
-				List<EventHandler<GameEventArgs>> snapshot;
-				if (m_isHandlingEvent)
-				{
-					// 重入（handler 内 BroadcastNow 触发嵌套分发）：复用外层快照会被清空，单独分配
-					snapshot = new List<EventHandler<GameEventArgs>>();
-				}
-				else
-				{
-					snapshot = m_cachedHandlerSnapshot;
-					snapshot.Clear();
-					m_isHandlingEvent = true;
-				}
-
-				try
-				{
-					var hasHandlers = m_eventHandlerMultiDict.TryGetValue(eventId, out var handlerRange);
-
-					// 无处理器：静默丢弃（原宽松模式语义，现为唯一语义）。
-					if (!hasHandlers) return;
-
-					for (var currentNode = handlerRange.First; currentNode != null && currentNode != handlerRange.End; currentNode = currentNode.Next)
-					{
-						snapshot.Add(currentNode.Value);
-					}
-
-					// 逐个 handler 独立 try/catch：异常只记录不穿透，否则逃到 ModuleManager.Update 当帧后续模块停更
-					foreach (var handler in snapshot)
-					{
-						try
-						{
-							handler.Invoke(sender, e);
-						}
-						catch (Exception exception)
-						{
-							FuLogger.LogError($"处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
-						}
-					}
-				}
-				finally
-				{
-					if (ReferenceEquals(snapshot, m_cachedHandlerSnapshot))
-						m_isHandlingEvent = false;
-				}
+				DispatchToHandlers(e, sender);
 			}
 			finally
 			{
@@ -229,6 +179,124 @@ namespace Hotfix.Framework.Event
 				{
 					FuLogger.LogWarning($"回收事件参数异常（疑似重复归还误用）:{exception}");
 				}
+			}
+		}
+
+		/// <summary>
+		/// 处理事件结点（新签名入口：单参化，sender 随类型键订阅退场一并退役）。
+		/// 所有权语义同旧入口：无条件拥有 e，返回前（含异常路径）必定回收并 Clear。
+		/// 旧订阅经本入口收到 sender 为 null——全库 handler 方法体不使用 sender（已验证），行为等价。
+		/// </summary>
+		/// <param name="e">事件参数。</param>
+		private void HandleEvent(GameEventArgs e)
+		{
+			try
+			{
+				DispatchToHandlers(e, null);
+			}
+			finally
+			{
+				try
+				{
+					ReferencePool.Recycle(e);
+				}
+				catch (Exception exception)
+				{
+					FuLogger.LogWarning($"回收事件参数异常（疑似重复归还误用）:{exception}");
+				}
+			}
+		}
+
+		/// <summary>
+		/// 合并分发核心（并存期：旧 EventHandler 字典 + 新 Action 字典的订阅都会被调用，先旧后新）。
+		/// 快照隔离 + 重入识别 + 逐 handler 独立 try/catch，语义与合并前单字典版本逐条对应。
+		/// 删除段旧字典退役后收敛为仅快照新字典。
+		/// </summary>
+		/// <param name="e">事件参数。</param>
+		/// <param name="sender">事件源（新签名广播无 sender，旧订阅收到 null）。</param>
+		private void DispatchToHandlers(GameEventArgs e, object sender)
+		{
+			var eventId = e.Id;
+			if (string.IsNullOrEmpty(eventId))
+			{
+				FuLogger.LogError($"事件参数 {e.GetType().Name} 的 Id 为空，已跳过本次分发（防异常穿透分发链路）");
+				return;
+			}
+
+			// 分发前先快照再逐个调用：直接遍历链表时，回调内新订阅会插到尾部被本轮再次调用，可致同帧无限循环；
+			// 快照同时隔离分发过程中的订阅/退订。双字典各自成快照。
+			List<EventHandler<GameEventArgs>> legacySnapshot;
+			List<Action<GameEventArgs>> actionSnapshot;
+			var ownsFlag = !m_isHandlingEvent;
+			if (m_isHandlingEvent)
+			{
+				// 重入（handler 内 BroadcastNow 触发嵌套分发）：复用外层快照会被清空，单独分配
+				legacySnapshot = new List<EventHandler<GameEventArgs>>();
+				actionSnapshot = new List<Action<GameEventArgs>>();
+			}
+			else
+			{
+				legacySnapshot = m_cachedHandlerSnapshot;
+				legacySnapshot.Clear();
+				actionSnapshot = m_cachedActionHandlerSnapshot;
+				actionSnapshot.Clear();
+				m_isHandlingEvent = true;
+			}
+
+			try
+			{
+				var hasLegacyHandlers = m_eventHandlerMultiDict.TryGetValue(eventId, out var legacyRange);
+				var hasActionHandlers = m_actionHandlerMultiDict.TryGetValue(eventId, out var actionRange);
+
+				// 无处理器：静默丢弃（原宽松模式语义，现为唯一语义）。
+				if (!hasLegacyHandlers && !hasActionHandlers) return;
+
+				if (hasLegacyHandlers)
+				{
+					for (var currentNode = legacyRange.First; currentNode != null && currentNode != legacyRange.End; currentNode = currentNode.Next)
+					{
+						legacySnapshot.Add(currentNode.Value);
+					}
+				}
+
+				if (hasActionHandlers)
+				{
+					for (var currentNode = actionRange.First; currentNode != null && currentNode != actionRange.End; currentNode = currentNode.Next)
+					{
+						actionSnapshot.Add(currentNode.Value);
+					}
+				}
+
+				// 逐个 handler 独立 try/catch：异常只记录不穿透，否则逃到 ModuleManager.Update 当帧后续模块停更。
+				// 先旧订阅（EventHandler 形态，sender 由入口决定），后新订阅（Action 形态）。
+				foreach (var handler in legacySnapshot)
+				{
+					try
+					{
+						handler.Invoke(sender, e);
+					}
+					catch (Exception exception)
+					{
+						FuLogger.LogError($"处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
+					}
+				}
+
+				foreach (var handler in actionSnapshot)
+				{
+					try
+					{
+						handler.Invoke(e);
+					}
+					catch (Exception exception)
+					{
+						FuLogger.LogError($"处理事件 '{eventId}' 的处理函数时发生异常:{exception}");
+					}
+				}
+			}
+			finally
+			{
+				if (ownsFlag)
+					m_isHandlingEvent = false;
 			}
 		}
 	}

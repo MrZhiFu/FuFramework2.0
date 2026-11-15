@@ -23,9 +23,16 @@ namespace Hotfix.Framework.Event
 		private EventModule m_eventModule;
 
 		/// <summary>
-		/// 事件处理多值字典，key为事件ID，value为事件处理对象列表。
+		/// 事件处理多值字典（账本，旧签名形态），key为事件ID，value为事件处理对象列表。
+		/// 并存期遗留：删除段随旧签名一并退役，届时仅保留 Action 账本。
 		/// </summary>
 		private readonly FuMultiDictionary<string, EventHandler<GameEventArgs>> m_eventHandlerDict = new();
+
+		/// <summary>
+		/// 事件处理多值字典（账本，新签名 Action 形态），key为事件ID，value为事件处理对象列表。
+		/// 挂起/重放/全清需同时遍历两份账本（并存期两种订阅形态并存）。
+		/// </summary>
+		private readonly FuMultiDictionary<string, Action<GameEventArgs>> m_actionHandlerDict = new();
 
 		/// <summary>
 		/// 是否已挂起（窗口关闭态）：挂起时账本仍登记新订阅、总线侧保持退订，Resume 按账本统一重放。
@@ -96,6 +103,49 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
+		/// 订阅事件（类型键：事件参数类型即事件标识，见 BaseEventArgs.Id）。
+		/// 账本按 (id, handler) 对登记（id = typeof(T).FullName），挂起/重放簿记走 internal string 版。
+		/// </summary>
+		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
+		/// <param name="handler">处理对象</param>
+		public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+			=> Subscribe(typeof(T).FullName, handler);
+
+		/// <summary>
+		/// 框架簿记专用订阅入口（挂起/重放/账本遍历按 (id, handler) 对调用，泛型无法从运行时 id 反推）。
+		/// 业务订阅走 <see cref="Subscribe{T}(Action{GameEventArgs})"/> 泛型形态，勿直接调用本方法。
+		/// </summary>
+		/// <param name="id">消息ID（事件参数类型 FullName）。</param>
+		/// <param name="handler">处理对象</param>
+		private void Subscribe(string id, Action<GameEventArgs> handler)
+		{
+			if (handler == null)
+			{
+				FuLogger.LogError("事件处理对象为空，已忽略本次订阅.");
+				return;
+			}
+
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次订阅.");
+				return;
+			}
+
+			if (m_actionHandlerDict.Contains(id, handler))
+			{
+				FuLogger.LogWarning($"重复登记事件 '{id}' 的同一处理函数，本次已忽略（账本与总线条目保持 1:1，防挂起重放对账错位）:{handler}");
+				return;
+			}
+
+			m_actionHandlerDict.Add(id, handler);
+
+			// 挂起态只记账不进总线：总线侧当前整体退订中，重开时由 Resume 按账本统一重放
+			if (m_suspended) return;
+
+			m_eventModule.Subscribe(id, handler);
+		}
+
+		/// <summary>
 		/// 取消订阅事件
 		/// </summary>
 		/// <param name="id">消息ID</param>
@@ -118,11 +168,46 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
-		/// 取消所有订阅
+		/// 取消订阅事件（类型键：事件参数类型即事件标识，见 BaseEventArgs.Id）。
+		/// </summary>
+		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
+		/// <param name="handler">处理对象</param>
+		public void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+			=> UnSubscribe(typeof(T).FullName, handler);
+
+		/// <summary>
+		/// 框架簿记专用退订入口（挂起/重放/账本遍历按 (id, handler) 对调用）。
+		/// 业务退订走 <see cref="UnSubscribe{T}(Action{GameEventArgs})"/> 泛型形态，勿直接调用本方法。
+		/// </summary>
+		/// <param name="id">消息ID（事件参数类型 FullName）。</param>
+		/// <param name="handler">处理对象</param>
+		private void UnSubscribe(string id, Action<GameEventArgs> handler)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次退订.");
+				return;
+			}
+
+			if (!m_actionHandlerDict.Remove(id, handler))
+			{
+				FuLogger.LogError($"事件订阅器中不存在指定消息ID '{id}' 的处理对象，已忽略本次退订.");
+				return;
+			}
+
+			m_eventModule.Unsubscribe(id, handler);
+		}
+
+		/// <summary>
+		/// 取消所有订阅（并存期遍历双账本：旧 EventHandler 账本 + 新 Action 账本；删除段收敛为单账本）
 		/// </summary>
 		public void UnSubscribeAll()
 		{
-			if (m_eventHandlerDict.Count == 0) return;
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次全量退订.");
+				return;
+			}
 
 			foreach (var (id, eventHandlers) in m_eventHandlerDict)
 			{
@@ -132,7 +217,16 @@ namespace Hotfix.Framework.Event
 				}
 			}
 
+			foreach (var (id, eventHandlers) in m_actionHandlerDict)
+			{
+				foreach (var eventHandler in eventHandlers)
+				{
+					m_eventModule.Unsubscribe(id, eventHandler);
+				}
+			}
+
 			m_eventHandlerDict.Clear();
+			m_actionHandlerDict.Clear();
 		}
 
 		/// <summary>
@@ -184,6 +278,36 @@ namespace Hotfix.Framework.Event
 		}
 
 		/// <summary>
+		/// 派发事件(事件会在抛出后的下一帧分发，类型键形态：无 sender)。
+		/// </summary>
+		/// <param name="eventArgs">事件内容。</param>
+		public void Broadcast(GameEventArgs eventArgs)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
+				return;
+			}
+
+			m_eventModule.Broadcast(eventArgs);
+		}
+
+		/// <summary>
+		/// 立即抛出事件(事件会立刻分发，类型键形态：无 sender)。
+		/// </summary>
+		/// <param name="eventArgs">事件内容。</param>
+		public void BroadcastNow(GameEventArgs eventArgs)
+		{
+			if (m_eventModule == null)
+			{
+				FuLogger.LogError("订阅器未绑定事件模块，已忽略本次派发.");
+				return;
+			}
+
+			m_eventModule.BroadcastNow(eventArgs);
+		}
+
+		/// <summary>
 		/// 挂起：窗口关闭时调用。按账本逐条从总线退订（模块侧对缺失条目安全空操作），账本保留不清空——账本即重放清单。
 		/// 幂等：已挂起直接返回。internal：仅框架生命周期（WinBase._OnClose）可调，业务勿手动挂起。
 		/// </summary>
@@ -195,6 +319,14 @@ namespace Hotfix.Framework.Event
 			if (m_eventModule == null) return;
 
 			foreach (var (id, eventHandlers) in m_eventHandlerDict)
+			{
+				foreach (var eventHandler in eventHandlers)
+				{
+					m_eventModule.Unsubscribe(id, eventHandler);
+				}
+			}
+
+			foreach (var (id, eventHandlers) in m_actionHandlerDict)
 			{
 				foreach (var eventHandler in eventHandlers)
 				{
@@ -215,6 +347,14 @@ namespace Hotfix.Framework.Event
 			if (m_eventModule == null) return;
 
 			foreach (var (id, eventHandlers) in m_eventHandlerDict)
+			{
+				foreach (var eventHandler in eventHandlers)
+				{
+					m_eventModule.Subscribe(id, eventHandler);
+				}
+			}
+
+			foreach (var (id, eventHandlers) in m_actionHandlerDict)
 			{
 				foreach (var eventHandler in eventHandlers)
 				{
