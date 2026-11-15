@@ -138,15 +138,11 @@ namespace Hotfix.Game.UI
 
         #region 业务逻辑事件处理
 
-        protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler) => m_eventRegister.Subscribe(eventId, handler);
+        protected void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.Subscribe<T>(handler);
 
-        protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler) => m_eventRegister.UnSubscribe(eventId, handler);
+        protected void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.UnSubscribe<T>(handler);
 
-        protected void Broadcast(string eventId, GameEventArgs e) => m_eventRegister.Broadcast(eventId, e);
-
-        protected void Broadcast(object sender, string eventId) => m_eventRegister.Broadcast(sender, eventId);
-
-        protected void BroadcastNow(object sender, GameEventArgs e) => m_eventRegister.BroadcastNow(sender, e);
+        protected void BroadcastNow(GameEventArgs e) => m_eventRegister.BroadcastNow(e);
 
         protected void UnSubscribeAll() => m_eventRegister.UnSubscribeAll();
 

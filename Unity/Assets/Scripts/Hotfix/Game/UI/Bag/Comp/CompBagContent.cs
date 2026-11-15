@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using FairyGUI;
 using Hotfix.Framework.Event;
@@ -62,7 +62,7 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		private void InitEvent()
 		{
-			Subscribe(BagChangedEventArgs.EventId, OnBagChangedEventArgs);
+			Subscribe<BagChangedEventArgs>(OnBagChangedEventArgs);
 		}
 
 
@@ -94,9 +94,8 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 背包变化事件
 		/// </summary>
-		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void OnBagChangedEventArgs(object sender, GameEventArgs e)
+		private void OnBagChangedEventArgs(GameEventArgs e)
 		{
 			listType.GetChildAt(listType.selectedIndex).onClick.Call();
 		}

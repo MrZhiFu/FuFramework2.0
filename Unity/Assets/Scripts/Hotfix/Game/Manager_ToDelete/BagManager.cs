@@ -52,7 +52,7 @@ namespace Hotfix.Game.Manager_ToDelete
 				}
 			}
 
-			GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
+			GlobalModule.EventModule.Broadcast(BagChangedEventArgs.Create());
 		}
 
 		/// <summary>
@@ -94,7 +94,7 @@ namespace Hotfix.Game.Manager_ToDelete
 				}
 			}
 
-			GlobalModule.EventModule.Broadcast(this, BagChangedEventArgs.Create());
+			GlobalModule.EventModule.Broadcast(BagChangedEventArgs.Create());
 		}
 
 		/// <summary>

@@ -44,7 +44,7 @@ namespace Hotfix.Game.UI
 			}
 
 			m_hasKey = true;
-			GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
+			GlobalModule.EventModule.Subscribe<RedDotChangedEventArgs>(OnRedDotChanged);
 			RefreshCurrentState();
 		}
 
@@ -59,7 +59,7 @@ namespace Hotfix.Game.UI
 		private void OnDispose()
 		{
 			if (m_hasKey)
-				GlobalModule.EventModule.Unsubscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
+				GlobalModule.EventModule.Unsubscribe<RedDotChangedEventArgs>(OnRedDotChanged);
 		}
 
 		#region 内部实现
@@ -67,7 +67,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// EventModule 回调：本帧红点变更时检查是否需要刷新
 		/// </summary>
-		private void OnRedDotChanged(object sender, GameEventArgs e)
+		private void OnRedDotChanged(GameEventArgs e)
 		{
 			if (e is not RedDotChangedEventArgs args) return;
 			if (!m_hasKey) return;

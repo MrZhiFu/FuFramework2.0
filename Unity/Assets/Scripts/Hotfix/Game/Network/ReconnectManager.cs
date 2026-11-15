@@ -52,7 +52,7 @@ namespace Hotfix.Game.Network
 		{
 			if (m_initialized) return;
 			m_initialized = true;
-			GlobalModule.EventModule.Subscribe(NetworkClosedEventArgs.EventId, OnNetworkClosed);
+			GlobalModule.EventModule.Subscribe<NetworkClosedEventArgs>(OnNetworkClosed);
 			FuLogger.LogInfo(nameof(ReconnectManager) + " 已初始化。");
 		}
 
@@ -88,7 +88,7 @@ namespace Hotfix.Game.Network
 		/// <summary>
 		/// 网络关闭事件分流（见类注释的顺序）
 		/// </summary>
-		private void OnNetworkClosed(object sender, GameEventArgs e)
+		private void OnNetworkClosed(GameEventArgs e)
 		{
 			if (e is not NetworkClosedEventArgs ne) return;
 			if (ne.CloseReason                       != ENetworkCloseReason.Lost) return; // 主动关闭（登出/销毁）不重连

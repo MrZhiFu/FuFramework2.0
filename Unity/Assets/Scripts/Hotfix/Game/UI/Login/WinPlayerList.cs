@@ -51,8 +51,8 @@ namespace Hotfix.Game.UI
 		/// </summary>
 		private void InitEvent()
 		{
-			Subscribe(NetworkConnectedEventArgs.EventId, OnNetworkConnected);
-			Subscribe(NetworkClosedEventArgs.EventId,    OnNetworkClosed);
+			Subscribe<NetworkConnectedEventArgs>(OnNetworkConnected);
+			Subscribe<NetworkClosedEventArgs>(OnNetworkClosed);
 		}
 
 
@@ -103,9 +103,8 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 网络连接成功事件
 		/// </summary>
-		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void OnNetworkConnected(object sender, GameEventArgs e)
+		private void OnNetworkConnected(GameEventArgs e)
 		{
 	        PlayerLoginAsync().Forget();
 	        FuLogger.LogInfo(nameof(OnNetworkConnected));
@@ -114,9 +113,8 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 网络连接关闭事件
 		/// </summary>
-		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void OnNetworkClosed(object sender, GameEventArgs e)
+		private void OnNetworkClosed(GameEventArgs e)
 		{
 	        FuLogger.LogInfo(nameof(OnNetworkClosed));
 		}

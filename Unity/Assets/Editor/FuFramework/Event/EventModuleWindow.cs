@@ -19,7 +19,7 @@ namespace FuFramework.Event.Editor
 	/// 功能：
 	///     1. 模块总览：待分发事件数、订阅事件 ID 数、handler 总数。
 	///     2. 订阅明细：按事件 ID 分组折叠，展示每个 handler 的方法名/所属类型/静态或实例标记，支持跳转源码。
-	///     3. 待分发队列：展示队列中每条事件的 eventId/sender/参数类型，支持一键清空。
+	///     3. 待分发队列：展示队列中每条事件的 eventId/参数类型，支持一键清空。
 	///     4. 搜索过滤（事件 ID 或 handler 所属类型）、自动刷新、全部展开/折叠。
 	/// 数据源全部为 EventModule 调试分部 EventModule.Debug.cs（EventCount/EventHandlerCount/ForEachHandler/ForEachEvent，#if UNITY_EDITOR 仅编辑器存在），
 	/// 仅「清空待分发队列」经反射调用 EventModule 私有 Clear（破坏性调试操作，不进公开契约）。
@@ -122,11 +122,6 @@ namespace FuFramework.Event.Editor
 			/// 事件 ID
 			/// </summary>
 			public string m_EventId;
-
-			/// <summary>
-			/// 发送者类型名（null sender 显示为空串）
-			/// </summary>
-			public string m_SenderTypeName;
 
 			/// <summary>
 			/// 事件参数类型名
@@ -588,7 +583,6 @@ namespace FuFramework.Event.Editor
 				EditorGUILayout.BeginHorizontal();
 				GUILayout.Label("#", GUILayout.Width(40));
 				GUILayout.Label("事件 ID", GUILayout.MinWidth(220));
-				GUILayout.Label("发送者", GUILayout.MinWidth(160));
 				GUILayout.Label("参数类型", GUILayout.MinWidth(200));
 				EditorGUILayout.EndHorizontal();
 
@@ -597,7 +591,6 @@ namespace FuFramework.Event.Editor
 					EditorGUILayout.BeginHorizontal();
 					GUILayout.Label(row.m_Index.ToString(), GUILayout.Width(40));
 					GUILayout.Label(row.m_EventId, GUILayout.MinWidth(220));
-					GUILayout.Label(string.IsNullOrEmpty(row.m_SenderTypeName) ? "(null)" : row.m_SenderTypeName, GUILayout.MinWidth(160));
 					GUILayout.Label(row.m_ArgsTypeName, GUILayout.MinWidth(200));
 					EditorGUILayout.EndHorizontal();
 				}
@@ -654,16 +647,15 @@ namespace FuFramework.Event.Editor
 
 		/// <summary>
 		/// ForEachEvent 回调的泛型适配（经 MakeGenericMethod 绑定为精确签名委托）：
-		/// 把队列中的 (sender, e) 折叠进行快照
+		/// 把队列中的 (sender, e) 折叠进行快照（sender 不再展示：新签名广播无 sender，旧队列节点 Sender 为 null）
 		/// </summary>
 		private void EventEntry<T>(object sender, T e) where T : EventArgs
 		{
 			m_eventRows.Add(new EventRow
 			{
-				m_Index          = m_eventRows.Count + 1,
-				m_EventId        = m_eventIdProperty?.GetValue(e) as string ?? "(unknown)",
-				m_SenderTypeName = sender?.GetType().Name ?? string.Empty,
-				m_ArgsTypeName   = e?.GetType().Name ?? "(null)",
+				m_Index        = m_eventRows.Count + 1,
+				m_EventId      = m_eventIdProperty?.GetValue(e) as string ?? "(unknown)",
+				m_ArgsTypeName = e?.GetType().Name ?? "(null)",
 			});
 		}
 
