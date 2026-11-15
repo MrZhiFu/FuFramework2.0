@@ -26,7 +26,7 @@ namespace Hotfix.Framework.Event
 		/// ForEachHandler 的 (id, handler) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
 		/// 仅非重入遍历使用（重入识别见 m_isForEachHandler）。
 		/// </summary>
-		private readonly List<(string id, EventHandler<GameEventArgs> handler)> m_cachedHandlerPairSnapshot = new();
+		private readonly List<(string id, Action<GameEventArgs> handler)> m_cachedHandlerPairSnapshot = new();
 
 		/// <summary>
 		/// ForEachEvent 的 (sender, eventArgs) 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
@@ -62,15 +62,20 @@ namespace Hotfix.Framework.Event
 					count += handlers.Count;
 				}
 
+				foreach (var (_, handlers) in m_actionHandlerMultiDict)
+				{
+					count += handlers.Count;
+				}
+
 				return count;
 			}
 		}
 
 		/// <summary>
-		/// 遍历所有事件处理函数（仅限诊断/调试用途）。
+		/// 遍历所有事件处理函数（仅限诊断/调试用途；并存期遍历新旧双字典，统一以 Action 形态输出）。
 		/// 回调内可重入触发分发/遍历——重入识别见 m_isForEachHandler，重入时使用局部快照互不干扰。
 		/// </summary>
-		public void ForEachHandler(Action<string, EventHandler<GameEventArgs>> action)
+		public void ForEachHandler(Action<string, Action<GameEventArgs>> action)
 		{
 			AssertMainThread();
 
@@ -79,10 +84,10 @@ namespace Hotfix.Framework.Event
 			// 与 HandleEvent 同款问题；快照隔离同时避免回调期间集合被修改。
 			// 重入识别（写法同 HandleEvent 的 m_isHandlingEvent）：嵌套遍历若复用同一缓存列表，内层 Clear 会清掉
 			// 外层正在遍历的快照 → 外层剩余项既不派发也不回收。故非重入复用缓存字段、重入改用局部列表。
-			List<(string id, EventHandler<GameEventArgs> handler)> snapshot;
+			List<(string id, Action<GameEventArgs> handler)> snapshot;
 			if (m_isForEachHandler)
 			{
-				snapshot = new List<(string id, EventHandler<GameEventArgs> handler)>();
+				snapshot = new List<(string id, Action<GameEventArgs> handler)>();
 			}
 			else
 			{
@@ -94,6 +99,14 @@ namespace Hotfix.Framework.Event
 			{
 				snapshot.Clear();
 				foreach (var (id, handlers) in m_eventHandlerMultiDict)
+				{
+					foreach (var handler in handlers)
+					{
+						snapshot.Add((id, new Action<GameEventArgs>(e => handler(null, e))));   // 并存期包装：EventHandler → Action（诊断遍历一次性快照，不参与订阅/退订，不影响退订对称性；sender 传 null——全库 handler 不使用 sender）
+					}
+				}
+
+				foreach (var (id, handlers) in m_actionHandlerMultiDict)
 				{
 					foreach (var handler in handlers)
 					{

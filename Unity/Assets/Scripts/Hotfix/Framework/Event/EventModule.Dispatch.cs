@@ -110,7 +110,7 @@ namespace Hotfix.Framework.Event
 				for (; processed < m_cachedEventBatch.Count; processed++)
 				{
 					var tempEvent = m_cachedEventBatch[processed];
-					HandleEvent(tempEvent.Sender, tempEvent.EventArgs);
+					HandleEvent(tempEvent.EventArgs);
 
 					try
 					{

@@ -23,7 +23,7 @@ namespace FuFramework.Event.Editor
 	///     4. 搜索过滤（事件 ID 或 handler 所属类型）、自动刷新、全部展开/折叠。
 	/// 数据源全部为 EventModule 调试分部 EventModule.Debug.cs（EventCount/EventHandlerCount/ForEachHandler/ForEachEvent，#if UNITY_EDITOR 仅编辑器存在），
 	/// 仅「清空待分发队列」经反射调用 EventModule 私有 Clear（破坏性调试操作，不进公开契约）。
-	/// 回调绑定：ForEachHandler/ForEachEvent 的回调委托签名为 (string, EventHandler&lt;GameEventArgs&gt;) 与 (object, GameEventArgs)，
+	/// 回调绑定：ForEachHandler/ForEachEvent 的回调委托签名为 (string, Action&lt;GameEventArgs&gt;) 与 (object, GameEventArgs)，
 	/// 经窗口内泛型适配方法 MakeGenericMethod + CreateDelegate 精确签名绑定，无需动态发射。
 	/// </summary>
 	public sealed class EventModuleWindow : DebugWindowBase
@@ -203,7 +203,7 @@ namespace FuFramework.Event.Editor
 		private PropertyInfo m_eventIdProperty;
 
 		/// <summary>
-		/// EventModule.ForEachHandler 方法（参数 Action&lt;string, EventHandler&lt;GameEventArgs&gt;&gt;）
+		/// EventModule.ForEachHandler 方法（参数 Action&lt;string, Action&lt;GameEventArgs&gt;&gt;）
 		/// </summary>
 		private MethodInfo m_forEachHandlerMethod;
 
@@ -218,7 +218,7 @@ namespace FuFramework.Event.Editor
 		private MethodInfo m_poolClearMethod;
 
 		/// <summary>
-		/// 已绑定的 ForEachHandler 回调委托（Action&lt;string, EventHandler&lt;GameEventArgs&gt;&gt;）
+		/// 已绑定的 ForEachHandler 回调委托（Action&lt;string, Action&lt;GameEventArgs&gt;&gt;）
 		/// </summary>
 		private Delegate m_forEachHandlerCallback;
 
@@ -633,7 +633,7 @@ namespace FuFramework.Event.Editor
 		/// ForEachHandler 回调的泛型适配（经 MakeGenericMethod 绑定为精确签名委托）：
 		/// 把 (id, handler) 折叠进分组快照
 		/// </summary>
-		private void HandlerEntry<T>(string id, EventHandler<T> handler) where T : EventArgs
+		private void HandlerEntry<T>(string id, Action<T> handler) where T : EventArgs
 		{
 			// 事件 ID 变化时切换当前分组（ForEachHandler 按 id 连续枚举同一事件的多 handler，但不依赖该前提：显式查重）
 			if (m_buildingGroup == null || m_buildingGroup.m_EventId != id)
@@ -717,7 +717,7 @@ namespace FuFramework.Event.Editor
 			if (m_forEachHandlerMethod == null || m_forEachEventMethod == null || m_eventIdProperty == null || m_poolClearMethod == null) return false;
 
 			// 回调绑定：窗口内泛型适配方法 MakeGenericMethod 后 CreateDelegate，签名精确匹配
-			var actionOfStringAndHandler = typeof(Action<,>).MakeGenericType(typeof(string), typeof(EventHandler<>).MakeGenericType(m_gameEventArgsType));
+			var actionOfStringAndHandler = typeof(Action<,>).MakeGenericType(typeof(string), typeof(Action<>).MakeGenericType(m_gameEventArgsType));
 			var actionOfObjectAndArgs    = typeof(Action<,>).MakeGenericType(typeof(object), m_gameEventArgsType);
 
 			var handlerAdapter = GetType().GetMethod(nameof(HandlerEntry), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(m_gameEventArgsType);
