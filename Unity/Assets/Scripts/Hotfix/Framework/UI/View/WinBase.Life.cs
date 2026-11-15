@@ -40,6 +40,7 @@ namespace Hotfix.Framework.UI
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]打开-OnOpen().");
 			m_cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
+			BroadcastWinLifecycle(true); // 组件随窗口获得新生命周期：晚于窗口自身 Recreate，早于业务 OnOpen
 			EventRegister?.Resume();   // 开窗重放挂起的订阅：必须在业务 OnOpen 之前，保证其执行期间订阅已就绪
 			Visible     = true;
 			WinUI.alpha = 0;
@@ -130,6 +131,7 @@ namespace Hotfix.Framework.UI
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]关闭-OnClose().");
 			m_cancellation.Cancel();  // 关闭即取消本生命周期在途异步任务
+			BroadcastWinLifecycle(false); // 组件随窗口取消在途异步任务：与组件自持取消源语义对齐
 			EventRegister?.Suspend(); // 关窗挂起订阅：总线退订、账本保留（半成品实例注册器为 null，?. 跳过）
 			StopAllTimers();          // 关窗终止计时器（破坏性不重放，与异步取消同立场）
 			Visible = false;
@@ -180,8 +182,40 @@ namespace Hotfix.Framework.UI
 		}
 
 		/// <summary>
-		/// 界面销毁.
+		/// 开关窗口时遍历组件树广播生命周期通知（广播顺序：晚于窗口自身 Cancel/Recreate，
+		/// 保证组件先于业务 OnOpen 拿到新生命周期）。
+		/// 命中 IWinLifecycleAware 的组件逐层独立调用（嵌套组件每层独立实现独立命中）；
+		/// GList 池中未挂载 item 不在组件树内，不在广播覆盖范围（其自持取消源创建即有效，
+		/// 且 Gen 模板已订阅 onAddedToStage/onRemovedFromStage 兜底进池/复用）。
 		/// </summary>
+		/// <param name="opened">true=窗口打开（组件重建生命周期）；false=窗口关闭（组件取消在途异步任务）</param>
+		private void BroadcastWinLifecycle(bool opened)
+		{
+			if (WinUI == null) return;
+
+			BroadcastWinLifecycleRecursive(WinUI, opened);
+		}
+
+		/// <summary>
+		/// 递归遍历组件树：命中 IWinLifecycleAware 即调用对应通知，并继续深入子节点。
+		/// </summary>
+		private static void BroadcastWinLifecycleRecursive(GObject node, bool opened)
+		{
+			if (node is IWinLifecycleAware aware)
+			{
+				if (opened) aware.OnWinOpened();
+				else aware.OnWinClosed();
+			}
+
+			if (node is not GComponent component) return;
+
+			var childCount = component.numChildren;
+			for (var i = 0; i < childCount; i++)
+			{
+				BroadcastWinLifecycleRecursive(component.GetChildAt(i), opened);
+			}
+		}
+
 		internal void _OnDispose()
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]被销毁-Dispose().");
