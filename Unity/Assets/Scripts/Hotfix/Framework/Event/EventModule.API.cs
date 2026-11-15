@@ -13,6 +13,16 @@ namespace Hotfix.Framework.Event
 	/// </summary>
 	public sealed partial class EventModule : ModuleBase
 	{
+		// ── 广播统计（仅编辑器调试用，见 EventModule.Debug.cs 实现）──────────────────────
+		// partial 方法语义：玩家包下 Debug 分部（#if UNITY_EDITOR）不编译 → 无实现 → 调用点被编译器剥除，
+		// 统计字段也全部位于该分部内，玩家包零字段、零调用（spec 反目标 2）。
+
+		/// <summary>广播入口埋点（Editor 期计数；发布版由编译器剥除）。</summary>
+		partial void RecordBroadcast(string eventId);
+
+		/// <summary>订阅入口埋点（Editor 期登记历史订阅 ID，无监听双桶口径依据；发布版由编译器剥除）。</summary>
+		partial void RecordSubscribe(string eventId);
+
 		/// <summary>
 		/// 订阅事件处理函数（类型键：事件参数类型即事件标识，见 BaseEventArgs.Id）。
 		/// 幂等去重：同一事件同一处理函数重复订阅只保留首次登记（分发时只调用一次），重复订阅记录警告日志——
@@ -56,6 +66,7 @@ namespace Hotfix.Framework.Event
 			}
 
 			m_actionHandlerMultiDict.Add(id, handler);
+			RecordSubscribe(id);
 		}
 
 		/// <summary>
@@ -115,6 +126,7 @@ namespace Hotfix.Framework.Event
 				return;
 			}
 
+			RecordBroadcast(e.Id);
 			var tempEvent = Event.Create(e);
 			m_eventQueue.Enqueue(tempEvent);
 		}
@@ -134,6 +146,7 @@ namespace Hotfix.Framework.Event
 				return;
 			}
 
+			RecordBroadcast(e.Id);
 			HandleEvent(e);
 		}
 	}
