@@ -247,6 +247,16 @@ public void BroadcastNow(object sender, GameEventArgs eventArgs)
 public void AddUIListener(EventListener listener, EventCallback1 callback)
 public void SetUIListener(EventListener listener, EventCallback1 callback)
 public void RemoveUIListener(EventListener listener, EventCallback1 callback)
+
+// UI事件（异步处理器：签名直接写 async UniTask，调用写法与同步版一致；
+// 异常由适配层统一处理——OCE 静默、其余记日志；取消由处理器内部 await 点携带 Token 实现）
+public void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+public void AddUIListener(EventListener listener, Func<UniTask> callback)
+public void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+public void SetUIListener(EventListener listener, Func<UniTask> callback)
+public void RemoveUIListener(EventListener listener, Func<EventContext, UniTask> callback)
+public void RemoveUIListener(EventListener listener, Func<UniTask> callback)
+
 public void ClearUIListener(EventListener listener)
 public void ClearAllUIListener()
 
@@ -829,7 +839,40 @@ public class EventExampleWin : WinBase
 
 > 机制细节（挂起/重放触发时机、账本对称性、Clear 复位）见 Event 模块 README §4.2 生命周期契约。
 
-### 4.7 计时器使用
+### 4.7 UI 交互事件与异步处理器（UniTask）
+
+UI 交互事件处理器支持同步（`void`）与异步（`async UniTask`）两种签名，调用写法完全一致，重载解析自动分流：
+
+```csharp
+protected override void OnInit()
+{
+    // 同步与异步处理器写法一致，按方法签名自动匹配重载
+    AddUIListener(btnLogin.onClick, OnBtnLoginClick);   // async UniTask 版本
+    AddUIListener(inputName.onChanged, OnInputChanged); // void 版本
+}
+
+// 异步处理器：直接 await，无需"void 包装方法 + UniTaskVoid 主体 + .Forget()"三件套，无需 try/catch
+private async UniTask OnBtnLoginClick(EventContext ctx)
+{
+    var rsp = await WebModule.Instance.Post<RspLogin>(url, req, Token); // Token 必传（铁律）
+    // ...后续逻辑
+}
+
+// 不需要 EventContext 时用无上下文签名
+private async UniTask OnInputChanged()
+{
+    // ...
+}
+```
+
+**异常与取消契约**（由框架适配层 `FuiEventRegister.FuiAsyncBinding` 统一处理）：
+
+- **异常**：`OperationCanceledException` 静默吞（生命周期约定）；其余异常 `FuLogger.LogError`——业务处理器内无需 try/catch；
+- **取消**：由处理器内部 await 点携带 `Token` 实现——网络/资源类 API 按铁律必传 `Token`，延时类须显式传（`UniTask.Delay(5000, cancellationToken: Token)`，注意该重载第二位置参数是 `bool ignoreTimeScale`，Token 必须用命名参数）。窗口关闭（`_OnClose`）时在途处理器于自身 await 点原生取消，`OCE` 沿链传播至适配层静默。未携带 Token 的 await（如裸 `UniTask.Delay`）窗口关闭后**不会**被中断；
+- `SetUIListener` / `RemoveUIListener` 提供对称异步重载，移除按原始委托值语义（Target+Method）匹配；
+- **防连点不在框架层**：处理器在途期间重复触发会再次执行，需要互斥的界面自行控制（如点击后 `btn.enabled = false`）。
+
+### 4.8 计时器使用
 
 ```csharp
 public class TimerExampleWin : WinBase
@@ -868,7 +911,7 @@ public class TimerExampleWin : WinBase
 }
 ```
 
-### 4.8 监听界面事件
+### 4.9 监听界面事件
 
 ```csharp
 public class UIEventListener : MonoBehaviour
@@ -916,7 +959,7 @@ public class UIEventListener : MonoBehaviour
 }
 ```
 
-### 4.9 自定义组件
+### 4.10 自定义组件
 
 ```csharp
 // 自定义组件（Comp*）由 FGUI 插件自动生成 .Gen.cs，手写 partial 类补充逻辑
