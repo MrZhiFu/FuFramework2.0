@@ -67,18 +67,16 @@ namespace Hotfix.Game.UI
 			txtPlayerLevel.text   = "当前等级:" + PlayerManager.Instance.PlayerInfo.Level;
 		}
 
-		private async UniTaskVoid ReqBagInfoAsync()
+		#region 交互事件与ListItem渲染回调处理
+
+		/// <summary>
+		/// 背包按钮点击：请求背包信息 → 打开背包界面。生命周期取消与异常由 UI 事件适配层统一处理。
+		/// </summary>
+		private async UniTask OnBtnBagClick(EventContext ctx)
 		{
 			// 请求背包信息
 			await BagManager.Instance.RequestGetBagInfoAsync();
 			await GlobalModule.UIModule.OpenAsync<WinBag>();
-		}
-
-		#region 交互事件与ListItem渲染回调处理
-
-		private void OnBtnBagClick(EventContext ctx)
-		{
-			ReqBagInfoAsync().Forget();
 		}
 
 		#endregion

@@ -16,11 +16,6 @@ namespace Hotfix.Game.UI
 {
 	public partial class WinPlayerCreate : WinBase
 	{
-		 /// <summary>
-		 /// 创建角色请求
-		 /// </summary>
-		 private ReqPlayerCreate m_req;
-
 		/// <summary>
 		/// 初始化
 		/// </summary>
@@ -66,10 +61,7 @@ namespace Hotfix.Game.UI
 		/// <summary>
 		/// 界面销毁
 		/// </summary>
-		protected override void OnDispose()
-		{
-			m_req = null;
-		}
+		protected override void OnDispose() { }
 
 		/// <summary>
 		/// 刷新界面
@@ -77,67 +69,6 @@ namespace Hotfix.Game.UI
 		private void Refresh()
 		{
 			// TODO：刷新逻辑
-		}
-
-		/// <summary>
-		/// 创建角色按钮点击事件
-		/// </summary>
-		private async UniTaskVoid CreatePlayerAsync()
-		{
-			if (inputUserName.text.IsNullOrWhiteSpace())
-			{
-				txtError.text = "角色名不能为空";
-				return;
-			}
-
-			m_req = new ReqPlayerCreate
-			{
-				Id = 10000,
-				Name = inputUserName.text
-			};
-
-			try
-			{
-				// 创建角色
-				var rspPlayerCreate =
-					await WebModule.Instance.Post<RspPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", m_req, Token);
-				if (rspPlayerCreate.ErrorCode > 0)
-				{
-					FuLogger.LogError("登录失败，错误信息:" + rspPlayerCreate.ErrorCode);
-					return;
-				}
-
-				if (rspPlayerCreate.PlayerInfo != null)
-					FuLogger.LogInfo("创建角色成功");
-
-				// 获取角色列表
-				var reqPlayerList = new ReqPlayerList { Id = m_req.Id };
-				var rspPlayerList =
-					await WebModule.Instance.Post<RspPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
-						reqPlayerList, Token);
-				if (rspPlayerList.ErrorCode > 0)
-				{
-					FuLogger.LogError("登录失败，错误信息:" + rspPlayerList.ErrorCode);
-					return;
-				}
-
-				// 将角色列表保存到Manager中
-				AccountManager.Instance.PlayerList = rspPlayerList.PlayerList;
-
-				// 关闭当前界面
-				CloseSelf();
-
-				// 打开角色列表界面
-				GlobalModule.UIModule.Open<WinPlayerList>();
-			}
-			catch (OperationCanceledException)
-			{
-				// 界面关闭/销毁或重启导致在途创建角色请求取消：按生命周期契约静默返回
-			}
-			catch (Exception e)
-			{
-				FuLogger.LogError($"创建角色请求异常: {e.Message}");
-			}
 		}
 
 		#region 交互事件与ListItem渲染回调处理
@@ -152,9 +83,55 @@ namespace Hotfix.Game.UI
 			// todo
 		}
 
-		private void OnBtnCreateClick(EventContext ctx)
+		/// <summary>
+		/// 创建角色按钮点击：校验 → 创建角色 → 刷新角色列表 → 关闭本窗并打开角色列表。
+		/// 生命周期取消与异常由 UI 事件适配层统一处理（窗口关闭时在途请求自动取消，业务内无需 try/catch）。
+		/// </summary>
+		private async UniTask OnBtnCreateClick(EventContext ctx)
 		{
-			CreatePlayerAsync().Forget();
+			if (inputUserName.text.IsNullOrWhiteSpace())
+			{
+				txtError.text = "角色名不能为空";
+				return;
+			}
+
+			var req = new ReqPlayerCreate
+			{
+				Id = 10000,
+				Name = inputUserName.text
+			};
+
+			// 创建角色
+			var rspPlayerCreate =
+				await WebModule.Instance.Post<RspPlayerCreate>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerCreate).ConvertToSnakeCase()}", req, Token);
+			if (rspPlayerCreate.ErrorCode > 0)
+			{
+				FuLogger.LogError("登录失败，错误信息:" + rspPlayerCreate.ErrorCode);
+				return;
+			}
+
+			if (rspPlayerCreate.PlayerInfo != null)
+				FuLogger.LogInfo("创建角色成功");
+
+			// 获取角色列表
+			var reqPlayerList = new ReqPlayerList { Id = req.Id };
+			var rspPlayerList =
+				await WebModule.Instance.Post<RspPlayerList>($"http://127.0.0.1:28080/game/api/{nameof(ReqPlayerList).ConvertToSnakeCase()}",
+					reqPlayerList, Token);
+			if (rspPlayerList.ErrorCode > 0)
+			{
+				FuLogger.LogError("登录失败，错误信息:" + rspPlayerList.ErrorCode);
+				return;
+			}
+
+			// 将角色列表保存到Manager中
+			AccountManager.Instance.PlayerList = rspPlayerList.PlayerList;
+
+			// 关闭当前界面
+			CloseSelf();
+
+			// 打开角色列表界面
+			GlobalModule.UIModule.Open<WinPlayerList>();
 		}
 
 		#endregion

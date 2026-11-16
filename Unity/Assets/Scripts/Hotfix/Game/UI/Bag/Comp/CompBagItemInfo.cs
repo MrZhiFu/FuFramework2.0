@@ -64,10 +64,13 @@ namespace Hotfix.Game.UI
 
 		#region 交互事件以及ListItem渲染回调处理
 
-		private void OnBtnUseClick(EventContext ctx)
+		/// <summary>
+		/// 使用道具按钮点击：发起使用请求。生命周期取消与异常由组件异步事件适配层统一处理。
+		/// </summary>
+		private async UniTask OnBtnUseClick(EventContext ctx)
 		{
 			if (m_selectBagItem.IsNull()) return;
-			BagManager.Instance.RequestUseItemAsync(m_selectBagItem.ItemId, m_selectBagItem.Count).Forget();
+			await BagManager.Instance.RequestUseItemAsync(m_selectBagItem.ItemId, m_selectBagItem.Count);
 		}
 
 		private void OnBtnGetClick(EventContext ctx)
