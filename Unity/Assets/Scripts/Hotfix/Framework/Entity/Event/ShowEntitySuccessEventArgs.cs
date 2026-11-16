@@ -11,8 +11,6 @@ namespace Hotfix.Framework.Entity
 	/// </summary>
 	public sealed class ShowEntitySuccessEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取实体逻辑类型。
 		/// </summary>

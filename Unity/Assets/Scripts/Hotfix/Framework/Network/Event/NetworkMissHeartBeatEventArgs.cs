@@ -9,8 +9,6 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkMissHeartBeatEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取网络频道。
 		/// </summary>

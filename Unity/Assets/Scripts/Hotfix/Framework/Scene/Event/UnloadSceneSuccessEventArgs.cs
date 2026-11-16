@@ -10,8 +10,6 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class UnloadSceneSuccessEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 场景名称。
 		/// </summary>

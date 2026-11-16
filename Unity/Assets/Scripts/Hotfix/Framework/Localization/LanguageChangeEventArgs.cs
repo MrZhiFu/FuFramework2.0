@@ -9,8 +9,6 @@ namespace Hotfix.Framework.Localization
 	/// </summary>
 	public sealed class LanguageChangeEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 当前语言。
 		/// </summary>

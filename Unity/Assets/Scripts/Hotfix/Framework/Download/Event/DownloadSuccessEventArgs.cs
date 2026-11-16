@@ -9,8 +9,6 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadSuccessEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取下载任务的序列编号。
 		/// </summary>

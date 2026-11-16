@@ -10,8 +10,6 @@ namespace Hotfix.Framework.UI
 	/// </summary>
 	public sealed class CloseUICompleteEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取界面序列编号。
 		/// </summary>

@@ -41,7 +41,7 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 所有红点字典(Key: RedDotKey，Value: 红点节点)
 		/// </summary>
-		private static readonly Dictionary<RedDotKey, RedDotNode> NodeDict = new();
+		private static readonly Dictionary<RedDotKey, RedDotNode> sr_nodeDict = new();
 
 		/// <summary>
 		/// 动态子节点字典(Key：父节点，Value：父节点下的所有动态子节点集合)(用于 SyncDynamicNode 增量更新)
@@ -108,7 +108,7 @@ namespace Hotfix.Framework.RedDot
 				return;
 			}
 
-			NodeDict.Clear();
+			sr_nodeDict.Clear();
 
 			var allRows = tbRedDot.All;
 
@@ -117,7 +117,7 @@ namespace Hotfix.Framework.RedDot
 			{
 				var node = RedDotNode.Create(row);
 
-				if (!NodeDict.TryAdd(row.Id, node))
+				if (!sr_nodeDict.TryAdd(row.Id, node))
 				{
 					FuLogger.LogError($"重复的节点key: {row.Id}");
 					ReferencePool.Recycle(node);
@@ -130,8 +130,8 @@ namespace Hotfix.Framework.RedDot
 				if (row.ParentId == null) continue;
 				RedDotKey parentKey = row.ParentId.Value;
 
-				if (!NodeDict.TryGetValue(row.Id,    out var child) ||
-					!NodeDict.TryGetValue(parentKey, out var parent))
+				if (!sr_nodeDict.TryGetValue(row.Id,    out var child) ||
+				    !sr_nodeDict.TryGetValue(parentKey, out var parent))
 					continue;
 
 				child.SetParent(parent);
@@ -139,7 +139,7 @@ namespace Hotfix.Framework.RedDot
 			}
 
 			// 注入变更追踪回调
-			foreach (var node in NodeDict.Values)
+			foreach (var node in sr_nodeDict.Values)
 			{
 				node.m_OnTotalCountChanged = OnNodeTotalCountChanged;
 			}
@@ -150,7 +150,7 @@ namespace Hotfix.Framework.RedDot
 			// 加载已读状态
 			LoadReadState();
 
-			FuLogger.LogInfo($"初始化红点模块成功. 节点总数量: {NodeDict.Count}");
+			FuLogger.LogInfo($"初始化红点模块成功. 节点总数量: {sr_nodeDict.Count}");
 		}
 
 		/// <summary>
@@ -167,12 +167,12 @@ namespace Hotfix.Framework.RedDot
 			m_eventToNodes.Clear();
 
 			// 清理所有节点
-			foreach (var node in NodeDict.Values)
+			foreach (var node in sr_nodeDict.Values)
 			{
 				ReferencePool.Recycle(node);
 			}
 
-			NodeDict.Clear();
+			sr_nodeDict.Clear();
 			m_dirtyNodeSet.Clear();
 			m_dirtySnapshot.Clear();
 			m_changedKeySet.Clear();
@@ -262,6 +262,7 @@ namespace Hotfix.Framework.RedDot
 				if (eventType == null) continue;
 
 				var eventId = eventType.FullName;
+				if (string.IsNullOrEmpty(eventId)) continue;
 
 				if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet))
 				{
@@ -292,6 +293,7 @@ namespace Hotfix.Framework.RedDot
 					if (eventType == null) continue;
 
 					var eventId = eventType.FullName;
+					if (string.IsNullOrEmpty(eventId)) continue;
 
 					if (!m_eventToNodes.TryGetValue(eventId, out var nodeSet)) continue;
 					nodeSet.Remove(node);
@@ -334,19 +336,19 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>创建的动态节点，父节点不存在时返回 null</returns>
 		private RedDotNode AddDynamicChild(RedDotKey parentKey, RedDotKey childKey)
 		{
-			if (!NodeDict.TryGetValue(parentKey, out var parentNode))
+			if (!sr_nodeDict.TryGetValue(parentKey, out var parentNode))
 			{
 				FuLogger.LogError($"父节点不存在: {parentKey}");
 				return null;
 			}
 
-			if (NodeDict.TryGetValue(childKey, out var existingNode))
+			if (sr_nodeDict.TryGetValue(childKey, out var existingNode))
 				return existingNode;
 
 			var node = RedDotNode.CreateDynamic(childKey, parentNode);
 			node.m_OnTotalCountChanged = OnNodeTotalCountChanged;
 			parentNode.AddChild(node);
-			NodeDict.Add(childKey, node);
+			sr_nodeDict.Add(childKey, node);
 			FuLogger.LogInfo($"创建动态节点: {childKey}，父节点: {parentKey}");
 			return node;
 		}
@@ -384,7 +386,7 @@ namespace Hotfix.Framework.RedDot
 				m_readSet.Add(id);
 				var       staticKey = (ERedDotKey)id;
 				RedDotKey key       = staticKey;
-				if (NodeDict.TryGetValue(key, out var node))
+				if (sr_nodeDict.TryGetValue(key, out var node))
 				{
 					node.IsRead = true;
 					node.SetCount(0);
@@ -451,15 +453,15 @@ namespace Hotfix.Framework.RedDot
 		private void DetectCycleAndBreak()
 		{
 			var state = new Dictionary<RedDotNode, int>();
-			foreach (var node in NodeDict.Values)
+			foreach (var node in sr_nodeDict.Values)
 			{
 				state[node] = 0; // 0=未访问, 1=访问中, 2=已完成
 			}
 
-			foreach (var node in NodeDict.Values)
+			foreach (var node in sr_nodeDict.Values)
 			{
 				if (state[node] != 0) continue;
-				HasCycleDFS(node, state);
+				HasCycleDfs(node, state);
 			}
 		}
 
@@ -469,7 +471,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="node">当前节点</param>
 		/// <param name="state">节点访问状态</param>
 		/// <returns>是否检测到环</returns>
-		private static bool HasCycleDFS(RedDotNode node, Dictionary<RedDotNode, int> state)
+		private static void HasCycleDfs(RedDotNode node, Dictionary<RedDotNode, int> state)
 		{
 			state[node] = 1;
 			var parent = node.Parent;
@@ -477,7 +479,7 @@ namespace Hotfix.Framework.RedDot
 			if (parent == null)
 			{
 				state[node] = 2;
-				return false;
+				return;
 			}
 
 			if (state[parent] == 1)
@@ -486,16 +488,15 @@ namespace Hotfix.Framework.RedDot
 				parent.RemoveChild(node);
 				node.SetParent(null);
 				state[node] = 2;
-				return true;
+				return;
 			}
 
 			if (state[parent] == 0)
 			{
-				HasCycleDFS(parent, state);
+				HasCycleDfs(parent, state);
 			}
 
 			state[node] = 2;
-			return false;
 		}
 
 		#endregion

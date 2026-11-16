@@ -132,9 +132,6 @@ namespace Hotfix.Framework.UI
 				WinUI.visible = value;
 
 				// 触发UI显示状态变化事件。
-				// 首参是 sender（事件源），不是事件 ID：原先误传 ChangeUIVisibleEventArgs.EventId，
-				// 订阅者拿到的事件源成了字符串。事件 ID 由 EventArgs 自身的 Id 承载（见 ChangeUIVisibleEventArgs.Id），
-				// 查找订阅者不受影响，故此处按框架惯例传 this。
 				Broadcast(ChangeUIVisibleEventArgs.Create(this, value, null));
 			}
 		}

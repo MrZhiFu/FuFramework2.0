@@ -67,8 +67,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
 		/// <param name="handler">处理对象</param>
-		public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
-			=> Subscribe(typeof(T).FullName, handler);
+		public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => Subscribe(typeof(T).FullName, handler);
 
 		/// <summary>
 		/// 框架簿记专用订阅入口（挂起/重放/账本遍历按 (id, handler) 对调用，泛型无法从运行时 id 反推）。

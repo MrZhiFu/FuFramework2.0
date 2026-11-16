@@ -13,16 +13,6 @@ namespace Hotfix.Framework.Event
 	/// </summary>
 	public sealed partial class EventModule : ModuleBase
 	{
-		// ── 广播统计（仅编辑器调试用，见 EventModule.Debug.cs 实现）──────────────────────
-		// partial 方法语义：玩家包下 Debug 分部（#if UNITY_EDITOR）不编译 → 无实现 → 调用点被编译器剥除，
-		// 统计字段也全部位于该分部内，玩家包零字段、零调用（spec 反目标 2）。
-
-		/// <summary>广播入口埋点（Editor 期计数；发布版由编译器剥除）。</summary>
-		partial void RecordBroadcast(string eventId);
-
-		/// <summary>订阅入口埋点（Editor 期登记历史订阅 ID，无监听双桶口径依据；发布版由编译器剥除）。</summary>
-		partial void RecordSubscribe(string eventId);
-
 		/// <summary>
 		/// 订阅事件处理函数（类型键：事件参数类型即事件标识，见 BaseEventArgs.Id）。
 		/// 幂等去重：同一事件同一处理函数重复订阅只保留首次登记（分发时只调用一次），重复订阅记录警告日志——
@@ -31,8 +21,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
 		/// <param name="handler">要订阅的事件处理函数。</param>
-		public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
-			=> Subscribe(typeof(T).FullName, handler);
+		public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => Subscribe(typeof(T).FullName, handler);
 
 		/// <summary>
 		/// 订阅事件处理函数（运行时类型形态：事件类型编译期未知时使用，身份仍为事件参数类型 FullName）。
@@ -40,8 +29,7 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <param name="eventType">事件参数类型（事件标识）。</param>
 		/// <param name="handler">要订阅的事件处理函数。</param>
-		public void Subscribe(Type eventType, Action<GameEventArgs> handler)
-			=> Subscribe(eventType.FullName, handler);
+		public void Subscribe(Type eventType, Action<GameEventArgs> handler) => Subscribe(eventType.FullName, handler);
 
 		/// <summary>
 		/// 框架簿记专用订阅入口（挂起/重放/账本遍历按 (id, handler) 对调用，泛型无法从运行时 id 反推）。
@@ -66,7 +54,10 @@ namespace Hotfix.Framework.Event
 			}
 
 			m_actionHandlerMultiDict.Add(id, handler);
+
+#if UNITY_EDITOR
 			RecordSubscribe(id);
+#endif
 		}
 
 		/// <summary>
@@ -78,16 +69,14 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		/// <typeparam name="T">事件参数类型（事件标识）。</typeparam>
 		/// <param name="handler">要取消订阅的事件处理函数。</param>
-		public void Unsubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
-			=> Unsubscribe(typeof(T).FullName, handler);
+		public void Unsubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => Unsubscribe(typeof(T).FullName, handler);
 
 		/// <summary>
 		/// 取消订阅事件处理函数（运行时类型形态：事件类型编译期未知时使用，身份仍为事件参数类型 FullName）。
 		/// </summary>
 		/// <param name="eventType">事件参数类型（事件标识）。</param>
 		/// <param name="handler">要取消订阅的事件处理函数。</param>
-		public void Unsubscribe(Type eventType, Action<GameEventArgs> handler)
-			=> Unsubscribe(eventType.FullName, handler);
+		public void Unsubscribe(Type eventType, Action<GameEventArgs> handler) => Unsubscribe(eventType.FullName, handler);
 
 		/// <summary>
 		/// 框架簿记专用退订入口（挂起/重放/账本遍历按 (id, handler) 对调用）。
@@ -126,7 +115,9 @@ namespace Hotfix.Framework.Event
 				return;
 			}
 
+#if UNITY_EDITOR
 			RecordBroadcast(e.Id);
+#endif
 			var tempEvent = Event.Create(e);
 			m_eventQueue.Enqueue(tempEvent);
 		}
@@ -146,7 +137,9 @@ namespace Hotfix.Framework.Event
 				return;
 			}
 
+#if UNITY_EDITOR
 			RecordBroadcast(e.Id);
+#endif
 			HandleEvent(e);
 		}
 	}

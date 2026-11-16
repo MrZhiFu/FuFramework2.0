@@ -10,8 +10,6 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadAgentHelperUpdateBytesEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」
 		/// （DownloadAgent.IsOwnEvent 据此过滤本代理的辅助器事件）。
@@ -43,7 +41,7 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		public override void Clear()
 		{
-			Source = null;
+			Source  = null;
 			m_bytes = null;
 			Offset  = 0;
 			Length  = 0;
@@ -64,7 +62,7 @@ namespace Hotfix.Framework.Download
 			if (length <= 0 || offset + length > bytes.Length) throw new InvalidOperationException("数据流的长度不正确.");
 
 			var downloadAgentHelperUpdateBytesEventArgs = ReferencePool.Acquire<DownloadAgentHelperUpdateBytesEventArgs>();
-			downloadAgentHelperUpdateBytesEventArgs.Source = source;
+			downloadAgentHelperUpdateBytesEventArgs.Source  = source;
 			downloadAgentHelperUpdateBytesEventArgs.m_bytes = bytes;
 			downloadAgentHelperUpdateBytesEventArgs.Offset  = offset;
 			downloadAgentHelperUpdateBytesEventArgs.Length  = length;

@@ -10,8 +10,6 @@ namespace Hotfix.Framework.UI
 	/// </summary>
 	public sealed class ChangeUIVisibleEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取打开成功的界面。
 		/// </summary>

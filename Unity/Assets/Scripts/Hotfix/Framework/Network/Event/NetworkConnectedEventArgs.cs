@@ -9,19 +9,11 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkConnectedEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取网络频道。
 		/// </summary>
 		public INetworkChannel NetworkChannel { get; private set; }
-
-		/// <summary>
-		/// 获取用户自定义数据。
-		/// </summary>
-		// ReSharper disable once UnusedAutoPropertyAccessor.Global
-
-
+		
 		/// <summary>
 		/// 创建网络连接成功事件。
 		/// </summary>
@@ -31,7 +23,7 @@ namespace Hotfix.Framework.Network
 		{
 			var networkConnectedEventArgs = ReferencePool.Acquire<NetworkConnectedEventArgs>();
 			networkConnectedEventArgs.NetworkChannel = networkChannel;
-	
+
 			return networkConnectedEventArgs;
 		}
 
@@ -41,7 +33,6 @@ namespace Hotfix.Framework.Network
 		public override void Clear()
 		{
 			NetworkChannel = null;
-	
 		}
 	}
 }

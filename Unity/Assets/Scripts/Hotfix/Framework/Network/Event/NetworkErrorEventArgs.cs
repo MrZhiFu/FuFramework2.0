@@ -10,8 +10,6 @@ namespace Hotfix.Framework.Network
 	/// </summary>
 	public sealed class NetworkErrorEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取网络频道。
 		/// </summary>

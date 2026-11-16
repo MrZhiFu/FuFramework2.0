@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using FuMenuPriority   = FuFramework.Core.Editor.FuMenuPriority;
-using DebugWindowBase  = FuFramework.Core.Editor.DebugWindowBase;
+using FuMenuPriority = FuFramework.Core.Editor.FuMenuPriority;
+using DebugWindowBase = FuFramework.Core.Editor.DebugWindowBase;
 using HotfixReflection = FuFramework.Core.Editor.HotfixReflection;
 
 // ReSharper disable once CheckNamespace
@@ -40,8 +40,8 @@ namespace FuFramework.Event.Editor
 			// 初始位置居中显示
 			const float width  = 900f;
 			const float height = 640f;
-			var x = (Screen.currentResolution.width  - width)  / 2f;
-			var y = (Screen.currentResolution.height - height) / 2f;
+			var         x      = (Screen.currentResolution.width  - width)  / 2f;
+			var         y      = (Screen.currentResolution.height - height) / 2f;
 			window.position = new Rect(x, y, width, height);
 		}
 
@@ -163,6 +163,16 @@ namespace FuFramework.Event.Editor
 		/// </summary>
 		private HandlerGroup m_buildingGroup;
 
+		/// <summary>
+		/// 广播统计段折叠状态（默认折叠：排障时展开）
+		/// </summary>
+		private bool m_broadcastSectionOpen;
+
+		/// <summary>
+		/// 广播统计快照（热更侧 List<BroadcastStatSnapshot>，反射取数后按行反射读取）
+		/// </summary>
+		private System.Collections.IList m_broadcastRows;
+
 		#endregion
 
 		#region 反射缓存
@@ -213,6 +223,16 @@ namespace FuFramework.Event.Editor
 		private MethodInfo m_poolClearMethod;
 
 		/// <summary>
+		/// EventModule.ForEachBroadcastStat 方法（面板广播统计数据源）
+		/// </summary>
+		private MethodInfo m_forEachBroadcastStatMethod;
+
+		/// <summary>
+		/// EventModule.ClearBroadcastStats 方法（面板清零统计按钮）
+		/// </summary>
+		private MethodInfo m_clearBroadcastStatsMethod;
+
+		/// <summary>
 		/// 已绑定的 ForEachHandler 回调委托（Action&lt;string, Action&lt;GameEventArgs&gt;&gt;）
 		/// </summary>
 		private Delegate m_forEachHandlerCallback;
@@ -237,6 +257,13 @@ namespace FuFramework.Event.Editor
 			m_eventRows.Clear();
 			m_buildingGroup = null;
 
+			// 广播统计快照（反射调用返回 List<BroadcastStatSnapshot>，存 IList 供绘制段反射读取）。
+			// 实例判空：退出 Play 的域重载窗口期 m_moduleInstance 已失效而 ResetReflection 尚未跑，
+			// 直接 Invoke 会 NRE——与既有 ForEachHandler 路径的静默失效不同，统计快照允许跳过本轮。
+			m_broadcastRows = m_moduleInstance != null
+				? m_forEachBroadcastStatMethod?.Invoke(m_moduleInstance, null) as System.Collections.IList ?? m_broadcastRows
+				: null;
+
 			try
 			{
 				// 把回调作为实参传入 ForEachHandler/ForEachEvent（模块内部遍历订阅/队列时逐条回调）：
@@ -246,7 +273,12 @@ namespace FuFramework.Event.Editor
 			}
 			catch (Exception e)
 			{
-				Debug.LogError($"[事件调试]构建快照失败:{e.InnerException?.Message ?? e.Message}");
+				// Play↔非Play 的域重载窗口期：m_moduleInstance 已失效而 ResetReflection 尚未跑（基类按 Play
+				// 状态跳变触发 Reset，但自动刷新可先到）。记日志并自愈——重置反射缓存，下一轮 OnGUI 从
+				// EnsureReflection 重新绑定（模块真不在时静默等待，时序窗口过后自动恢复），不反复报错刷屏。
+				Debug.LogWarning($"[事件调试]构建快照失败（疑似 Play 状态切换窗口期，已重置反射缓存待自动重绑）:{e.InnerException?.Message ?? e.Message}");
+				ResetReflection();
+				return;
 			}
 
 			m_buildingGroup = null;
@@ -260,7 +292,7 @@ namespace FuFramework.Event.Editor
 		/// </summary>
 		protected override void DrawOverview()
 		{
-			var eventCount        = (int)(m_eventCountProperty?.GetValue(m_moduleInstance) ?? 0);
+			var eventCount        = (int)(m_eventCountProperty?.GetValue(m_moduleInstance)        ?? 0);
 			var handlerTotalCount = (int)(m_eventHandlerCountProperty?.GetValue(m_moduleInstance) ?? 0);
 
 			EditorGUILayout.BeginHorizontal();
@@ -279,7 +311,128 @@ namespace FuFramework.Event.Editor
 		{
 			DrawHandlerSection();
 			EditorGUILayout.Separator();
-			DrawQueueSection();
+			DrawBroadcastSection();
+			EditorGUILayout.Separator();
+		}
+
+		/// <summary>
+		/// 广播统计快照行（绘制期从热更 struct 反射读取一次缓存到本行对象）
+		/// </summary>
+		private sealed class BroadcastRow
+		{
+			public string m_Id;
+			public int    m_Count;
+			public float  m_LastTime;
+			public int    m_NeverSubscribed;
+			public int    m_EverSubscribed;
+			public int    m_CurrentHandlers;
+		}
+
+		/// <summary>
+		/// 广播统计段：事件 ID｜订阅数｜广播次数｜最近时间｜无监听（从未订阅/有历史订阅双桶）。
+		/// 数据源 EventModule.ForEachBroadcastStat（调试分部）；无监听>0 的行高亮——
+		/// 「从未订阅」桶=真孤儿（拼写错/漏订阅），「有历史订阅」桶=挂起中窗口或已退订（预期态）。
+		/// </summary>
+		private void DrawBroadcastSection()
+		{
+			var foldoutOldColor = GUI.color;
+			GUI.color              = Color.cyan;
+			m_broadcastSectionOpen = EditorGUILayout.Foldout(m_broadcastSectionOpen, "广播统计", true);
+			GUI.color              = foldoutOldColor;
+			if (!m_broadcastSectionOpen) return;
+
+			EditorGUILayout.BeginVertical("box");
+
+			if (m_broadcastRows == null || m_broadcastRows.Count == 0)
+			{
+				EditorGUILayout.HelpBox("本期无广播记录", MessageType.Info);
+				EditorGUILayout.EndVertical();
+				return;
+			}
+
+			// struct 反射读取：仅绘制段使用、每行每字段一次 GetValue（面板刷新频率下开销可忽略）。
+			// 字段名与热更侧 BroadcastStatSnapshot 的 m_ 前缀字段一一对应——
+			// 反射耦合的字段名改了这里必须同步（Editor 面板反射耦合惯例），GetField 后判空防改名漂移再炸 OnGUI
+			var rows = new List<BroadcastRow>(m_broadcastRows.Count);
+			foreach (var snapshot in m_broadcastRows)
+			{
+				var type = snapshot.GetType();
+				string ReadStr(string name)   => type.GetField(name)?.GetValue(snapshot) as string;
+				int    ReadInt(string name)   => (int?)type.GetField(name)?.GetValue(snapshot)   ?? 0;
+				float  ReadFloat(string name) => (float?)type.GetField(name)?.GetValue(snapshot) ?? 0f;
+
+				var row = new BroadcastRow
+				{
+					m_Id              = ReadStr("m_Id") ?? "(unknown)",
+					m_Count           = ReadInt("m_Count"),
+					m_LastTime        = ReadFloat("m_LastBroadcastTime"),
+					m_NeverSubscribed = ReadInt("m_NoListenerNeverSubscribedCount"),
+					m_EverSubscribed  = ReadInt("m_NoListenerEverSubscribedCount"),
+					m_CurrentHandlers = ReadInt("m_CurrentHandlerCount"),
+				};
+				rows.Add(row);
+			}
+
+			// 默认按广播次数降序
+			rows.Sort((a, b) => b.m_Count.CompareTo(a.m_Count));
+
+			EditorGUILayout.BeginHorizontal();
+			GUILayout.Label("事件 ID",      GUILayout.MinWidth(220));
+			GUILayout.Label("订阅数",        GUILayout.MinWidth(50));
+			GUILayout.Label("次数",         GUILayout.MinWidth(50));
+			GUILayout.Label("最近广播(s)",    GUILayout.MinWidth(80));
+			GUILayout.Label("无监听(从未订阅)",  GUILayout.MinWidth(110));
+			GUILayout.Label("无监听(有历史订阅)", GUILayout.MinWidth(120));
+			EditorGUILayout.EndHorizontal();
+
+			foreach (var row in rows)
+			{
+				if (!MatchSearchId(row.m_Id)) continue;
+
+				// 无监听>0 的行高亮：从未订阅桶用红色（真孤儿），仅历史订阅桶用黄色（预期态）
+				var oldColor = GUI.color;
+				if (row.m_NeverSubscribed     > 0) GUI.color = Color.red;
+				else if (row.m_EverSubscribed > 0) GUI.color = Color.yellow;
+
+				EditorGUILayout.BeginHorizontal();
+				GUILayout.Label(row.m_Id,                         GUILayout.MinWidth(220));
+				GUILayout.Label(row.m_CurrentHandlers.ToString(), GUILayout.MinWidth(50));
+				GUILayout.Label(row.m_Count.ToString(),           GUILayout.MinWidth(50));
+				GUILayout.Label(row.m_LastTime.ToString("F1"),    GUILayout.MinWidth(80));
+				GUILayout.Label(row.m_NeverSubscribed.ToString(), GUILayout.MinWidth(110));
+				GUILayout.Label(row.m_EverSubscribed.ToString(),  GUILayout.MinWidth(120));
+				EditorGUILayout.EndHorizontal();
+				GUI.color = oldColor;
+			}
+
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("清零统计", GUILayout.Width(80)))
+			{
+				try
+				{
+					m_clearBroadcastStatsMethod?.Invoke(m_moduleInstance, null);
+					OnRefresh();
+					Repaint();
+				}
+				catch (Exception e)
+				{
+					Debug.LogError($"[事件调试]清零广播统计失败:{e.InnerException?.Message ?? e.Message}");
+				}
+			}
+
+			GUILayout.FlexibleSpace();
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.EndVertical();
+		}
+
+		/// <summary>
+		/// 广播统计行的搜索过滤（事件 ID 包含即命中，复用工具栏搜索框）
+		/// </summary>
+		private bool MatchSearchId(string id)
+		{
+			if (string.IsNullOrEmpty(m_searchFilter)) return true;
+			return id != null && id.Contains(m_searchFilter, StringComparison.OrdinalIgnoreCase);
 		}
 
 		#endregion
@@ -318,9 +471,9 @@ namespace FuFramework.Event.Editor
 		private void DrawHandlerSection()
 		{
 			var foldoutOldColor = GUI.color;
-			GUI.color             = Color.cyan;
-			m_handlerSectionOpen  = EditorGUILayout.Foldout(m_handlerSectionOpen, $"订阅明细（{m_handlerGroups.Count} 个事件 ID）", true);
-			GUI.color             = foldoutOldColor;
+			GUI.color            = Color.cyan;
+			m_handlerSectionOpen = EditorGUILayout.Foldout(m_handlerSectionOpen, $"订阅明细（{m_handlerGroups.Count} 个事件 ID）", true);
+			GUI.color            = foldoutOldColor;
 			if (!m_handlerSectionOpen) return;
 
 			EditorGUILayout.BeginVertical("box");
@@ -333,6 +486,7 @@ namespace FuFramework.Event.Editor
 			{
 				EditorGUILayout.HelpBox("当前无任何事件订阅", MessageType.Info);
 			}
+
 			EditorGUILayout.EndVertical();
 		}
 
@@ -347,7 +501,7 @@ namespace FuFramework.Event.Editor
 
 			if (!m_groupFoldoutStates.TryGetValue(group.m_EventId, out var isOpen))
 			{
-				isOpen = true;
+				isOpen                                = true;
 				m_groupFoldoutStates[group.m_EventId] = true;
 			}
 
@@ -359,6 +513,7 @@ namespace FuFramework.Event.Editor
 			{
 				DrawHandlerRow(row);
 			}
+
 			EditorGUILayout.EndVertical();
 
 			EditorGUILayout.Separator();
@@ -429,13 +584,13 @@ namespace FuFramework.Event.Editor
 
 			// 声明行正则：方法名同行前方需存在访问/函数修饰符，天然排除调用点（xxx.m_MethodName(、var a = m_MethodName( 等）
 			var declarationPattern = new Regex(
-				@"\b(public|private|protected|internal|static|async|override|virtual|sealed|new)\b[^;{=]*\b" + Regex.Escape(method.Name) + @"\s*\(",
-				RegexOptions.Compiled);
+			                                   @"\b(public|private|protected|internal|static|async|override|virtual|sealed|new)\b[^;{=]*\b" + Regex.Escape(method.Name) + @"\s*\(",
+			                                   RegexOptions.Compiled);
 
 			string declarationPath = null;
-			var declarationLine    = 0;
+			var    declarationLine = 0;
 			string occurrencePath  = null;
-			var occurrenceLine     = 0;
+			var    occurrenceLine  = 0;
 
 			foreach (var candidatePath in candidatePaths)
 			{
@@ -458,7 +613,7 @@ namespace FuFramework.Event.Editor
 			}
 
 			if (TryOpenAtLine(declarationPath, declarationLine)) return;
-			if (TryOpenAtLine(occurrencePath, occurrenceLine)) return;
+			if (TryOpenAtLine(occurrencePath,  occurrenceLine)) return;
 
 			// 找不到任何行级定位：仅打开首个候选文件
 			var fallbackAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(candidatePaths[0]);
@@ -558,9 +713,9 @@ namespace FuFramework.Event.Editor
 		private void DrawQueueSection()
 		{
 			var foldoutOldColor = GUI.color;
-			GUI.color             = Color.cyan;
-			m_queueSectionOpen    = EditorGUILayout.Foldout(m_queueSectionOpen, $"待分发队列（{m_eventRows.Count} 条）", true);
-			GUI.color             = foldoutOldColor;
+			GUI.color          = Color.cyan;
+			m_queueSectionOpen = EditorGUILayout.Foldout(m_queueSectionOpen, $"待分发队列（{m_eventRows.Count} 条）", true);
+			GUI.color          = foldoutOldColor;
 			if (!m_queueSectionOpen) return;
 
 			EditorGUILayout.BeginVertical("box");
@@ -581,17 +736,17 @@ namespace FuFramework.Event.Editor
 			else
 			{
 				EditorGUILayout.BeginHorizontal();
-				GUILayout.Label("#", GUILayout.Width(40));
+				GUILayout.Label("#",     GUILayout.Width(40));
 				GUILayout.Label("事件 ID", GUILayout.MinWidth(220));
-				GUILayout.Label("参数类型", GUILayout.MinWidth(200));
+				GUILayout.Label("参数类型",  GUILayout.MinWidth(200));
 				EditorGUILayout.EndHorizontal();
 
 				foreach (var row in m_eventRows)
 				{
 					EditorGUILayout.BeginHorizontal();
 					GUILayout.Label(row.m_Index.ToString(), GUILayout.Width(40));
-					GUILayout.Label(row.m_EventId, GUILayout.MinWidth(220));
-					GUILayout.Label(row.m_ArgsTypeName, GUILayout.MinWidth(200));
+					GUILayout.Label(row.m_EventId,          GUILayout.MinWidth(220));
+					GUILayout.Label(row.m_ArgsTypeName,     GUILayout.MinWidth(200));
 					EditorGUILayout.EndHorizontal();
 				}
 			}
@@ -624,9 +779,11 @@ namespace FuFramework.Event.Editor
 
 		/// <summary>
 		/// ForEachHandler 回调的泛型适配（经 MakeGenericMethod 绑定为精确签名委托）：
-		/// 把 (id, handler) 折叠进分组快照
+		/// 把 (id, handler) 折叠进分组快照。
+		/// 约束用 class 而非 EventArgs——热更侧 GameEventArgs 已不再继承 EventArgs（T5 删除段），
+		/// 泛型实参按反射传入，约束不满足时 MakeGenericMethod 抛 ArgumentException（曾因此炸 OnGUI）。
 		/// </summary>
-		private void HandlerEntry<T>(string id, Action<T> handler) where T : EventArgs
+		private void HandlerEntry<T>(string id, Action<T> handler) where T : class
 		{
 			// 事件 ID 变化时切换当前分组（ForEachHandler 按 id 连续枚举同一事件的多 handler，但不依赖该前提：显式查重）
 			if (m_buildingGroup == null || m_buildingGroup.m_EventId != id)
@@ -647,15 +804,15 @@ namespace FuFramework.Event.Editor
 
 		/// <summary>
 		/// ForEachEvent 回调的泛型适配（经 MakeGenericMethod 绑定为精确签名委托）：
-		/// 把队列中的 (sender, e) 折叠进行快照（sender 不再展示：新签名广播无 sender，旧队列节点 Sender 为 null）
+		/// 把队列中的 e 折叠进行快照（约束 class，理由同 HandlerEntry）。
 		/// </summary>
-		private void EventEntry<T>(object sender, T e) where T : EventArgs
+		private void EventEntry<T>(T e) where T : class
 		{
 			m_eventRows.Add(new EventRow
 			{
 				m_Index        = m_eventRows.Count + 1,
 				m_EventId      = m_eventIdProperty?.GetValue(e) as string ?? "(unknown)",
-				m_ArgsTypeName = e?.GetType().Name ?? "(null)",
+				m_ArgsTypeName = e?.GetType().Name                        ?? "(null)",
 			});
 		}
 
@@ -697,8 +854,8 @@ namespace FuFramework.Event.Editor
 			// EventModule 成员
 			m_eventCountProperty        = m_moduleType.GetProperty("EventCount",        BindingFlags.Public | BindingFlags.Instance);
 			m_eventHandlerCountProperty = m_moduleType.GetProperty("EventHandlerCount", BindingFlags.Public | BindingFlags.Instance);
-			m_forEachHandlerMethod      = m_moduleType.GetMethod("ForEachHandler",      BindingFlags.Public | BindingFlags.Instance);
-			m_forEachEventMethod        = m_moduleType.GetMethod("ForEachEvent",        BindingFlags.Public | BindingFlags.Instance);
+			m_forEachHandlerMethod      = m_moduleType.GetMethod("ForEachHandler", BindingFlags.Public      | BindingFlags.Instance);
+			m_forEachEventMethod        = m_moduleType.GetMethod("ForEachEvent",   BindingFlags.Public      | BindingFlags.Instance);
 
 			// GameEventArgs 成员
 			m_eventIdProperty = m_gameEventArgsType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
@@ -706,18 +863,24 @@ namespace FuFramework.Event.Editor
 			// 私有 Clear（清空队列用；原为「反射取 m_eventPool 字段再调池 Clear」，事件池并入模块后直接绑定模块私有方法）
 			m_poolClearMethod = m_moduleType.GetMethod("Clear", BindingFlags.NonPublic | BindingFlags.Instance);
 
+			// 广播统计（Task 6 新增调试分部成员）
+			m_forEachBroadcastStatMethod = m_moduleType.GetMethod("ForEachBroadcastStat", BindingFlags.Public | BindingFlags.Instance);
+			m_clearBroadcastStatsMethod  = m_moduleType.GetMethod("ClearBroadcastStats",  BindingFlags.Public | BindingFlags.Instance);
+			if (m_forEachBroadcastStatMethod == null || m_clearBroadcastStatsMethod == null) return false;
+
 			if (m_forEachHandlerMethod == null || m_forEachEventMethod == null || m_eventIdProperty == null || m_poolClearMethod == null) return false;
 
-			// 回调绑定：窗口内泛型适配方法 MakeGenericMethod 后 CreateDelegate，签名精确匹配
+			// 回调绑定：窗口内泛型适配方法 MakeGenericMethod 后 CreateDelegate，签名精确匹配。
+			// ForEachEvent 的回调已是单参形态（Action<GameEventArgs>，T5 随事件节点去 Sender 收敛）
 			var actionOfStringAndHandler = typeof(Action<,>).MakeGenericType(typeof(string), typeof(Action<>).MakeGenericType(m_gameEventArgsType));
-			var actionOfObjectAndArgs    = typeof(Action<,>).MakeGenericType(typeof(object), m_gameEventArgsType);
+			var actionOfGameEventArgs    = typeof(Action<>).MakeGenericType(m_gameEventArgsType);
 
 			var handlerAdapter = GetType().GetMethod(nameof(HandlerEntry), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(m_gameEventArgsType);
 			var eventAdapter   = GetType().GetMethod(nameof(EventEntry),   BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(m_gameEventArgsType);
 			if (handlerAdapter == null || eventAdapter == null) return false;
 
 			m_forEachHandlerCallback = Delegate.CreateDelegate(actionOfStringAndHandler, this, handlerAdapter);
-			m_forEachEventCallback   = Delegate.CreateDelegate(actionOfObjectAndArgs, this, eventAdapter);
+			m_forEachEventCallback   = Delegate.CreateDelegate(actionOfGameEventArgs,    this, eventAdapter);
 
 			if (m_forEachHandlerCallback == null || m_forEachEventCallback == null) return false;
 
@@ -731,20 +894,23 @@ namespace FuFramework.Event.Editor
 		/// </summary>
 		protected override void ResetReflection()
 		{
-			m_moduleType              = null;
-			m_moduleInstance          = null;
-			m_gameEventArgsType       = null;
-			m_eventCountProperty      = null;
-			m_eventHandlerCountProperty = null;
-			m_eventIdProperty         = null;
-			m_forEachHandlerMethod    = null;
-			m_forEachEventMethod      = null;
-			m_poolClearMethod         = null;
-			m_forEachHandlerCallback  = null;
-			m_forEachEventCallback    = null;
+			m_moduleType                 = null;
+			m_moduleInstance             = null;
+			m_gameEventArgsType          = null;
+			m_eventCountProperty         = null;
+			m_eventHandlerCountProperty  = null;
+			m_eventIdProperty            = null;
+			m_forEachHandlerMethod       = null;
+			m_forEachEventMethod         = null;
+			m_poolClearMethod            = null;
+			m_forEachBroadcastStatMethod = null;
+			m_clearBroadcastStatsMethod  = null;
+			m_forEachHandlerCallback     = null;
+			m_forEachEventCallback       = null;
 
 			m_handlerGroups.Clear();
 			m_eventRows.Clear();
+			m_broadcastRows = null;
 			m_buildingGroup = null;
 		}
 

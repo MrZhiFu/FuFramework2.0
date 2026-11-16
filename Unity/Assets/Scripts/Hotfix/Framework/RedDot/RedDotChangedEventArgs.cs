@@ -11,8 +11,6 @@ namespace Hotfix.Framework.RedDot
 	/// </summary>
 	public sealed class RedDotChangedEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 本帧发生变化的红点节点 Key 列表
 		/// </summary>

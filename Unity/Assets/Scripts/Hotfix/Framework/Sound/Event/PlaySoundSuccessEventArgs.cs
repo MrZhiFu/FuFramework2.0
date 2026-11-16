@@ -9,8 +9,6 @@ namespace Hotfix.Framework.Sound
 	/// </summary>
 	public sealed class PlaySoundSuccessEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 声音的序列编号。
 		/// </summary>

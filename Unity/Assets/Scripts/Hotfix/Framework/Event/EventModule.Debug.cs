@@ -21,12 +21,12 @@ namespace Hotfix.Framework.Event
 			/// <summary>
 			/// 累计广播次数
 			/// </summary>
-			public int Count;
+			public int m_Count;
 
 			/// <summary>
 			/// 最近一次广播的时间（Time.realtimeSinceStartup）
 			/// </summary>
-			public float LastBroadcastTime;
+			public float m_LastBroadcastTime;
 		}
 
 		/// <summary>
@@ -34,36 +34,48 @@ namespace Hotfix.Framework.Event
 		/// </summary>
 		public readonly struct BroadcastStatSnapshot
 		{
-			/// <summary>事件 ID。</summary>
-			public readonly string Id;
+			/// <summary>
+			/// 事件 ID。
+			/// </summary>
+			public readonly string m_Id;
 
-			/// <summary>累计广播次数。</summary>
-			public readonly int Count;
+			/// <summary>
+			/// 累计广播次数。
+			/// </summary>
+			public readonly int m_Count;
 
-			/// <summary>最近一次广播时间。</summary>
-			public readonly float LastBroadcastTime;
+			/// <summary>
+			/// 最近一次广播时间。
+			/// </summary>
+			public readonly float m_LastBroadcastTime;
 
-			/// <summary>无监听广播次数——「从未订阅」桶（真孤儿：拼写错/漏订阅，面板重点警示）。</summary>
-			public readonly int NoListenerNeverSubscribedCount;
+			/// <summary>
+			/// 无监听广播次数——「从未订阅」桶（真孤儿：拼写错/漏订阅，面板重点警示）。
+			/// </summary>
+			public readonly int m_NoListenerNeverSubscribedCount;
 
-			/// <summary>无监听广播次数——「有历史订阅但当前无监听」桶（挂起中窗口或已退订，预期态）。</summary>
-			public readonly int NoListenerEverSubscribedCount;
+			/// <summary>
+			/// 无监听广播次数——「有历史订阅但当前无监听」桶（挂起中窗口或已退订，预期态）。
+			/// </summary>
+			public readonly int m_NoListenerEverSubscribedCount;
 
-			/// <summary>当前订阅的 handler 数。</summary>
-			public readonly int CurrentHandlerCount;
+			/// <summary>
+			/// 当前订阅的 handler 数。
+			/// </summary>
+			public readonly int m_CurrentHandlerCount;
 
 			/// <summary>
 			/// 构造快照。
 			/// </summary>
 			public BroadcastStatSnapshot(string id, int count, float lastBroadcastTime,
-				int noListenerNeverSubscribedCount, int noListenerEverSubscribedCount, int currentHandlerCount)
+			                             int noListenerNeverSubscribedCount, int noListenerEverSubscribedCount, int currentHandlerCount)
 			{
-				Id                             = id;
-				Count                          = count;
-				LastBroadcastTime              = lastBroadcastTime;
-				NoListenerNeverSubscribedCount = noListenerNeverSubscribedCount;
-				NoListenerEverSubscribedCount  = noListenerEverSubscribedCount;
-				CurrentHandlerCount            = currentHandlerCount;
+				m_Id                             = id;
+				m_Count                          = count;
+				m_LastBroadcastTime              = lastBroadcastTime;
+				m_NoListenerNeverSubscribedCount = noListenerNeverSubscribedCount;
+				m_NoListenerEverSubscribedCount  = noListenerEverSubscribedCount;
+				m_CurrentHandlerCount            = currentHandlerCount;
 			}
 		}
 
@@ -83,18 +95,18 @@ namespace Hotfix.Framework.Event
 		/// 广播入口埋点实现：计数 + 最近时间；无监听时按双桶口径累加。
 		/// 调用点位于 Broadcast/BroadcastNow（API 分部），发布版随 partial 无实现整体剥除。
 		/// </summary>
-		partial void RecordBroadcast(string eventId)
+		private void RecordBroadcast(string eventId)
 		{
 			if (string.IsNullOrEmpty(eventId)) return;
 
 			if (!m_broadcastStats.TryGetValue(eventId, out var stat))
 			{
-				stat                        = new BroadcastStat();
-				m_broadcastStats[eventId]   = stat;
+				stat                      = new BroadcastStat();
+				m_broadcastStats[eventId] = stat;
 			}
 
-			stat.Count++;
-			stat.LastBroadcastTime = UnityEngine.Time.realtimeSinceStartup;
+			stat.m_Count++;
+			stat.m_LastBroadcastTime = UnityEngine.Time.realtimeSinceStartup;
 
 			// 无监听判定：只查键存在（O(1)），不用 (key, value) 重载
 			if (!m_actionHandlerMultiDict.Contains(eventId))
@@ -115,7 +127,7 @@ namespace Hotfix.Framework.Event
 		/// 订阅入口埋点实现：登记历史订阅 ID（双桶口径依据）。
 		/// 调用点位于 internal Subscribe 成功路径，发布版随 partial 无实现整体剥除。
 		/// </summary>
-		partial void RecordSubscribe(string eventId)
+		private void RecordSubscribe(string eventId)
 		{
 			m_everSubscribedIds.Add(eventId);
 		}
@@ -148,8 +160,8 @@ namespace Hotfix.Framework.Event
 					handlerCount = range.Count;
 				}
 
-				list.Add(new BroadcastStatSnapshot(id, stat.Count, stat.LastBroadcastTime,
-					neverCount, everCount, handlerCount));
+				list.Add(new BroadcastStatSnapshot(id, stat.m_Count, stat.m_LastBroadcastTime,
+				                                   neverCount, everCount, handlerCount));
 			}
 
 			return list;
@@ -181,6 +193,7 @@ namespace Hotfix.Framework.Event
 		/// 仅非重入遍历使用（重入识别见 m_isForEachHandler）。
 		/// </summary>
 		private readonly List<(string id, Action<GameEventArgs> handler)> m_cachedHandlerPairSnapshot = new();
+
 		/// <summary>
 		/// ForEachEvent 的 eventArgs 快照缓存（复用同一列表，避免每次遍历分配新列表产生 GC）。
 		/// 仅非重入遍历使用（重入识别见 m_isForEachEvent）。
@@ -291,14 +304,15 @@ namespace Hotfix.Framework.Event
 			try
 			{
 				snapshot.Clear();
+
 				foreach (var tempEvent in m_eventQueue)
 				{
 					snapshot.Add(tempEvent.EventArgs);
 				}
 
-				for (var i = 0; i < snapshot.Count; i++)
+				foreach (var tempEvent in snapshot)
 				{
-					action(snapshot[i]);
+					action(tempEvent);
 				}
 			}
 			finally

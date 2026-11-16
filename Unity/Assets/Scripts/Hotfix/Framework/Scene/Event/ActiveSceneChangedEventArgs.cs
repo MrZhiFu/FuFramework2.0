@@ -10,8 +10,6 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class ActiveSceneChangedEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取上一个被激活的场景。
 		/// </summary>

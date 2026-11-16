@@ -11,8 +11,6 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class LoadSceneFailureEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 场景名称。
 		/// </summary>

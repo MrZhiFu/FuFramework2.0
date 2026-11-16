@@ -11,8 +11,6 @@ namespace Hotfix.Framework.Entity
 	/// </summary>
 	public sealed class ShowEntityFailureEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取实体编号。
 		/// </summary>

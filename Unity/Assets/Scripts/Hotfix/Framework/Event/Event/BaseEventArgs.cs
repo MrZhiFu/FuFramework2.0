@@ -1,4 +1,3 @@
-using System;
 using Hotfix.Framework.Core;
 
 // ReSharper disable once CheckNamespace

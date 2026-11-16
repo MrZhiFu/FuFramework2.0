@@ -10,13 +10,10 @@ namespace Hotfix.Framework.Scene
 	/// </summary>
 	public sealed class LoadSceneSuccessEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 获取场景资源名称。
 		/// </summary>
 		public string SceneName { get; private set; }
-
 
 		/// <summary>
 		/// 获取用户自定义数据。

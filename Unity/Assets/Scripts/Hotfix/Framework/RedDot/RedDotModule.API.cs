@@ -34,7 +34,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="triggerEvents">触发重算的事件参数类型列表(可变参数，如 typeof(BagChangedEventArgs))</param>
 		public void Register(RedDotKey key, Func<int> calculator, params Type[] triggerEvents)
 		{
-			if (!NodeDict.TryGetValue(key, out var node))
+			if (!sr_nodeDict.TryGetValue(key, out var node))
 			{
 				FuLogger.LogError($"Register 未找到节点: {key}");
 				return;
@@ -55,7 +55,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="key">红点节点 Key</param>
 		public void Unregister(RedDotKey key)
 		{
-			if (!NodeDict.TryGetValue(key, out var node)) return;
+			if (!sr_nodeDict.TryGetValue(key, out var node)) return;
 			UnregisterInternal(node);
 		}
 
@@ -70,7 +70,7 @@ namespace Hotfix.Framework.RedDot
 		/// <returns>节点的 RedDotState，未找到时返回 Empty</returns>
 		public RedDotState GetState(RedDotKey key)
 		{
-			if (!NodeDict.TryGetValue(key, out var node)) return RedDotState.sr_Empty;
+			if (!sr_nodeDict.TryGetValue(key, out var node)) return RedDotState.sr_Empty;
 
 			return new RedDotState
 			{
@@ -85,13 +85,13 @@ namespace Hotfix.Framework.RedDot
 		/// </summary>
 		/// <param name="key">红点节点 Key</param>
 		/// <returns>存在返回 true，否则返回 false</returns>
-		public bool HasNode(RedDotKey key) => NodeDict.ContainsKey(key);
+		public bool HasNode(RedDotKey key) => sr_nodeDict.ContainsKey(key);
 
 		/// <summary>
 		/// 获取所有节点（调试用）
 		/// </summary>
 		/// <returns>所有红点节点的只读集合</returns>
-		public IReadOnlyCollection<RedDotNode> GetAllNodes() => NodeDict.Values;
+		public IReadOnlyCollection<RedDotNode> GetAllNodes() => sr_nodeDict.Values;
 
 		#endregion
 
@@ -105,7 +105,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="calculateFun">根据 id 返回红点数量的计算函数</param>
 		public void SyncDynamicNode(RedDotKey parentKey, IReadOnlyList<long> ids, Func<long, int> calculateFun)
 		{
-			if (!NodeDict.TryGetValue(parentKey, out var parentNode))
+			if (!sr_nodeDict.TryGetValue(parentKey, out var parentNode))
 			{
 				FuLogger.LogError($"SyncDynamicNode 未找到父节点: {parentKey}");
 				return;
@@ -138,11 +138,11 @@ namespace Hotfix.Framework.RedDot
 			foreach (var id in removedIds)
 			{
 				var childKey = FormatDynamicKey(parentKey, id);
-				if (NodeDict.TryGetValue(childKey, out var node))
+				if (sr_nodeDict.TryGetValue(childKey, out var node))
 				{
 					UnregisterInternal(node);
 					parentNode.RemoveChild(node);
-					NodeDict.Remove(childKey);
+					sr_nodeDict.Remove(childKey);
 					ReferencePool.Recycle(node);
 				}
 
@@ -181,7 +181,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="key">红点节点 Key</param>
 		public void MarkRead(RedDotKey key)
 		{
-			if (!NodeDict.TryGetValue(key, out var node)) return;
+			if (!sr_nodeDict.TryGetValue(key, out var node)) return;
 
 			node.IsRead = true;
 			node.SetCount(0);
@@ -203,11 +203,11 @@ namespace Hotfix.Framework.RedDot
 		public bool IsRead(RedDotKey key)
 		{
 			// 静态键检查持久化集合
-			if (NodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
+			if (sr_nodeDict.TryGetValue(key, out var node) && node.IsStatic && key.TryGetEnumValue(out var enumValue))
 				return m_readSet.Contains(enumValue);
 
 			// 动态键检查节点自身标记
-			return NodeDict.TryGetValue(key, out node) && node.IsRead;
+			return sr_nodeDict.TryGetValue(key, out node) && node.IsRead;
 		}
 
 		#endregion
@@ -220,7 +220,7 @@ namespace Hotfix.Framework.RedDot
 		/// <param name="key">红点节点 Key</param>
 		public void TryAutoClean(RedDotKey key)
 		{
-			if (!NodeDict.TryGetValue(key, out var node)) return;
+			if (!sr_nodeDict.TryGetValue(key, out var node)) return;
 			if (node.CleanStrategy != ERedDotCleanStrategy.ViewAutoClean) return;
 			CleanNodeRecursive(node);
 		}

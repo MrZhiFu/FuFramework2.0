@@ -9,8 +9,6 @@ namespace Hotfix.Framework.Download
 	/// </summary>
 	public sealed class DownloadAgentHelperErrorEventArgs : GameEventArgs
 	{
-
-
 		/// <summary>
 		/// 事件来源（广播方注入）：sender 退场后并发多播场景按此字段区分「谁发的」
 		/// （DownloadAgent.IsOwnEvent 据此过滤本代理的辅助器事件）。
