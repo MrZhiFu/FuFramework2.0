@@ -8,8 +8,6 @@ namespace Hotfix.Game.Events
 	/// </summary>
 	public sealed class BagChangedEventArgs : GameEventArgs
 	{
-
-
 		public override void Clear() { }
 
 		/// <summary>
