@@ -21,7 +21,7 @@ FuFramework RedDot 模块是游戏框架的红点提示系统，用于管理 UI 
 ### 3.1 数据流
 
 ```
-[业务模块] Register(key, () => GetCount(), "EventId")
+[业务模块] Register(key, () => GetCount(), typeof(MailChangedEventArgs))
     ↓
 [EventModule] 事件触发 → OnTriggerEvent → node.IsDirty = true
     ↓
@@ -82,7 +82,7 @@ public static RedDotModule Instance { get; private set; }
 
 ```csharp
 // === Calculator 注册 ===
-void Register(RedDotKey key, Func<int> calculator, params string[] triggerEvents)
+void Register(RedDotKey key, Func<int> calculator, params Type[] triggerEvents)
 void Unregister(RedDotKey key)
 
 // === 状态查询 ===
@@ -121,7 +121,7 @@ void TryAutoClean(RedDotKey key)
 | `IsRead` | `bool` | 是否已读 |
 | `IsDirty` | `bool` | 脏标记（本帧待重算） |
 | `Calculator` | `Func<int>` | 叶子计算函数 |
-| `TriggerEvents` | `string[]` | 触发重算的 EventModule 事件 ID 列表 |
+| `TriggerEvents` | `Type[]` | 触发重算的事件参数类型列表（身份 = 类型 FullName，与 EventModule 类型键同源） |
 
 ### 4.3 RedDotState
 
@@ -144,15 +144,15 @@ public struct RedDotState
 ```csharp
 public sealed class RedDotChangedEventArgs : GameEventArgs
 {
-    public static readonly string EventId = typeof(RedDotChangedEventArgs).FullName;
-    public readonly List<RedDotKey> ChangedKeys;   // 本帧变化的节点 Key 列表
+    // 事件 ID 由基类 BaseEventArgs.Id 统一派生（GetType().FullName），无 per-class EventId
+    public readonly List<RedDotKey> m_ChangedKeys;   // 本帧变化的节点 Key 列表
     public static RedDotChangedEventArgs Create();
 }
 ```
 
 ### 4.5 CompRedDot（UI 组件）
 
-FGUI 自定义组件，放置到界面后自动解析 `customData` 中的 `red_dot:<key>` 并订阅 EventModule 变更通知。
+FGUI 自定义组件，放置到界面后自动解析 `customData` 中的 `red_dot:<key>` 并以类型键订阅 EventModule 变更通知（`Subscribe<RedDotChangedEventArgs>`）。
 
 **customData 格式**：`red_dot:Bag_Item`（支持与其他插件竖线分隔，如 `i18n&key|red_dot:Bag_Item`）
 
@@ -165,12 +165,13 @@ FGUI 自定义组件，放置到界面后自动解析 `customData` 中的 `red_d
 
 ```csharp
 using Hotfix.Framework.RedDot;
+using Hotfix.Framework.Event;
 
-// 为邮件红点注册计算函数，当 "MailChanged" 事件触发时自动重算
+// 为邮件红点注册计算函数，当邮件数据变更事件触发时自动重算（触发事件传事件参数类型）
 RedDotModule.Instance.Register(ERedDotKey.Mail, () =>
 {
     return MailManager.Instance.GetUnreadCount();
-}, "MailChanged");
+}, typeof(MailChangedEventArgs));
 
 // 注销 Calculator（恢复为不活跃状态）
 RedDotModule.Instance.Unregister(ERedDotKey.Mail);
@@ -182,7 +183,7 @@ RedDotModule.Instance.Unregister(ERedDotKey.Mail);
 using Hotfix.Framework.Event;
 
 // 邮件数据变更时广播事件，触发所有监听该事件的 Calculator 重算
-GlobalModule.EventModule.Broadcast(this, MailChangedEventArgs.EventId);
+GlobalModule.EventModule.Broadcast(MailChangedEventArgs.Create());
 ```
 
 ### 5.3 监听红点变化（UI 端）
@@ -196,17 +197,17 @@ using Hotfix.Framework.Event;
 // 在 FGUI 编辑器中放置 CompRedDot，设置 customData = "red_dot:Mail"
 // 组件自动解析并订阅，无需任何代码
 
-// 方式二：手动订阅 EventModule
-private void Start()
+// 方式二：手动订阅 EventModule（类型键；订阅放 OnInit，窗口类由挂起机制托管，无需配对退订）
+private void InitEvent()
 {
-    GlobalModule.EventModule.Subscribe(RedDotChangedEventArgs.EventId, OnRedDotChanged);
+    GlobalModule.EventModule.Subscribe<RedDotChangedEventArgs>(OnRedDotChanged);
 }
 
-private void OnRedDotChanged(object sender, GameEventArgs e)
+private void OnRedDotChanged(GameEventArgs e)
 {
     if (e is not RedDotChangedEventArgs args) return;
 
-    foreach (var key in args.ChangedKeys)
+    foreach (var key in args.m_ChangedKeys)
     {
         if (key == ERedDotKey.Mail)
         {
@@ -280,7 +281,7 @@ RedDot/
 ## 8. 最佳实践
 
 1. **Calculator 优先**：叶子节点使用 `Register` 注册计算函数，框架自动管理重算时机
-2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Calculator 自动重算
+2. **事件驱动**：业务数据变更时广播对应 EventModule 事件，触发 Calculator 自动重算；触发事件在 `Register` 处传**事件参数类型**（`typeof(XxxEventArgs)`），类型即 ID（与 EventModule 类型键同源，拼写错编译期可见）
 3. **CompRedDot 零侵入**：UI 层优先使用 CompRedDot 组件，在 FGUI 编辑器中配置 `customData` 即可，无需写代码
 4. **已读持久化**：对需要跨会话保持已读状态的红点，使用 `MarkRead`
 5. **动态红点统一管理**：统一使用 `SyncDynamicNode` 批量同步，框架自动增量更新
