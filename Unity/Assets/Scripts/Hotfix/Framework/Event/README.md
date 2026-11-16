@@ -4,15 +4,19 @@
 
 FuFramework Event 模块是一个高性能的事件管理系统。它提供了灵活的事件订阅/发布机制，集成引用池技术以减少 GC 压力。模块仅允许主线程访问；跨线程产生的事件（如网络 Socket 回调）由网络频道封送到主线程后再 Broadcast。
 
+**核心身份模型（类型键）**：事件参数类型即事件标识——`XxxEventArgs` 类的 `typeof(T).FullName` 就是它的 ID（由基类 `BaseEventArgs.Id` 统一派生），订阅/退订走泛型形态 `Subscribe<T>(handler)`，广播走无 sender 形态 `Broadcast(e)`。string ID 已从公开 API 退场，仅在框架簿记层（挂起/重放）内部使用。
+
 ***
 
 ## 2. 特性
 
+- 类型键订阅 ：事件参数类型即事件 ID，编译期防拼写错/防引错事件；广播与订阅的键天然同源
 - 仅主线程   ：公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）有断言拦截跨线程误用
 - 延迟处理   ：事件默认在下一帧统一处理，避免在处理事件时修改订阅列表导致的异常
 - 多播支持   ：支持一个事件对应多个处理函数；同一处理函数重复订阅被幂等去重（记录警告日志），每事件只调用一次
-- 对象池集成 ：事件参数和事件节点都通过引用池管理，减少GC压力
-- 模块级管理 ：`EventRegister` 提供模块级的事件订阅管理，自动处理生命周期
+- 对象池集成 ：事件参数和事件节点都通过引用池管理，减少 GC 压力
+- 模块级管理 ：`EventRegister` 提供模块级的事件订阅管理，窗口关开自动挂起/重放（业务零手动配对）
+- 广播统计   ：编辑器期按事件 ID 计数/最近时间/无监听双桶（真孤儿 vs 预期态），调试面板可见
 
 ***
 
@@ -20,25 +24,19 @@ FuFramework Event 模块是一个高性能的事件管理系统。它提供了�
 
 ### 3.1 事件参数基类
 
-BaseEventArgs
-
-：所有事件参数的抽象基类
-
 ```csharp
-public abstract class BaseEventArgs : EventArgs, IReference
+public abstract class BaseEventArgs : IReference
 {
-    public abstract string Id { get; }      // 事件唯一标识
-    public abstract void Clear();           // 清理引用（用于对象池重用）
+    /// 事件 ID（基类统一派生：具体事件类的 GetType().FullName，事件类无需再声明 Id/EventId）
+    public virtual string Id => GetType().FullName;
+
+    /// 清理引用（归还引用池时调用）
+    public abstract void Clear();
 }
+
+/// 游戏逻辑事件基类（划定订阅边界：EventHandler 只放行游戏事件）
+public abstract class GameEventArgs : BaseEventArgs { }
 ```
-
-GameEventArgs
-
-：游戏逻辑事件基类，继承自 `BaseEventArgs`
-
-EmptyEventArgs
-
-：轻量级空事件，用于不需要携带数据的事件通信
 
 ***
 
@@ -48,25 +46,29 @@ EmptyEventArgs
 
 事件管理模块，继承自 `ModuleBase`，是事件系统的核心管理类。
 
-核心属性：无（`EventCount` / `EventHandlerCount` 为编辑器调试分部成员，见 7.1）。
-
 主要方法：
 
 ```csharp
-// 订阅/取消订阅事件
-void Subscribe(string id, EventHandler<GameEventArgs> handler)
-void Unsubscribe(string id, EventHandler<GameEventArgs> handler)
+// 订阅/取消订阅事件（类型键）
+void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+void Unsubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
 
-// 抛出事件（延迟到下一帧主线程分发）
-void Broadcast(object sender, GameEventArgs e)
-void Broadcast(object sender, string eventId)   // 使用空事件包装事件ID
+// 订阅/取消订阅事件（运行时类型形态：事件类型编译期未知时使用，如红点触发事件集合）
+void Subscribe(Type eventType, Action<GameEventArgs> handler)
+void Unsubscribe(Type eventType, Action<GameEventArgs> handler)
 
-// 立即抛出事件（同步处理，仅限主线程调用）
-void BroadcastNow(object sender, GameEventArgs e)
+// 抛出事件（延迟到下一帧主线程分发；无 sender）
+void Broadcast(GameEventArgs e)
+
+// 立即抛出事件（同步处理，仅限主线程调用；无 sender）
+void BroadcastNow(GameEventArgs e)
 ```
 
-> `Subscribe` 幂等去重：同一 `(id, handler)` 重复订阅只保留首次登记并记录警告日志，分发时只调用一次；
-> `Unsubscribe` 立即整体摘除条目。本框架中同一处理函数只有一个所有者，不存在跨订阅者共享场景（详见 4.3）。
+> `Subscribe` 幂等去重：同一事件同一处理函数重复订阅只保留首次登记并记录警告日志，分发时只调用一次；
+> `Unsubscribe` 立即整体摘除条目（缺失条目安全空操作）。本框架中同一处理函数只有一个所有者，不存在跨订阅者共享场景。
+
+> 内部另有 `internal Subscribe/Unsubscribe(string id, Action<GameEventArgs>)` 簿记入口：
+> 仅供挂起/重放按 (id, handler) 对遍历账本使用（泛型无法从运行时 id 反推），业务勿直接调用。
 
 ***
 
@@ -86,15 +88,14 @@ void BroadcastNow(object sender, GameEventArgs e)
 // 创建
 static EventRegister Create()
 
-// 订阅/取消订阅
-void Subscribe(string id, EventHandler<GameEventArgs> handler)
-void UnSubscribe(string id, EventHandler<GameEventArgs> handler)
+// 订阅/取消订阅（类型键）
+void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
 void UnSubscribeAll()                   // 取消所有订阅
 
 // 派发事件
-void Broadcast(object sender, GameEventArgs eventArgs)
-void Broadcast(object sender, string eventId)
-void BroadcastNow(object sender, GameEventArgs eventArgs)
+void Broadcast(GameEventArgs eventArgs)
+void BroadcastNow(GameEventArgs eventArgs)
 
 // 挂起/重放（由框架在窗口生命周期自动调用，业务勿手动调）
 void Suspend()                          // 窗口关闭时：按账本逐条总线退订，账本保留即重放清单
@@ -117,72 +118,78 @@ void Release()                          // 归还引用池
 
 ### 4.3 EventModule 内部机制
 
-事件管理模块的核心容器（原独立事件池 `EventPool<T>` 已并入 `EventModule`），管理事件的订阅、发布和处理。
+核心容器（原独立事件池 `EventPool<T>` 已并入 `EventModule`），管理事件的订阅、发布和处理。
 
 核心机制：
 
 - 事件队列  ：使用 `Queue<Event>` 存储待处理事件，仅主线程访问
-- 多值字典管理订阅  ：`FuMultiDictionary<string, EventHandler<T>>` 存储事件处理函数
-- 幂等订阅  ：同一 `(id, handler)` 重复订阅只保留首次登记（分发时只调用一次），重复订阅记录警告日志——
+- 多值字典管理订阅  ：`FuMultiDictionary<string, Action<GameEventArgs>>` 存储事件处理函数（键为事件参数类型 FullName）
+- 幂等订阅  ：同一事件同一处理函数重复订阅只保留首次登记（分发时只调用一次），重复订阅记录警告日志——
   本框架中同一处理函数只有一个所有者，重复订阅几乎必然是「池化对象重复订阅未退订」类误用
-- 即时退订  ：`Unsubscribe` 立即从订阅字典移除条目，未订阅过的 `(id, handler)` 静默忽略；
+- 即时退订  ：`Unsubscribe` 立即从订阅字典移除条目，未订阅过的条目静默忽略；
   分发前快照保证分发过程中的订阅/退订不影响本轮（被退订的 handler 本轮仍收到当次事件）
 - 主线程契约  ：无锁设计，公共 API 仅允许主线程调用，开发期（UNITY_ASSERTIONS）断言拦截跨线程误用
 
 工作流程：
 
-1. 订阅阶段  ：`Subscribe` 将处理函数添加到多值字典（已存在则警告并忽略，不重复入字典）
-2. 取消订阅阶段  ：`Unsubscribe` 立即从多值字典移除条目
+1. 订阅阶段  ：`Subscribe<T>` 将处理函数按 `typeof(T).FullName` 添加到多值字典（已存在则警告并忽略，不重复入字典）
+2. 取消订阅阶段  ：`Unsubscribe<T>` 立即从多值字典移除条目
 3. 事件处理阶段  ：`OnUpdate` 从队列取出事件，快照该事件的 handler 列表后逐个调用
 4. 清理阶段  ：事件处理完成后，通过引用池释放事件参数
 
 > 注意：事件参数在分发结束（`Broadcast` 的下一帧分发或 `BroadcastNow` 立即分发）后即被回收并 `Clear`，
-> 处理函数**不得转发或缓存收到的 `eArgs`**，否则后续处理函数会观测到已清空的数据；需要转发时请新建事件参数对象。
+> 处理函数**不得修改、转发或缓存收到的 `e`**——修改会让同轮后续 handler 读到脏数据；缓存/转发会观测到已清空的数据（回收后可能被复用形成脏读）；
+> 需要转发时请新建事件参数对象。
 
 ***
 
-### 4.4 事件参数类
+### 4.4 事件参数类契约（唯一编写模板）
 
-BaseEventArgs
+新事件参数类一律按此模板编写（AI/人工同规）：
 
-：
-
-```csharp
-public abstract class BaseEventArgs : EventArgs, IReference
-{
-    public abstract string Id { get; }
-    public abstract void Clear();
-}
-```
-
-GameEventArgs
-
-：
-
-```csharp
-public abstract class GameEventArgs : BaseEventArgs { }
-```
-
-EmptyEventArgs
-
-：
+1. **属性一律 `private set`**：仅 `Create` 工厂在构造期赋值；发布后外部只读（结构防线：handler 想改也编译不过）
+2. **不声明 `Id`/`EventId`**：基类 `BaseEventArgs.Id => GetType().FullName` 统一派生
+3. **`Clear()` 全字段复位**：漏一项 = 池化复用后带脏数据
+4. **`Create(object source, ...)` 注入来源**（仅并发多播需区分「谁发的」的事件需要）：sender 已退场，来源是事实就进 args（参考 `DownloadAgentHelper*EventArgs.Source`）
+5. `sealed` 类：子类化会破坏类型键（`Subscribe<基类>` 广播子类实例会进两个不同频道）
 
 ```csharp
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Event;
 
-public sealed class EmptyEventArgs : GameEventArgs
+public sealed class XxxEventArgs : GameEventArgs   // Id 由基类统一派生，类内不再声明
 {
-    public override string Id => m_eventId;
-    // 实例字段：事件下一帧才分发，若用静态字段会被同帧抛出的其它事件编号覆盖
-    private string m_eventId = typeof(EmptyEventArgs).FullName;
+    /// <summary>
+    /// 字段说明。
+    /// </summary>
+    public int Field1 { get; private set; }        // private set 契约
 
-    public override void Clear() => m_eventId = typeof(EmptyEventArgs).FullName;
+    /// <summary>
+    /// 字段说明。
+    /// </summary>
+    public long Field2 { get; private set; }
 
-    public static EmptyEventArgs Create(string eventId)
+    /// <summary>
+    /// 清理引用(归还引用池时调用)。全字段复位，漏一项 = 池化复用后带脏数据。
+    /// </summary>
+    public override void Clear()
     {
-        var eventArgs = ReferencePool.Acquire<EmptyEventArgs>();
-        eventArgs.m_eventId = eventId;
-        return eventArgs;
+        Field1 = 0;
+        Field2 = 0;
+    }
+
+    /// <summary>
+    /// 创建事件参数（构造期唯一赋值点）。
+    /// </summary>
+    /// <param name="field1">字段说明。</param>
+    /// <param name="field2">字段说明。</param>
+    /// <returns>创建的事件参数。</returns>
+    public static XxxEventArgs Create(int field1, long field2)
+    {
+        var e = ReferencePool.Acquire<XxxEventArgs>();
+        e.Field1 = field1;
+        e.Field2 = field2;
+        return e;
     }
 }
 ```
@@ -193,277 +200,69 @@ public sealed class EmptyEventArgs : GameEventArgs
 
 ### 5.1 定义事件
 
-```csharp
-using Hotfix.Framework.Core;
-
-// 定义事件ID（推荐使用常量或枚举）
-public static class EventIds
-{
-    public const string PlayerDamage = "PlayerDamage";
-    public const string PlayerLevelUp = "PlayerLevelUp";
-    public const string GameStart = "GameStart";
-    public const string GameOver = "GameOver";
-}
-
-// 创建自定义事件参数
-public class PlayerDamageEventArgs : GameEventArgs
-{
-    public override string Id => EventIds.PlayerDamage;
-    
-    public int Damage { get; private set; }
-    public GameObject Attacker { get; private set; }
-    public Vector3 HitPosition { get; private set; }
-    
-    public override void Clear()
-    {
-        Damage = 0;
-        Attacker = null;
-        HitPosition = Vector3.zero;
-    }
-    
-    public static PlayerDamageEventArgs Create(int damage, GameObject attacker, Vector3 hitPosition)
-    {
-        var args = ReferencePool.Acquire<PlayerDamageEventArgs>();
-        args.Damage = damage;
-        args.Attacker = attacker;
-        args.HitPosition = hitPosition;
-        return args;
-    }
-}
-
-// 玩家升级事件参数
-public class PlayerLevelUpEventArgs : GameEventArgs
-{
-    public override string Id => EventIds.PlayerLevelUp;
-    
-    public int NewLevel { get; private set; }
-    public int OldLevel { get; private set; }
-    
-    public override void Clear()
-    {
-        NewLevel = 0;
-        OldLevel = 0;
-    }
-    
-    public static PlayerLevelUpEventArgs Create(int newLevel, int oldLevel)
-    {
-        var args = ReferencePool.Acquire<PlayerLevelUpEventArgs>();
-        args.NewLevel = newLevel;
-        args.OldLevel = oldLevel;
-        return args;
-    }
-}
-```
+按 4.4 模板新建 `XxxEventArgs.cs`，放在所属模块的 Event 目录下（游戏侧新事件归 `Hotfix.Game.Events`）。
+事件无需单独的 ID 常量——类型即 ID。
 
 ### 5.2 订阅事件
 
 ```csharp
-using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController
 {
-    private EventModule m_eventModule;
-    
-    private void Start()
+    private EventRegister m_eventRegister;
+
+    private void InitEvent()
     {
-        // 获取事件模块
-        m_eventModule = ModuleManager.GetModule<EventModule>();
-        
-        // 订阅自定义事件
-        m_eventModule.Subscribe(EventIds.PlayerDamage, OnPlayerDamage);
-        m_eventModule.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
-        
-        // 订阅空事件（无数据事件）
-        m_eventModule.Subscribe(EventIds.GameStart, OnGameStart);
+        // 订阅放 OnInit/构造（每实例一次），关开生命周期由挂起机制托管，业务无需配对退订
+        m_eventRegister.Subscribe<PlayerDamageEventArgs>(OnPlayerDamage);
+        m_eventRegister.Subscribe<PlayerLevelUpEventArgs>(OnPlayerLevelUp);
     }
-    
-    private void OnPlayerDamage(object sender, GameEventArgs e)
+
+    private void OnPlayerDamage(GameEventArgs e)
     {
-        if (e is PlayerDamageEventArgs damageArgs)
-        {
-            Debug.Log($"玩家受到 {damageArgs.Damage} 点伤害");
-            Debug.Log($"攻击者: {damageArgs.Attacker?.name}");
-            Debug.Log($"受击位置: {damageArgs.HitPosition}");
-            
-            // 扣血逻辑...
-        }
-    }
-    
-    private void OnPlayerLevelUp(object sender, GameEventArgs e)
-    {
-        if (e is PlayerLevelUpEventArgs levelArgs)
-        {
-            Debug.Log($"玩家升级！{levelArgs.OldLevel} -> {levelArgs.NewLevel}");
-            
-            // 升级逻辑...
-        }
-    }
-    
-    private void OnGameStart(object sender, GameEventArgs e)
-    {
-        Debug.Log("游戏开始！");
-        // 游戏开始逻辑...
-    }
-    
-    private void OnDestroy()
-    {
-        // 取消订阅（重要！避免内存泄漏）
-        if (m_eventModule != null)
-        {
-            m_eventModule.Unsubscribe(EventIds.PlayerDamage, OnPlayerDamage);
-            m_eventModule.Unsubscribe(EventIds.PlayerLevelUp, OnPlayerLevelUp);
-            m_eventModule.Unsubscribe(EventIds.GameStart, OnGameStart);
-        }
+        if (e is not PlayerDamageEventArgs args) return;
+
+        // 处理事件（只读 args；不得修改/缓存/转发 e）
     }
 }
 ```
 
+> 非池化对象（MonoBehaviour 等）退订：`Unsubscribe<PlayerDamageEventArgs>(OnPlayerDamage)`。
+> 缺失条目安全空操作，无需判存。
+
 ### 5.3 发布事件
 
 ```csharp
-public class EnemyController : MonoBehaviour
-{
-    private EventModule m_eventModule;
-    
-    private void Start()
-    {
-        m_eventModule = ModuleManager.GetModule<EventModule>();
-    }
-    
-    private void AttackPlayer(PlayerController player, int damage)
-    {
-        // 创建并发布自定义事件
-        var damageArgs = PlayerDamageEventArgs.Create(
-            damage: damage,
-            attacker: gameObject,
-            hitPosition: player.transform.position
-        );
-        
-        m_eventModule.Broadcast(this, damageArgs);
-        // 注意：事件参数会在处理完成后自动归还引用池，无需手动释放
-    }
-}
+// 创建并发布（事件参数会在处理完成后自动归还引用池，无需手动释放）
+Broadcast(PlayerDamageEventArgs.Create(damage, attacker, hitPosition));
 
-public class ExperienceSystem : MonoBehaviour
-{
-    private EventModule m_eventModule;
-    private int m_currentLevel = 1;
-    
-    private void Start()
-    {
-        m_eventModule = ModuleManager.GetModule<EventModule>();
-    }
-    
-    public void AddExperience(int exp)
-    {
-        int oldLevel = m_currentLevel;
-        
-        // 计算新等级...
-        m_currentLevel = CalculateNewLevel(exp);
-        
-        if (m_currentLevel > oldLevel)
-        {
-            // 发布升级事件
-            var levelArgs = PlayerLevelUpEventArgs.Create(m_currentLevel, oldLevel);
-            m_eventModule.Broadcast(this, levelArgs);
-        }
-    }
-    
-    public void StartGame()
-    {
-        // 发布空事件（无数据）
-        m_eventModule.Broadcast(this, EventIds.GameStart);
-    }
-}
+// 立即分发（同步执行，仅限主线程）
+BroadcastNow(PlayerLevelUpEventArgs.Create(newLevel, oldLevel));
 ```
 
 ### 5.4 使用 EventRegister 进行模块级事件管理
 
 ```csharp
-public class UIModule : MonoBehaviour
+public class UIModule
 {
     private EventRegister m_eventRegister;
-    
+
     private void Start()
     {
         // 创建事件注册器
         m_eventRegister = EventRegister.Create();
-        
-        // 使用 EventRegister 订阅事件
-        m_eventRegister.Subscribe(EventIds.PlayerDamage, OnPlayerDamageUI);
-        m_eventRegister.Subscribe(EventIds.PlayerLevelUp, OnPlayerLevelUpUI);
-        m_eventRegister.Subscribe(EventIds.GameStart, OnGameStartUI);
-        m_eventRegister.Subscribe(EventIds.GameOver, OnGameOverUI);
-    }
-    
-    private void OnPlayerDamageUI(object sender, GameEventArgs e)
-    {
-        if (e is PlayerDamageEventArgs damageArgs)
-        {
-            // 显示伤害数字
-            ShowDamageNumber(damageArgs.Damage, damageArgs.HitPosition);
-            // 更新血条
-            UpdateHealthBar();
-        }
-    }
-    
-    private void OnPlayerLevelUpUI(object sender, GameEventArgs e)
-    {
-        if (e is PlayerLevelUpEventArgs levelArgs)
-        {
-            // 显示升级特效
-            ShowLevelUpEffect(levelArgs.NewLevel);
-        }
-    }
-    
-    private void OnGameStartUI(object sender, GameEventArgs e)
-    {
-        // 显示游戏开始界面
-        ShowGameStartPanel();
-    }
-    
-    private void OnGameOverUI(object sender, GameEventArgs e)
-    {
-        // 显示游戏结束界面
-        ShowGameOverPanel();
-    }
-    
-    private void OnDestroy()
-    {
-        // 一键取消所有订阅
-        if (m_eventRegister != null)
-        {
-            m_eventRegister.UnSubscribeAll();
-            m_eventRegister.Release();  // 归还引用池
-            m_eventRegister = null;
-        }
-    }
-}
-```
 
-### 5.5 立即处理事件（同步处理）
-
-```csharp
-public class CriticalSystem : MonoBehaviour
-{
-    private EventModule m_eventModule;
-    
-    private void Start()
-    {
-        m_eventModule = ModuleManager.GetModule<EventModule>();
+        // 订阅（类型键）
+        m_eventRegister.Subscribe<PlayerDamageEventArgs>(OnPlayerDamageUI);
+        m_eventRegister.Subscribe<PlayerLevelUpEventArgs>(OnPlayerLevelUpUI);
     }
-    
-    public void HandleCriticalError(string errorMessage)
+
+    private void OnPlayerDamageUI(GameEventArgs e)
     {
-        var errorArgs = ErrorEventArgs.Create(errorMessage);
-        
-        // 使用 BroadcastNow 立即处理（同步执行）
-        // 注意：此方法同步执行，仅限主线程调用
-        m_eventModule.BroadcastNow(this, errorArgs);
-        
-        // 事件处理完成后才会执行到这里
-        Debug.Log("错误事件已处理完成");
+        if (e is not PlayerDamageEventArgs args) return;
+
+        ShowDamageNumber(args.Damage, args.HitPosition);
     }
 }
 ```
@@ -476,13 +275,13 @@ public class CriticalSystem : MonoBehaviour
 
 ```
 1. 订阅阶段
-   Subscribe(id, handler) -> 添加到 m_eventHandlerMultiDict（已存在则警告并忽略）
+   Subscribe<T>(handler) -> 按 typeof(T).FullName 添加到 m_actionHandlerMultiDict（已存在则警告并忽略）
 
 2. 取消订阅阶段
-   Unsubscribe(id, handler) -> 立即从 m_eventHandlerMultiDict 移除条目
+   Unsubscribe<T>(handler) -> 立即从 m_actionHandlerMultiDict 移除条目
 
 3. 发布阶段
-   Broadcast(sender, args) -> 创建 Event 节点 -> 加入 m_eventQueue
+   Broadcast(e) -> 创建 Event 节点 -> 加入 m_eventQueue
 
 4. 处理阶段（OnUpdate）
    从 m_eventQueue 取出事件
@@ -497,10 +296,10 @@ public class CriticalSystem : MonoBehaviour
 
 | 方法                                                                                                       | 处理时机 | 说明 |
 | -------------------------------------------------------------------------------------------------------- | ---- | --------- |
-| `Broadcast`    | 下一帧  | 事件入队，`Update` 时统一分发，通用场景，推荐   |
-| `BroadcastNow` | 立即（同步）   | 仅限主线程，需要同步处理的场景 |
-| `Subscribe` / `Unsubscribe` | 立即    | 仅限主线程   |
-| `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent`（仅 Editor，见 `EventModule.Debug.cs`） | 立即    | 仅限主线程；遍历回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
+| `Broadcast(e)`    | 下一帧  | 事件入队，`Update` 时统一分发，通用场景，推荐   |
+| `BroadcastNow(e)` | 立即（同步）   | 仅限主线程，需要同步处理的场景 |
+| `Subscribe<T>` / `Unsubscribe<T>` | 立即    | 仅限主线程   |
+| `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent` / `ForEachBroadcastStat` / `ClearBroadcastStats`（仅 Editor，见 `EventModule.Debug.cs`） | 立即    | 仅限主线程；遍历回调内可重入触发分发/遍历，重入时使用局部快照互不干扰 |
 
 跨线程产生的事件（如网络 Socket 回调）不得直接调用事件模块，由网络频道封送到主线程后（channel.Update 排水）再 `Broadcast`。
 
@@ -519,11 +318,14 @@ public class CriticalSystem : MonoBehaviour
 
 功能：
 
-- 数据源  ：`EventModule.Debug.cs` 调试分部（`#if UNITY_EDITOR` 整文件包裹，真机包不编译）提供 `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent`
+- 数据源  ：`EventModule.Debug.cs` 调试分部（`#if UNITY_EDITOR` 整文件包裹，真机包不编译）提供 `EventCount` / `EventHandlerCount` / `ForEachHandler` / `ForEachEvent` / `ForEachBroadcastStat` / `ClearBroadcastStats`
 - 模块总览  ：显示待分发事件数、订阅事件 ID 数、handler 总数
 - 订阅明细  ：按事件 ID 分组，展示每个 handler 的方法名/所属类型/静态或实例标记，支持跳转源码
 - 事件队列  ：显示待分发队列中的每条事件，支持一键清空
+- 广播统计  ：按事件 ID 展示广播次数/最近广播时间/无监听双桶——「从未订阅」红行（真孤儿：拼写错/漏订阅）、「有历史订阅」黄行（挂起中窗口或已退订，预期态），支持清零统计
 - 交互  ：搜索过滤（事件 ID / 方法名 / 所属类型）、自动刷新、全部展开/折叠
+
+> 排障口诀：「事件没反应」先看广播统计——没广播次数=发送方没发/发错事件类；有次数但订阅明细里没你=订阅没生效（宿主没建 Register/挂起中）；都有但行为不对=查 handler 逻辑与参数类型（`is not XxxEventArgs` 早退）。
 
 使用方法：
 
@@ -537,15 +339,14 @@ public class CriticalSystem : MonoBehaviour
 ```text
 Event/
 ├── EventModule.cs               # 事件管理模块（模块生命周期 + 状态字段 + 清理/断言）
-├── EventModule.API.cs           # 事件管理模块公共 API（订阅/退订/查询/抛出）
+├── EventModule.API.cs           # 事件管理模块公共 API（类型键订阅/退订/无 sender 抛出）
 ├── EventModule.Dispatch.cs      # 帧分发机关（OnUpdate 批次排水 + HandleEvent 单事件分发）
 ├── EventModule.Event.cs         # 事件节点定义
-├── EventModule.Debug.cs         # 调试分部（#if UNITY_EDITOR：面板数据源 EventCount/EventHandlerCount/ForEachHandler/ForEachEvent）
-├── EventRegister.cs             # 事件注册器
+├── EventModule.Debug.cs         # 调试分部（#if UNITY_EDITOR：面板数据源 + 广播统计实现）
+├── EventRegister.cs             # 事件注册器（账本 + 挂起/重放簿记）
 ├── Event/                       # 事件参数
-│   ├── BaseEventArgs.cs         # 事件参数基类
-│   ├── GameEventArgs.cs         # 游戏事件参数基类
-│   └── EmptyEventArgs.cs        # 空事件参数
+│   ├── BaseEventArgs.cs         # 事件参数基类（Id 统一派生）
+│   └── GameEventArgs.cs         # 游戏事件参数基类
 └── README.md                    # 本文档
 ```
 
@@ -559,160 +360,14 @@ Event/
 
 ***
 
-## 10. 最佳实践
+## 10. 注意事项
 
-### 10.1 事件ID管理
-
-推荐使用常量类或枚举管理事件ID，避免硬编码：
-
-```csharp
-// 方式1：常量类
-public static class EventIds
-{
-    public const string PlayerDamage = "PlayerDamage";
-    public const string PlayerDeath = "PlayerDeath";
-}
-
-// 方式2：枚举（配合 EmptyEventArgs 使用）
-public enum GameEvents
-{
-    GameStart,
-    GamePause,
-    GameResume,
-    GameOver
-}
-
-// 使用枚举发布事件
-m_eventModule.Broadcast(this, GameEvents.GameStart.ToString());
-```
-
-### 10.2 事件参数对象池
-
-自定义事件参数应正确实现 `Clear` 方法，确保对象池正确重用：
-
-```csharp
-using Hotfix.Framework.Core;
-
-public class MyEventArgs : GameEventArgs
-{
-    public override string Id => "MyEvent";
-    
-    public int IntValue { get; set; }
-    public string StringValue { get; set; }
-    public List<int> ListValue { get; set; }  // 引用类型
-    
-    public override void Clear()
-    {
-        // 值类型重置
-        IntValue = 0;
-        StringValue = null;
-        
-        // 引用类型清理（避免内存泄漏）
-        ListValue?.Clear();
-        ListValue = null;
-    }
-    
-    public static MyEventArgs Create(int intValue, string stringValue)
-    {
-        var args = ReferencePool.Acquire<MyEventArgs>();
-        args.IntValue = intValue;
-        args.StringValue = stringValue;
-        return args;
-    }
-}
-```
-
-### 10.3 使用 EventRegister 管理生命周期
-
-对于UI模块等需要频繁订阅/取消订阅的场景，使用 `EventRegister`：
-
-```csharp
-public class GamePanel : MonoBehaviour
-{
-    private EventRegister m_eventRegister;
-    
-    private void OnEnable()
-    {
-        m_eventRegister = EventRegister.Create();
-        m_eventRegister.Subscribe(EventIds.UpdateUI, OnUpdateUI);
-    }
-    
-    private void OnDisable()
-    {
-        m_eventRegister?.UnSubscribeAll();
-        m_eventRegister?.Release();
-        m_eventRegister = null;
-    }
-}
-```
-
-### 10.4 避免内存泄漏
-
-```csharp
-public class Example : MonoBehaviour
-{
-    private void Start()
-    {
-        // 错误：使用匿名方法订阅，无法取消订阅
-        m_eventModule.Subscribe(EventIds.SomeEvent, (s, e) => { /* ... */ });
-    }
-}
-
-// 正确：使用实例方法订阅
-public class Example : MonoBehaviour
-{
-    private void Start()
-    {
-        m_eventModule.Subscribe(EventIds.SomeEvent, OnSomeEvent);
-    }
-    
-    private void OnSomeEvent(object sender, GameEventArgs e)
-    {
-        // 处理事件
-    }
-    
-    private void OnDestroy()
-    {
-        m_eventModule.Unsubscribe(EventIds.SomeEvent, OnSomeEvent);
-    }
-}
-```
-
-### 10.5 事件处理器性能
-
-```csharp
-// 避免在事件处理器中执行耗时操作
-private void OnPlayerDamage(object sender, GameEventArgs e)
-{
-    // 错误：耗时操作会阻塞事件处理
-    // var result = HeavyCalculation();
-    
-    // 正确：只记录状态，耗时操作延后处理
-    m_damageQueue.Enqueue(e);
-}
-
-// 在 Update 中处理耗时操作
-private void Update()
-{
-    while (m_damageQueue.Count > 0 && m_processedCount < MaxPerFrame)
-    {
-        ProcessDamage(m_damageQueue.Dequeue());
-        m_processedCount++;
-    }
-}
-```
-
-***
-
-## 11. 注意事项
-
-1. 取消订阅  ：在对象销毁时务必取消事件订阅，避免内存泄漏
+1. 事件参数契约  ：属性一律 `private set`、仅 `Create` 构造期赋值、`Clear()` 全字段复位；处理函数**不得修改、转发或缓存收到的 `e`**（见 4.4 契约）
 2. 主线程限制  ：所有公共 API 仅允许主线程调用（开发期有断言拦截跨线程误用）；跨线程产生的事件由网络频道封送主线程后再 Broadcast
 3. 事件处理顺序  ：同一事件的多个处理函数按订阅顺序调用
 4. 异常处理  ：事件处理函数中的异常会被捕获并记录，不会影响其他处理函数
 5. 对象池  ：事件参数对象会自动通过引用池管理，无需手动释放，但需正确实现 `Clear` 方法
 6. 即时退订  ：退订立即生效；仅分发过程中（handler 内）的退订因快照语义，本轮仍会收到当次事件
-7. 空事件ID  ：`EmptyEventArgs` 的事件ID为实例字段，同帧多个不同ID不会互相覆盖
+7. 类型即 ID  ：事件参数类必须 `sealed`——子类化会让 `Subscribe<基类>` 与子类实例广播分属两个频道
 8. 生命周期边界  ：事件模块关停（`OnDispose`）后不得再调用 `Broadcast`——事件节点「取出 → 入队」之间存在极小竞态窗口，滞留事件将永不分发、永不回收
-9. 遍历接口  ：`ForEachHandler` / `ForEachEvent` 仅限主线程调用；`ForEachEvent` 回调内不得修改或回收未分发的事件参数
-
+9. 遍历接口  ：`ForEachHandler` / `ForEachEvent` / `ForEachBroadcastStat` 仅限主线程调用；`ForEachEvent` 回调内不得修改或回收未分发的事件参数
