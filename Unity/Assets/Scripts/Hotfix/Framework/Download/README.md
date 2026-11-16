@@ -197,7 +197,7 @@ public async UniTask DownloadMultipleFilesAsync()
 var eventModule = ModuleManager.GetModule<EventModule>();
 
 // 监听下载进度
-eventModule.Subscribe(DownloadUpdateEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<DownloadUpdateEventArgs>(e =>
 {
     var args = e as DownloadUpdateEventArgs;
     // 更新事件仅携带当前已下载字节数（CurrentLength），不含总大小；进度请由业务侧自行比对期望文件长度
@@ -205,7 +205,7 @@ eventModule.Subscribe(DownloadUpdateEventArgs.EventId, (sender, e) =>
 });
 
 // 监听下载完成
-eventModule.Subscribe(DownloadSuccessEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<DownloadSuccessEventArgs>(e =>
 {
     var args = e as DownloadSuccessEventArgs;
     Debug.Log($"下载完成: {args.DownloadPath}");

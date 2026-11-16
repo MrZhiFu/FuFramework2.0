@@ -353,19 +353,19 @@ public async UniTask<LoginResponse> LoginAsync(string username, string password)
 var eventModule = ModuleManager.GetModule<EventModule>();
 
 // 连接成功
-eventModule.Subscribe(NetworkConnectedEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<NetworkConnectedEventArgs>(e =>
 {
     Debug.Log("网络已连接");
 });
 
 // 连接断开
-eventModule.Subscribe(NetworkClosedEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<NetworkClosedEventArgs>(e =>
 {
     Debug.Log("网络已断开");
 });
 
 // 网络错误
-eventModule.Subscribe(NetworkErrorEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<NetworkErrorEventArgs>(e =>
 {
     var args = e as NetworkErrorEventArgs;
     Debug.LogError($"网络错误: {args.ErrorMessage}");

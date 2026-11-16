@@ -263,13 +263,13 @@ m_soundModule.StopAllLoadedSounds(fadeOutSeconds: 1f);
 ```csharp
 var eventModule = ModuleManager.GetModule<EventModule>();
 
-eventModule.Subscribe(PlaySoundSuccessEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<PlaySoundSuccessEventArgs>(e =>
 {
     var args = e as PlaySoundSuccessEventArgs;
     Debug.Log($"声音播放成功: SerialId={args.SerialId}");
 });
 
-eventModule.Subscribe(PlaySoundFailureEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<PlaySoundFailureEventArgs>(e =>
 {
     var args = e as PlaySoundFailureEventArgs;
     Debug.LogError($"声音播放失败: ErrorCode={args.ErrorCode}");

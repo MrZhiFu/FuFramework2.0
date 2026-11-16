@@ -147,20 +147,20 @@ m_sceneModule.UnloadScene("Assets/Game/Scenes/Dungeon_01.unity");
 var eventModule = ModuleManager.GetModule<EventModule>();
 
 // 监听加载进度
-eventModule.Subscribe(LoadSceneUpdateEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<LoadSceneUpdateEventArgs>(e =>
 {
     var args = e as LoadSceneUpdateEventArgs;
     Debug.Log($"加载进度: {args.Progress:P1}");
 });
 
 // 监听加载成功
-eventModule.Subscribe(LoadSceneSuccessEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<LoadSceneSuccessEventArgs>(e =>
 {
     Debug.Log("场景加载成功");
 });
 
 // 监听激活场景切换
-eventModule.Subscribe(ActiveSceneChangedEventArgs.EventId, (sender, e) =>
+eventModule.Subscribe<ActiveSceneChangedEventArgs>(e =>
 {
     var args = e as ActiveSceneChangedEventArgs;
     Debug.Log($"激活场景切换: {args.ActiveScene.name}");

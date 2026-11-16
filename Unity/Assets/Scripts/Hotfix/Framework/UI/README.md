@@ -238,10 +238,10 @@ protected virtual GTweener DoCustomCloseTween()
 
 ```csharp
 // 业务事件
-public void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
-public void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
-public void Broadcast(object sender, GameEventArgs eventArgs)
-public void BroadcastNow(object sender, GameEventArgs eventArgs)
+public void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+public void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+public void Broadcast(GameEventArgs eventArgs)
+public void BroadcastNow(GameEventArgs eventArgs)
 
 // UI事件
 public void AddUIListener(EventListener listener, EventCallback1 callback)
@@ -454,8 +454,8 @@ protected void RemoveUIListener(EventListener listener, Func<EventContext, UniTa
 protected void RemoveUIListener(EventListener listener, Func<UniTask> callback)
 
 // 业务事件
-protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
-protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
+protected void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+protected void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
 
 // 计时器
 // 计时器（Start 返回计时器 Id，失败 -1）
@@ -825,22 +825,22 @@ public class EventExampleWin : WinBase
     protected override void OnInit()
     {
         // 订阅事件（OnInit 期，每实例一次；关窗自动挂起、开窗自动重放）
-        Subscribe("PlayerLevelUp", OnPlayerLevelUp);
-        Subscribe("GoldChanged", OnGoldChanged);
+        Subscribe<PlayerLevelUpEventArgs>(OnPlayerLevelUp);
+        Subscribe<GoldChangedEventArgs>(OnGoldChanged);
     }
     
     protected override void OnOpen()
     {
         // 广播事件（OnOpen 只做数据刷新，勿在此订阅）
-        Broadcast(this, new GameEventArgs("UIOpened", this));
+        Broadcast(UIOpenedEventArgs.Create(this));   // 事件参数类按 Event README §4.4 模板定义
     }
     
-    private void OnPlayerLevelUp(object sender, GameEventArgs e)
+    private void OnPlayerLevelUp(GameEventArgs e)
     {
         Debug.Log("玩家升级了！");
     }
     
-    private void OnGoldChanged(object sender, GameEventArgs e)
+    private void OnGoldChanged(GameEventArgs e)
     {
         Debug.Log($"金币变化: {e.Data}");
     }
@@ -936,36 +936,39 @@ public class UIEventListener : MonoBehaviour
         m_eventModule = ModuleManager.GetModule<EventModule>();
         
         // 订阅界面打开成功事件
-        m_eventModule.Subscribe(OpenSuccessEventArgs.EventId, OnOpenSuccess);
+        m_eventModule.Subscribe<OpenUISuccessEventArgs>(OnOpenSuccess);
         
         // 订阅界面关闭完成事件
-        m_eventModule.Subscribe(CloseCompleteEventArgs.EventId, OnCloseComplete);
+        m_eventModule.Subscribe<CloseUICompleteEventArgs>(OnCloseComplete);
         
         // 订阅界面可见性变化事件
-        m_eventModule.Subscribe(ChangeVisibleEventArgs.EventId, OnVisibleChanged);
+        m_eventModule.Subscribe<ChangeUIVisibleEventArgs>(OnVisibleChanged);
     }
     
-    private void OnOpenSuccess(object sender, GameEventArgs e)
+    private void OnOpenSuccess(GameEventArgs e)
     {
-        var args = e as OpenSuccessEventArgs;
+        var args = e as OpenUISuccessEventArgs;
         Debug.Log($"界面打开成功: {args.Win.WinName}");
     }
     
-    private void OnCloseComplete(object sender, GameEventArgs e)
+    private void OnCloseComplete(GameEventArgs e)
     {
-        var args = e as CloseCompleteEventArgs;
+        var args = e as CloseUICompleteEventArgs;
         Debug.Log($"界面关闭完成: {args.WinName}");
     }
     
-    private void OnVisibleChanged(object sender, GameEventArgs e)
+    private void OnVisibleChanged(GameEventArgs e)
     {
-        var args = e as ChangeVisibleEventArgs;
+        var args = e as ChangeUIVisibleEventArgs;
         Debug.Log($"界面可见性变化: {args.Win.WinName}, 可见: {args.Visible}");
     }
     
     private void OnDestroy()
     {
-        m_eventModule?.UnSubscribeAll(this);
+        // 非池化 MonoBehaviour 销毁时逐个退订（UnSubscribeAll 属 EventRegister 全清语义，非模块 API）
+        m_eventModule.Unsubscribe<OpenUISuccessEventArgs>(OnOpenSuccess);
+        m_eventModule.Unsubscribe<CloseUICompleteEventArgs>(OnCloseComplete);
+        m_eventModule.Unsubscribe<ChangeUIVisibleEventArgs>(OnVisibleChanged);
     }
 }
 ```
@@ -979,7 +982,7 @@ public partial class CompRedDot : GComponent
     private void OnInit()
     {
         // 初始化时 Register 已在 ConstructFromXML 中创建好，可直接使用
-        Subscribe("RedDotChanged", OnRedDotChanged);
+        Subscribe<RedDotChangedEventArgs>(OnRedDotChanged);
     }
     
     private void OnDispose() { }
@@ -990,7 +993,7 @@ public partial class CompRedDot : GComponent
         imgRedDot.visible = count > 0;
     }
     
-    private void OnRedDotChanged(object sender, GameEventArgs e)
+    private void OnRedDotChanged(GameEventArgs e)
     {
         // 更新红点显示
     }

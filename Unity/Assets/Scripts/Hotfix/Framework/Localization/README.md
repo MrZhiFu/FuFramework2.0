@@ -181,10 +181,10 @@ public class UITextUpdater
     {
         m_eventModule = ModuleManager.GetModule<EventModule>();
 
-        m_eventModule.Subscribe(LanguageChangeEventArgs.EventId, OnLanguageChanged);
+        m_eventModule.Subscribe<LanguageChangeEventArgs>(OnLanguageChanged);
     }
 
-    private void OnLanguageChanged(object sender, GameEventArgs e)
+    private void OnLanguageChanged(GameEventArgs e)
     {
         var args = e as LanguageChangeEventArgs;
         UnityEngine.Debug.Log($"语言已切换: {args.OldELanguage} → {args.ELanguage}");
@@ -238,7 +238,7 @@ Localization/
 
 ## 9. 注意事项
 
-1. 语言切换后的文本刷新：FGUI 声明式绑定（第 11 节）与业务数据绑定（`WinBase._OnLanguageChanged` 的 `OnOpen`）自动执行；仅自管文本的界面需要自行监听 `LanguageChangeEventArgs.EventId` 手动刷新
+1. 语言切换后的文本刷新：FGUI 声明式绑定（第 11 节）与业务数据绑定（`WinBase._OnLanguageChanged` 的 `OnOpen`）自动执行；仅自管文本的界面需要自行订阅 `Subscribe<LanguageChangeEventArgs>(...)` 手动刷新
 2. 本地化文本 Key 在配置表中必须唯一
 3. 若 `LocalizationProvider` 未设置，`GetLanguageText` 会返回 `[key]` 格式的占位符文本并输出警告日志
 4. 语言设置存储在本地，卸载游戏后不会丢失

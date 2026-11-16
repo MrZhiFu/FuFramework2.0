@@ -76,11 +76,11 @@ Model 基类，实现 `IReference` 接口，内置事件通信能力。
 ```csharp
 public abstract class BaseModel : IReference
 {
-    // 事件通信
-    protected void Subscribe(string eventId, EventHandler<GameEventArgs> handler)
-    protected void UnSubscribe(string eventId, EventHandler<GameEventArgs> handler)
-    protected void Broadcast(object sender, GameEventArgs eventArgs)
-    protected void BroadcastNow(object sender, GameEventArgs eventArgs)
+    // 事件通信（类型键：事件参数类型即事件标识，见 Event 模块 README §4.4）
+    protected void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+    protected void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs
+    public void Broadcast(GameEventArgs eventArgs)
+    public void BroadcastNow(GameEventArgs eventArgs)
 
     // 生命周期
     protected virtual void OnInit() { }
@@ -133,10 +133,10 @@ public class PlayerModel : BaseModel
     {
         base.OnInit();
         // 订阅事件
-        Subscribe("LevelUp", OnLevelUp);
+        Subscribe<PlayerLevelUpEventArgs>(OnLevelUp);
     }
 
-    private void OnLevelUp(object sender, GameEventArgs e)
+    private void OnLevelUp(GameEventArgs e)
     {
         Level++;
         // 通知 UI 刷新...
@@ -145,7 +145,7 @@ public class PlayerModel : BaseModel
     protected override void OnDispose()
     {
         base.OnDispose();
-        UnSubscribe("LevelUp", OnLevelUp);
+        UnSubscribe<PlayerLevelUpEventArgs>(OnLevelUp);
     }
 
     public override void Clear()
