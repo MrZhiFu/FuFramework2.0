@@ -144,7 +144,6 @@ namespace Hotfix.Game.UI
 
         #region 业务逻辑事件处理
 
-        
         protected void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.Subscribe<T>(handler);
 
         protected void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.UnSubscribe<T>(handler);
@@ -154,7 +153,6 @@ namespace Hotfix.Game.UI
         protected void BroadcastNow(GameEventArgs e) => m_eventRegister.BroadcastNow(e);
 
         protected void UnSubscribeAll() => m_eventRegister.UnSubscribeAll();
-
 
         #endregion
 
