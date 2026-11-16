@@ -103,9 +103,6 @@ namespace Hotfix.Game.UI
         #region 窗口生命周期广播（IWinLifecycleAware）
 
         /// <summary>
-        /// 窗口关闭通知：取消本组件在途异步处理器（WinBase._OnClose 遍历广播 / 列表项摘树兜底）。
-        /// </summary>
-        /// <summary>
         /// 窗口关闭通知：取消本组件在途异步处理器并终止计时器（WinBase._OnClose 遍历广播 / 列表项摘树兜底）。
         /// 计时器破坏性不重放，与窗口侧 _OnClose 口径一致；需要周期任务的业务在开窗/复用时自行重启。
         /// </summary>
@@ -114,7 +111,6 @@ namespace Hotfix.Game.UI
             m_cancellation.Cancel();
             m_timerRegister?.StopAllTimers();
         }
-
 
         /// <summary>
         /// 窗口打开通知：重建取消源开启新生命周期（WinBase._OnOpen 遍历广播 / 列表项挂树兜底）。
@@ -125,13 +121,17 @@ namespace Hotfix.Game.UI
 
         #region 业务逻辑事件处理
 
+        
         protected void Subscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.Subscribe<T>(handler);
 
         protected void UnSubscribe<T>(Action<GameEventArgs> handler) where T : GameEventArgs => m_eventRegister.UnSubscribe<T>(handler);
 
+        protected void Broadcast(GameEventArgs e) => m_eventRegister.Broadcast(e);
+
         protected void BroadcastNow(GameEventArgs e) => m_eventRegister.BroadcastNow(e);
 
         protected void UnSubscribeAll() => m_eventRegister.UnSubscribeAll();
+
 
         #endregion
 
