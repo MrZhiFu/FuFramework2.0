@@ -406,8 +406,8 @@ namespace Hotfix.Framework.UI
 		/// 作为孤儿照跑，且已取消令牌下业务同步段异常会被 task.Forget() 吞入未观察通道——实测确认）。
 		/// 真正的取消由业务处理器内部 await 点携带 Token 实现：网络/资源类 API 按铁律必传 Token，
 		/// 延时类（UniTask.Delay 等）须显式传 Token——窗口关闭（_OnClose → Cancel）时业务于自身
-		/// await 点原生取消，OCE 沿链传播至此统一静默。m_cancellation 当前仅承载该契约的语义与
-		/// 未来扩展位（处理器可通过它感知取消源）。
+		/// await 点原生取消，OCE 沿链传播至此统一静默。调用方（窗口侧 WinBase、组件侧 Gen 代理）
+		/// 各自持有取消源实例传入，处理器经其 Token 在 await 点挂接取消。
 		/// 相等语义：按原始委托值语义（Target+Method）匹配——C# 实例方法组每次转换都产生新委托
 		/// 实例，Remove/幂等判重传入的委托与登记时的实例不同，必须按值匹配。
 		/// </summary>

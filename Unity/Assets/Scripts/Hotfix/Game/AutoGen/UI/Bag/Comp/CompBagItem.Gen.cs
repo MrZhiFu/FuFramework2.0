@@ -4,6 +4,7 @@
 // ReSharper disable once CheckNamespace 禁用命名空间检查
 
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using FairyGUI;
 using FairyGUI.Utils;
@@ -21,6 +22,12 @@ namespace Hotfix.Game.UI
         private EventRegister m_eventRegister;     // 业务逻辑事件注册器
         private FuiEventRegister m_uiEventRegister;// UI事件注册器
         private readonly LifecycleCancellationSource m_cancellation = new(); // 组件生命周期取消源：窗口关闭取消、打开重建（IWinLifecycleAware 广播驱动）
+
+        /// <summary>
+        /// 组件生命周期取消令牌：组件内异步 await 统一传参（与窗口侧 WinBase.Token 形态对齐），
+        /// 窗口关闭（广播/摘树兜底）时触发取消。
+        /// </summary>
+        protected CancellationToken Token => m_cancellation.Token;
 
 		private Controller button;
 		private CompGoodItem compGoodItem;
@@ -123,7 +130,16 @@ namespace Hotfix.Game.UI
         /// <summary>
         /// 窗口关闭通知：取消本组件在途异步处理器（WinBase._OnClose 遍历广播 / 列表项摘树兜底）。
         /// </summary>
-        public void OnWinClosed() => m_cancellation.Cancel();
+        /// <summary>
+        /// 窗口关闭通知：取消本组件在途异步处理器并终止计时器（WinBase._OnClose 遍历广播 / 列表项摘树兜底）。
+        /// 计时器破坏性不重放，与窗口侧 _OnClose 口径一致；需要周期任务的业务在开窗/复用时自行重启。
+        /// </summary>
+        public void OnWinClosed()
+        {
+            m_cancellation.Cancel();
+            m_timerRegister?.StopAllTimers();
+        }
+
 
         /// <summary>
         /// 窗口打开通知：重建取消源开启新生命周期（WinBase._OnOpen 遍历广播 / 列表项挂树兜底）。
