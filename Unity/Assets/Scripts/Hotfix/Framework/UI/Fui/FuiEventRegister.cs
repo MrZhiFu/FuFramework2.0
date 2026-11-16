@@ -390,12 +390,14 @@ namespace Hotfix.Framework.UI
 		///        账本/绑定表/总线三处共用，保证移除时严格对称）。
 		///     2. 统一异常契约：OperationCanceledException 静默吞（生命周期约定），其余异常记日志——
 		///        业务处理器内无需自行 try/catch。
-		/// 取消契约：本层不制造取消、不接收取消源（AttachExternalCancellation 只能切断最外层 await，
-		/// 业务子任务链作为孤儿照跑，且已取消令牌下业务同步段异常会被 task.Forget() 吞入未观察通道——实测确认）。
-		/// 真正的取消由业务处理器内部 await 点携带 Token 实现：网络/资源类 API 按铁律必传 Token，
-		/// 延时类（UniTask.Delay 等）须显式传 Token——窗口关闭（_OnClose → Cancel）时业务于自身
-		/// await 点原生取消，OCE 沿链传播至此统一静默。Token 由调用方基类/模板提供
-		/// （窗口侧 WinBase.Token、组件侧 Gen 模板 Token 属性），与注册链路解耦。
+		/// 取消怎么发生：本包装只管"等处理器跑完、处理异常"，取消不经过这里。
+		/// 取消发生在业务处理器内部的 await 上——你在处理器里 await 的地方要带上 Token
+		/// （网络/资源类 API 本来就必传 Token；UniTask.Delay 这类要自己写 cancellationToken: Token）。
+		/// 窗口一关闭，窗口的 Token 一取消，你那些带着 Token 的 await 就各自中止，
+		/// 中止时抛出的 OperationCanceledException 会被这里的 catch 静默吞掉。
+		/// Token 从哪来：窗口处理器用 WinBase.Token，组件处理器用 Gen 模板提供的 Token 属性——
+		/// 本包装不需要也不接收 Token（曾试过包装层自动挂取消，实测只断最外层、
+		/// 处理器内部的延时请求照跑，假取消，已弃用）。
 		/// 相等语义：按原始委托值语义（Target+Method）匹配——C# 实例方法组每次转换都产生新委托
 		/// 实例，Remove/幂等判重传入的委托与登记时的实例不同，必须按值匹配。
 		/// </summary>
