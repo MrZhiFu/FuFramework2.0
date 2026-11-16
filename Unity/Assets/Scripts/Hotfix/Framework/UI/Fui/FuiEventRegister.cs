@@ -78,18 +78,15 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 添加UI上指定组件的异步监听事件（带事件上下文签名）。
 		/// 处理器直接写 async UniTask，包装细节见 FuiAsyncBinding：统一吞 OperationCanceledException、
-		/// 其余异常记日志；取消由处理器内部 await 点携带 Token 实现。幂等去重语义与同步重载一致。
+		/// 其余异常记日志；取消由处理器内部 await 点携带调用方 Token 实现（不在本层传参）。幂等去重语义与同步重载一致。
 		/// </summary>
 		/// <param name="listener">被监听者(一般是交互组件，如Button)</param>
 		/// <param name="callback">异步回调函数</param>
-		/// <param name="cancellation">调用方生命周期取消源（如窗口的 m_cancellation）：处理器内部
-		/// await 点应携带其 Token，窗口关闭时业务原生取消；窗口复用期间令牌随 Recreate 更换，
-		/// 故必须传取消源实例而非令牌值</param>
-		public void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback, LifecycleCancellationSource cancellation)
+		public void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback)
 		{
-			if (!GuardAsync(listener, callback, cancellation)) return;
+			if (!GuardAsync(listener, callback)) return;
 
-			var binding = new FuiAsyncBinding(callback, cancellation);
+			var binding = new FuiAsyncBinding(callback);
 			if (m_uiAsyncBindingDic.Contains(listener, binding))
 			{
 				FuLogger.LogWarning($"重复登记同一UI异步监听回调，本次已忽略:{callback}");
@@ -107,12 +104,11 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="listener">被监听者(一般是交互组件，如Button)</param>
 		/// <param name="callback">异步回调函数</param>
-		/// <param name="cancellation">调用方生命周期取消源</param>
-		public void AddUIListener(EventListener listener, Func<UniTask> callback, LifecycleCancellationSource cancellation)
+		public void AddUIListener(EventListener listener, Func<UniTask> callback)
 		{
-			if (!GuardAsync(listener, callback, cancellation)) return;
+			if (!GuardAsync(listener, callback)) return;
 
-			var binding = new FuiAsyncBinding(callback, cancellation);
+			var binding = new FuiAsyncBinding(callback);
 			if (m_uiAsyncBindingDic.Contains(listener, binding))
 			{
 				FuLogger.LogWarning($"重复登记同一UI异步监听回调，本次已忽略:{callback}");
@@ -128,7 +124,7 @@ namespace Hotfix.Framework.UI
 		/// 异步重载公共守卫：任一参数为空记日志并忽略，与同步重载守卫口径一致。
 		/// </summary>
 		/// <returns>是否通过守卫</returns>
-		private bool GuardAsync(EventListener listener, Delegate callback, LifecycleCancellationSource cancellation)
+		private bool GuardAsync(EventListener listener, Delegate callback)
 		{
 			if (listener == null)
 			{
@@ -139,12 +135,6 @@ namespace Hotfix.Framework.UI
 			if (callback == null)
 			{
 				FuLogger.LogError("添加FUI监听事件失败, 回调为空");
-				return false;
-			}
-
-			if (cancellation == null)
-			{
-				FuLogger.LogError("添加FUI异步监听事件失败, 生命周期取消源为空（异步回调必须有生命周期所有者）");
 				return false;
 			}
 
@@ -288,14 +278,13 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="listener">被监听者(一般是交互组件，如Button)</param>
 		/// <param name="callback">异步回调函数</param>
-		/// <param name="cancellation">调用方生命周期取消源</param>
-		public void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback, LifecycleCancellationSource cancellation)
+		public void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback)
 		{
-			if (!GuardAsync(listener, callback, cancellation)) return;
+			if (!GuardAsync(listener, callback)) return;
 
 			RemoveAllListenerBindings(listener);
 
-			var binding = new FuiAsyncBinding(callback, cancellation);
+			var binding = new FuiAsyncBinding(callback);
 			m_uiAsyncBindingDic.Add(listener, binding);
 			m_uiEventListenerDic.Add(listener, binding.Callback);
 			listener.Add(binding.Callback);
@@ -307,14 +296,13 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		/// <param name="listener">被监听者(一般是交互组件，如Button)</param>
 		/// <param name="callback">异步回调函数</param>
-		/// <param name="cancellation">调用方生命周期取消源</param>
-		public void SetUIListener(EventListener listener, Func<UniTask> callback, LifecycleCancellationSource cancellation)
+		public void SetUIListener(EventListener listener, Func<UniTask> callback)
 		{
-			if (!GuardAsync(listener, callback, cancellation)) return;
+			if (!GuardAsync(listener, callback)) return;
 
 			RemoveAllListenerBindings(listener);
 
-			var binding = new FuiAsyncBinding(callback, cancellation);
+			var binding = new FuiAsyncBinding(callback);
 			m_uiAsyncBindingDic.Add(listener, binding);
 			m_uiEventListenerDic.Add(listener, binding.Callback);
 			listener.Add(binding.Callback);
@@ -402,12 +390,12 @@ namespace Hotfix.Framework.UI
 		///        账本/绑定表/总线三处共用，保证移除时严格对称）。
 		///     2. 统一异常契约：OperationCanceledException 静默吞（生命周期约定），其余异常记日志——
 		///        业务处理器内无需自行 try/catch。
-		/// 取消契约：本层不制造取消（AttachExternalCancellation 只能切断最外层 await，业务子任务链
-		/// 作为孤儿照跑，且已取消令牌下业务同步段异常会被 task.Forget() 吞入未观察通道——实测确认）。
+		/// 取消契约：本层不制造取消、不接收取消源（AttachExternalCancellation 只能切断最外层 await，
+		/// 业务子任务链作为孤儿照跑，且已取消令牌下业务同步段异常会被 task.Forget() 吞入未观察通道——实测确认）。
 		/// 真正的取消由业务处理器内部 await 点携带 Token 实现：网络/资源类 API 按铁律必传 Token，
 		/// 延时类（UniTask.Delay 等）须显式传 Token——窗口关闭（_OnClose → Cancel）时业务于自身
-		/// await 点原生取消，OCE 沿链传播至此统一静默。调用方（窗口侧 WinBase、组件侧 Gen 代理）
-		/// 各自持有取消源实例传入，处理器经其 Token 在 await 点挂接取消。
+		/// await 点原生取消，OCE 沿链传播至此统一静默。Token 由调用方基类/模板提供
+		/// （窗口侧 WinBase.Token、组件侧 Gen 模板 Token 属性），与注册链路解耦。
 		/// 相等语义：按原始委托值语义（Target+Method）匹配——C# 实例方法组每次转换都产生新委托
 		/// 实例，Remove/幂等判重传入的委托与登记时的实例不同，必须按值匹配。
 		/// </summary>
@@ -424,12 +412,6 @@ namespace Hotfix.Framework.UI
 			private readonly Func<EventContext, UniTask> m_handler;
 
 			/// <summary>
-			/// 调用方生命周期取消源：业务处理器内部 await 点应携带 Token（见类注释取消契约），
-			/// 窗口复用期间 Token 随 Recreate 更换，故捕获取消源实例而非令牌值。
-			/// </summary>
-			private readonly LifecycleCancellationSource m_cancellation;
-
-			/// <summary>
 			/// 包装后的同步回调（挂总线、记账本，全生命周期唯一实例）。
 			/// </summary>
 			public EventCallback1 Callback { get; }
@@ -438,26 +420,22 @@ namespace Hotfix.Framework.UI
 			/// 创建带事件上下文签名的异步绑定。
 			/// </summary>
 			/// <param name="handler">异步处理器</param>
-			/// <param name="cancellation">调用方生命周期取消源</param>
-			public FuiAsyncBinding(Func<EventContext, UniTask> handler, LifecycleCancellationSource cancellation)
+			public FuiAsyncBinding(Func<EventContext, UniTask> handler)
 			{
-				m_source       = handler;
-				m_handler      = handler;
-				m_cancellation = cancellation;
-				Callback       = Invoke;
+				m_source  = handler;
+				m_handler = handler;
+				Callback  = Invoke;
 			}
 
 			/// <summary>
 			/// 创建无事件上下文签名的异步绑定。
 			/// </summary>
 			/// <param name="handler">异步处理器</param>
-			/// <param name="cancellation">调用方生命周期取消源</param>
-			public FuiAsyncBinding(Func<UniTask> handler, LifecycleCancellationSource cancellation)
+			public FuiAsyncBinding(Func<UniTask> handler)
 			{
-				m_source       = handler;
-				m_handler      = _ => handler();
-				m_cancellation = cancellation;
-				Callback       = Invoke;
+				m_source  = handler;
+				m_handler = _ => handler();
+				Callback  = Invoke;
 			}
 
 			/// <summary>

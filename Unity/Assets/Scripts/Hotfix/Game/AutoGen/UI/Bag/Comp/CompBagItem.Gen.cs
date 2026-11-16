@@ -107,13 +107,13 @@ namespace Hotfix.Game.UI
 
         protected void RemoveUIListener(EventListener listener, EventCallback1 callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
 
-        protected void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback, m_cancellation);
+        protected void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback);
 
-        protected void AddUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback, m_cancellation);
+        protected void AddUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.AddUIListener(listener, callback);
 
-        protected void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback, m_cancellation);
+        protected void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback);
 
-        protected void SetUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback, m_cancellation);
+        protected void SetUIListener(EventListener listener, Func<UniTask> callback) => m_uiEventRegister.SetUIListener(listener, callback);
 
         protected void RemoveUIListener(EventListener listener, Func<EventContext, UniTask> callback) => m_uiEventRegister.RemoveUIListener(listener, callback);
 
