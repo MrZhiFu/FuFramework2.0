@@ -199,8 +199,8 @@ public void SetUIPriority(object winUI, int priority)
 
 > **生命周期取消令牌**：`WinBase` 内建 `LifecycleCancellationSource`，每次打开（`_OnOpen`）重建 Token（新生命周期）、
 > 关闭（`_OnClose`）取消、销毁（`_OnDispose`）释放。窗口内发起的异步任务（网络请求/资源加载）应传 `Token`，
-> 界面关闭时自动取消（抛 `OperationCanceledException`，窗口内 await 建议捕获）。框架异步 API（Web/Asset/Entity/Scene）的
-> `CancellationToken` 参数必传。
+> 界面关闭时自动取消（抛 `OperationCanceledException`——经 UI 事件适配层挂接的处理器会静默，自行发起的 UniTaskVoid 自行捕获）。
+> 框架异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数必传。
 
 **生命周期方法：**
 
@@ -436,7 +436,7 @@ protected override void OnRelease()
 
 自定义组件（Comp*）继承自 FairyGUI 的 GComponent / GButton 等，自行持有 `FuiEventRegister`、`EventRegister`、`TimerRegister`，在 `ConstructFromXML` 中创建、`Dispose` 中释放，无需依赖 WinBase。
 
-Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件，GObject 层与 displayObject 层同收到同一次派发）。**注意**：item 不经池的原地刷新复用（数据更新后直接重绑，不摘/挂树）不会触发兜底事件——上一条数据的在途异步处理器不会被取消，await 返回后会往已被换绑的 item 写旧数据；此类场景应在 renderer 绑定新数据时手动调组件 `OnWinOpened()` 取消在途任务。
+Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件，GObject 层与 displayObject 层同收到同一次派发）。组件内异步 await 统一使用 `Token` 属性（与窗口侧 `WinBase.Token` 对齐）：`UniTask.Delay(5000, cancellationToken: Token)`。**注意**：item 不经池的原地刷新复用（数据更新后直接重绑，不摘/挂树）不会触发兜底事件——上一条数据的在途异步处理器不会被取消，await 返回后会往已被换绑的 item 写旧数据；此类场景应在 renderer 绑定新数据时手动调组件 `OnWinOpened()` 取消在途任务。窗口关闭同时终止组件计时器（`OnWinClosed` 内 `StopAllTimers`，破坏性不重放，与窗口侧口径一致；需要周期任务的业务在开窗/复用时自行重启）。
 
 代理方法可在组件内部直接使用：
 
@@ -851,6 +851,42 @@ public class EventExampleWin : WinBase
 
 ### 4.7 UI 交互事件与异步处理器（UniTask）
 
+#### 4.7.1 设计说明（What / Why / How）
+
+**What**：交互事件处理器支持同步（`void`）与异步（`async UniTask`）两种签名，调用点写法完全一致。签名选择权在业务侧、编译期自动分流——异步意图是写逻辑的人的事，不是导出/框架的事；首次 genCode 生成的同步桩（`private void OnBtnXxx(EventContext ctx) { }`）只是占位，需要异步时改一行签名即可，`InitUIEvent` 调用点不用动（且手写层只在首次导出生成、永不覆盖）。
+
+**Why**：FairyGUI 的事件委托是 `void EventCallback1(EventContext)`——引擎不认识 UniTask。没有这层机制时，每个异步交互都要"void 门面 + UniTaskVoid 主体 + .Forget() + 自己 try/catch"四件套，且**没有任何取消保障**（窗口关了，在途请求照跑完并写脏 UI）。四条关键裁决及理由：
+
+| 裁决 | 理由 | 被否决的方案 |
+|---|---|---|
+| 薄适配：防连点不做 | 防连点是业务语义（各界面策略不同），框架管了反而堵路 | 框架自动禁用组件 |
+| 取消 = 业务 await 点携带 Token | `AttachExternalCancellation` 经 Play 探针实测是**假取消**：只断最外层 await，处理器内部的 Delay/请求作为孤儿照跑；且 token 已取消时业务异常被 `Forget()` 吞进未观察通道 | 包装层自动挂取消源 |
+| 组件自持取消源 + 窗口广播 | 组件实例跨多次开窗存活、无窗口引用；`onAddedToStage/onRemovedFromStage` 是 GList 进出池的真实派发点，天然覆盖虚拟列表 | 窗口透传取消源（虚拟列表漏注入）、FGUI 原生可见性事件（窗口隐藏不派发任何事件） |
+| 注册链路不接收取消源 | 取消与注册彻底解耦：包装只管"等待 + 异常契约"，Token 由调用方基类/模板提供 | 保留参数装样子 |
+
+**How（机制如何运转，一条点击的完整旅程）**：
+
+```
+玩家点击 → FairyGUI 总线同步调包装回调 Invoke(ctx)
+  → InvokeCore 挂起，await 业务处理器
+      → 处理器里 await WebModule.Post(url, req, Token)   ← 取消挂在这里
+  → 处理器跑完：结果被完整消化（OCE 静默吞 / 其他异常 LogError）
+
+窗口关闭 → _OnClose → Cancel + 广播全树（IWinLifecycleAware）
+  → 组件 OnWinClosed：Cancel 自己的取消源 + 停计时器
+  → 所有"await 带了 Token"的地方原生中止 → OCE 沿链传到包装层被吞
+
+窗口重开 → _OnOpen → Recreate + 广播 → 组件 OnWinOpened：新生命周期
+
+列表项进出池 → FGUI 真实派发 stage 事件 → 兜底 Cancel/Recreate（窗口广播管不到出池期间）
+```
+
+三层各管一段：**包装层**（等完 + 异常契约）、**生命周期层**（Recreate/Cancel 驱动，三重触发：窗口广播 / stage 兜底 / Dispose）、**业务层**（await 带 Token）。
+
+性能：`BroadcastWinLifecycle` 是 O(组件树节点数) 全树遍历，零堆分配（模式匹配 + 数组索引，无 LINQ/委托），只在窗口开关频率触发——与同帧的 `RefreshAllL10n`（同为 O(N) 全树遍历）及 FGUI 首次树构建/SetActive 级联同级，是开窗路径最便宜的工作之一，无需命中缓存。
+
+#### 4.7.2 用法
+
 UI 交互事件处理器支持同步（`void`）与异步（`async UniTask`）两种签名，调用写法完全一致，重载解析自动分流：
 
 ```csharp
@@ -1095,8 +1131,9 @@ Hotfix.Framework/UI/
 ### 7.6 事件系统
 
 - 内置 EventRegister 管理业务事件
-- FuiEventRegister 管理 UI 事件
+- FuiEventRegister 管理 UI 事件（支持同步/异步处理器，见 §4.7）
 - 自定义组件自持 Register，独立管理事件和计时器
+- UI 事件的三条通道各有分工：**冒泡**（onClick 等输入类，沿 UI 树向上）用于横切关注（整窗点击音效/埋点/引导拦截，祖先层用 `ctx.initiator` 分辨来源）；**语义事件**（EventRegister 广播，平的事件总线）用于组件向窗口上抛业务逻辑（嵌套零转发）；**直派**（onChanged 等状态类，只通知自己）用于控件状态的直接订阅。业务逻辑不上冒泡、UI 几何不进总线
 
 ### 7.7 安全区适配
 
