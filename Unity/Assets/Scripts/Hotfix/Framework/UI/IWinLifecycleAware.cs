@@ -8,7 +8,7 @@ namespace Hotfix.Framework.UI
 	///     1. 窗口关闭时取消自身在途异步任务。
 	///     2. 窗口打开时重建自身生命周期取消源。
 	/// 触发点：由 WinBase._OnClose/_OnOpen 遍历 WinUI 组件树广播（晚于窗口自身 Cancel/Recreate），
-	/// 实现方应在此取消/重建自持取消源；另可订阅 displayObject.onAddedToStage/onRemovedFromStage
+	/// 实现方应在此取消/重建自持取消源；另可订阅 onAddedToStage/onRemovedFromStage
 	/// 兜底列表项(GList item)进池/复用场景（窗口广播覆盖不到出池期间的 item）。
 	/// </summary>
 	public interface IWinLifecycleAware

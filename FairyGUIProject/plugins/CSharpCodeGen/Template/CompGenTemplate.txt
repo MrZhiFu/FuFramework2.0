@@ -46,8 +46,8 @@ namespace #NAMESPACE#
 			m_timerRegister = TimerRegister.Create();
 			InitUIEvent();
 			OnInit();
-			displayObject.onAddedToStage.Add(OnWinOpened);     // 挂树/复用兜底：重新入树重建生命周期（列表项出池复用）
-			displayObject.onRemovedFromStage.Add(OnWinClosed); // 摘树/进池兜底：离开组件树即取消在途异步任务
+			onAddedToStage.Add(OnWinOpened);     // 挂树/复用兜底：重新入树重建生命周期（列表项出池复用）
+			onRemovedFromStage.Add(OnWinClosed); // 摘树/进池兜底：离开组件树即取消在途异步任务
 		}
 
         /// <summary>
