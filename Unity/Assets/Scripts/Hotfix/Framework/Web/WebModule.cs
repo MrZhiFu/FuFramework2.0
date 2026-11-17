@@ -22,7 +22,7 @@ namespace Hotfix.Framework.Web
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途 Web 请求随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_scope;
+		private CancellationBarrier m_scope;
 
 		/// <summary>
 		/// 用于构建 URL 的 StringBuilder。
@@ -170,7 +170,7 @@ namespace Hotfix.Framework.Web
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope  = new CancellationScope();
+			m_scope  = new CancellationBarrier();
 		}
 
 		/// <summary>

@@ -28,7 +28,7 @@ namespace Hotfix.Game.Network
 		/// 这些步骤的寿命比触发它的选角窗口长（窗口在事务中途 Close，其 Token 随之取消），故不能沿用窗口令牌。
 		/// 每次事务开始（LoginFlowAsync）Recreate：新事务开启新生命周期，旧事务未完成的链路随之作废。
 		/// </summary>
-		private static readonly LifecycleCancellationSource sr_transactionCancellation = new();
+		private static readonly CancellationTokenIssuer sr_transactionCancellation = new();
 
 		/// <summary>
 		/// 进游戏事务令牌：登录成功后的后续异步链（场景加载等）统一使用，与窗口生命周期解耦。

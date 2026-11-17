@@ -63,7 +63,7 @@ namespace Hotfix.Framework.Download
 		/// 下载任务由任务池在主循环同步驱动（无 await 型在途操作），故在途计数恒为 0；
 		/// OnDispose 时 Cancel，模块被 ModuleManager.CancelAllAsync 排水到时完成全部在途 Tcs。
 		/// </summary>
-		private CancellationScope m_scope = new();
+		private CancellationBarrier m_scope = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发。
@@ -125,7 +125,7 @@ namespace Hotfix.Framework.Download
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope  = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope  = new CancellationBarrier(); // 新生命周期 = 新 Token
 
 			Timeout   = 30f;
 			FlushSize = ONE_MEGA_BYTES;

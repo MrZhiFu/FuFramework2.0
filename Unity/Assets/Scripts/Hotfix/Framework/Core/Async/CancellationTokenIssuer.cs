@@ -12,11 +12,11 @@ namespace Hotfix.Framework.Core
 	///     2. 开启新生命周期时调 Recreate()（旧令牌随即取消，在途请求自动中止）；
 	///     3. 异步操作里 await 的地方传 Token——生命周期结束一取消，这些 await 各自中止；
 	///     4. 对象彻底销毁时调 Dispose()。
-	/// 与 CancellationScope 的区别：本类只管"发令牌、能取消、能换新"，不记录在途操作、
-	/// 也不支持"等所有在途操作清完再继续"——需要那种排队能力的用 CancellationScope。
+	/// 与 CancellationBarrier 的区别：本类只管"发令牌、能取消、能换新"，不记录在途操作、
+	/// 也不支持"等所有在途操作清完再继续"——需要那种排队能力的用 CancellationBarrier。
 	/// 取消后的收尾（释放资源等）由被取消的操作自己在取消路径处理，本类不管。
 	/// </summary>
-	public sealed class LifecycleCancellationSource : IDisposable
+	public sealed class CancellationTokenIssuer : IDisposable
 	{
 		/// <summary>
 		/// 当前生命周期的取消令牌源（Recreate 重建、Dispose 释放后置空）。

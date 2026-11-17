@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Sound
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途音频/混音器加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_scope = new();
+		private CancellationBarrier m_scope = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
@@ -151,7 +151,7 @@ namespace Hotfix.Framework.Sound
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope = new CancellationBarrier(); // 新生命周期 = 新 Token
 
 			// 新生命周期必须从空的所有权登记起步：正常路径下 CancelAsync 排水后已回收并清空，
 			// 这里兜底处理「未经 CancelAllAsync 的销毁路径」遗留的条目，杜绝跨重启隐式累积（ReferencePool 使用计数单向增长）。

@@ -110,7 +110,7 @@ UI 管理模块，继承自 ModuleBase，实现 `ICancelAsync`（可取消异步
 > 模块销毁（`OnDispose`/`ReleaseBlur`）时触发 `Token` 取消，在途模糊 Shader 加载随之中止：完成回调识别
 > 捕获的旧生命周期 `Token`，释放句柄（配对 `UnloadAsset` 防 bundle 残留）并放弃写入，绝不覆盖新生命周期状态。
 > 框架重启 `RestartGame` 会在重启前 `await` 各模块 `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；
-> `OnInit`（`InitBlur`）重建 `CancellationScope`（新 Token = 新生命周期），重启后可正常使用。
+> `OnInit`（`InitBlur`）重建 `CancellationBarrier`（新 Token = 新生命周期），重启后可正常使用。
 
 **核心字段：**
 
@@ -197,7 +197,7 @@ public void SetUIPriority(object winUI, int priority)
 | PauseCoveredUI | bool | 是否暂停被覆盖界面（由 UIConfig 配置表设置） |
 | Token | CancellationToken | 界面生命周期取消令牌（protected） |
 
-> **生命周期取消令牌**：`WinBase` 内建 `LifecycleCancellationSource`，每次打开（`_OnOpen`）重建 Token（新生命周期）、
+> **生命周期取消令牌**：`WinBase` 内建 `CancellationTokenIssuer`，每次打开（`_OnOpen`）重建 Token（新生命周期）、
 > 关闭（`_OnClose`）取消、销毁（`_OnDispose`）释放。窗口内发起的异步任务（网络请求/资源加载）应传 `Token`，
 > 界面关闭时自动取消（抛 `OperationCanceledException`——经 UI 事件适配层挂接的处理器会静默，自行发起的 UniTaskVoid 自行捕获）。
 > 框架异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数必传。
@@ -608,7 +608,7 @@ Debug.Log($"Layer={config.Layer}, TweenType={config.TweenType}, Blur={config.Blu
 **生命周期：**
 
 ```
-UIModule.OnInit → InitBlur（挂载 BlurCapture + 异步加载 Shader，重建 CancellationScope）
+UIModule.OnInit → InitBlur（挂载 BlurCapture + 异步加载 Shader，重建 CancellationBarrier）
 _OpenAsync → OnWinOpeningAsync（捕获冻结）
 CreateFuiWin → OnWinOpened（显示覆盖层 + 渐入）
 Close/CloseNow → OnWinClosed（隐藏/重定位覆盖层）
@@ -1176,7 +1176,7 @@ Hotfix.Framework/UI/
 8. **叠加模糊界面的已知限制**：顶层模糊界面关闭后，下层模糊界面背板可能出现"自身被再次模糊"的视觉瑕疵（单 Pass 冻结帧固有限制，叠加属低频场景）
 9. **模糊冻结帧特性**：模糊背景为界面打开前的静态画面，若背后有高频动画（如加载转圈），模糊后该动画静止属正常现象
 10. **模糊性能**：背景模糊有渲染开销（半分辨率 25 次采样/像素），仅弹窗等需要视觉聚焦的界面开启 `Blur`；非捕获帧 `BlurCapture` 禁用，零额外开销
-11. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途模糊 Shader 加载被中止（句柄释放、不写回状态）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
+11. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途模糊 Shader 加载被中止（句柄释放、不写回状态）；`OnInit` 重建 `CancellationBarrier`（新 Token），重启后可正常使用
 
 ## 10. 常见问题
 

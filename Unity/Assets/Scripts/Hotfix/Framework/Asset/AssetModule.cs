@@ -27,7 +27,7 @@ namespace Hotfix.Framework.Asset
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_scope = new();
+		private CancellationBarrier m_scope = new();
 
 		/// <summary>
 		/// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Asset
 		protected internal override void OnInit()
 		{
 			// 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
-			m_scope = new CancellationScope();
+			m_scope = new CancellationBarrier();
 
 			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
 			DefaultPackageName = GameSetting.Instance.DefaultPackageName;

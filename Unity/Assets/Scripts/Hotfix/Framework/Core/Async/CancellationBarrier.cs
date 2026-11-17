@@ -33,11 +33,11 @@ namespace Hotfix.Framework.Core
 	///     1. 模块持有本类实例，发起异步操作时用 using (m_scope.Begin()) 包住——开始时计数 +1，结束自动 -1；
 	///     2. 销毁/重启时调 CancelAsync()——先触发取消（在途操作各自中止），再等计数归零才返回；
 	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期）。
-	/// 与 LifecycleCancellationSource 怎么选：窗口开关那种"取消就走、不用等谁"的场景用 Source 就够；
+	/// 与 CancellationTokenIssuer 怎么选：窗口开关那种"取消就走、不用等谁"的场景用 Issuer 就够；
 	/// 只有"取消之后还要等全部收完才能往下走"的场景才需要本类。
 	/// 计数用普通 int：主线程单线程模型，无需原子操作。
 	/// </summary>
-	public sealed class CancellationScope : ICancelAsync
+	public sealed class CancellationBarrier : ICancelAsync
 	{
 		/// <summary>
 		/// 取消令牌源。Cancel/CancelAsync 触发取消，Token 供在途操作观察。
@@ -94,14 +94,14 @@ namespace Hotfix.Framework.Core
 
 		/// <summary>
 		/// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
-		/// 共享同一 CancellationScope 引用，按值复制无堆分配。
+		/// 共享同一 CancellationBarrier 引用，按值复制无堆分配。
 		/// </summary>
 		public struct BeginScope : IDisposable
 		{
 			/// <summary>
 			/// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
 			/// </summary>
-			private readonly CancellationScope m_owner;
+			private readonly CancellationBarrier m_owner;
 
 			/// <summary>
 			/// 是否已释放（幂等标记）：防止重复 Dispose 把在途计数减成负数，导致后续 CancelAsync 永久挂起。
@@ -112,7 +112,7 @@ namespace Hotfix.Framework.Core
 			/// 创建在途操作作用域。
 			/// </summary>
 			/// <param name="owner">所属的取消范围。</param>
-			internal BeginScope(CancellationScope owner)
+			internal BeginScope(CancellationBarrier owner)
 			{
 				m_owner    = owner;
 				m_disposed = false;

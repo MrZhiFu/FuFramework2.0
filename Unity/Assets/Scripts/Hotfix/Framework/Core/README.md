@@ -59,19 +59,19 @@ public interface ICancelAsync
 }
 ```
 
-- **实现方式**：组合 `CancellationScope : ICancelAsync`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()` 登记、`finally` 归零；`Begin()` 返回 struct `BeginScope`，`using` 直接调用 Dispose，零装箱零分配（勿经 `IDisposable` 接口使用）。
-- **实现助手分工**：`CancellationScope : ICancelAsync` = 模块/装载器助手（取消 + 在途计数 + 排水等待）；`LifecycleCancellationSource` = 消费方令牌助手（生命周期重建 `Recreate` / 取消 `Cancel` / 只读 `Token`），**不实现 ICancelAsync**（无排水能力，纯令牌提供者）。两者职责独立、互不污染。
+- **实现方式**：组合 `CancellationBarrier : ICancelAsync`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()` 登记、`finally` 归零；`Begin()` 返回 struct `BeginScope`，`using` 直接调用 Dispose，零装箱零分配（勿经 `IDisposable` 接口使用）。
+- **实现助手分工**：`CancellationBarrier : ICancelAsync` = 模块/装载器助手（取消 + 在途计数 + 排水等待）；`CancellationTokenIssuer` = 消费方令牌助手（生命周期重建 `Recreate` / 取消 `Cancel` / 只读 `Token`），**不实现 ICancelAsync**（无排水能力，纯令牌提供者）。两者职责独立、互不污染。
 - **框架集成**：重启 `RestartGameAsync` 在 Dispose 与 重新初始化 之间 `await ModuleManager.CancelAllAsync()` 逐个等待取消清理，根除旧生命周期任务写回新生命周期。
-- **已接入模块**：Asset/Scene/Entity/UI/Sound/Web 六个模块及 `AssetLoadRegister`；接入要点（组合 `CancellationScope`、`OnInit` 重建、`OnDispose` Cancel）见各模块 README。
+- **已接入模块**：Asset/Scene/Entity/UI/Sound/Web 六个模块及 `AssetLoadRegister`；接入要点（组合 `CancellationBarrier`、`OnInit` 重建、`OnDispose` Cancel）见各模块 README。
 
 > **为什么不用裸 `CancellationTokenSource`？** `m_cts.Cancel()` 是**同步 fire-and-forget**——返回后框架无法得知在途操作是否已清理完毕。
 > 重启 `RestartGameAsync` 在 Dispose 之后必须**等待**旧生命周期所有在途操作完成清理（释放句柄/卸载资源）才允许重新初始化，
 > 否则旧清理与新初始化竞争：旧任务收尾可能误卸新生命周期同路径资源、误删新去重条目（即「旧任务写回新生命周期」）。
-> `ICancelAsync.CancelAsync()` 的可等待性（经 `CancellationScope` 在途计数 + 「全部完成」信号实现）正是这一结构性保证的来源；
+> `ICancelAsync.CancelAsync()` 的可等待性（经 `CancellationBarrier` 在途计数 + 「全部完成」信号实现）正是这一结构性保证的来源；
 > 同时 `ModuleManager.CancelAllAsync()` 需要统一的多态入口才能逐个 `await`。
 >
-> **使用分界**：需要被 `await` 等待清理的对象（模块/装载器）用 `ICancelAsync`（`CancellationScope` 实现）；仅中止自身在途请求、无需等待排水的消费方
-> （如 UI 窗口）用 `LifecycleCancellationSource`（`Recreate` 重建生命周期令牌）+ token 传参即可。
+> **使用分界**：需要被 `await` 等待清理的对象（模块/装载器）用 `ICancelAsync`（`CancellationBarrier` 实现）；仅中止自身在途请求、无需等待排水的消费方
+> （如 UI 窗口）用 `CancellationTokenIssuer`（`Recreate` 重建生命周期令牌）+ token 传参即可。
 >
 > **铁律（编译期强制）**：网络/资源类异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数**必传**（无默认值）——
 > 窗口传 `WinBase.Token`、模块内部传自身 `m_scope.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
@@ -300,8 +300,8 @@ Core/
 │   ├── GameDriven.cs              # 帧驱动 + 游戏控制中枢
 │   ├── Async/                     # 可取消异步基础设施
 │   │   ├── ICancelAsync.cs        # 可取消异步对象接口
-│   │   ├── CancellationScope.cs   # 取消范围登记助手（CTS + 在途计数 + 全部完成信号，实现 ICancelAsync）
-│   │   └── LifecycleCancellationSource.cs  # 生命周期取消源（CTS 封装：重建/取消/令牌，消费方复用）
+│   │   ├── CancellationBarrier.cs   # 取消范围登记助手（CTS + 在途计数 + 全部完成信号，实现 ICancelAsync）
+│   │   └── CancellationTokenIssuer.cs  # 生命周期取消源（CTS 封装：重建/取消/令牌，消费方复用）
 │   ├── DataStruct/                # 数据结构
 │   │   ├── FuBidirectionalDictionary.cs
 │   │   ├── FuLinkedList.cs

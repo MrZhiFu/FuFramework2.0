@@ -103,7 +103,7 @@ namespace Hotfix.Framework.UI
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 InitBlur 重建（新生命周期 = 新 Token）。
 		/// ReleaseBlur（OnDispose）时 Cancel，在途 Shader 加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_scope = new();
+		private CancellationBarrier m_scope = new();
 
 
 		/// <summary>
@@ -149,7 +149,7 @@ namespace Hotfix.Framework.UI
 		/// </summary>
 		private void InitBlur()
 		{
-			m_scope = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope = new CancellationBarrier(); // 新生命周期 = 新 Token
 
 			if (StageCamera.main != null)
 			{

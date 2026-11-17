@@ -50,7 +50,7 @@ namespace Hotfix.Framework.Core
 		/// <summary>
 		/// 重启流程的生命周期取消源：GameDriven 销毁（OnDispose）时取消，重启链据此中止（生命周期所有者）。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_restartCancellation = new();
+		private readonly CancellationTokenIssuer m_restartCancellation = new();
 
 		/// <summary>
 		/// 是否正在重启中（重入守卫：重启流程可跨帧，期间重复请求直接忽略，避免并发跑多轮 Dispose/启动流程）。

@@ -37,7 +37,7 @@ namespace Hotfix.Game.Network
 		/// <summary>
 		/// 重连事务取消源（Task 7 的 StartReconnectFlow 使用其 Token；CancelReconnect 供登出/取消按钮调用）
 		/// </summary>
-		private readonly LifecycleCancellationSource m_reconnectCancellation = new();
+		private readonly CancellationTokenIssuer m_reconnectCancellation = new();
 
 		/// <summary>
 		/// 是否已初始化（Initialize 幂等标记，防重复订阅）

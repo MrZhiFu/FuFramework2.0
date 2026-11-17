@@ -71,7 +71,7 @@ namespace Hotfix.Framework.Entity
 		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途实体加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationScope m_scope = new();
+		private CancellationBarrier m_scope = new();
 
 		/// <summary>
 		/// 事件管理模块
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Entity
 		protected internal override void OnInit()
 		{
 			Instance     = this;
-			m_scope      = new CancellationScope(); // 新生命周期 = 新 Token
+			m_scope      = new CancellationBarrier(); // 新生命周期 = 新 Token
 			m_isShutdown = false;                   // 重启时重置关闭标记（OnDispose 曾置位）
 
 			m_assetModule      = ModuleManager.GetModule<AssetModule>();

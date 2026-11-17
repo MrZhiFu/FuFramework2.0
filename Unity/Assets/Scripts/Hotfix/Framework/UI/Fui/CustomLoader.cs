@@ -52,11 +52,11 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_cancellation = new();
+		private readonly CancellationTokenIssuer m_cancellation = new();
 
 		/// <summary>
 		/// 本加载器是否已被释放。
-		/// LifecycleCancellationSource.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
+		/// CancellationTokenIssuer.Dispose 之后 Token 会退化为 default(None)（不再可观察取消），
 		/// 故不能用 Token 判断"本 loader 已销毁"，需显式标记。
 		/// </summary>
 		private bool m_isDisposed;

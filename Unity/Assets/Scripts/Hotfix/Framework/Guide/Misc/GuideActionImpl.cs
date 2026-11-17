@@ -20,9 +20,9 @@ namespace Hotfix.Framework.Guide
 		/// 作用：引导模块（GuideModule，实现 ICancelAsync）在框架重启时经它排水等待——
 		/// ModuleManager.CancelAllAsync 保证旧生命周期的引导链清理完毕后才 ReferencePool.ClearAll。
 		/// 生命周期 = 本执行器的一次存活期（Dispose 时取消）；展示周期的取消仍由下面两个
-		/// LifecycleCancellationSource 负责（Recreate/Cancel 按轮次重建）。
+		/// CancellationTokenIssuer 负责（Recreate/Cancel 按轮次重建）。
 		/// </summary>
-		private readonly CancellationScope m_moduleScope = new();
+		private readonly CancellationBarrier m_moduleScope = new();
 
 		/// <summary>
 		/// 点击UI引导异步链的生命周期取消源（本类即该异步链的所有者，随会话常驻）。
@@ -30,7 +30,7 @@ namespace Hotfix.Framework.Guide
 		/// EndClickUIGuide（步骤完成或步骤取消时调用）用 Cancel 结束本轮，
 		/// 在途的 OpenAsync 延续据此识别「引导已结束」并回收窗口，避免引导窗永久驻留。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_clickGuideCancellation = new();
+		private readonly CancellationTokenIssuer m_clickGuideCancellation = new();
 
 		/// <summary>
 		/// 对话引导异步链的生命周期取消源（本类即该异步链的所有者，随会话常驻）。
@@ -38,7 +38,7 @@ namespace Hotfix.Framework.Guide
 		/// EndDialogGuide（步骤完成、步骤取消、步骤回池等结束路径都会调用）用 Cancel 结束本轮，
 		/// 在途的 OpenAsync 延续据此识别「引导已结束」并关闭对话框，避免把已回收步骤的 Complete 写进窗口。
 		/// </summary>
-		private readonly LifecycleCancellationSource m_dialogGuideCancellation = new();
+		private readonly CancellationTokenIssuer m_dialogGuideCancellation = new();
 
 		/// <summary>
 		/// 执行点击UI引导

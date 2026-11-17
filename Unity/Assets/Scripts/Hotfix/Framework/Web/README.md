@@ -60,7 +60,7 @@ Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异
 > 模块销毁（`OnDispose`）时触发 `Token` 取消，在途请求随之中止；此后发起的新请求被入口检查拒绝
 > （`Token.ThrowIfCancellationRequested()` 抛 `OperationCanceledException`），杜绝旧生命周期请求写回。
 > 框架重启 `RestartGame` 会在重启前 `await` 各模块 `CancelAsync` 等待清理，保证重新初始化前旧生命周期零在途残留；
-> `OnInit` 重建 `CancellationScope`（新 Token = 新生命周期），重启后可正常使用。
+> `OnInit` 重建 `CancellationBarrier`（新 Token = 新生命周期），重启后可正常使用。
 
 **核心属性：**
 
@@ -472,7 +472,7 @@ Web/
 
 ## 7. 依赖
 
-- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`、`ICancelAsync`/`CancellationScope`
+- **Hotfix.Framework.Core**：提供 `ModuleBase` 基类、`ModuleManager`、`ICancelAsync`/`CancellationBarrier`
 - **Hotfix.Framework.Network**：ProtoBuf 消息路由（`MessageObject`、`IResponseMessage`、`SerializerHelper`）
 - **Newtonsoft.Json**（外部）：JSON 序列化/反序列化
 - **AOT.Framework.Core.Log**：日志（`FuLogger`）
@@ -498,7 +498,7 @@ Web/
 6. `WebBufferResult` / `WebStringResult` 使用 `Result` 属性（非 `Data`）
 7. 全平台统一使用 `UnityWebRequest`；请求结束在完成回调中调用 `Dispose` 释放原生资源（官方强制，成败皆需）
 8. GET 请求的 `queryString` 参数会通过 `NormalizeURL` 自动拼接到 URL 上
-9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationScope`（新 Token），重启后可正常使用
+9. **取消与重启**：模块销毁（`OnDispose`）后 `Token` 取消，在途请求随之中止，新请求被入口检查拒绝（`OperationCanceledException`）；`OnInit` 重建 `CancellationBarrier`（新 Token），重启后可正常使用
 10. **超时契约**：`UnityWebRequest` 超时（`ConnectionError` + error 文本含 "timeout"）统一抛 `TimeoutException`（与旧 `HttpWebRequest` 行为一致），其余请求失败抛通用 `Exception`；超时粒度为整秒
 11. **`Post<T>` 协议契约**：`Post<T>` 不做静默失败——响应消息头解析失败（`MessageHttpObject` 为空/Id 无效）、响应类型与 `T` 不匹配、反序列化失败时均抛 `InvalidOperationException`（含 URL 与期望/实际类型），返回的 `T` 恒非 null；调用方应 try-catch 或交由上层统一处理
 12. **调用方取消令牌（必传）**：请求方法要求传入调用方 `CancellationToken`——窗口等生命周期所有者传 `WinBase.Token`，模块内部传模块自身 `m_scope.Token`；调用方取消（如界面关闭）时在途请求抛 `OperationCanceledException`（与模块 `OnDispose` 取消同语义）

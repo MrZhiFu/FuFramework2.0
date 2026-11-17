@@ -33,7 +33,7 @@ namespace Hotfix.Framework.Asset
 		/// 取消范围：Dispose 时 Cancel，在途加载随装载器销毁而取消；UnloadAll（临时卸载）不取消，装载器可复用。
 		/// 业务可 await CancelAsync 等待在途加载清理完毕。
 		/// </summary>
-		private readonly CancellationScope m_scope = new();
+		private readonly CancellationBarrier m_scope = new();
 
 		/// <summary>
 		/// 缓存已经加载的资源句柄，key 为资源路径 + 类型，value 为资源句柄。

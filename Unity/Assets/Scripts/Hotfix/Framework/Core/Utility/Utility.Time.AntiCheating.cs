@@ -360,7 +360,7 @@ namespace Hotfix.Framework.Core
 		/// NTP 异步请求的生命周期取消源（静态类自持）。
 		/// 发起请求时透传其 Token；OnApplicationQuit 取消并释放，避免脱离生命周期的裸异步链。
 		/// </summary>
-		private static readonly LifecycleCancellationSource sr_ntpCancellation = new();
+		private static readonly CancellationTokenIssuer sr_ntpCancellation = new();
 
 		/// <summary>
 		/// NTP 协议的时间纪元：1900-01-01 00:00:00 UTC（NTP 时间戳从此刻起算，比 Unix 纪元早 70 年）

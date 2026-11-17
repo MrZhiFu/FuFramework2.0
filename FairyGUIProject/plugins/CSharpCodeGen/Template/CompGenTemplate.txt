@@ -21,7 +21,7 @@ namespace #NAMESPACE#
         private TimerRegister m_timerRegister;     // 计时器注册器
         private EventRegister m_eventRegister;     // 业务逻辑事件注册器
         private FuiEventRegister m_uiEventRegister;// UI事件注册器
-        private readonly LifecycleCancellationSource m_cancellation = new(); // 组件生命周期取消源：窗口关闭取消、打开重建（IWinLifecycleAware 广播驱动）
+        private readonly CancellationTokenIssuer m_cancellation = new(); // 组件生命周期取消源：窗口关闭取消、打开重建（IWinLifecycleAware 广播驱动）
 
         /// <summary>
         /// 组件生命周期取消令牌：组件内异步 await 统一传参（与窗口侧 WinBase.Token 形态对齐），
