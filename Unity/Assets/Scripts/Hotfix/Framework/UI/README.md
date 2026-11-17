@@ -1049,10 +1049,11 @@ Hotfix.Framework/UI/
 ├── UIGroup.cs                     # 界面组
 ├── View/
 │   ├── WinBase.cs                 # 界面基类
-│   ├── WinBase.Life.cs            # 生命周期方法
+│   ├── WinBase.Life.cs            # 生命周期方法（含 IWinLifecycleAware 组件树广播）
 │   ├── WinBase.EventRegister.cs   # 事件注册功能
 │   ├── WinBase.TimerRegister.cs   # 计时器功能
 │   ├── WinBase.UIEventRegister.cs # UI事件功能
+│   ├── IWinLifecycleAware.cs      # 组件窗口生命周期广播接口
 │   ├── WinInfo.cs                 # 界面信息
 │   └── WinObject.cs               # 界面对象池对象
 ├── Utility/
