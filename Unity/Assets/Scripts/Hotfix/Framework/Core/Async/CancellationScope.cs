@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 namespace Hotfix.Framework.Core
 {
 	/// <summary>
-	/// 可取消异步对象：实现者的所有异步操作随对象销毁而取消，且可被 await 等待清理完成。
+	/// 可取消异步对象：实现者的所有异步操作随对象销毁而取消，且可以"等清理完再继续"。
 	/// </summary>
 	public interface ICancelAsync
 	{
@@ -16,7 +16,8 @@ namespace Hotfix.Framework.Core
 		CancellationToken Token { get; }
 
 		/// <summary>
-		/// 触发取消并等待所有在途操作完成清理（释放句柄 + 卸载资源）后才返回。可重入、幂等。
+		/// 取消所有在途操作，并等它们都收尾完成后才返回。
+		/// 用途：销毁/重启前必须确认"旧操作都收拾干净了"才能继续的场景。可重复调用、重复调用无副作用。
 		/// </summary>
 		UniTask CancelAsync();
 	}
@@ -24,10 +25,17 @@ namespace Hotfix.Framework.Core
 
 
 	/// <summary>
-	/// 取消范围登记：实现 ICancelAsync（可取消 + 可 await 排水等待），内部持有 CTS + 在途计数 + 「全部完成」TCS，
-	/// 供模块/装载器组合复用。
-	/// 每次生命周期重建（OnInit 新建），旧实例的 Token 已取消即标识旧生命周期。
-	/// 主线程模型（PlayerLoop 驱动）下普通 ++/-- 即可，无需原子操作。
+	/// 取消范围（CancellationScope）：比 LifecycleCancellationSource 多两样东西——
+	/// 在途操作计数 + "等全部收尾"的能力（CancelAsync 会等到计数归零才返回）。
+	/// 典型场景：框架重启。重启前要等每个模块把在途的加载/请求都收拾完，才能安全重建；
+	/// 这时各模块持有 Scope，重启流程逐个 await 模块的 CancelAsync。
+	/// 怎么用：
+	///     1. 对象持有本类实例，异步操作开始时 using (m_scope.Begin()) 包住——计数 +1，结束自动 -1；
+	///     2. 销毁/重启时调 CancelAsync()——先取消，再等计数归零（所有操作都跑完了）才返回；
+	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期），不需要 Recreate。
+	/// 与 LifecycleCancellationSource 的区别：窗口开关那种"取消就走、不等着谁"的场景用 Source 就够；
+	/// 只有"取消后还要等清完才能往下走"的场景才需要本类。
+	/// 计数用普通 int（主线程单线程模型，无需原子操作）。
 	/// </summary>
 	public sealed class CancellationScope : ICancelAsync
 	{
@@ -37,16 +45,16 @@ namespace Hotfix.Framework.Core
 		private readonly CancellationTokenSource m_cts = new();
 
 		/// <summary>
-		/// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
-		/// </summary>
-		private int m_inFlightCount;
-
-		/// <summary>
 		/// 「全部完成」信号。在途计数归零时完成并立即置空（复位），唤醒等待 CancelAsync 的调用方；惰性创建。
 		/// 必须复位：UniTaskCompletionSource 完成后 await 会立即返回，
 		/// 若不复位，二次 CancelAsync（此时又有了在途操作）会立刻返回、排水失效。
 		/// </summary>
 		private UniTaskCompletionSource m_allDoneTcs;
+
+		/// <summary>
+		/// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
+		/// </summary>
+		private int m_inFlightCount;
 
 		/// <summary>
 		/// 取消令牌。对象销毁（OnDispose/Dispose）时触发，在途操作观察它并中止。

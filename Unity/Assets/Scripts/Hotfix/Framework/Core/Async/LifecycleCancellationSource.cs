@@ -5,11 +5,16 @@ using System.Threading;
 namespace Hotfix.Framework.Core
 {
 	/// <summary>
-	/// 生命周期取消源：为「按生命周期重建取消令牌」的对象提供轻量 CTS 封装。
-	/// 适用对象：UI 窗口、实体等一切「可发起异步请求且生命周期可复用/重建」的对象。
-	/// 每次 Recreate 生成新 Token（旧 Token 已取消 = 旧生命周期），Cancel 触发当前生命周期取消。
-	/// 与 CancellationScope 的区别：本类只提供「令牌 + 取消 + 重建」，不做在途计数与排水等待——
-	/// 无需 await 清理的对象用它即可（取消清理由消费的异步 API 在取消路径负责）。
+	/// 生命周期取消源：给"会反复开关/复用的对象"管令牌用的。
+	/// 典型对象：UI 窗口——每次打开都是一段新生命，关闭时这段生命里发起的请求全部作废，下次打开再领新令牌。
+	/// 怎么用：
+	///     1. 对象持有本类实例（通常一个，readonly）；
+	///     2. 开启新生命周期时调 Recreate()（旧令牌随即取消，在途请求自动中止）；
+	///     3. 异步操作里 await 的地方传 Token——生命周期结束一取消，这些 await 各自中止；
+	///     4. 对象彻底销毁时调 Dispose()。
+	/// 与 CancellationScope 的区别：本类只管"发令牌、能取消、能换新"，不记录在途操作、
+	/// 也不支持"等所有在途操作清完再继续"——需要那种排队能力的用 CancellationScope。
+	/// 取消后的收尾（释放资源等）由被取消的操作自己在取消路径处理，本类不管。
 	/// </summary>
 	public sealed class LifecycleCancellationSource : IDisposable
 	{
