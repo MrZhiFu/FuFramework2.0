@@ -29,7 +29,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// Loader纹理LRU缓存
 		/// </summary>
-		private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(100, OnCacheEvict);
+		private static readonly FuLRUCache<string, TextureCacheEntry> Cache = new(onEvict: OnCacheEvict);
 
 		/// <summary>
 		/// 正在加载中的任务字典，用于避免同一URL并发重复下载。
@@ -205,7 +205,7 @@ namespace Hotfix.Framework.UI
 					//    否则原生 Texture2D 永久泄漏（DestroyMethod.None 只解引用、不销毁 native 纹理）。
 					var destroyMethod = assetHandle != null ? DestroyMethod.None : DestroyMethod.Destroy;
 					var targetTexture = new NTexture(texture2D) { destroyMethod = destroyMethod };
-					Cache.Put(url, new TextureCacheEntry { m_Texture = targetTexture, m_AssetHandle = assetHandle });
+					Cache.Put(url, new TextureCacheEntry { m_Texture            = targetTexture, m_AssetHandle = assetHandle });
 					assetHandle = null; // 所有权已转移给缓存条目，catch 不再误释放已归属缓存的句柄
 					onExternalLoadSuccess(targetTexture);
 				}
