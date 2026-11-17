@@ -25,17 +25,17 @@ namespace Hotfix.Framework.Core
 
 
 	/// <summary>
-	/// 取消范围（CancellationScope）：比 LifecycleCancellationSource 多两样东西——
-	/// 在途操作计数 + "等全部收尾"的能力（CancelAsync 会等到计数归零才返回）。
-	/// 典型场景：框架重启。重启前要等每个模块把在途的加载/请求都收拾完，才能安全重建；
-	/// 这时各模块持有 Scope，重启流程逐个 await 模块的 CancelAsync。
+	/// 取消范围：一个能"记账"的取消源——它记住当前有多少个异步操作正在跑，
+	/// 并且支持"取消之后，等这些操作全部收尾完毕再返回"。
+	/// 典型场景是框架重启：重启前必须等各模块把在途的加载、请求都收拾完，才能安全重建。
+	/// 这时每个模块持有本类，重启流程逐个 await 模块的 CancelAsync。
 	/// 怎么用：
-	///     1. 对象持有本类实例，异步操作开始时 using (m_scope.Begin()) 包住——计数 +1，结束自动 -1；
-	///     2. 销毁/重启时调 CancelAsync()——先取消，再等计数归零（所有操作都跑完了）才返回；
-	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期），不需要 Recreate。
-	/// 与 LifecycleCancellationSource 的区别：窗口开关那种"取消就走、不等着谁"的场景用 Source 就够；
-	/// 只有"取消后还要等清完才能往下走"的场景才需要本类。
-	/// 计数用普通 int（主线程单线程模型，无需原子操作）。
+	///     1. 模块持有本类实例，发起异步操作时用 using (m_scope.Begin()) 包住——开始时计数 +1，结束自动 -1；
+	///     2. 销毁/重启时调 CancelAsync()——先触发取消（在途操作各自中止），再等计数归零才返回；
+	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期）。
+	/// 与 LifecycleCancellationSource 怎么选：窗口开关那种"取消就走、不用等谁"的场景用 Source 就够；
+	/// 只有"取消之后还要等全部收完才能往下走"的场景才需要本类。
+	/// 计数用普通 int：主线程单线程模型，无需原子操作。
 	/// </summary>
 	public sealed class CancellationScope : ICancelAsync
 	{
