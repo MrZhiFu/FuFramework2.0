@@ -449,7 +449,7 @@ namespace Hotfix.Framework.Sound
 			// 登记在途（含取消清理）：CancelAllAsync → CancelAsync 会等待本次 PlaySound 完全结束（含 await 恢复后的
 			// catch 分支回收播放参数）才返回，否则 CancelAsync 因在途计数恒为 0 立即返回，下帧恢复的 catch
 			// 会撞上「所有权集合已被 OnDispose 清空」而对 RecycleSoundParams/3D 提前 return，参数永不回池。
-			using (m_barrier.Begin())
+			using (m_barrier.Register())
 			{
 				// 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
 				// GetSoundPath、SoundParams.Create（已登记进 m_ownedSoundParams）、GetSoundGroup（groupName 为空会抛）
@@ -806,7 +806,7 @@ namespace Hotfix.Framework.Sound
 		private async UniTaskVoid LoadAudioMixerAsync()
 		{
 			// 登记在途：CancelAllAsync → CancelAsync 等待混音器加载的取消清理（句柄释放）结束，避免句柄跨生命周期残留
-			using (m_barrier.Begin())
+			using (m_barrier.Register())
 			{
 				try
 				{

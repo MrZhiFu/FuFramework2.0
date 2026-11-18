@@ -30,7 +30,7 @@ namespace Hotfix.Framework.Core
 	/// 典型场景是框架重启：重启前必须等各模块把在途的加载、请求都收拾完，才能安全重建。
 	/// 这时每个模块持有本类，重启流程逐个 await 模块的 CancelAsync。
 	/// 怎么用：
-	///     1. 模块持有本类实例，发起异步操作时用 using (m_barrier.Begin()) 包住——开始时计数 +1，结束自动 -1；
+	///     1. 模块持有本类实例，发起异步操作时用 using (m_barrier.Register()) 包住——开始时计数 +1，结束自动 -1；
 	///     2. 销毁/重启时调 CancelAsync()——先触发取消（在途操作各自中止），再等计数归零才返回；
 	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期）。
 	/// 与 CancellationTokenIssuer 怎么选：窗口开关那种"取消就走、不用等谁"的场景用 Issuer 就够；
@@ -52,7 +52,7 @@ namespace Hotfix.Framework.Core
 		private UniTaskCompletionSource m_allDoneTcs;
 
 		/// <summary>
-		/// 在途操作计数。Begin 递增、BeginScope.Dispose 递减，归零表示全部在途操作已清理完毕。
+		/// 在途操作计数。Register() 递增、InFlightTicket.Dispose 递减，归零表示全部在途操作已清理完毕。
 		/// </summary>
 		private int m_inFlightCount;
 
@@ -80,23 +80,23 @@ namespace Hotfix.Framework.Core
 		}
 
 		/// <summary>
-		/// 在途操作入口调用；返回的 BeginScope 必须 Dispose（用 using）以归零计数。
+		/// 在途操作入口调用；返回的 InFlightTicket 必须 Dispose（用 using）以归零计数。
 		/// 返回 struct 而非 IDisposable 接口：using 直接调用 Dispose，零装箱零分配（勿通过 IDisposable 接口使用，否则装箱）。
 		/// </summary>
-		/// <returns>在途操作作用域，操作清理完成后必须 Dispose（用 using）。</returns>
-		public BeginScope Begin()
+		/// <returns>在途操作凭据，操作清理完成后必须 Dispose（用 using）。</returns>
+		public InFlightTicket Register()
 		{
 			m_inFlightCount++;
-			return new BeginScope(this);
+			return new InFlightTicket(this);
 		}
 
 
 
 		/// <summary>
-		/// 在途操作作用域（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
+		/// 在途操作凭据（struct 一次性释放器）。Dispose 时递减在途计数，归零时唤醒 CancelAsync 的等待。
 		/// 共享同一 CancellationBarrier 引用，按值复制无堆分配。
 		/// </summary>
-		public struct BeginScope : IDisposable
+		public struct InFlightTicket : IDisposable
 		{
 			/// <summary>
 			/// 所属的取消栅栏。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
@@ -109,18 +109,18 @@ namespace Hotfix.Framework.Core
 			private bool m_disposed;
 
 			/// <summary>
-			/// 创建在途操作作用域。
+			/// 创建在途操作凭据。
 			/// </summary>
 			/// <param name="owner">所属的取消栅栏。</param>
-			internal BeginScope(CancellationBarrier owner)
+			internal InFlightTicket(CancellationBarrier owner)
 			{
 				m_owner    = owner;
 				m_disposed = false;
 			}
 
 			/// <summary>
-			/// 结束在途操作：递减所属范围的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
-			/// 可重入、幂等（重复 Dispose 无效）；调用方应始终通过 using 释放本作用域。
+			/// 结束在途操作：递减所属栅栏的在途计数，归零时完成「全部完成」信号以唤醒 CancelAsync 的等待。
+			/// 可重入、幂等（重复 Dispose 无效）；调用方应始终通过 using 释放本凭据。
 			/// </summary>
 			public void Dispose()
 			{
@@ -129,7 +129,7 @@ namespace Hotfix.Framework.Core
 
 				if (--m_owner.m_inFlightCount == 0)
 				{
-					// 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Begin 也能拿到干净状态
+					// 先取下引用并复位，再完成信号：完成回调里若再次 CancelAsync/Register 也能拿到干净状态
 					var allDoneTcs = m_owner.m_allDoneTcs;
 					m_owner.m_allDoneTcs = null;
 					allDoneTcs?.TrySetResult();

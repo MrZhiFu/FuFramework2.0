@@ -35,7 +35,7 @@ namespace Hotfix.Framework.Asset
 		{
 			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_barrier.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_barrier.Register())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
 				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token)) // 模块或调用方任一取消即中止
 				{
@@ -73,7 +73,7 @@ namespace Hotfix.Framework.Asset
 		{
 			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_barrier.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_barrier.Register())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
 				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token)) // 模块或调用方任一取消即中止
 				{
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Asset
 		{
 			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消（如窗口关闭）则拒绝
-			using (m_barrier.Begin())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
+			using (m_barrier.Register())                       // 登记在途：OnDispose 取消时等待本操作清理完毕
 			{
 				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token)) // 模块或调用方任一取消即中止
 				{
@@ -154,7 +154,7 @@ namespace Hotfix.Framework.Asset
 		{
 			m_barrier.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
-			using (m_barrier.Begin())
+			using (m_barrier.Register())
 			{
 				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token)) // 模块或调用方任一取消即中止
 				{

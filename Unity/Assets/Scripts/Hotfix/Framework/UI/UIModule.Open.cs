@@ -56,9 +56,9 @@ namespace Hotfix.Framework.UI
 			// 模块销毁（OnDispose → ReleaseBlur）会取消令牌，本方法在每个 await 之后校验它：
 			// 一旦取消立即回收已获取的界面实例对象、返回 null，不再继续创建/登记窗口
 			// （否则续体会继续对已销毁的 m_winObjPool 做 Register/Recycle，造成泄漏或异常）。
-			// 在途登记（Begin）使框架重启时的 CancelAsync 能等到本次打开清理完毕再返回。
+			// 在途登记（Register）使框架重启时的 CancelAsync 能等到本次打开清理完毕再返回。
 			var       token    = m_barrier.Token;
-			using var inFlight = m_barrier.Begin();
+			using var inFlight = m_barrier.Register();
 
 			if (token.IsCancellationRequested)
 			{

@@ -129,7 +129,7 @@ namespace Hotfix.Framework.Guide
 			// 若 OpenAsync / 取区域过程中抛异常（如重启引导时界面已被销毁），异常会跳出整个兜底分支，
 			// 只留一条 UniTask 调度器日志，引导窗滞留在屏幕上 → 这里补上异常路径的回收。
 			// 在途登记：使引导模块（GuideModule.CancelAsync）在框架重启时能等到本链清理完毕再返回。
-			using var inFlight = m_moduleBarrier.Begin();
+			using var inFlight = m_moduleBarrier.Register();
 
 			try
 			{
@@ -169,7 +169,7 @@ namespace Hotfix.Framework.Guide
 			// 若 OpenAsync 过程中抛异常（如重启引导时对话框界面已被销毁），异常会跳出兜底分支，
 			// 对话框可能滞留在屏幕上 → 这里补上异常路径的关闭。
 			// 在途登记（同 ExecuteClickUIGuideAsync）：框架重启时引导模块经此等待本链清理完毕。
-			using var inFlight = m_moduleBarrier.Begin();
+			using var inFlight = m_moduleBarrier.Register();
 
 			try
 			{

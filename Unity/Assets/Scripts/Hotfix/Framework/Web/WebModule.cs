@@ -278,7 +278,7 @@ namespace Hotfix.Framework.Web
 		{
 			// 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
 			var capturedToken                              = m_barrier.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
-			var inFlight                                   = m_barrier.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+			var inFlight                                   = m_barrier.Register(); // 登记在途：CancelAsync 等待本请求清理完毕
 #if UNITY_EDITOR
 			if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
 #endif

@@ -215,7 +215,7 @@ namespace Hotfix.Framework.Asset
 		{
 			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
 
-			using (m_barrier.Begin()) // 登记在途：Dispose 取消时等待本操作清理完毕
+			using (m_barrier.Register()) // 登记在途：Dispose 取消时等待本操作清理完毕
 			{
 				AssetHandle assetHandle = null;
 				try

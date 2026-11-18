@@ -59,7 +59,7 @@ public interface ICancelAsync
 }
 ```
 
-- **实现方式**：组合 `CancellationBarrier : ICancelAsync`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Begin()` 登记、`finally` 归零；`Begin()` 返回 struct `BeginScope`，`using` 直接调用 Dispose，零装箱零分配（勿经 `IDisposable` 接口使用）。
+- **实现方式**：组合 `CancellationBarrier : ICancelAsync`（内部 CTS + 在途计数 + 「全部完成」信号），异步操作入口 `Register()` 登记、`finally` 归零；`Register()` 返回 struct `InFlightTicket`，`using` 直接调用 Dispose，零装箱零分配（勿经 `IDisposable` 接口使用）。
 - **实现助手分工**：`CancellationBarrier : ICancelAsync` = 模块/装载器助手（取消 + 在途计数 + 排水等待）；`CancellationTokenIssuer` = 消费方令牌助手（生命周期重建 `Recreate` / 取消 `Cancel` / 只读 `Token`），**不实现 ICancelAsync**（无排水能力，纯令牌提供者）。两者职责独立、互不污染。
 - **框架集成**：重启 `RestartGameAsync` 在 Dispose 与 重新初始化 之间 `await ModuleManager.CancelAllAsync()` 逐个等待取消清理，根除旧生命周期任务写回新生命周期。
 - **已接入模块**：Asset/Scene/Entity/UI/Sound/Web 六个模块及 `AssetLoadRegister`；接入要点（组合 `CancellationBarrier`、`OnInit` 重建、`OnDispose` Cancel）见各模块 README。
