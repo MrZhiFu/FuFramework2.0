@@ -436,7 +436,7 @@ protected override void OnRelease()
 
 自定义组件（Comp*）继承自 FairyGUI 的 GComponent / GButton 等，自行持有 `FuiEventRegister`、`EventRegister`、`TimerRegister`，在 `ConstructFromXML` 中创建、`Dispose` 中释放，无需依赖 WinBase。
 
-Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件，GObject 层与 displayObject 层同收到同一次派发）。组件内异步 await 统一使用 `Token` 属性（与窗口侧 `WinBase.Token` 对齐）：`UniTask.Delay(5000, cancellationToken: Token)`。**注意**：item 不经池的原地刷新复用（数据更新后直接重绑，不摘/挂树）不会触发兜底事件——上一条数据的在途异步处理器不会被取消，await 返回后会往已被换绑的 item 写旧数据；此类场景应在 renderer 绑定新数据时手动调组件 `OnWinOpened()` 取消在途任务。窗口关闭同时终止组件计时器（`OnWinClosed` 内 `StopAllTimers`，破坏性不重放，与窗口侧口径一致；需要周期任务的业务在开窗/复用时自行重启）。
+Gen 组件实现 `IWinLifecycleAware` 并自持令牌签发器：`WinBase._OnClose/_OnOpen` 遍历组件树广播（关闭取消、打开重建），另订阅 `onAddedToStage/onRemovedFromStage` 兜底列表项进池/复用场景（GList item 摘树/挂树时 FGUI 真实派发这两个事件，GObject 层与 displayObject 层同收到同一次派发）。组件内异步 await 统一使用 `Token` 属性（与窗口侧 `WinBase.Token` 对齐）：`UniTask.Delay(5000, cancellationToken: Token)`。**注意**：item 不经池的原地刷新复用（数据更新后直接重绑，不摘/挂树）不会触发兜底事件——上一条数据的在途异步处理器不会被取消，await 返回后会往已被换绑的 item 写旧数据；此类场景应在 renderer 绑定新数据时手动调组件 `OnWinOpened()` 取消在途任务。窗口关闭同时终止组件计时器（`OnWinClosed` 内 `StopAllTimers`，破坏性不重放，与窗口侧口径一致；需要周期任务的业务在开窗/复用时自行重启）。
 
 代理方法可在组件内部直接使用：
 
@@ -445,7 +445,7 @@ Gen 组件实现 `IWinLifecycleAware` 并自持生命周期取消源：`WinBase.
 protected void AddUIListener(EventListener listener, EventCallback1 callback)
 protected void RemoveUIListener(EventListener listener, EventCallback1 callback)
 
-// UI事件（异步处理器：签名直接写 async UniTask，取消源为组件自持，异常由适配层统一处理）
+// UI事件（异步处理器：签名直接写 async UniTask，签发器为组件自持，异常由适配层统一处理）
 protected void AddUIListener(EventListener listener, Func<EventContext, UniTask> callback)
 protected void AddUIListener(EventListener listener, Func<UniTask> callback)
 protected void SetUIListener(EventListener listener, Func<EventContext, UniTask> callback)
@@ -615,7 +615,7 @@ Close/CloseNow → OnWinClosed（隐藏/重定位覆盖层）
 UIModule.OnDispose → ReleaseBlur（Cancel Token + 释放 RT/材质/覆盖层/Shader 句柄）
 ```
 
-> `UIModule` 的 `ICancelAsync` 实现位于 `UIModule.Blur.cs`：`m_scope` 持有模块级取消范围，
+> `UIModule` 的 `ICancelAsync` 实现位于 `UIModule.Blur.cs`：`m_barrier` 持有模块级取消栅栏，
 > `InitBlur` 重建（新生命周期 = 新 Token）、`ReleaseBlur` 触发取消；框架重启前经 `CancelAllAsync` 等待 Shader 在途加载取消清理完毕。
 
 **使用：** 在 `UIConfig` 配置表中将界面 `Blur` 列设为 `true` 即可（如 `WinDialogGuide`）。
@@ -860,9 +860,9 @@ public class EventExampleWin : WinBase
 | 裁决 | 理由 | 被否决的方案 |
 |---|---|---|
 | 薄适配：防连点不做 | 防连点是业务语义（各界面策略不同），框架管了反而堵路 | 框架自动禁用组件 |
-| 取消 = 业务 await 点携带 Token | `AttachExternalCancellation` 经 Play 探针实测是**假取消**：只断最外层 await，处理器内部的 Delay/请求作为孤儿照跑；且 token 已取消时业务异常被 `Forget()` 吞进未观察通道 | 包装层自动挂取消源 |
-| 组件自持取消源 + 窗口广播 | 组件实例跨多次开窗存活、无窗口引用；`onAddedToStage/onRemovedFromStage` 是 GList 进出池的真实派发点，天然覆盖虚拟列表 | 窗口透传取消源（虚拟列表漏注入）、FGUI 原生可见性事件（窗口隐藏不派发任何事件） |
-| 注册链路不接收取消源 | 取消与注册彻底解耦：包装只管"等待 + 异常契约"，Token 由调用方基类/模板提供 | 保留参数装样子 |
+| 取消 = 业务 await 点携带 Token | `AttachExternalCancellation` 经 Play 探针实测是**假取消**：只断最外层 await，处理器内部的 Delay/请求作为孤儿照跑；且 token 已取消时业务异常被 `Forget()` 吞进未观察通道 | 包装层自动挂签发器 |
+| 组件自持签发器 + 窗口广播 | 组件实例跨多次开窗存活、无窗口引用；`onAddedToStage/onRemovedFromStage` 是 GList 进出池的真实派发点，天然覆盖虚拟列表 | 窗口透传签发器（虚拟列表漏注入）、FGUI 原生可见性事件（窗口隐藏不派发任何事件） |
+| 注册链路不接收签发器 | 取消与注册彻底解耦：包装只管"等待 + 异常契约"，Token 由调用方基类/模板提供 | 保留参数装样子 |
 
 **How（机制如何运转，一条点击的完整旅程）**：
 
@@ -873,7 +873,7 @@ public class EventExampleWin : WinBase
   → 处理器跑完：结果被完整消化（OCE 静默吞 / 其他异常 LogError）
 
 窗口关闭 → _OnClose → Cancel + 广播全树（IWinLifecycleAware）
-  → 组件 OnWinClosed：Cancel 自己的取消源 + 停计时器
+  → 组件 OnWinClosed：Cancel 自己的签发器 + 停计时器
   → 所有"await 带了 Token"的地方原生中止 → OCE 沿链传到包装层被吞
 
 窗口重开 → _OnOpen → Recreate + 广播 → 组件 OnWinOpened：新生命周期
@@ -915,7 +915,7 @@ private async UniTask OnInputChanged()
 
 - **异常**：`OperationCanceledException` 静默吞（生命周期约定）；其余异常 `FuLogger.LogError`——业务处理器内无需 try/catch；
 - **取消**：由处理器内部 await 点携带 `Token` 实现——网络/资源类 API 按铁律必传 `Token`，延时类须显式传（`UniTask.Delay(5000, cancellationToken: Token)`，注意该重载第二位置参数是 `bool ignoreTimeScale`，Token 必须用命名参数）。窗口关闭（`_OnClose`）时在途处理器于自身 await 点原生取消，`OCE` 沿链传播至适配层静默。未携带 Token 的 await（如裸 `UniTask.Delay`）窗口关闭后**不会**被中断；
-- **Gen 组件内**：取消时机由组件**自持取消源**驱动——`WinBase` 开关窗口时遍历组件树广播（`IWinLifecycleAware`），列表项进池/复用由挂树/摘树事件兜底；业务 await 点携带 Token（组件的取消源 Token）的要求不变；
+- **Gen 组件内**：取消时机由组件**自持签发器**驱动——`WinBase` 开关窗口时遍历组件树广播（`IWinLifecycleAware`），列表项进池/复用由挂树/摘树事件兜底；业务 await 点携带 Token（组件的签发器 Token）的要求不变；
 - `SetUIListener` / `RemoveUIListener` 提供对称异步重载，移除按原始委托值语义（Target+Method）匹配；
 - **防连点不在框架层**：处理器在途期间重复触发会再次执行，需要互斥的界面自行控制（如点击后 `btn.enabled = false`）。
 

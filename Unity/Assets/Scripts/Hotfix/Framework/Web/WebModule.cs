@@ -19,10 +19,10 @@ namespace Hotfix.Framework.Web
 	public partial class WebModule : ModuleBase, ICancelAsync
 	{
 		/// <summary>
-		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途 Web 请求随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationBarrier m_scope;
+		private CancellationBarrier m_barrier;
 
 		/// <summary>
 		/// 用于构建 URL 的 StringBuilder。
@@ -69,7 +69,7 @@ namespace Hotfix.Framework.Web
 		                                                CancellationToken token, object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_scope.Token.ThrowIfCancellationRequested();
+			m_barrier.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
@@ -94,7 +94,7 @@ namespace Hotfix.Framework.Web
 		private UniTask<WebBufferResult> GetToBytesReq(string url, Dictionary<string, string> queryString, Dictionary<string, string> header, CancellationToken token, object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_scope.Token.ThrowIfCancellationRequested();
+			m_barrier.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Web
 		                                                 object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_scope.Token.ThrowIfCancellationRequested();
+			m_barrier.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebStringResult>();
@@ -149,7 +149,7 @@ namespace Hotfix.Framework.Web
 		                                                object userData = null)
 		{
 			// 模块已销毁或调用方已取消则拒绝新请求；先标准化 URL，避免后续抛异常时 TCS 已建未入队
-			m_scope.Token.ThrowIfCancellationRequested();
+			m_barrier.Token.ThrowIfCancellationRequested();
 			token.ThrowIfCancellationRequested();
 			url = NormalizeURL(url, queryString);
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
@@ -165,12 +165,12 @@ namespace Hotfix.Framework.Web
 		#endregion
 
 		/// <summary>
-		/// 初始化：登记模块实例并重建取消范围（新生命周期 = 新 Token）。
+		/// 初始化：登记模块实例并重建取消栅栏（新生命周期 = 新 Token）。
 		/// </summary>
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope  = new CancellationBarrier();
+			m_barrier  = new CancellationBarrier();
 		}
 
 		/// <summary>
@@ -193,7 +193,7 @@ namespace Hotfix.Framework.Web
 		protected internal override void OnDispose()
 		{
 			// 随模块销毁取消在途 Web 请求
-			m_scope.Cancel();
+			m_barrier.Cancel();
 
 			// 清空 JSON / Pb 请求队列与列表，取消未完成任务
 			ClearReq(m_waitingJsonQueue, m_sendingJsonList);
@@ -277,8 +277,8 @@ namespace Hotfix.Framework.Web
 		                            UnityWebRequestAsyncOperation asyncOperation) where T : WebDataBase
 		{
 			// 构建 + 发送成功后才登记在途：失败路径（调用方处理）无在途登记，计数不泄漏
-			var capturedToken                              = m_scope.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
-			var inFlight                                   = m_scope.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
+			var capturedToken                              = m_barrier.Token;   // 发起时捕获生命周期 Token：模块销毁/重启（OnDispose Cancel）后旧在途请求据此识别取消，不向旧生命周期调用方抛网络错误
+			var inFlight                                   = m_barrier.Begin(); // 登记在途：CancelAsync 等待本请求清理完毕
 #if UNITY_EDITOR
 			if (DebugRecordingEnabled) webData.SendTimeUtc = DateTime.UtcNow; // 记录发送起始时间，供调试统计等待耗时
 #endif
@@ -311,7 +311,7 @@ namespace Hotfix.Framework.Web
 					sendingList.Remove(webData);
 
 					// 模块销毁/重启（旧 scope 于 OnDispose Cancel，capturedToken 已触发）或调用方取消：按取消处理，不再写回结果。
-					// 注：重启时序 DisposeModules（OnDispose→Cancel）恒先于重新初始化，故无需再比对实时 m_scope.Token。
+					// 注：重启时序 DisposeModules（OnDispose→Cancel）恒先于重新初始化，故无需再比对实时 m_barrier.Token。
 					if (capturedToken.IsCancellationRequested || webData.Token.IsCancellationRequested)
 					{
 						webData.CompleteCanceled();

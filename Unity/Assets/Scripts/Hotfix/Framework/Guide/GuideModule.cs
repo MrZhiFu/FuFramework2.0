@@ -186,7 +186,7 @@ namespace Hotfix.Framework.Guide
 			OnStepExecuting    = null;
 			OnStepCompleted    = null;
 
-			// 释放引导动作持有者（其内部持有 CancellationTokenIssuer 与模块级取消范围，需随模块销毁释放）
+			// 释放引导动作持有者（其内部持有 CancellationTokenIssuer 与模块级取消栅栏，需随模块销毁释放）
 			(m_guideAction as IDisposable)?.Dispose();
 
 			// 这里刻意直接置后备字段而不走 GuideAction 属性 setter：setter 会一并清空

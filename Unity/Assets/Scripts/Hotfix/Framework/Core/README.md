@@ -74,7 +74,7 @@ public interface ICancelAsync
 > （如 UI 窗口）用 `CancellationTokenIssuer`（`Recreate` 重建生命周期令牌）+ token 传参即可。
 >
 > **铁律（编译期强制）**：网络/资源类异步 API（Web/Asset/Entity/Scene）的 `CancellationToken` 参数**必传**（无默认值）——
-> 窗口传 `WinBase.Token`、模块内部传自身 `m_scope.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
+> 窗口传 `WinBase.Token`、模块内部传自身 `m_barrier.Token`，API 内部与模块自身 Token **linked 竞速**；漏传即编译失败。
 
 ## 4. 核心类说明
 
@@ -300,8 +300,8 @@ Core/
 │   ├── GameDriven.cs              # 帧驱动 + 游戏控制中枢
 │   ├── Async/                     # 可取消异步基础设施
 │   │   ├── ICancelAsync.cs        # 可取消异步对象接口
-│   │   ├── CancellationBarrier.cs   # 取消范围登记助手（CTS + 在途计数 + 全部完成信号，实现 ICancelAsync）
-│   │   └── CancellationTokenIssuer.cs  # 生命周期取消源（CTS 封装：重建/取消/令牌，消费方复用）
+│   │   ├── CancellationBarrier.cs   # 取消栅栏登记助手（CTS + 在途计数 + 全部完成信号，实现 ICancelAsync）
+│   │   └── CancellationTokenIssuer.cs  # 令牌签发器（CTS 封装：重建/取消/令牌，消费方复用）
 │   ├── DataStruct/                # 数据结构
 │   │   ├── FuBidirectionalDictionary.cs
 │   │   ├── FuLinkedList.cs

@@ -50,9 +50,9 @@ namespace Hotfix.Framework.UI
 		}
 
 		/// <summary>
-		/// 加载器生命周期取消源：Dispose（被移除）时取消，在途纹理加载随之中止。
+		/// 加载器令牌签发器：Dispose（被移除）时取消，在途纹理加载随之中止。
 		/// </summary>
-		private readonly CancellationTokenIssuer m_cancellation = new();
+		private readonly CancellationTokenIssuer m_issuer = new();
 
 		/// <summary>
 		/// 本加载器是否已被释放。
@@ -67,7 +67,7 @@ namespace Hotfix.Framework.UI
 		public override void Dispose()
 		{
 			m_isDisposed = true;
-			m_cancellation.Dispose();
+			m_issuer.Dispose();
 			base.Dispose();
 		}
 
@@ -247,12 +247,12 @@ namespace Hotfix.Framework.UI
 			{
 				// 等待他人发起的共享下载：附加本 loader 的取消，Dispose 时及时放弃等待，
 				// 避免续体在 loader 已销毁后仍回调 onExternalLoadSuccess。
-				return await existing.m_Task.AttachExternalCancellation(m_cancellation.Token);
+				return await existing.m_Task.AttachExternalCancellation(m_issuer.Token);
 			}
 			catch (OperationCanceledException)
 			{
 				// 本 loader 自身被移除（Dispose）：预期关停，静默上抛由 LoadExternal 的 catch 处理。
-				// 注意不能用 m_cancellation.Token 判断——Dispose 后它已退化为 default(None)。
+				// 注意不能用 m_issuer.Token 判断——Dispose 后它已退化为 default(None)。
 				if (m_isDisposed) throw;
 
 				// 否则是共享下载任务随其发起者（第一个 loader）Dispose 被取消：不能静默返回，
@@ -274,7 +274,7 @@ namespace Hotfix.Framework.UI
 			sr_loadingTasks[textureURL] = sharedLoad;
 			try
 			{
-				return await sharedLoad.m_Task.AttachExternalCancellation(m_cancellation.Token);
+				return await sharedLoad.m_Task.AttachExternalCancellation(m_issuer.Token);
 			}
 			finally
 			{
@@ -305,7 +305,7 @@ namespace Hotfix.Framework.UI
 			if (!Directory.Exists(sr_cachePath))
 				Directory.CreateDirectory(sr_cachePath);
 
-			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_cancellation.Token);
+			var webBufferResult = await WebModule.Instance.GetToBytes(textureURL, m_issuer.Token);
 			if (webBufferResult.IsNull() || webBufferResult.Result.IsNull() || webBufferResult.Result.Length == 0)
 			{
 				FuLogger.LogError($"网络图片下载失败: {textureURL}");
@@ -335,7 +335,7 @@ namespace Hotfix.Framework.UI
 		{
 			var assetInfo = m_assetModule.GetAssetInfo(textureURL);
 			if (assetInfo == null) return null;
-			return await m_assetModule.LoadAssetAsync<Texture2D>(textureURL, m_cancellation.Token);
+			return await m_assetModule.LoadAssetAsync<Texture2D>(textureURL, m_issuer.Token);
 		}
 
 		/// <summary>

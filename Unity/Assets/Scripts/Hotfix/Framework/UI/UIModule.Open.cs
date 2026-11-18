@@ -57,8 +57,8 @@ namespace Hotfix.Framework.UI
 			// 一旦取消立即回收已获取的界面实例对象、返回 null，不再继续创建/登记窗口
 			// （否则续体会继续对已销毁的 m_winObjPool 做 Register/Recycle，造成泄漏或异常）。
 			// 在途登记（Begin）使框架重启时的 CancelAsync 能等到本次打开清理完毕再返回。
-			var       token    = m_scope.Token;
-			using var inFlight = m_scope.Begin();
+			var       token    = m_barrier.Token;
+			using var inFlight = m_barrier.Begin();
 
 			if (token.IsCancellationRequested)
 			{

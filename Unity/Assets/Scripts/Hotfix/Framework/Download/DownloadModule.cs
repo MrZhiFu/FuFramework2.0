@@ -59,23 +59,23 @@ namespace Hotfix.Framework.Download
 		private readonly ConcurrentDictionary<int, DownloadData> m_downloadingTaskDict = new();
 
 		/// <summary>
-		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// 下载任务由任务池在主循环同步驱动（无 await 型在途操作），故在途计数恒为 0；
 		/// OnDispose 时 Cancel，模块被 ModuleManager.CancelAllAsync 排水到时完成全部在途 Tcs。
 		/// </summary>
-		private CancellationBarrier m_scope = new();
+		private CancellationBarrier m_barrier = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并完成所有在途下载后才返回。供框架重启取消清理（ModuleManager.CancelAllAsync 排水）。
 		/// </summary>
 		public async UniTask CancelAsync()
 		{
-			await m_scope.CancelAsync(); // 触发取消（下载任务无 await 型在途操作，计数为 0 时立即返回）
+			await m_barrier.CancelAsync(); // 触发取消（下载任务无 await 型在途操作，计数为 0 时立即返回）
 
 			// 完成任务池已移除后的全部在途 Tcs：否则 await AddDownloadAsync 的调用方永久挂起，
 			// DownloadData 亦随字典跨生命周期泄漏。幂等：字典已空时为空操作。
@@ -125,7 +125,7 @@ namespace Hotfix.Framework.Download
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope  = new CancellationBarrier(); // 新生命周期 = 新 Token
+			m_barrier  = new CancellationBarrier(); // 新生命周期 = 新 Token
 
 			Timeout   = 30f;
 			FlushSize = ONE_MEGA_BYTES;
@@ -160,7 +160,7 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_scope.Cancel(); // 随模块销毁触发取消（排水等待由 CancelAsync 负责）
+			m_barrier.Cancel(); // 随模块销毁触发取消（排水等待由 CancelAsync 负责）
 
 			// 先关任务池：其同步移除全部任务，此后不会再有任何成功/失败回调来完成任务 Tcs（代理 Reset 只中止
 			// UWR，不派发事件）；且池内代理被全部 Shutdown 后 TotalAgentCount 为 0，销毁期间续体再调 AddDownload

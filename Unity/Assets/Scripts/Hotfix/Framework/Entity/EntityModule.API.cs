@@ -32,12 +32,12 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_scope.CancelAsync();
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
 		/// <summary>
 		/// 获取实体数量。
@@ -346,7 +346,7 @@ namespace Hotfix.Framework.Entity
 				var serialId = ++m_serial;
 				m_loadingEntityDict.Add(entityId, serialId);
 
-				var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝写回新生命周期
+				var capturedToken = m_barrier.Token; // 发起时捕获生命周期 Token：重启后旧任务据此识别并拒绝写回新生命周期
 				// 仅包裹 LoadAssetAsync 的同步抛异常（包未就绪等）：此时 showEntityInfoEx 尚未交给回调，需回收并清理 loading 状态（否则 IsLoadingEntity 恒 true）
 				AssetHandle assetOperationHandle;
 				try
@@ -366,7 +366,7 @@ namespace Hotfix.Framework.Entity
 				assetOperationHandle.Completed += handle =>
 				{
 					// 生命周期变更（重启）：旧生命周期在途加载的句柄不得写回新生命周期，释放并拒绝
-					if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token)
+					if (capturedToken.IsCancellationRequested || capturedToken != m_barrier.Token)
 					{
 						try
 						{

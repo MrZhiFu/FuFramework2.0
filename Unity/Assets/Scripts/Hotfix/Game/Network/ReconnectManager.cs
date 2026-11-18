@@ -35,9 +35,9 @@ namespace Hotfix.Game.Network
 		private bool m_isReconnecting;
 
 		/// <summary>
-		/// 重连事务取消源（Task 7 的 StartReconnectFlow 使用其 Token；CancelReconnect 供登出/取消按钮调用）
+		/// 重连事务令牌签发器（Task 7 的 StartReconnectFlow 使用其 Token；CancelReconnect 供登出/取消按钮调用）
 		/// </summary>
-		private readonly CancellationTokenIssuer m_reconnectCancellation = new();
+		private readonly CancellationTokenIssuer m_reconnectIssuer = new();
 
 		/// <summary>
 		/// 是否已初始化（Initialize 幂等标记，防重复订阅）
@@ -59,7 +59,7 @@ namespace Hotfix.Game.Network
 		/// <summary>
 		/// 取消进行中的重连事务（登出流程 / 转圈框取消按钮调用）
 		/// </summary>
-		public void CancelReconnect() => m_reconnectCancellation.Cancel();
+		public void CancelReconnect() => m_reconnectIssuer.Cancel();
 
 		#region 事件处理
 
@@ -117,7 +117,7 @@ namespace Hotfix.Game.Network
 		#endregion
 
 		/// <summary>
-		/// 启动重连事务：重开取消源 → 弹"重连中"转圈框 → ReconnectAsync 退避重拨 →
+		/// 启动重连事务：重建签发器 → 弹"重连中"转圈框 → ReconnectAsync 退避重拨 →
 		/// 拨通后静默重登（GameSessionFlow）→ 关全部窗口回主界面原地复活；
 		/// 失败 → "重连失败"框（再试一次=从拨号重头 / 返回登录）；取消 → 走登出。
 		/// 重入防护：m_isReconnecting 在分流处检查；本方法负责置位/复位。
@@ -125,7 +125,7 @@ namespace Hotfix.Game.Network
 		private async UniTask StartReconnectFlow(Uri address)
 		{
 			m_isReconnecting = true;
-			m_reconnectCancellation.Recreate(); // 每轮新 Token：CancelReconnect 只取消本轮
+			m_reconnectIssuer.Recreate(); // 每轮新 Token：CancelReconnect 只取消本轮
 			try
 			{
 				var playerId = PlayerManager.Instance.PlayerInfo.Id; // 断线未登出，PlayerInfo 仍在
@@ -134,8 +134,8 @@ namespace Hotfix.Game.Network
 
 				try
 				{
-					await NetworkModule.Instance.ReconnectAsync(new ReconnectOptions { Address = address }, m_reconnectCancellation.Token);
-					await GameSessionFlow.LoginFlowAsync(playerId, m_reconnectCancellation.Token);
+					await NetworkModule.Instance.ReconnectAsync(new ReconnectOptions { Address = address }, m_reconnectIssuer.Token);
+					await GameSessionFlow.LoginFlowAsync(playerId, m_reconnectIssuer.Token);
 
 					// 原地复活：关全部窗口（含转圈框）重建主界面——不弹回选角界面
 					GlobalModule.UIModule.CloseAll();

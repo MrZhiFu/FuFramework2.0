@@ -24,10 +24,10 @@ namespace Hotfix.Framework.Asset
 		private string DefaultPackageName { get; set; }
 
 		/// <summary>
-		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，所有在途异步操作随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationBarrier m_scope = new();
+		private CancellationBarrier m_barrier = new();
 
 		/// <summary>
 		/// 实例化资源引用管理，key 为资源路径，value 为句柄 + 引用计数。
@@ -38,12 +38,12 @@ namespace Hotfix.Framework.Asset
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理（释放句柄 + 卸载资源）后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_scope.CancelAsync();
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
 		/// <summary>
 		/// 初始化
@@ -51,7 +51,7 @@ namespace Hotfix.Framework.Asset
 		protected internal override void OnInit()
 		{
 			// 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
-			m_scope = new CancellationBarrier();
+			m_barrier = new CancellationBarrier();
 
 			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
 			DefaultPackageName = GameSetting.Instance.DefaultPackageName;
@@ -65,7 +65,7 @@ namespace Hotfix.Framework.Asset
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_scope.Cancel(); // 随模块销毁取消所有在途异步操作
+			m_barrier.Cancel(); // 随模块销毁取消所有在途异步操作
 
 			// 释放所有实例化句柄（否则实例化引用泄漏），并逐 path 显式卸载 bundle
 			// （AutoUnloadBundleWhenUnused=false 下仅 Release 不会卸载；TryUnloadUnusedAsset 对仍被其他系统持有的共享 provider 安全跳过）。

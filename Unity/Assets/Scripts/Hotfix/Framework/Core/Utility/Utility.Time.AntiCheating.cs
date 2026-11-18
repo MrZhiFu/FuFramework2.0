@@ -98,7 +98,7 @@ namespace Hotfix.Framework.Core
 		private static long     s_savedUtcTime;                             // 上次保存的"UTC时间戳(秒)"，作用同上（0=还没记录）
 		private static float    s_lastFlushTime = -SAVE_FLUSH_INTERVAL_SEC; // 上次把记录写进本地存档的时刻（初始值保证首次必定写入）
 		private static bool     s_ntpEverAttempted;                         // 是否发起过 NTP 请求（首次发起不受重查间隔限制）
-		private static bool     s_quitting;                                 // 应用退出流程中（阻止退出时再发起 NTP 访问已释放的取消源）
+		private static bool     s_quitting;                                 // 应用退出流程中（阻止退出时再发起 NTP 访问已释放的签发器）
 		private static float    s_lastCheatLogTime = -CHEAT_LOG_INTERVAL_SEC; // 上次记录作弊纠正日志的时刻（初始值保证第一条必打）
 #if UNITY_ANDROID
 		private static IntPtr s_androidSystemClockClass;        // 缓存的 SystemClock 类引用（JNI 一次性查找）
@@ -251,10 +251,10 @@ namespace Hotfix.Framework.Core
 		/// </summary>
 		public static void OnApplicationQuit()
 		{
-			// 先置退出标志（下方 GetUtcNow 会经过 TryRecheckNetTime，退出时不能再发起 NTP 去访问已释放的取消源），
+			// 先置退出标志（下方 GetUtcNow 会经过 TryRecheckNetTime，退出时不能再发起 NTP 去访问已释放的签发器），
 			// 再取消并释放 NTP 异步链的生命周期所有者，避免退出后仍有裸异步任务在跑
 			s_quitting = true;
-			sr_ntpCancellation.Dispose();
+			sr_ntpIssuer.Dispose();
 
 			var now          = GetUtcNow();
 			var nowTimestamp = Time2Timestamp(now);
@@ -299,8 +299,8 @@ namespace Hotfix.Framework.Core
 
 			Log($"第{s_recheckAttemptCount}次尝试重新获取网络时间");
 
-			// 异步链的生命周期由 sr_ntpCancellation 持有：Token 透传给所有在途 UDP 收发，OnApplicationQuit 取消释放
-			MultipleNtpGetTimeAsync(sr_ntpCancellation.Token).Forget();
+			// 异步链的生命周期由 sr_ntpIssuer 持有：Token 透传给所有在途 UDP 收发，OnApplicationQuit 取消释放
+			MultipleNtpGetTimeAsync(sr_ntpIssuer.Token).Forget();
 		}
 
 		/// <summary>
@@ -357,10 +357,10 @@ namespace Hotfix.Framework.Core
 		#region 多NTP服务器地址获取全球时间方法
 
 		/// <summary>
-		/// NTP 异步请求的生命周期取消源（静态类自持）。
+		/// NTP 异步请求的令牌签发器（静态类自持）。
 		/// 发起请求时透传其 Token；OnApplicationQuit 取消并释放，避免脱离生命周期的裸异步链。
 		/// </summary>
-		private static readonly CancellationTokenIssuer sr_ntpCancellation = new();
+		private static readonly CancellationTokenIssuer sr_ntpIssuer = new();
 
 		/// <summary>
 		/// NTP 协议的时间纪元：1900-01-01 00:00:00 UTC（NTP 时间戳从此刻起算，比 Unix 纪元早 70 年）
@@ -385,10 +385,10 @@ namespace Hotfix.Framework.Core
 
 		/// <summary>
 		/// 多地址获取网络时间方法（fire-and-forget）。
-		/// 生命周期由 sr_ntpCancellation 持有：其 Token 被取消时，在途 UDP 收发立即中止
+		/// 生命周期由 sr_ntpIssuer 持有：其 Token 被取消时，在途 UDP 收发立即中止
 		/// （DNS 解析没有取消接口，受系统自身超时约束）。
 		/// </summary>
-		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 sr_ntpCancellation 提供）。</param>
+		/// <param name="cancellationToken">生命周期取消令牌（必传，由持有方 sr_ntpIssuer 提供）。</param>
 		private static async UniTaskVoid MultipleNtpGetTimeAsync(CancellationToken cancellationToken)
 		{
 			try

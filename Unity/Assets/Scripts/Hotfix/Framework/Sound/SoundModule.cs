@@ -32,22 +32,22 @@ namespace Hotfix.Framework.Sound
 		public static SoundModule Instance { get; private set; }
 
 		/// <summary>
-		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途音频/混音器加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationBarrier m_scope = new();
+		private CancellationBarrier m_barrier = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
 		public async UniTask CancelAsync()
 		{
-			await m_scope.CancelAsync(); // 等待在途音频/混音器加载取消清理完毕（含 PlaySound 取消路径上的播放参数回收）
+			await m_barrier.CancelAsync(); // 等待在途音频/混音器加载取消清理完毕（含 PlaySound 取消路径上的播放参数回收）
 
 			// 排水完成后才回收仍登记在案的所有权参数：此刻在途 PlaySound 已全部结束、不会再访问这两个集合，
 			// 回收 + 清空安全；否则未回池的播放参数会让 ReferencePool 使用计数每次重启单向累积。
@@ -151,7 +151,7 @@ namespace Hotfix.Framework.Sound
 		protected internal override void OnInit()
 		{
 			Instance = this;
-			m_scope = new CancellationBarrier(); // 新生命周期 = 新 Token
+			m_barrier = new CancellationBarrier(); // 新生命周期 = 新 Token
 
 			// 新生命周期必须从空的所有权登记起步：正常路径下 CancelAsync 排水后已回收并清空，
 			// 这里兜底处理「未经 CancelAllAsync 的销毁路径」遗留的条目，杜绝跨重启隐式累积（ReferencePool 使用计数单向增长）。
@@ -210,7 +210,7 @@ namespace Hotfix.Framework.Sound
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_scope.Cancel(); // 随模块销毁取消在途音频/混音器加载
+			m_barrier.Cancel(); // 随模块销毁取消在途音频/混音器加载
 
 			// 释放所有组内 agent 句柄并销毁组 GameObject（含暂停/停止状态未播放的 agent，避免句柄/bundle 跨重启残留）。
 			// Unity 停止 Play 时场景对象（SoundGroup/SoundAgent）可能已被 teardown 先于 ModuleManager.Dispose 销毁，跳过已销毁组。
@@ -449,7 +449,7 @@ namespace Hotfix.Framework.Sound
 			// 登记在途（含取消清理）：CancelAllAsync → CancelAsync 会等待本次 PlaySound 完全结束（含 await 恢复后的
 			// catch 分支回收播放参数）才返回，否则 CancelAsync 因在途计数恒为 0 立即返回，下帧恢复的 catch
 			// 会撞上「所有权集合已被 OnDispose 清空」而对 RecycleSoundParams/3D 提前 return，参数永不回池。
-			using (m_scope.Begin())
+			using (m_barrier.Begin())
 			{
 				// 从「解析路径 / 创建并登记参数 / 校验声音组」到「加载资源、交接给代理」的整段都纳入 try：
 				// GetSoundPath、SoundParams.Create（已登记进 m_ownedSoundParams）、GetSoundGroup（groupName 为空会抛）
@@ -504,8 +504,8 @@ namespace Hotfix.Framework.Sound
 					m_loadingSoundList.Add(newSerialId);
 
 					// 加载声音资源（await 已保证句柄完成，直接同步处理，避免 Completed 闭包分配）
-					assetOperationHandle = await m_assetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_scope.Token);
-					m_scope.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
+					assetOperationHandle = await m_assetModule.LoadAssetAsync<AudioClip>(soundAssetPath, m_barrier.Token);
+					m_barrier.Token.ThrowIfCancellationRequested(); // SoundModule 自身销毁（重启）：中止在途音频加载，由 catch 清理句柄
 					var assetObject      = assetOperationHandle.GetAssetObject<AudioClip>();
 					// 句柄随 PlaySoundInfo 流转到 SoundAgent，播放结束时由 SoundAgent.Reset 释放；
 					// 中途被丢弃/播放失败时由 LoadAssetSuccessCallback 或 SoundGroup.PlaySound 释放
@@ -806,12 +806,12 @@ namespace Hotfix.Framework.Sound
 		private async UniTaskVoid LoadAudioMixerAsync()
 		{
 			// 登记在途：CancelAllAsync → CancelAsync 等待混音器加载的取消清理（句柄释放）结束，避免句柄跨生命周期残留
-			using (m_scope.Begin())
+			using (m_barrier.Begin())
 			{
 				try
 				{
-					var handle = await m_assetModule.LoadAssetAsync<AudioMixer>(AUDIO_MIXER_ASSET_PATH, m_scope.Token);
-					if (m_scope.Token.IsCancellationRequested)
+					var handle = await m_assetModule.LoadAssetAsync<AudioMixer>(AUDIO_MIXER_ASSET_PATH, m_barrier.Token);
+					if (m_barrier.Token.IsCancellationRequested)
 					{
 						// SoundModule 自身销毁（重启）：中止在途混音器加载，释放句柄避免泄漏
 						handle.Release();

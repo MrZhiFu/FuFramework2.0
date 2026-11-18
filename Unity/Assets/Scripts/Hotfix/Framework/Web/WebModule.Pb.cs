@@ -101,7 +101,7 @@ namespace Hotfix.Framework.Web
 		/// <returns>返回 WebBufferResult 类型的异步任务。</returns>
 		private UniTask<WebBufferResult> PostPbReq(string url, MessageObject msgObj, CancellationToken token, object userData = null)
 		{
-			m_scope.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
+			m_barrier.Token.ThrowIfCancellationRequested(); // 模块已销毁（Token 取消）则拒绝新请求
 			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝新请求
 			var uniTaskCompletionSource = new UniTaskCompletionSource<WebBufferResult>();
 			url = NormalizeURL(url, null);

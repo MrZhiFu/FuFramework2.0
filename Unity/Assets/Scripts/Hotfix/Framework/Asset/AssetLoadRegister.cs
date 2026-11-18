@@ -20,7 +20,7 @@ namespace Hotfix.Framework.Asset
 	///     4.卸载资源。
 	/// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
 	/// 每个实例归单一调用方持有，用完 UnloadAll（临时卸载，装载器可复用）或 Dispose（永久废弃，在途加载随之取消）后弃引用由 GC 回收。
-	/// 装载器自身即异步链的生命周期所有者：内部透传 m_scope.Token 给 AssetModule，不接收调用方 token（整组加载/整组释放模型）。
+	/// 装载器自身即异步链的生命周期所有者：内部透传 m_barrier.Token 给 AssetModule，不接收调用方 token（整组加载/整组释放模型）。
 	/// </summary>
 	public class AssetLoadRegister : ICancelAsync
 	{
@@ -30,10 +30,10 @@ namespace Hotfix.Framework.Asset
 		private readonly AssetModule m_assetModule;
 
 		/// <summary>
-		/// 取消范围：Dispose 时 Cancel，在途加载随装载器销毁而取消；UnloadAll（临时卸载）不取消，装载器可复用。
+		/// 取消栅栏：Dispose 时 Cancel，在途加载随装载器销毁而取消；UnloadAll（临时卸载）不取消，装载器可复用。
 		/// 业务可 await CancelAsync 等待在途加载清理完毕。
 		/// </summary>
-		private readonly CancellationBarrier m_scope = new();
+		private readonly CancellationBarrier m_barrier = new();
 
 		/// <summary>
 		/// 缓存已经加载的资源句柄，key 为资源路径 + 类型，value 为资源句柄。
@@ -65,12 +65,12 @@ namespace Hotfix.Framework.Asset
 		/// 注：在途加载的真正取消由 AssetModule 自身的 Token 承担（模块加载内部观察），本 Token 是取消清理/准入代理——
 		/// 业务可 await CancelAsync 等待在途加载清理完毕；永久废弃装载器请先 Dispose 再 await CancelAsync。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途加载完成清理（释放句柄 + 卸载资源）后才返回。可重入、幂等。
 		/// </summary>
-		public UniTask CancelAsync() => m_scope.CancelAsync();
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
 		/// <summary>
 		/// 资源加载注册器。纯实例类：每次 new 创建独立装载器，调用方持有，用完 UnloadAll/Dispose 后弃引用由 GC 回收。
@@ -213,16 +213,16 @@ namespace Hotfix.Framework.Asset
 		/// <returns>资源句柄。</returns>
 		private async UniTask<AssetHandle> LoadAssetHandleCoreAsync(string path, Type assetType, int unloadGeneration)
 		{
-			m_scope.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
+			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：Token 取消（Dispose/CancelAsync）后拒绝新加载
 
-			using (m_scope.Begin()) // 登记在途：Dispose 取消时等待本操作清理完毕
+			using (m_barrier.Begin()) // 登记在途：Dispose 取消时等待本操作清理完毕
 			{
 				AssetHandle assetHandle = null;
 				try
 				{
 					assetHandle = assetType == null
-						? await m_assetModule.LoadAssetAsync(path, m_scope.Token)
-						: await m_assetModule.LoadAssetAsync(path, assetType, m_scope.Token);
+						? await m_assetModule.LoadAssetAsync(path, m_barrier.Token)
+						: await m_assetModule.LoadAssetAsync(path, assetType, m_barrier.Token);
 					if (assetHandle == null || assetHandle.AssetObject == null)
 					{
 						throw new InvalidOperationException($"[AssetLoadRegister]资源{path}加载失败");
@@ -325,7 +325,7 @@ namespace Hotfix.Framework.Asset
 		/// </summary>
 		public void Dispose()
 		{
-			m_scope.Cancel(); // 永久废弃：取消在途加载
+			m_barrier.Cancel(); // 永久废弃：取消在途加载
 			m_disposed = true;
 			UnloadAll();
 			m_loadingTasks.Clear();

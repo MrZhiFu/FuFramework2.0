@@ -240,7 +240,7 @@ await assetModule.LoadSceneAsync("Assets/Game/Scenes/GameScene.unity", LoadScene
 
 ```text
 Asset/
-├── AssetModule.cs                   # 资源管理模块：生命周期、取消范围、内部工具
+├── AssetModule.cs                   # 资源管理模块：生命周期、取消栅栏、内部工具
 ├── AssetModule.API.cs               # 资源管理模块公共 API（异步加载/实例化/卸载/查询）
 ├── AssetModule.InstantiateData.cs   # 实例化数据类（InstantiateRef / InstantiateResult）
 ├── AssetLoadRegister.cs             # 资源加载注册器（逻辑分组的资源装载器）

@@ -48,9 +48,9 @@ namespace Hotfix.Framework.Core
 		private float m_perSecondUpdateTimer;
 
 		/// <summary>
-		/// 重启流程的生命周期取消源：GameDriven 销毁（OnDispose）时取消，重启链据此中止（生命周期所有者）。
+		/// 重启流程的令牌签发器：GameDriven 销毁（OnDispose）时取消，重启链据此中止（生命周期所有者）。
 		/// </summary>
-		private readonly CancellationTokenIssuer m_restartCancellation = new();
+		private readonly CancellationTokenIssuer m_restartIssuer = new();
 
 		/// <summary>
 		/// 是否正在重启中（重入守卫：重启流程可跨帧，期间重复请求直接忽略，避免并发跑多轮 Dispose/启动流程）。
@@ -125,8 +125,8 @@ namespace Hotfix.Framework.Core
 		protected override void OnDispose()
 		{
 			// 先取消重启链：生命周期已结束，在途重启流程（可能停在排水等待中）不得继续重跑启动流程
-			m_restartCancellation.Cancel();
-			m_restartCancellation.Dispose();
+			m_restartIssuer.Cancel();
+			m_restartIssuer.Dispose();
 
 			DisposeModulesOnce();
 
@@ -182,11 +182,11 @@ namespace Hotfix.Framework.Core
 		/// 取消清理保证旧生命周期在途任务已全部完成，杜绝旧任务写回新生命周期；
 		/// 随后 ReferencePool.ClearAll 释放各引用池的闲置对象（保留类型条目与计数，迟到 Recycle 仍自洽），
 		/// 为新一轮生命周期回收内存。
-		/// 生命周期所有者：m_restartCancellation 持有本轮 Token，OnDispose 取消它使本链中止。
+		/// 生命周期所有者：m_restartIssuer 持有本轮 Token，OnDispose 取消它使本链中止。
 		/// </summary>
 		private async UniTask RestartGameAsync()
 		{
-			var cancellationToken = m_restartCancellation.Token;
+			var cancellationToken = m_restartIssuer.Token;
 
 			m_isRestarting = true;
 			try

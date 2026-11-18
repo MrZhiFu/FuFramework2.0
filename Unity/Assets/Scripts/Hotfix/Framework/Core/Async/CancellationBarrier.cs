@@ -25,12 +25,12 @@ namespace Hotfix.Framework.Core
 
 
 	/// <summary>
-	/// 取消范围：一个能"记账"的取消源——它记住当前有多少个异步操作正在跑，
+	/// 取消栅栏：一个能"记账"的取消源——它记住当前有多少个异步操作正在跑，
 	/// 并且支持"取消之后，等这些操作全部收尾完毕再返回"。
 	/// 典型场景是框架重启：重启前必须等各模块把在途的加载、请求都收拾完，才能安全重建。
 	/// 这时每个模块持有本类，重启流程逐个 await 模块的 CancelAsync。
 	/// 怎么用：
-	///     1. 模块持有本类实例，发起异步操作时用 using (m_scope.Begin()) 包住——开始时计数 +1，结束自动 -1；
+	///     1. 模块持有本类实例，发起异步操作时用 using (m_barrier.Begin()) 包住——开始时计数 +1，结束自动 -1；
 	///     2. 销毁/重启时调 CancelAsync()——先触发取消（在途操作各自中止），再等计数归零才返回；
 	///     3. 生命周期重建用"新建实例"表达（旧实例的 Token 已取消 = 旧生命周期）。
 	/// 与 CancellationTokenIssuer 怎么选：窗口开关那种"取消就走、不用等谁"的场景用 Issuer 就够；
@@ -99,7 +99,7 @@ namespace Hotfix.Framework.Core
 		public struct BeginScope : IDisposable
 		{
 			/// <summary>
-			/// 所属的取消范围。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
+			/// 所属的取消栅栏。Dispose 时经它递减在途计数并尝试完成「全部完成」信号。
 			/// </summary>
 			private readonly CancellationBarrier m_owner;
 
@@ -111,7 +111,7 @@ namespace Hotfix.Framework.Core
 			/// <summary>
 			/// 创建在途操作作用域。
 			/// </summary>
-			/// <param name="owner">所属的取消范围。</param>
+			/// <param name="owner">所属的取消栅栏。</param>
 			internal BeginScope(CancellationBarrier owner)
 			{
 				m_owner    = owner;

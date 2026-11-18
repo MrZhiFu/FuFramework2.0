@@ -518,7 +518,7 @@ namespace Hotfix.Framework.Web
 						return;
 					}
 
-					var webBufferResult = await PostPbReq(url, reqObj, m_scope.Token);
+					var webBufferResult = await PostPbReq(url, reqObj, m_barrier.Token);
 					responseText = webBufferResult.IsNull() ? "（Pb 请求未返回结果）" : FormatPbEnvelope(webBufferResult.Result);
 				}
 				else if (method == 1)
@@ -538,12 +538,12 @@ namespace Hotfix.Framework.Web
 						}
 					}
 
-					var result = await PostToString(url, form, m_scope.Token);
+					var result = await PostToString(url, form, m_barrier.Token);
 					responseText = result?.Result;
 				}
 				else
 				{
-					var result = await GetToString(url, m_scope.Token);
+					var result = await GetToString(url, m_barrier.Token);
 					responseText = result?.Result;
 				}
 

@@ -104,7 +104,7 @@ namespace Hotfix.Framework.Guide
 		#region ICancelAsync（框架重启排水）
 
 		/// <summary>
-		/// 取消令牌：跟随引导动作执行器的模块级取消范围（两条引导异步链在其中登记在途）。
+		/// 取消令牌：跟随引导动作执行器的模块级取消栅栏（两条引导异步链在其中登记在途）。
 		/// OnDispose → 引导动作 Dispose 后取消。
 		/// </summary>
 		public CancellationToken Token => m_guideActionCancellable?.Token ?? default;

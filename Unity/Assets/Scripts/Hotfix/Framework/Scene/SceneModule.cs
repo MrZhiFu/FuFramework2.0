@@ -78,20 +78,20 @@ namespace Hotfix.Framework.Scene
 		private AssetModule m_assetModule;
 
 		/// <summary>
-		/// 取消范围：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，在途场景加载随之取消；框架重启前经 CancelAllAsync 等待取消清理完成。
 		/// </summary>
-		private CancellationBarrier m_scope = new();
+		private CancellationBarrier m_barrier = new();
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
 		/// </summary>
-		public CancellationToken Token => m_scope.Token;
+		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_scope.CancelAsync();
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
 		/// 事件订阅器
 		private EventRegister EventRegister { get; set; }
@@ -102,7 +102,7 @@ namespace Hotfix.Framework.Scene
 		protected internal override void OnInit()
 		{
 			Instance      = this;
-			m_scope       = new CancellationBarrier(); // 新生命周期 = 新 Token
+			m_barrier       = new CancellationBarrier(); // 新生命周期 = 新 Token
 			EventRegister = EventRegister.Create();
 			m_assetModule = ModuleManager.GetModule<AssetModule>();
 		}
@@ -112,7 +112,7 @@ namespace Hotfix.Framework.Scene
 		/// </summary>
 		protected internal override void OnDispose()
 		{
-			m_scope.Cancel(); // 随模块销毁取消在途场景加载
+			m_barrier.Cancel(); // 随模块销毁取消在途场景加载
 
 			// 反向遍历已加载的场景，卸载所有已加载的场景
 			var loadedScenePaths = new string[m_loadedSceneDict.Count];
@@ -377,13 +377,13 @@ namespace Hotfix.Framework.Scene
 
 			// await 前置位：先登记 loading 状态拦截并发同路径加载（m_loadingSceneDict 需 await 完成拿到 handle 才能登记）
 			m_loadingSceneSet.Add(sceneAssetPath);
-			var capturedToken = m_scope.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
+			var capturedToken = m_barrier.Token; // 发起时捕获生命周期 Token：重启后旧在途加载据此识别并拒绝写回新生命周期
 			try
 			{
 				var sceneName            = GetSceneName(sceneAssetPath);
 				var sceneOperationHandle = await m_assetModule.LoadSceneAsync(sceneAssetPath, sceneMode, token, onProgress: p => OnLoadSceneProgress(sceneName, p, userData));
 				// 模块已销毁/生命周期变更/调用方取消（重启期间在途加载）：释放句柄、不登记，抛 OperationCanceledException
-				if (capturedToken.IsCancellationRequested || capturedToken != m_scope.Token || token.IsCancellationRequested)
+				if (capturedToken.IsCancellationRequested || capturedToken != m_barrier.Token || token.IsCancellationRequested)
 				{
 					// 此刻场景已加载成功：SceneHandle.Release() 不会卸载 Unity 场景，必须显式卸载，
 					// 否则场景既不进 m_loadedSceneDict（IsLoaded 为 false，无法再走 UnloadScene）又真实驻留，成为不可回收的孤儿场景。

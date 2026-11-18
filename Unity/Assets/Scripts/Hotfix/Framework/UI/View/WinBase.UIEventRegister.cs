@@ -98,7 +98,7 @@ namespace Hotfix.Framework.UI
 
 		/// <summary>
 		/// 设置UI上指定组件的异步监听事件(无事件上下文签名)。
-		/// 生命周期取消源由基类自动补传，语义与同步 Set 一致。
+		/// 令牌签发器由基类自动补传，语义与同步 Set 一致。
 		/// </summary>
 		/// <param name="listener">被监听者(一般是交互组件，如Button)</param>
 		/// <param name="callback">异步回调函数</param>

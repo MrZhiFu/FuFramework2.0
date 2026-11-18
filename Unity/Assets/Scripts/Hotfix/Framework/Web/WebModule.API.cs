@@ -25,14 +25,14 @@ namespace Hotfix.Framework.Web
 
 		/// <summary>
 		/// 取消令牌：模块销毁（OnDispose）后触发，在途操作观察它并中止。
-		/// 模块未初始化（m_scope 未建）时返回不可取消的空令牌，避免提前访问抛 NRE。
+		/// 模块未初始化（m_barrier 未建）时返回不可取消的空令牌，避免提前访问抛 NRE。
 		/// </summary>
-		public CancellationToken Token => m_scope?.Token ?? CancellationToken.None;
+		public CancellationToken Token => m_barrier?.Token ?? CancellationToken.None;
 
 		/// <summary>
 		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
 		/// </summary>
-		public UniTask CancelAsync() => m_scope.CancelAsync();
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
 		/// <summary>
 		/// 获取或设置超时时间（秒）。

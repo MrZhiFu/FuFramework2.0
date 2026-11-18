@@ -39,7 +39,7 @@ namespace Hotfix.Framework.UI
 		internal void _OnOpen()
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]打开-OnOpen().");
-			m_cancellation.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
+			m_issuer.Recreate(); // 新生命周期 = 新 Token（首次与对象池复用都会走）
 			BroadcastWinLifecycle(true); // 组件随窗口获得新生命周期：晚于窗口自身 Recreate，早于业务 OnOpen
 			EventRegister?.Resume();   // 开窗重放挂起的订阅：必须在业务 OnOpen 之前，保证其执行期间订阅已就绪
 			Visible     = true;
@@ -130,8 +130,8 @@ namespace Hotfix.Framework.UI
 		internal void _OnClose()
 		{
 			FuLogger.LogInfo($"UI界面[{SerialId}]{WinName}]关闭-OnClose().");
-			m_cancellation.Cancel();  // 关闭即取消本生命周期在途异步任务
-			BroadcastWinLifecycle(false); // 组件随窗口取消在途异步任务：与组件自持取消源语义对齐
+			m_issuer.Cancel();  // 关闭即取消本生命周期在途异步任务
+			BroadcastWinLifecycle(false); // 组件随窗口取消在途异步任务：与组件自持签发器语义对齐
 			EventRegister?.Suspend(); // 关窗挂起订阅：总线退订、账本保留（半成品实例注册器为 null，?. 跳过）
 			StopAllTimers();          // 关窗终止计时器（破坏性不重放，与异步取消同立场）
 			Visible = false;
@@ -185,7 +185,7 @@ namespace Hotfix.Framework.UI
 		/// 开关窗口时遍历组件树广播生命周期通知（广播顺序：晚于窗口自身 Cancel/Recreate，
 		/// 保证组件先于业务 OnOpen 拿到新生命周期）。
 		/// 命中 IWinLifecycleAware 的组件逐层独立调用（嵌套组件每层独立实现独立命中）；
-		/// GList 池中未挂载 item 不在组件树内，不在广播覆盖范围（其自持取消源创建即有效，
+		/// GList 池中未挂载 item 不在组件树内，不在广播覆盖范围（其自持签发器创建即有效，
 		/// 且 Gen 模板已订阅 onAddedToStage/onRemovedFromStage 兜底进池/复用）。
 		/// </summary>
 		/// <param name="opened">true=窗口打开（组件重建生命周期）；false=窗口关闭（组件取消在途异步任务）</param>
@@ -228,7 +228,7 @@ namespace Hotfix.Framework.UI
 			// 用户的 OnClose() 钩子由 _OnRecycle 的 complete kill 保证触发（销毁前必先经过回收）。
 			if (WinUI != null) GTween.Kill(WinUI);
 
-			m_cancellation.Dispose(); // 真销毁，永久释放取消源
+			m_issuer.Dispose(); // 真销毁，永久释放签发器
 
 			// 半成品实例（Init 未走完，UI模块未绑定/未加过包引用）销毁时不得递减引用计数：
 			// 递减会错误扣减同包其它界面的引用计数，导致纹理/音频被提前卸载。判空 + 标记双重守卫。
