@@ -56,8 +56,7 @@ namespace Hotfix.Framework.Asset
 			// 默认包初始化由 AOT 启动流程 LaunchAssetHelper 完成，此处仅缓存默认包名
 			DefaultPackageName = GameSetting.Instance.DefaultPackageName;
 
-			FuLogger.LogInfo($"资源系统运行模式：{GameSetting.Instance.PlayMode}");
-			FuLogger.LogInfo("资源系统初始化完毕！");
+			FuLogger.LogInfo($"资源系统初始化完毕，运行模式：{GameSetting.Instance.PlayMode}");
 		}
 
 		/// <summary>
@@ -88,7 +87,7 @@ namespace Hotfix.Framework.Asset
 		private ResourcePackage GetReadyDefaultPackage()
 		{
 			if (!YooAssets.IsInitialized || !YooAssets.TryGetPackage(DefaultPackageName, out var package)
-										 || package.InitializeStatus != EOperationStatus.Succeeded)
+			                             || package.InitializeStatus != EOperationStatus.Succeeded)
 				throw new InvalidOperationException($"[AssetModule]默认资源包未就绪：{DefaultPackageName}");
 			return package;
 		}
