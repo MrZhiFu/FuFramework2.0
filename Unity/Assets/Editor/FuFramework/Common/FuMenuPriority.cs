@@ -452,6 +452,11 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		public const int DEBUG_PANEL_NETWORK = DEBUG_PANEL_BASE + 7;
 
+		/// <summary>
+		/// 本地化调试面板。
+		/// </summary>
+		public const int DEBUG_PANEL_LOCALIZATION = DEBUG_PANEL_BASE + 8;
+
 		#endregion
 	}
 }

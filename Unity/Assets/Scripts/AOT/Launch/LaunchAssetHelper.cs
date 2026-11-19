@@ -182,10 +182,19 @@ namespace AOT.Launch
 		}
 
 		/// <summary>
-		/// 创建资源下载器。
+		/// 创建资源下载器（全量：未打标签的公共依赖 + 全部资源）。
 		/// </summary>
 		public static ResourceDownloaderOperation CreateDownloader() =>
 			DefaultPackage.CreateResourceDownloader(new ResourceDownloaderOptions(s_downloadingMaxNum, s_failedTryAgainNum));
+
+		/// <summary>
+		/// 创建按标签过滤的资源下载器。
+		/// YooAsset 语义：未打标签的 bundle 视为公共依赖始终包含，下载范围 = 公共依赖 + 指定标签 bundle。
+		/// 首启按当前语言 tag 过滤（只下当前语种本地化 bundle），运行时切换语言前的补齐走 AssetModule。
+		/// </summary>
+		/// <param name="tags">资源标签数组（如语种名 English）；传 null 等价全量</param>
+		public static ResourceDownloaderOperation CreateDownloader(string[] tags) =>
+			DefaultPackage.CreateResourceDownloader(new ResourceDownloaderOptions(tags, s_downloadingMaxNum, s_failedTryAgainNum));
 
 		/// <summary>
 		/// 加载程序集字节文件(用于 AOT/Hotfix DLL)。

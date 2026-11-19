@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using AOT.Framework.Core.Log;
 using Hotfix.Framework.Core;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Localization;
@@ -35,7 +37,7 @@ namespace Hotfix.Game.Config
 
         /// <summary>
         /// 语言切换事件处理：重新翻译全部配置表
-        /// </summary>
+        /// </summary>
         /// <param name="e">事件参数</param>
         private void OnLanguageChanged(GameEventArgs e)
         {
@@ -60,6 +62,27 @@ namespace Hotfix.Game.Config
 
             var text = LocalizationModule.Instance?.GetLanguageText(key);
             return string.IsNullOrEmpty(text) || text == $"[{key}]" ? original : text;
+        }
+
+        /// <summary>
+        /// 重载本地化表数据（语言切换时由 LocalizationModule 在广播事件前调用）。
+        /// 依赖 loader 层按 LocalizationModule 当前语言路由，原地重建 DataList/StrKeyDataDict；
+        /// LocalizationProvider 缓存的表实例引用不变，无需任何同步操作。
+        /// 重载后校验行数非空：损坏数据（解析宽松不抛异常）会导致空表，空表广播事件将让全 UI 译文变占位符——
+        /// 视为重载失败返回 false，由 SetLanguageAsync 回滚语言（不广播不存档）。
+        /// </summary>
+        /// <returns>true = 重载成功且非空；false = 重载失败（表已损坏/为空，语言须回滚）</returns>
+        public async UniTask<bool> ReloadLocalizationAsync()
+        {
+            await TbLocalization.LoadAsync();
+            var count = TbLocalization.Count;
+            if (count <= 0)
+            {
+                FuLogger.LogError("本地化表重载失败：拆分文件数据为空或损坏（解析未抛异常但无有效行），语言切换须回滚");
+                return false;
+            }
+
+            return true;
         }
     }
 }

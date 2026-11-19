@@ -52,4 +52,8 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
     --conf ./Luban.conf
+
+rem Split tblocalization into per-language files (source removed, only bin set kept)
+dotnet ../Tools/SplitLocalization/bin/Release/net8.0/SplitLocalization.dll --variant bin
 pause
+

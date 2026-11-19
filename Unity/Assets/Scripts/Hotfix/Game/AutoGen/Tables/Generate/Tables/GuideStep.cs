@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -78,21 +77,20 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 GuideStep 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 GuideStep 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private GuideStep(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private GuideStep(ByteBuf buf) 
         {
-            { if(!node["Id"].IsNumber) { throw new SerializationException(); }  Id = node["Id"]; }
-            { if(!node["GuideId"].IsNumber) { throw new SerializationException(); }  GuideId = node["GuideId"]; }
-            { if(!node["StepType"].IsNumber) { throw new SerializationException(); }  StepType = (EStepType)node["StepType"].AsInt; }
-            { var _j = node["NextStepId"]; if (_j.Tag != JSONNodeType.None && _j.Tag != JSONNodeType.NullValue) { { if(!_j.IsNumber) { throw new SerializationException(); }  NextStepId = _j; } } else { NextStepId = null; } }
-            { if(!node["CanJump"].IsBoolean) { throw new SerializationException(); }  CanJump = node["CanJump"]; }
-            { if(!node["TargetWindow"].IsString) { throw new SerializationException(); }  TargetWindow = node["TargetWindow"]; }
-            { if(!node["TargetUI"].IsString) { throw new SerializationException(); }  TargetUI = node["TargetUI"]; }
-            { if(!node["DialogContent"].IsString) { throw new SerializationException(); }  DialogContent = node["DialogContent"]; }
-            { if(!node["WaitTime"].IsNumber) { throw new SerializationException(); }  WaitTime = node["WaitTime"]; }
-
+            Id = buf.ReadInt();
+            GuideId = buf.ReadInt();
+            StepType = (EStepType)buf.ReadInt();
+            if(buf.ReadBool()){ NextStepId = buf.ReadInt(); } else { NextStepId = null; }
+            CanJump = buf.ReadBool();
+            TargetWindow = buf.ReadString();
+            TargetUI = buf.ReadString();
+            DialogContent = buf.ReadString();
+            WaitTime = buf.ReadFloat();
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -101,9 +99,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 GuideStep 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 GuideStep</returns>
-        public static GuideStep DeserializeGuideStep(JSONNode node) => new(node);
+        public static GuideStep DeserializeGuideStep(ByteBuf buf) => new(buf);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -111,6 +109,7 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
+            PostResolveRef();
         }
 
         /// <summary>
@@ -144,5 +143,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

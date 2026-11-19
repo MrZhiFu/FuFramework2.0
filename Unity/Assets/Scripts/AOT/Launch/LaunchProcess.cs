@@ -146,7 +146,13 @@ namespace AOT.Launch
 		{
 			while (true)
 			{
-				var downloader = LaunchAssetHelper.CreateDownloader();
+				// 语言 tag 过滤：首启只下载「公共依赖 + 当前语种」bundle，其余语种按需下载（切换语言时经 AssetModule 补齐）。
+				// AOT 阶段 LaunchLocalization.InitializeAsync 先于本流程执行（启动 UI 文本已依赖它），Language 恒已确定；
+				// Unspecified（系统语言无法识别的极端情况）回退英语 tag，与运行时兜底语义一致
+				var languageTag = LaunchLocalization.Language == ELanguage.Unspecified
+					? nameof(ELanguage.English)
+					: LaunchLocalization.Language.ToString();
+				var downloader = LaunchAssetHelper.CreateDownloader(new[] { languageTag });
 				if (downloader.TotalDownloadCount == 0) return; // 无需下载
 
 				// 需要确认更新

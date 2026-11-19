@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using YooAsset;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
+using AOT.Framework.ModuleSetting.Runtime;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -358,6 +359,70 @@ namespace Hotfix.Framework.Asset
 		public bool HasAssetPath(string path)
 		{
 			return TryGetReadyPackage(out var package) && package.IsLocationValid(path);
+		}
+
+		#endregion
+
+		#region 运行时按需下载
+
+		/// <summary>
+		/// 确保指定资源标签的 bundle 已下载到本地（通用运行时按需下载能力）。
+		///     本地已齐全（或无可下载内容）时零开销直接成功——幂等，可放心在启动期与切换前重复调用；
+		///     EditorSimulateMode / OfflinePlayMode 无远程清单可下，恒直接成功。
+		///     第一个消费方为语言切换（按语种 tag 下载本地化配置 bundle），后续活动资源等按需下载复用本 API。
+		/// 注意：失败不抛异常（返回 false，失败原因已记日志），由调用方决定重试与提示策略；
+		///       取消（模块销毁/调用方取消）抛 OperationCanceledException，YooAsset 下载器随 await 中止，无额外清理需求。
+		/// </summary>
+		/// <param name="tag">资源标签（如语种名 English）</param>
+		/// <param name="token">取消令牌（必传）</param>
+		/// <param name="onProgress">下载进度回调（0~1，可空）；回调异常已内部捕获记日志，不影响下载</param>
+		/// <returns>true = 已就绪（含本来就无需下载）；false = 下载失败（原因见日志）</returns>
+		public async UniTask<bool> EnsureDownloadByTagAsync(string tag, CancellationToken token, Action<float> onProgress = null)
+		{
+			m_barrier.Token.ThrowIfCancellationRequested(); // 入口：模块已销毁则拒绝
+			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝
+			using (m_barrier.Register())                    // 登记在途：OnDispose 取消时等待本操作清理完毕
+			{
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token)) // 模块或调用方任一取消即中止
+				{
+					// 编辑器模拟/离线模式无远程清单可下，直接视为就绪
+					var playMode = GameSetting.Instance.PlayMode;
+					if (playMode is EPlayMode.EditorSimulateMode or EPlayMode.OfflinePlayMode) return true;
+
+					if (!TryGetReadyPackage(out var package))
+					{
+						FuLogger.LogError($"[AssetModule]按标签下载失败：默认资源包未就绪，tag={tag}");
+						return false;
+					}
+
+					// 按标签创建下载器（YooAsset 语义：未打标签的 bundle 视为公共依赖始终包含，
+					// 故本 API 的下载范围 = 无标签公共依赖 + 该标签 bundle，天然适合"补齐当前语言"场景）
+					var downloader = package.CreateResourceDownloader(new ResourceDownloaderOptions(tag, GameSetting.Instance.DownloadingMaxNum, GameSetting.Instance.FailedTryAgainNum));
+
+					// 无待下载内容（本地已全有/该标签无资源）：零开销直过，幂等
+					if (downloader.TotalDownloadCount == 0) return true;
+
+					// 进度回调：与 LoadSceneAsync 同风格，回调异常内部捕获不影响下载
+					if (onProgress != null)
+					{
+						downloader.DownloadProgressChanged += args => TryReportProgress(onProgress, args.CurrentDownloadBytes / (args.TotalDownloadBytes * 1f));
+					}
+
+					var failed = false;
+					downloader.DownloadError += _ => failed = true;
+
+					downloader.StartDownload();
+					await downloader; // OperationAwaiter：完成即续行，业务失败不抛异常（以 Status 判定）
+
+					if (failed && downloader.Status != EOperationStatus.Succeeded)
+					{
+						FuLogger.LogError($"[AssetModule]按标签下载失败：tag={tag}，已完成 {downloader.CurrentDownloadCount}/{downloader.TotalDownloadCount} 个文件，错误：{downloader.Error}");
+						return false;
+					}
+
+					return true;
+				}
+			}
 		}
 
 		#endregion

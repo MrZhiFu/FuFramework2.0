@@ -1,5 +1,7 @@
 using System;
+using System.Threading;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
 using AOT.Framework.Core.Log;
 using AOT.Launch.Localization;
@@ -45,7 +47,29 @@ namespace Hotfix.Framework.Localization
 		public ILocalizationProvider LocalizationProvider { get; set; }
 
 		/// <summary>
-		/// 获取或设置当前使用的语言。
+		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
+		/// OnDispose 时 Cancel，语言切换等在途异步操作随之取消；经 CancelAsync 等待取消清理完成。
+		/// </summary>
+		private CancellationBarrier m_barrier = new();
+
+		/// <summary>
+		/// 本地化表重填回调（由 HotfixLauncher 在表加载完成后注入，指向 TableManager.ReloadLocalizationAsync）。
+		/// 语言切换先重填表、后广播事件的时序由本回调保证；返回 false 表示重填失败（空表/损坏数据），SetLanguageAsync 须回滚。
+		/// </summary>
+		internal Func<UniTask<bool>> LocalizationReloader { get; set; }
+
+		/// <summary>
+		/// 取消令牌：模块销毁（OnDispose）后触发，语言切换等在途异步操作观察它并中止。
+		/// </summary>
+		public CancellationToken Token => m_barrier.Token;
+
+		/// <summary>
+		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+		/// </summary>
+		public UniTask CancelAsync() => m_barrier.CancelAsync();
+
+		/// <summary>
+		/// 获取或设置当前使用的语言（同步切换：仅改标记/存档/广播，不加载资源——按语种拆分后资源加载走 SetLanguageAsync）。
 		/// </summary>
 		public ELanguage Language
 		{
@@ -62,21 +86,7 @@ namespace Hotfix.Framework.Localization
 				var oldLanguage = m_language;
 				m_language = value;
 
-				// 保存设置（数据保存模块缺失时跳过保存，语言切换本身仍生效）
-				if (m_storageModule != null)
-				{
-					m_storageModule.SetString("Language", value.ToString());
-					m_storageModule.Save();
-				}
-
-				// 同步语言偏好到 PlayerPrefs：下次启动 AOT 阶段（LaunchLocalization）从 PlayerPrefs 读取，
-				// 两阶段偏好不同源会导致 AOT 界面文本语言与本侧不一致
-				PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)value);
-				PlayerPrefs.Save();
-
-				// 发送本地化语言改变事件
-				var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, value);
-				m_eventModule.Broadcast(languageChangeEventArgs);
+				ApplyLanguageChange(oldLanguage, value);
 			}
 		}
 
@@ -117,6 +127,9 @@ namespace Hotfix.Framework.Localization
 		{
 			Instance = this;
 
+			// 新生命周期 = 新 Token：旧 Token 已被 OnDispose 取消，在途旧任务据此识别中止
+			m_barrier = new CancellationBarrier();
+
 			m_eventModule   = ModuleManager.GetModule<EventModule>();
 			m_storageModule = StorageModule.Instance;
 
@@ -144,6 +157,7 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		protected internal override void OnDispose()
 		{
+			m_barrier.Cancel(); // 随模块销毁取消语言切换等在途异步操作
 			Instance = null;
 		}
 
@@ -163,6 +177,94 @@ namespace Hotfix.Framework.Localization
 
 			var result = LocalizationProvider.GetLanguage(key, args);
 			return result.IsNullOrEmpty() ? $"[{key}]" : result;
+		}
+
+		/// <summary>
+		/// 异步切换语言：确保目标语种资源就绪（必要时下载）→ 重填本地化表 → 才持久化并广播语言切换事件。
+		/// 加载/下载中再次切换会取消旧链路，以最新目标为准；失败回滚内存语言并返回 false（不广播不存档）。
+		/// </summary>
+		/// <param name="language">目标语言（Unspecified 视为非法调用）</param>
+		/// <param name="token">取消令牌（必传，调用方生命周期所有者）</param>
+		/// <returns>true = 切换完成（表已重填、事件已广播）；false = 切换失败（语言已回滚，原因见日志）；取消抛 OperationCanceledException</returns>
+		public async UniTask<bool> SetLanguageAsync(ELanguage language, CancellationToken token)
+		{
+			if (language == ELanguage.Unspecified)
+			{
+				FuLogger.LogError("切换本地化语言失败，语言为 Unspecified（未指定），已忽略本次切换");
+				return false;
+			}
+
+			if (language == m_language) return true; // 同语言幂等直过
+
+			m_barrier.Token.ThrowIfCancellationRequested(); // 模块已销毁则拒绝
+			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝
+
+			var oldLanguage = m_language;
+			m_language = language; // 先改内存语言：loader 路由与 AssetModule 按 tag 下载都读它（失败/取消路径须回滚）
+			using (m_barrier.Register())
+			using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token))
+			{
+				try
+				{
+					// 1. 下载目标语种 bundle（本地已有则直过；失败回滚返回）
+					if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(language.ToString(), linkedCts.Token))
+					{
+						m_language = oldLanguage;
+						return false;
+					}
+
+					// 2. 重填本地化表（loader 此时路由到新语言文件）；重填失败（含空表/损坏数据）同样回滚
+					if (LocalizationReloader == null)
+					{
+						FuLogger.LogError("本地化表重填回调未注入，切换语言失败（HotfixLauncher 表加载完成后须注入 LocalizationReloader）");
+						m_language = oldLanguage;
+						return false;
+					}
+					if (!await LocalizationReloader())
+					{
+						m_language = oldLanguage;
+						return false;
+					}
+
+					// 3. 表就绪后才持久化 + 广播（TableManager 订阅者此时重译拿到的已是新表）
+					ApplyLanguageChange(oldLanguage, language);
+					return true;
+				}
+				catch (OperationCanceledException)
+				{
+					m_language = oldLanguage; // 取消链路回滚内存语言（数据未换，必须还原）
+					throw;
+				}
+				catch (Exception e)
+				{
+					FuLogger.LogError($"切换本地化语言 {language} 失败：{e.Message}");
+					m_language = oldLanguage;
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		/// 语言切换落地三步：存档 + 同步 PlayerPrefs 偏好 + 广播语言切换事件。
+		/// 供 Language setter（同步切换）与 SetLanguageAsync（异步切换就绪后）共用；调用前 m_language 须已更新。
+		/// </summary>
+		private void ApplyLanguageChange(ELanguage oldLanguage, ELanguage newLanguage)
+		{
+			// 保存设置（数据保存模块缺失时跳过保存，语言切换本身仍生效）
+			if (m_storageModule != null)
+			{
+				m_storageModule.SetString("Language", newLanguage.ToString());
+				m_storageModule.Save();
+			}
+
+			// 同步语言偏好到 PlayerPrefs：下次启动 AOT 阶段（LaunchLocalization）从 PlayerPrefs 读取，
+			// 两阶段偏好不同源会导致 AOT 界面文本语言与本侧不一致
+			PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)newLanguage);
+			PlayerPrefs.Save();
+
+			// 发送本地化语言改变事件（订阅者如 TableManager 在事件回调中重译全表）
+			var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, newLanguage);
+			m_eventModule.Broadcast(languageChangeEventArgs);
 		}
 	}
 }

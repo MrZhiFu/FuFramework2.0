@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -30,12 +29,12 @@ namespace Hotfix.Game.Config
         /// <summary> 成就名称 </summary>
         public string Name { private set; get; }
         /// <summary> 成就名称 的多语言Key </summary>
-        private readonly string Name_Localization_Key;
+        public readonly string Name_Localization_Key;
 
         /// <summary> 描述信息 </summary>
         public string Desc { private set; get; }
         /// <summary> 描述信息 的多语言Key </summary>
-        private readonly string Desc_Localization_Key;
+        public readonly string Desc_Localization_Key;
 
         /// <summary> 成就解锁条件 </summary>
         public System.Collections.Generic.List<int> UnlockCondition { private set; get; }
@@ -62,17 +61,16 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 Achievement 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 Achievement 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private Achievement(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private Achievement(ByteBuf buf) 
         {
-            { if(!node["id"].IsNumber) { throw new SerializationException(); }  Id = node["id"]; }
-            { if(!node["icon"].IsString) { throw new SerializationException(); }  Icon = node["icon"]; }
-            { if(!node["name"].IsString) { throw new SerializationException(); }  Name = node["name"]; }
-            { if(!node["desc"].IsString) { throw new SerializationException(); }  Desc = node["desc"]; }
-            { var __json0 = node["unlock_condition"]; if(!__json0.IsArray) { throw new SerializationException(); } UnlockCondition = new System.Collections.Generic.List<int>(__json0.Count); foreach(JSONNode __e0 in __json0.Children) { int __v0;  { if(!__e0.IsNumber) { throw new SerializationException(); }  __v0 = __e0; }  UnlockCondition.Add(__v0); }   }
-
+            Id = buf.ReadInt();
+            Icon = buf.ReadString();
+            Name = buf.ReadString();
+            Desc = buf.ReadString();
+            {int n0 = buf.ReadSize(); UnlockCondition = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = buf.ReadInt(); UnlockCondition.Add(_e0);}}
             // Localization Key Begin
             Name_Localization_Key = Name;
             Desc_Localization_Key = Desc;
@@ -83,9 +81,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 Achievement 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 Achievement</returns>
-        public static Achievement DeserializeAchievement(JSONNode node) => new(node);
+        public static Achievement DeserializeAchievement(ByteBuf buf) => new(buf);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -93,6 +91,7 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
+            PostResolveRef();
         }
 
         /// <summary>
@@ -124,5 +123,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

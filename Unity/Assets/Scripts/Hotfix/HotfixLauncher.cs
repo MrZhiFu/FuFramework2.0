@@ -50,6 +50,11 @@ namespace Hotfix
 		private static TableManager s_tableManager;
 
 		/// <summary>
+		/// 本地化表名（loader 路由拦截键：该表按当前语言加载拆分文件，其余表走整表原路径）
+		/// </summary>
+		private const string LOCALIZATION_TABLE_NAME = "tblocalization";
+
+		/// <summary>
 		/// 启动入口
 		/// </summary>
 		/// <param name="launchView">AOT 启动加载界面句柄，登录界面打开后关闭。</param>
@@ -191,6 +196,12 @@ namespace Hotfix
 			var tableManager = new TableManager();
 			tableManager.Init(ConfigModule.Instance);
 
+			// 启动期保证当前语种 bundle 在本地：AOT 首启按 PlayerPrefs 语言下载，存档语言可能漂移（跨设备迁移存档），
+			// 漂移时目标 bundle 未下载会导致 loader 加载失败——统一在此幂等补齐（本地已有则零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）
+			var langTag = LocalizationModule.Instance.Language.ToString();
+			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(langTag, GlobalModule.AssetModule.Token))
+				FuLogger.LogError($"[HotfixLauncher] 启动期下载语言资源失败：{langTag}，配置表加载可能失败");
+
 #if ENABLE_BINARY_CONFIG
 			// 使用二进制配置表
 			await tableManager.LoadAsync(BinaryJsonConfigLoader);
@@ -201,6 +212,10 @@ namespace Hotfix
 
 			// 订阅语言切换事件并登记实例（退订/覆盖次序固定，勿在别处重复登记）
 			tableManager.SubscribeLanguageChange();
+
+			// 注入语言切换重填回调：SetLanguageAsync 先重填表后广播事件的时序依赖此钩子
+			LocalizationModule.Instance.LocalizationReloader = tableManager.ReloadLocalizationAsync;
+
 			s_tableManager = tableManager;
 			return tableManager;
 		}
@@ -221,11 +236,32 @@ namespace Hotfix
 		/// <returns></returns>
 		private static async UniTask<ByteBuf> BinaryJsonConfigLoader(string file)
 		{
+			// 本地化表路由：tblocalization 按当前语言加载拆分文件（表名拦截点全仓唯一: TableManager.cs:88）
+			// 语言来源: LocalizationModule.OnInit 先于本加载执行（RegisterBaseModules 先于 LoadConfigAsync），恒已确定
+			if (file == LOCALIZATION_TABLE_NAME)
+			{
+				var lang      = LocalizationModule.Instance.Language.ToString();
+				var localPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
+				var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(localPath, GlobalModule.AssetModule.Token);
+				try
+				{
+					var textAsset = assetHandle.GetAssetObject<TextAsset>();
+					if (textAsset == null)
+						throw new System.InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
+					return ByteBuf.Wrap(textAsset.bytes);
+				}
+				finally
+				{
+					assetHandle.Release();
+					GlobalModule.AssetModule.UnloadAsset(localPath);
+				}
+			}
+
 			var configPath = UtilityAOT.AssetPath.GetConfigPath(file);
-			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath, GlobalModule.AssetModule.Token);
+			var handle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(configPath, GlobalModule.AssetModule.Token);
 			try
 			{
-				var textAsset = assetHandle.GetAssetObject<TextAsset>();
+				var textAsset = handle.GetAssetObject<TextAsset>();
 				if (textAsset == null)
 					throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
 				return ByteBuf.Wrap(textAsset.bytes);
@@ -234,7 +270,7 @@ namespace Hotfix
 			{
 				// 启动一次性加载，解析后释放句柄，避免 provider 引用残留
 				// AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
-				assetHandle.Release();
+				handle.Release();
 				GlobalModule.AssetModule.UnloadAsset(configPath);
 			}
 		}
@@ -246,20 +282,42 @@ namespace Hotfix
 		/// <returns></returns>
 		private static async UniTask<JSONNode> JsonConfigLoader(string file)
 		{
+			// 本地化表路由：tblocalization 按当前语言加载拆分文件（表名拦截点全仓唯一: TableManager.cs:88）
+			// 语言来源: LocalizationModule.OnInit 先于本加载执行（RegisterBaseModules 先于 LoadConfigAsync），恒已确定
+			// 扩展名恒为 .bytes（产物统一扩展名裁决：json 变体内容是 json 文本、bin 变体是 ByteBuf，同为 TextAsset）
+			if (file == LOCALIZATION_TABLE_NAME)
+			{
+				var lang      = LocalizationModule.Instance.Language.ToString();
+				var localPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
+				var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(localPath, GlobalModule.AssetModule.Token);
+				try
+				{
+					var textAsset = assetHandle.GetAssetObject<TextAsset>();
+					if (textAsset == null)
+						throw new System.InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
+					return JSON.Parse(textAsset.text);
+				}
+				finally
+				{
+					assetHandle.Release();
+					GlobalModule.AssetModule.UnloadAsset(localPath);
+				}
+			}
+
 			var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
-			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
+			var handle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
 			try
 			{
-				var textAsset = assetHandle.GetAssetObject<TextAsset>();
+				var textAsset = handle.GetAssetObject<TextAsset>();
 				if (textAsset == null)
 					throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
-				return JSON.Parse(textAsset.text);
+				return JSON.Parse(handle.GetAssetObject<TextAsset>().text);
 			}
 			finally
 			{
 				// 解析后释放句柄，避免 provider 引用残留
 				// AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
-				assetHandle.Release();
+				handle.Release();
 				GlobalModule.AssetModule.UnloadAsset(cfgPath);
 			}
 		}

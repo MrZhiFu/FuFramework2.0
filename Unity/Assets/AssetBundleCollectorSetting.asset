@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -128,4 +128,129 @@ MonoBehaviour:
         PackRuleName: PackShader
         FilterRuleName: CollectAll
         AssetTags: 
+        UserData: 
+    - GroupName: Localization
+      GroupDesc: "\u672C\u5730\u5316\u6309\u8BED\u79CD\u62C6\u5206"
+      AssetTags: 
+      ActiveRuleName: EnableGroup
+      Collectors:
+      - CollectPath: Assets/Bundles/Localization/tblocalization_ChineseSimplified.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: ChineseSimplified
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_ChineseTraditional.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: ChineseTraditional
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_English.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: English
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_French.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: French
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_German.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: German
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Indonesian.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Indonesian
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Italian.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Italian
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Japanese.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Japanese
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Korean.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Korean
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_PortugueseBrazil.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: PortugueseBrazil
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_PortuguesePortugal.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: PortuguesePortugal
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Russian.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Russian
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Spanish.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Spanish
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Thai.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Thai
+        UserData: 
+      - CollectPath: Assets/Bundles/Localization/tblocalization_Vietnamese.bytes
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: Vietnamese
         UserData: 

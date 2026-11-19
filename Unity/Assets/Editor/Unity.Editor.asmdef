@@ -5,7 +5,8 @@
         "YooAsset.Editor",
         "HybridCLR.Editor",
         "YooAsset",
-        "AOT"
+        "AOT",
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"

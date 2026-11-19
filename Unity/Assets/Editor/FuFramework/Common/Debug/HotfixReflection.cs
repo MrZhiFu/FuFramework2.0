@@ -144,6 +144,11 @@ namespace FuFramework.Core.Editor
 		/// </summary>
 		public static System.Type NetworkModule => Resolve("Hotfix.Framework.Network.NetworkModule");
 
+		/// <summary>
+		/// Hotfix.Framework.Localization.LocalizationModule（本地化管理模块，调试面板含语言切换验证入口）
+		/// </summary>
+		public static System.Type LocalizationModule => Resolve("Hotfix.Framework.Localization.LocalizationModule");
+
 		#endregion
 
 		#region 模块实例获取
