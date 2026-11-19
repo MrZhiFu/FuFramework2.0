@@ -158,6 +158,11 @@ namespace Hotfix.Framework.Localization
 		protected internal override void OnDispose()
 		{
 			m_barrier.Cancel(); // 随模块销毁取消语言切换等在途异步操作
+
+			// 在途切换凭据随生命周期终结（barrier.Cancel 已令其链路取消，此处防泄漏）
+			m_switchCts?.Dispose();
+			m_switchCts = null;
+
 			Instance = null;
 		}
 
@@ -180,8 +185,15 @@ namespace Hotfix.Framework.Localization
 		}
 
 		/// <summary>
+		/// 当前在途切换链路的取消源（防抖：新切换先取消旧链路，以最新目标为准；null = 无在途切换）。
+		/// 访问须在主线程（切换链路的发起/收尾都在主线程同步段），无并发写风险。
+		/// </summary>
+		private CancellationTokenSource m_switchCts;
+
+		/// <summary>
 		/// 异步切换语言：确保目标语种资源就绪（必要时下载）→ 重填本地化表 → 才持久化并广播语言切换事件。
-		/// 加载/下载中再次切换会取消旧链路，以最新目标为准；失败回滚内存语言并返回 false（不广播不存档）。
+		/// 加载/下载中再次切换会取消旧链路（旧调用抛 OperationCanceledException），以最新目标为准；
+		/// 失败回滚内存语言并返回 false（不广播不存档）。
 		/// </summary>
 		/// <param name="language">目标语言（Unspecified 视为非法调用）</param>
 		/// <param name="token">取消令牌（必传，调用方生命周期所有者）</param>
@@ -199,10 +211,20 @@ namespace Hotfix.Framework.Localization
 			m_barrier.Token.ThrowIfCancellationRequested(); // 模块已销毁则拒绝
 			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝
 
+			// 防抖：取消在途旧链路（其 catch OCE 回滚内存语言后抛出，不影响本链路）
+			if (m_switchCts != null)
+			{
+				m_switchCts.Cancel();
+				m_switchCts.Dispose();
+				m_switchCts = null;
+			}
+
 			var oldLanguage = m_language;
 			m_language = language; // 先改内存语言：loader 路由与 AssetModule 按 tag 下载都读它（失败/取消路径须回滚）
+			m_switchCts = new CancellationTokenSource();
+			var switchCts = m_switchCts; // 本链路凭据：finally 清理时识别自己是否仍是最新链路
 			using (m_barrier.Register())
-			using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token))
+			using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token, switchCts.Token))
 			{
 				try
 				{
@@ -240,6 +262,15 @@ namespace Hotfix.Framework.Localization
 					FuLogger.LogError($"切换本地化语言 {language} 失败：{e.Message}");
 					m_language = oldLanguage;
 					return false;
+				}
+				finally
+				{
+					// 链路收尾：仅当自己仍是最新链路时清空凭据（被防抖取消的旧链路不动新链路的 CTS）
+					if (m_switchCts == switchCts)
+					{
+						m_switchCts.Dispose();
+						m_switchCts = null;
+					}
 				}
 			}
 		}

@@ -371,7 +371,7 @@ namespace Hotfix.Framework.Asset
 		///     EditorSimulateMode / OfflinePlayMode 无远程清单可下，恒直接成功。
 		///     第一个消费方为语言切换（按语种 tag 下载本地化配置 bundle），后续活动资源等按需下载复用本 API。
 		/// 注意：失败不抛异常（返回 false，失败原因已记日志），由调用方决定重试与提示策略；
-		///       取消（模块销毁/调用方取消）抛 OperationCanceledException，YooAsset 下载器随 await 中止，无额外清理需求。
+		///       取消（模块销毁/调用方取消）抛 OperationCanceledException，下载器经 CancelDownload 中止后 await 轮询点抛出。
 		/// </summary>
 		/// <param name="tag">资源标签（如语种名 English）</param>
 		/// <param name="token">取消令牌（必传）</param>
@@ -411,9 +411,20 @@ namespace Hotfix.Framework.Asset
 					var failed = false;
 					downloader.DownloadError += _ => failed = true;
 
+					// 取消挂接：YooAsset 的 await 等待器不接 CancellationToken（GetResult 为空实现），
+					// 需经轮询等待点观察取消令牌——取消时先 CancelDownload 中止下载器，再抛 OCE（铁律 5 取消语义）
 					downloader.StartDownload();
-					await downloader; // OperationAwaiter：完成即续行，业务失败不抛异常（以 Status 判定）
+					try
+					{
+						await UniTask.WaitUntil(() => downloader.IsDone, cancellationToken: linkedCts.Token);
+					}
+					catch (OperationCanceledException)
+					{
+						downloader.CancelDownload(); // 中止下载器（AbortOperation 中止子请求，Status 变 Failed）
+						throw;
+					}
 
+					// 业务失败不抛异常（以 Status 判定）
 					if (failed && downloader.Status != EOperationStatus.Succeeded)
 					{
 						FuLogger.LogError($"[AssetModule]按标签下载失败：tag={tag}，已完成 {downloader.CurrentDownloadCount}/{downloader.TotalDownloadCount} 个文件，错误：{downloader.Error}");

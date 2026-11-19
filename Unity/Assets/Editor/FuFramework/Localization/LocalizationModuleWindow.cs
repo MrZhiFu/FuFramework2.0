@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using UnityEditor;
@@ -160,11 +159,26 @@ namespace FuFramework.Localization.Editor
 			{
 				var task = m_setLanguageAsyncMethod.Invoke(m_moduleInstance, new[] { languageValue, CancellationToken.None });
 				var taskType = task.GetType();
-				// Hotfix 程序集为热更域（Editor 静态引用不到其类型），Forget 扩展按类型实例所在程序集定位
-				// （UniTask<bool> 实例的 typeof 所在程序集即 UniTask），再调 Forget(UniTask<bool>) 扩展
-				var forgetMethod = taskType.Assembly.GetType("Cysharp.Threading.Tasks.UniTaskExtensions")
-					?.GetMethod("Forget", BindingFlags.Public | BindingFlags.Static, null, new[] { taskType }, null);
-				if (forgetMethod == null)
+				// Hotfix 程序集为热更域（Editor 静态引用不到其类型），Forget 扩展按类型实例所在程序集定位。
+				// Forget<T>(this UniTask<T>) 是泛型方法定义，binder 对泛型定义不自动实例化——
+				// 须先取泛型定义再 MakeGenericMethod(闭包泛型参数) 后调用（.NET 反射标准行为）
+				var extensionsType = taskType.Assembly.GetType("Cysharp.Threading.Tasks.UniTaskExtensions");
+				System.Reflection.MethodInfo forgetDefinition = null;
+				if (extensionsType != null)
+				{
+					var candidates = extensionsType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+					foreach (var candidate in candidates)
+					{
+						if (candidate.Name != "Forget" || !candidate.IsGenericMethodDefinition) continue;
+						var parameterType = candidate.GetParameters()[0].ParameterType;
+						if (parameterType.Name.StartsWith("UniTask`", StringComparison.Ordinal))
+						{
+							forgetDefinition = candidate;
+							break;
+						}
+					}
+				}
+				if (forgetDefinition == null)
 				{
 					m_lastResult  = $"切换调用失败：Forget 扩展未找到（{taskType.Name}）";
 					m_lastResultOk = false;
@@ -172,6 +186,7 @@ namespace FuFramework.Localization.Editor
 					return;
 				}
 
+				var forgetMethod = forgetDefinition.MakeGenericMethod(taskType.GetGenericArguments());
 				forgetMethod.Invoke(null, new[] { task });
 				m_pendingLanguageIndex = languageIndex;
 			}

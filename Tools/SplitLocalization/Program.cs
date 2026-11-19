@@ -97,7 +97,7 @@ namespace FuFramework.SplitLocalization
 					return 2;
 				}
 
-				// 清理：删除源文件 + 非当前变体残留
+				// 清理：删除源文件 + 旧版 .json 残留
 				CleanupSource(variant);
 				CleanupOtherVariant(variant);
 
@@ -666,14 +666,14 @@ namespace FuFramework.SplitLocalization
 		}
 
 		/// <summary>
-		/// 清理输出目录中非当前变体的残留（bin/json 混跑只留一套）
+		/// 清理输出目录中的旧版 .json 产物残留（扩展名统一 .bytes 裁决前的历史产物）。
+		/// 当前产物全部为 .bytes 且按语种同名覆写，双变体天然互斥，无需按变体清理。
 		/// </summary>
 		private static void CleanupOtherVariant(string variant)
 		{
-			var otherExt = variant == "json" ? "bytes" : "json";
 			if (!Directory.Exists(OutputDir)) return;
 
-			foreach (var file in Directory.GetFiles(OutputDir, $"*.{otherExt}"))
+			foreach (var file in Directory.GetFiles(OutputDir, "*.json"))
 			{
 				File.Delete(file);
 				Console.WriteLine($"[SplitLocalization] cleaned stale {file}");
