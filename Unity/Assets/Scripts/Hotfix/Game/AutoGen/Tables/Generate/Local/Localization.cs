@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -117,28 +118,29 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 ByteBuf 反序列化创建 Localization 实例(内部序列化使用)
+        /// 从 JSONNode 反序列化创建 Localization 实例(内部序列化使用)
         /// </summary>
-        /// <param name="buf">配置数据流</param>
-        private Localization(ByteBuf buf) 
+        /// <param name="node">配置数据节点</param>
+        private Localization(JSONNode node)
         {
-            Key = buf.ReadString();
-            IsCode = buf.ReadBool();
-            ChineseSimplified = buf.ReadString();
-            ChineseTraditional = buf.ReadString();
-            English = buf.ReadString();
-            Japanese = buf.ReadString();
-            Korean = buf.ReadString();
-            Thai = buf.ReadString();
-            Indonesian = buf.ReadString();
-            French = buf.ReadString();
-            German = buf.ReadString();
-            Russian = buf.ReadString();
-            Italian = buf.ReadString();
-            PortugueseBrazil = buf.ReadString();
-            PortuguesePortugal = buf.ReadString();
-            Spanish = buf.ReadString();
-            Vietnamese = buf.ReadString();
+            { if(!node["key"].IsString) { throw new SerializationException(); }  Key = node["key"]; }
+            { if(!node["is_code"].IsBoolean) { throw new SerializationException(); }  IsCode = node["is_code"]; }
+            { if(!node["ChineseSimplified"].IsString) { throw new SerializationException(); }  ChineseSimplified = node["ChineseSimplified"]; }
+            { if(!node["ChineseTraditional"].IsString) { throw new SerializationException(); }  ChineseTraditional = node["ChineseTraditional"]; }
+            { if(!node["English"].IsString) { throw new SerializationException(); }  English = node["English"]; }
+            { if(!node["Japanese"].IsString) { throw new SerializationException(); }  Japanese = node["Japanese"]; }
+            { if(!node["Korean"].IsString) { throw new SerializationException(); }  Korean = node["Korean"]; }
+            { if(!node["Thai"].IsString) { throw new SerializationException(); }  Thai = node["Thai"]; }
+            { if(!node["Indonesian"].IsString) { throw new SerializationException(); }  Indonesian = node["Indonesian"]; }
+            { if(!node["French"].IsString) { throw new SerializationException(); }  French = node["French"]; }
+            { if(!node["German"].IsString) { throw new SerializationException(); }  German = node["German"]; }
+            { if(!node["Russian"].IsString) { throw new SerializationException(); }  Russian = node["Russian"]; }
+            { if(!node["Italian"].IsString) { throw new SerializationException(); }  Italian = node["Italian"]; }
+            { if(!node["PortugueseBrazil"].IsString) { throw new SerializationException(); }  PortugueseBrazil = node["PortugueseBrazil"]; }
+            { if(!node["PortuguesePortugal"].IsString) { throw new SerializationException(); }  PortuguesePortugal = node["PortuguesePortugal"]; }
+            { if(!node["Spanish"].IsString) { throw new SerializationException(); }  Spanish = node["Spanish"]; }
+            { if(!node["Vietnamese"].IsString) { throw new SerializationException(); }  Vietnamese = node["Vietnamese"]; }
+
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -147,9 +149,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 Localization 实例
         /// </summary>
-        /// <param name="buf">配置数据流</param>
+        /// <param name="node">配置数据节点</param>
         /// <returns>反序列化后的 Localization</returns>
-        public static Localization DeserializeLocalization(ByteBuf buf) => new(buf);
+        public static Localization DeserializeLocalization(JSONNode node) => new(node);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -157,7 +159,6 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
-            PostResolveRef();
         }
 
         /// <summary>
@@ -199,10 +200,5 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
-
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }

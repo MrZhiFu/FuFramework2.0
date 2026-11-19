@@ -1,0 +1,107 @@
+[
+  {
+    "language": 1,
+    "name": "简体中文",
+    "icon": "",
+    "sort": 1,
+    "separator": "，"
+  },
+  {
+    "language": 2,
+    "name": "繁体中文",
+    "icon": "",
+    "sort": 2,
+    "separator": "，"
+  },
+  {
+    "language": 3,
+    "name": "English",
+    "icon": "",
+    "sort": 3,
+    "separator": ","
+  },
+  {
+    "language": 4,
+    "name": "Français",
+    "icon": "",
+    "sort": 4,
+    "separator": ","
+  },
+  {
+    "language": 5,
+    "name": "Deutsch",
+    "icon": "",
+    "sort": 5,
+    "separator": ","
+  },
+  {
+    "language": 6,
+    "name": "Indonesia",
+    "icon": "",
+    "sort": 6,
+    "separator": ","
+  },
+  {
+    "language": 7,
+    "name": "Italiano",
+    "icon": "",
+    "sort": 7,
+    "separator": ","
+  },
+  {
+    "language": 8,
+    "name": "日本語",
+    "icon": "",
+    "sort": 8,
+    "separator": "、"
+  },
+  {
+    "language": 9,
+    "name": "한국어",
+    "icon": "",
+    "sort": 9,
+    "separator": ","
+  },
+  {
+    "language": 10,
+    "name": "Português (BR)",
+    "icon": "",
+    "sort": 10,
+    "separator": ","
+  },
+  {
+    "language": 11,
+    "name": "Português",
+    "icon": "",
+    "sort": 11,
+    "separator": ","
+  },
+  {
+    "language": 12,
+    "name": "Русский",
+    "icon": "",
+    "sort": 12,
+    "separator": ","
+  },
+  {
+    "language": 13,
+    "name": "Español",
+    "icon": "",
+    "sort": 13,
+    "separator": ","
+  },
+  {
+    "language": 14,
+    "name": "ไทย",
+    "icon": "",
+    "sort": 14,
+    "separator": ","
+  },
+  {
+    "language": 15,
+    "name": "Tiếng Việt",
+    "icon": "",
+    "sort": 15,
+    "separator": ","
+  }
+]

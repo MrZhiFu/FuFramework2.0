@@ -456,9 +456,19 @@ namespace FuFramework.SplitLocalization
 		}
 
 		/// <summary>
-		/// json 字符串转义（key/文本可能含引号与换行）
+		/// json 字符串转义（key/文本可能含引号与换行）。
+		/// UnsafeRelaxedJsonEscaping：保留 UTF-8 中文原文不转 \uXXXX（与 Luban 整表导出风格一致，产物可肉眼核对/diff）；
+		/// 该 Encoder 只用于此处手写的 JSON 产物写出，非 HTML 场景无安全影响。
 		/// </summary>
-		private static string JsonString(string value) => JsonSerializer.Serialize(value);
+		private static string JsonString(string value) => JsonSerializer.Serialize(value, JsonWriteOptions);
+
+		/// <summary>
+		/// 产物写出用序列化选项（非 ASCII 保留原文）
+		/// </summary>
+		private static readonly JsonSerializerOptions JsonWriteOptions = new()
+		{
+			Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+		};
 
 		/// <summary>
 		/// 自校验：抽样断言输出行数一致、目标语种字段值正确（含兜底）、非目标语种字段全空串。

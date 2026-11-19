@@ -1,0 +1,37 @@
+[
+  {
+    "Id": 1,
+    "PoolAutoDisposeCheckInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTimeAfterIdle": 60,
+    "PoolPriority": 0
+  },
+  {
+    "Id": 2,
+    "PoolAutoDisposeCheckInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTimeAfterIdle": 60,
+    "PoolPriority": 0
+  },
+  {
+    "Id": 3,
+    "PoolAutoDisposeCheckInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTimeAfterIdle": 60,
+    "PoolPriority": 0
+  },
+  {
+    "Id": 4,
+    "PoolAutoDisposeCheckInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTimeAfterIdle": 60,
+    "PoolPriority": 0
+  },
+  {
+    "Id": 5,
+    "PoolAutoDisposeCheckInterval": 60,
+    "PoolCapacity": 16,
+    "PoolExpireTimeAfterIdle": 60,
+    "PoolPriority": 0
+  }
+]

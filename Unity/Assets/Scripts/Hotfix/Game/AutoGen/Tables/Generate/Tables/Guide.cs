@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -47,14 +48,15 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 ByteBuf 反序列化创建 Guide 实例(内部序列化使用)
+        /// 从 JSONNode 反序列化创建 Guide 实例(内部序列化使用)
         /// </summary>
-        /// <param name="buf">配置数据流</param>
-        private Guide(ByteBuf buf) 
+        /// <param name="node">配置数据节点</param>
+        private Guide(JSONNode node)
         {
-            Id = buf.ReadInt();
-            Name = buf.ReadString();
-            StartStepId = buf.ReadInt();
+            { if(!node["Id"].IsNumber) { throw new SerializationException(); }  Id = node["Id"]; }
+            { if(!node["Name"].IsString) { throw new SerializationException(); }  Name = node["Name"]; }
+            { if(!node["StartStepId"].IsNumber) { throw new SerializationException(); }  StartStepId = node["StartStepId"]; }
+
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -63,9 +65,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 Guide 实例
         /// </summary>
-        /// <param name="buf">配置数据流</param>
+        /// <param name="node">配置数据节点</param>
         /// <returns>反序列化后的 Guide</returns>
-        public static Guide DeserializeGuide(ByteBuf buf) => new(buf);
+        public static Guide DeserializeGuide(JSONNode node) => new(node);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -73,7 +75,6 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
-            PostResolveRef();
         }
 
         /// <summary>
@@ -101,10 +102,5 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
-
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }

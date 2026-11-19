@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -67,18 +68,19 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 ByteBuf 反序列化创建 UIConfig 实例(内部序列化使用)
+        /// 从 JSONNode 反序列化创建 UIConfig 实例(内部序列化使用)
         /// </summary>
-        /// <param name="buf">配置数据流</param>
-        private UIConfig(ByteBuf buf) 
+        /// <param name="node">配置数据节点</param>
+        private UIConfig(JSONNode node)
         {
-            Name = buf.ReadString();
-            Layer = (EUILayer)buf.ReadInt();
-            TweenType = (EUITweenType)buf.ReadInt();
-            TweenDuration = buf.ReadFloat();
-            AdjustNotch = buf.ReadBool();
-            PauseCoveredUI = buf.ReadBool();
-            Blur = buf.ReadBool();
+            { if(!node["Name"].IsString) { throw new SerializationException(); }  Name = node["Name"]; }
+            { if(!node["Layer"].IsNumber) { throw new SerializationException(); }  Layer = (EUILayer)node["Layer"].AsInt; }
+            { if(!node["TweenType"].IsNumber) { throw new SerializationException(); }  TweenType = (EUITweenType)node["TweenType"].AsInt; }
+            { if(!node["TweenDuration"].IsNumber) { throw new SerializationException(); }  TweenDuration = node["TweenDuration"]; }
+            { if(!node["AdjustNotch"].IsBoolean) { throw new SerializationException(); }  AdjustNotch = node["AdjustNotch"]; }
+            { if(!node["PauseCoveredUI"].IsBoolean) { throw new SerializationException(); }  PauseCoveredUI = node["PauseCoveredUI"]; }
+            { if(!node["Blur"].IsBoolean) { throw new SerializationException(); }  Blur = node["Blur"]; }
+
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -87,9 +89,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 UIConfig 实例
         /// </summary>
-        /// <param name="buf">配置数据流</param>
+        /// <param name="node">配置数据节点</param>
         /// <returns>反序列化后的 UIConfig</returns>
-        public static UIConfig DeserializeUIConfig(ByteBuf buf) => new(buf);
+        public static UIConfig DeserializeUIConfig(JSONNode node) => new(node);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -97,7 +99,6 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
-            PostResolveRef();
         }
 
         /// <summary>
@@ -129,10 +130,5 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
-
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }

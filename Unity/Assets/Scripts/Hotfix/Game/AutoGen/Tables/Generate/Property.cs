@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -77,20 +78,21 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 ByteBuf 反序列化创建 Property 实例(内部序列化使用)
+        /// 从 JSONNode 反序列化创建 Property 实例(内部序列化使用)
         /// </summary>
-        /// <param name="buf">配置数据流</param>
-        private Property(ByteBuf buf) 
+        /// <param name="node">配置数据节点</param>
+        private Property(JSONNode node)
         {
-            PhysicalAttack = buf.ReadInt();
-            MagicAttack = buf.ReadInt();
-            PhysicalDefense = buf.ReadInt();
-            MagicDefense = buf.ReadInt();
-            Life = buf.ReadInt();
-            Crit = buf.ReadInt();
-            BurstDamage = buf.ReadInt();
-            Precise = buf.ReadInt();
-            Block = buf.ReadInt();
+            { if(!node["PhysicalAttack"].IsNumber) { throw new SerializationException(); }  PhysicalAttack = node["PhysicalAttack"]; }
+            { if(!node["MagicAttack"].IsNumber) { throw new SerializationException(); }  MagicAttack = node["MagicAttack"]; }
+            { if(!node["PhysicalDefense"].IsNumber) { throw new SerializationException(); }  PhysicalDefense = node["PhysicalDefense"]; }
+            { if(!node["MagicDefense"].IsNumber) { throw new SerializationException(); }  MagicDefense = node["MagicDefense"]; }
+            { if(!node["Life"].IsNumber) { throw new SerializationException(); }  Life = node["Life"]; }
+            { if(!node["Crit"].IsNumber) { throw new SerializationException(); }  Crit = node["Crit"]; }
+            { if(!node["burstDamage"].IsNumber) { throw new SerializationException(); }  BurstDamage = node["burstDamage"]; }
+            { if(!node["precise"].IsNumber) { throw new SerializationException(); }  Precise = node["precise"]; }
+            { if(!node["block"].IsNumber) { throw new SerializationException(); }  Block = node["block"]; }
+
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -99,9 +101,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 Property 实例
         /// </summary>
-        /// <param name="buf">配置数据流</param>
+        /// <param name="node">配置数据节点</param>
         /// <returns>反序列化后的 Property</returns>
-        public static Property DeserializeProperty(ByteBuf buf) => new(buf);
+        public static Property DeserializeProperty(JSONNode node) => new(node);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -109,7 +111,6 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
-            PostResolveRef();
         }
 
         /// <summary>
@@ -143,10 +144,5 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
-
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }

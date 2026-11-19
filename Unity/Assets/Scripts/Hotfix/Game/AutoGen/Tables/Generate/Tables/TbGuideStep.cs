@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 using Hotfix.Framework.Config;
 using Cysharp.Threading.Tasks;
 
@@ -20,31 +21,32 @@ namespace Hotfix.Game.Config
     public partial class TbGuideStep : BaseDataTable<GuideStep>
     {
         /// <summary>
-        /// 取配置表 ByteBuf 的加载委托（由 TableManager 注入，参数为表文件路径）
+        /// 取配置表 JSON 的加载委托（由 TableManager 注入，参数为表文件路径）
         /// </summary>
-        private readonly Func<UniTask<ByteBuf>> m_loadFunc;
+        private readonly Func<UniTask<JSONNode>> m_loadFunc;
 
         /// <summary>
         /// 创建表实例
         /// </summary>
-        /// <param name="loadFunc">取配置表 ByteBuf 的加载委托</param>
-        public TbGuideStep(Func<UniTask<ByteBuf>> loadFunc) => m_loadFunc = loadFunc;
+        /// <param name="loadFunc">取配置表 JSON 的加载委托</param>
+        public TbGuideStep(Func<UniTask<JSONNode>> loadFunc) => m_loadFunc = loadFunc;
 
         /// <summary>
         /// 异步加载本表数据
         /// </summary>
-        /// <remarks>从 loader 取 ByteBuf、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
+        /// <remarks>从 loader 取 JSON、清空字典、逐行反序列化，完成后调用 PostInit</remarks>
         public override async UniTask LoadAsync()
         {
-            var buf = await m_loadFunc();
+            var jsonNode = await m_loadFunc();
 
             DataList.Clear();
             LongKeyDataDict.Clear();
             StrKeyDataDict.Clear();
 
-            for(int n = buf.ReadSize() ; n > 0 ; --n)
+            foreach(var node in jsonNode.Children)
             {
-                var guideStep = GuideStep.DeserializeGuideStep(buf);
+                if (!node.IsObject) throw new SerializationException();  
+                var guideStep = GuideStep.DeserializeGuideStep(node);
                 DataList.Add(guideStep);
                 LongKeyDataDict.Add(guideStep.Id, guideStep);
                 StrKeyDataDict.Add(guideStep.Id.ToString(), guideStep);
@@ -63,7 +65,6 @@ namespace Hotfix.Game.Config
             {
                 value.ResolveRef(tableManager);
             }
-            PostResolveRef();
         }
 
         /// <summary>
@@ -78,15 +79,10 @@ namespace Hotfix.Game.Config
             }
         }
 
-
         /// <summary>
         /// 分部初始化钩子，由使用方补实现。
         /// 典型场景：完成一些给该表预计算、排序、建字典索引等"只靠本表数据就能完成"的预处理收尾工作
         /// </summary>
         partial void OnInit();
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }

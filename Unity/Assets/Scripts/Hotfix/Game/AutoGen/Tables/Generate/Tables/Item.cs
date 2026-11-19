@@ -8,6 +8,7 @@
 
 using System;
 using Luban;
+using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -26,12 +27,12 @@ namespace Hotfix.Game.Config
         /// <summary> 名称 </summary>
         public string Name { private set; get; }
         /// <summary> 名称 的多语言Key </summary>
-        public readonly string Name_Localization_Key;
+        private readonly string Name_Localization_Key;
 
         /// <summary> 描述 </summary>
         public string Desc { private set; get; }
         /// <summary> 描述 的多语言Key </summary>
-        public readonly string Desc_Localization_Key;
+        private readonly string Desc_Localization_Key;
 
         /// <summary> 图标 </summary>
         public string Icon { private set; get; }
@@ -81,20 +82,21 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 ByteBuf 反序列化创建 Item 实例(内部序列化使用)
+        /// 从 JSONNode 反序列化创建 Item 实例(内部序列化使用)
         /// </summary>
-        /// <param name="buf">配置数据流</param>
-        private Item(ByteBuf buf) 
+        /// <param name="node">配置数据节点</param>
+        private Item(JSONNode node)
         {
-            Id = buf.ReadInt();
-            Name = buf.ReadString();
-            Desc = buf.ReadString();
-            Icon = buf.ReadString();
-            Bg = buf.ReadString();
-            Quality = (EQuality)buf.ReadInt();
-            Type = (EItemType)buf.ReadInt();
-            SubType = (EItemSubType)buf.ReadInt();
-            CanUse = (EItemUseType)buf.ReadInt();
+            { if(!node["id"].IsNumber) { throw new SerializationException(); }  Id = node["id"]; }
+            { if(!node["name"].IsString) { throw new SerializationException(); }  Name = node["name"]; }
+            { if(!node["desc"].IsString) { throw new SerializationException(); }  Desc = node["desc"]; }
+            { if(!node["icon"].IsString) { throw new SerializationException(); }  Icon = node["icon"]; }
+            { if(!node["bg"].IsString) { throw new SerializationException(); }  Bg = node["bg"]; }
+            { if(!node["quality"].IsNumber) { throw new SerializationException(); }  Quality = (EQuality)node["quality"].AsInt; }
+            { if(!node["type"].IsNumber) { throw new SerializationException(); }  Type = (EItemType)node["type"].AsInt; }
+            { if(!node["sub_type"].IsNumber) { throw new SerializationException(); }  SubType = (EItemSubType)node["sub_type"].AsInt; }
+            { if(!node["can_use"].IsNumber) { throw new SerializationException(); }  CanUse = (EItemUseType)node["can_use"].AsInt; }
+
             // Localization Key Begin
             Name_Localization_Key = Name;
             Desc_Localization_Key = Desc;
@@ -105,9 +107,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 Item 实例
         /// </summary>
-        /// <param name="buf">配置数据流</param>
+        /// <param name="node">配置数据节点</param>
         /// <returns>反序列化后的 Item</returns>
-        public static Item DeserializeItem(ByteBuf buf) => new(buf);
+        public static Item DeserializeItem(JSONNode node) => new(node);
 
         /// <summary>
         /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
@@ -115,7 +117,6 @@ namespace Hotfix.Game.Config
         /// <param name="tableManager">表管理器，用于跨表查找</param>
         public  void ResolveRef(TableManager tableManager)
         {
-            PostResolveRef();
         }
 
         /// <summary>
@@ -151,10 +152,5 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
-
-        /// <summary>
-        /// 分部钩子，所有跨表引用解析完成后调用
-        /// </summary>
-        partial void PostResolveRef();
     }
 }
