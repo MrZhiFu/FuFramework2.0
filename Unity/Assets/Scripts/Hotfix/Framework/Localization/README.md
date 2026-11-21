@@ -8,6 +8,8 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 - **多语言支持**：覆盖 15 种语言（`ELanguage` 枚举，**由 `__enums__.xlsx` 语言 sheet 配置生成**）
 - **配置表驱动**：本地化文本存储在 Luban 配置表 `TbLocalization` 中，策划可独立维护
+- **按语种拆分**：产物拆成 15 个语种文件（`Bundles/Config/Localization/tblocalization_<语言>.bytes`），切换语言只加载目标语种，避免全部语种同时驻留内存
+- **英语兜底懒加载**：目标语种译文为空时二段查询英语表（首次 miss 触发异步加载，加载完成后后续查询生效，不阻塞当前调用）
 - **运行时切换**：通过 `Language` 属性动态切换语言，自动广播 `LanguageChangeEventArgs` 事件
 - **持久化存储**：语言设置通过 `StorageModule` 持久化保存，下次启动自动恢复
 - **Provider 模式**：通过 `ILocalizationProvider` 接口解耦，方便扩展自定义本地化数据源
@@ -44,7 +46,7 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 16 成员：`Unspecified=0` + 15 个语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`French`、`German`、`Indonesian`、`Italian`、`Japanese`、`Korean`、`PortugueseBrazil`、`PortuguesePortugal`、`Russian`、`Spanish`、`Thai`、`Vietnamese`，value 连续编号 1..15）。
 
-**扩语言四步**：枚举 sheet 追加成员（value 顺延）→ `TbLocalization` 加语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-语言定义.xlsx`）加行 → `LocalizationProvider`/AOT 侧 `LaunchLocalization` 的 switch 补分支。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
+**扩语言四步**：枚举 sheet 追加成员（value 顺延）→ `TbLocalization` 加语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加行 → `LocalizationProvider`/AOT 侧 `LaunchLocalization` 的 switch 补分支。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
 
 ## 4. 核心类说明
 
@@ -97,13 +99,16 @@ public interface ILocalizationProvider
 
 ### 4.3 LocalizationProvider
 
-`ILocalizationProvider` 的默认实现，从 Luban 配置表 `TbLocalization` 中根据当前语言获取对应文本。通过 `ConfigModule.Instance.GetConfig<TbLocalization>()` 获取配置表并缓存。
+`ILocalizationProvider` 的默认实现。按语种拆分后，`TbLocalization` 由 `TableManager` 随语言切换加载**目标语种文件**（文件内只含 `key` + 该语种列），Provider 通过 `ConfigModule.Instance.GetConfig<TbLocalization>()` 获取并缓存当前语言表。
 
 文本查找逻辑：
-1. 根据 `LocalizationModule.Instance.Language` 确定当前语言
-2. 从 `TbLocalization` 表中按 key 查找配置行
-3. 取对应语言字段的值，若为空则回退到 English
+1. 根据 `LocalizationModule.Instance.Language` 确定当前语言，从当前语种表按 key 查找配置行
+2. 取该语种列的值；为空（未翻译或拆分产物中该键缺失）时进入**二段查询**：查英语兜底表
+3. 英语兜底表为**懒加载**：首次 miss 触发异步加载（`HotfixLauncher` 注入的 `EnglishTableLoader` 直取英语文件，不走语言路由）；加载未就绪时本次同步返回空串，加载完成后后续查询生效。并发 miss 通过 `UniTaskCompletionSource` 共享同一次加载，失败/取消后允许重试
 4. 若有 `args` 参数，使用 `string.Format` 格式化
+5. 当前语种与英语兜底都缺失时返回空串，`LocalizationModule.GetLanguageText` 外层再包装为 `[key]` 占位符
+
+> Provider 无独立生命周期，英语兜底加载的取消令牌挂在 `AssetModule` 模块生命周期上。
 
 ### 4.4 LanguageChangeEventArgs
 
@@ -233,7 +238,7 @@ Localization/
 2. **避免硬编码**：所有用户可见文本都应通过 `GetLanguageText` 获取
 3. **缓存文本**：频繁使用的文本可在初始化时缓存，避免重复查询
 4. **语言变更时刷新**：UI 界面应监听 `LanguageChangeEventArgs` 事件，及时刷新文本
-5. **兜底语言**：配置未覆盖的语言字段会自动回退到 English
+5. **兜底语言**：目标语种译文为空时二段查询英语兜底表（懒加载：首次 miss 触发加载，加载完成后后续查询生效；首次 miss 可能短暂返回空串）
 6. **参数格式化**：需要动态内容的文本使用 `params object[] args` 参数，配置表中使用 `{0}`、`{1}` 等占位符
 
 ## 9. 注意事项
@@ -320,7 +325,7 @@ Localization/
 
 **Unity 菜单**（`FuFramework/多语言检查/`）：`生成现存问题报告`(1002) → `打开现存问题报告`(1003) → `清理多语言配置表`(1004，确认对话框后删行)。
 
-**自引用排除**（检查正确性的关键）：生成的 `L10nKey.cs`/`LaunchL10nKey.cs`（含全部 is_code key 字面量）与本地化表自身导出产物 `tblocalization.json` 不作为引用源——否则所有 key 永远"被引用"。
+**自引用排除**（检查正确性的关键）：生成的 `L10nKey.cs`/`LaunchL10nKey.cs`（含全部 is_code key 字面量）不作为引用源；配置数据扫描范围为 `Bundles/Config/Data/*.json`，本地化拆分产物在 `Bundles/Config/Localization/tblocalization_*.bytes`，天然不在扫描范围内（否则所有 key 永远"被引用"）。
 
 **盲区**：动态拼接 key（`"common_" + x`）双向静态分析均不可检测，清理/缺失清单须人工核对。
 
@@ -334,5 +339,7 @@ Localization/
 | `d5e0c1ec` | 健康检查五项升级（批1） |
 | `9ab48d06` | FlushL10n 统一应用 + 隐藏窗口刷新（批2，演进替代 `743f6d7f` 的逐叶子补丁） |
 | `361ac543` `2fc26efa` `d6761b7b` | 插件控制器模式交互 / 面板自适应 / None 首项（批4） |
+| `fee02235` | 产物按语种拆分（Luban PostProcess）+ is_code 三端剥离 + 英语兜底二段查询 |
+| `71c8978c` | 服务端配置生成修复 + 表/枚举分组接线 + 客户端专属表排除（多语言表重命名 `-c-`） |
 
 详细设计：`Docs/superpowers/specs/2026-09-17-aot-localization-design.md`、`Docs/superpowers/specs/2026-09-19-fgui-l10n-design.md`。

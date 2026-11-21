@@ -43,6 +43,19 @@ gen-server-bin.bat     :: 服务端
 gen-server-json.bat    :: 服务端（JSON）
 ```
 
+## 本项目定制（`source/src` 内）
+
+| 模块 | 说明 |
+|---|---|
+| `Luban.Schema.Builtin/FuFrameworkTableImporter.cs` | 自定义表导入器：文件名 `编号-表名-[分组]-描述`、按目标分组过滤（**脚本须传 `tableImporter.target`**，否则带分组段的表全部跳过）、前缀编号排序 |
+| `Luban.L10N/FuFrameworkTextProvider.cs` | 多语言文本提供器：按目录扫描多份本地化 Excel（`l10n.textFile.path`），按 key 合并 |
+| `Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` | 生成 `L10nKey` / `LaunchL10nKey` 常量类（仅 `is_code=true` 的 key） |
+| `Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs` | 仅生成枚举，供 AOT 侧独立获取 |
+| `Luban.CSharp/PostProcess/LocalizationSplitPostProcess.cs` | 客户端 `TbLocalization` 按语种拆分导出（json/bin 两变体统一 `.bytes`，整表不落盘） |
+| `Luban.CSharp/Templates/cs-dotnet-json`、`cs-dotnet-bin` | 服务端专用模板：非 string 键统一 `(long)` 强转；集合转字符串用服务端自带的 `FuFramework.Core.Config.StringUtil`（模板函数 `to_pretty_string_server`） |
+
+> 模板修改以 `source/src/.../Templates/` 为准；`build-luban` 会**先清空 `bin/` 再整体构建**并从 source 拷贝模板，不要手工改 `bin/Templates`。
+
 ## 备注
 
 - 上游仓库：<https://github.com/focus-creative-games/luban>（MIT License）。

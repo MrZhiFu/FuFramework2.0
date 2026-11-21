@@ -8,7 +8,7 @@ FuFramework Config 模块是游戏框架的配置数据管理系统，提供统�
 
 - **统一管理**：所有配置表通过 `ConfigModule` 集中管理，提供一致的访问接口
 - **只读契约**：配置表启动期一次性加载，加载后只读；内部使用普通 `Dictionary`，读取路径无锁且最快
-- **异步加载**：配置表通过 `IDataTable.LoadAsync()` 支持异步加载，避免阻塞主线程
+- **异步加载**：配置表通过 `IDataTable.LoadAsync()` 支持异步加载（`UniTask`，遵循项目禁用原生 `Task` 的约定），避免阻塞主线程
 - **双重索引**：`BaseDataTable<T>` 同时按 `long` Id 和 `string` Key 建立索引，支持灵活查询
 - **类型安全**：通过泛型接口确保配置数据的类型安全
 - **丰富查询**：提供 Find、ForEach、Max、Min、Sum 等集合操作方法
@@ -87,9 +87,11 @@ ConfigModule Instance { get; }   // 模块单例
 配置表接口，定义配置表的基本操作和泛型数据操作。
 
 ```csharp
+using Cysharp.Threading.Tasks;
+
 public interface IDataTable
 {
-    Task LoadAsync();            // 异步加载
+    UniTask LoadAsync();         // 异步加载（UniTask，非原生 Task）
     int Count { get; }           // 数据行数
 }
 
@@ -147,24 +149,19 @@ using Hotfix.Framework.Core;
 
 public class ConfigExample
 {
-    private ConfigModule m_configModule;
-
     public void Init()
     {
-        m_configModule = ConfigModule.Instance;
-
-        // 注册配置表
-        var itemTable = new TbItem();
-        m_configModule.AddConfig("TbItem", itemTable);
+        // 配置表由 Luban 生成的 TableManager 统一构造并注册
+        //（生成表的构造函数接收数据加载委托，业务侧无需手动 new / AddConfig）
 
         // 获取配置表（泛型方式）
-        var tbItem = m_configModule.GetConfig<TbItem>();
+        var tbItem = ConfigModule.Instance.GetConfig<TbItem>();
 
         // 获取配置表（名称方式）
-        var tbItem2 = m_configModule.GetConfig("TbItem");
+        var tbItem2 = ConfigModule.Instance.GetConfig("TbItem");
 
         // 检查配置表是否存在
-        if (m_configModule.HasConfig<TbItem>())
+        if (ConfigModule.Instance.HasConfig<TbItem>())
         {
             // 使用配置...
         }
@@ -233,8 +230,9 @@ Config/
 ## 8. 依赖
 
 - **Hotfix.Framework.Core**：提供 ModuleBase 基类
-- **System.Threading.Tasks**：异步加载支持
+- **Cysharp.Threading.Tasks（UniTask）**：异步加载支持
 - **Luban**（外部）：配置表生成工具
+- **Hotfix.Framework.Localization**：本地化表按语种拆分后，`TbLocalization` 的加载与语言切换由 `TableManager` 联动（详见 Localization 模块文档）
 
 ## 9. 最佳实践
 

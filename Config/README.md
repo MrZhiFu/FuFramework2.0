@@ -12,7 +12,7 @@
 |---|---|
 | `Defines/` | 表结构定义（schema，XML） |
 | `Excels/` | 配置源数据（`.xlsx`） |
-| `luban.conf` | Luban 工程配置：表定义、数据目录、导出目标（`client` / `server`） |
+| `luban.conf` | Luban 工程配置：表定义、数据目录、导出目标（`client` / `server` / `aot`） |
 | `gen-*.bat` / `gen-*.sh` | 生成脚本（见下） |
 | `配置表定义相关说明/` | 表定义相关的图文说明（内容已整理为下方「配置表定义参考」一节） |
 
@@ -22,10 +22,12 @@
 
 | 脚本 | 目标 | 数据产出 | 代码产出 |
 |---|---|---|---|
-| `gen-client-bin.bat` / `.sh` | 客户端 | `Unity/Assets/Bundles/Config` | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/{Generate,LanguageKey}` |
-| `gen-client-json.bat` / `.sh` | 客户端 | 同上（JSON 变体） | 同上 |
-| `gen-server-bin.bat` / `.sh` | 服务端 | `Server/FuFramework.Config/Json` | `Server/FuFramework.Config/Config` |
-| `gen-server-json.bat` / `.sh` | 服务端 | 同上（JSON 变体） | 同上 |
+| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（15 语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
+| `gen-client-json.bat` / `.sh` | 客户端（json 变体） | 同上（业务表为 `.json`；本地化产物仍为 `.bytes`） | 同上 |
+| `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/json` | `Server/FuFramework.Config/Config` |
+| `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上（两变体共用目录） | 同上 |
+
+> **分组过滤（重要）**：表与枚举的导出由分组决定——表用文件名第 3 段（`-c-` / `-s-` / `-aot-`），枚举/Bean 用 `Excels/__enums__.xlsx` / `__beans__.xlsx` 的 `group` 列。**生成脚本必须传 `-x tableImporter.target=<target>`**，否则所有带分组段的表都会被跳过。当前客户端专属表（`-c-`）不进入服务端，服务端只生成 `Achievement` / `Item` / `GlobalDefine` 三张表。
 
 **前置**：通常无需额外操作——脚本会在 `Tools/Luban/bin/Luban.dll` 缺失时（换机 / 新 clone）**自动先构建**（约数秒）；仅当**改动过 Luban 源码**时，才需手动跑 `Tools/Luban/build-luban.bat` 重建。
 
@@ -146,16 +148,18 @@
 
 | 表 / 枚举 | 位置 | 说明 |
 |---|---|---|
-| `TbLocalization` | `Excels/Local/L-Localization-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；所有本地化表必须带 `is_code` 列，缺失时生成报错终止 |
+| `TbLocalization` | `Excels/Local/L-Localization-c-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列，表名带 `-c-`（客户端专属，服务端不生成）。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；`is_code` 列标 `##group none`（导出代码用、不进导出产物）；缺失 `is_code` 列时生成报错终止。产物**按语种拆分**：`Bundles/Config/Localization/tblocalization_<语言>.bytes`（每文件只含 key + 目标语种列，两数据变体统一 `.bytes`）；目标语种为空时运行时懒加载英语兜底表二段查询（见 `Localization/README.md` 4.3） |
 | `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物进 `Resources/LaunchLocalizationText/`，代码仅生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
-| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-语言定义.xlsx` | 语言定义表：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符。供语言切换 UI 等使用 |
+| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符。供语言切换 UI 等使用 |
 | `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化：16 成员（`Unspecified=0` + 15 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
+
+> 客户端专属枚举（UI / 红点 / 声音 / 引导 / 实体组 / 语言等）在 `__enums__.xlsx` 的 `group` 列标 `c`；服务端只会生成被其导出表真实引用的枚举（如品质、道具类型）。
 
 **扩语言四步**：`__enums__.xlsx` 追加枚举成员（value 顺延）→ 各本地化表加语言列 → `L-LanguageDef` 加行 → 代码侧 `LocalizationProvider` / `LaunchLocalization` 的 switch 补分支。
 
 **FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
 
-**aot 分组**：`luban.conf` 定义了 `aot` 分组与 `aot` target（详见 `gen-client-bin/json.bat` 的第二段命令）；文件名第 3 段为 `aot` 的表只进入 aot 导出，其余表不受影响。生成器新增的 `cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
+**分组机制**：`luban.conf` 定义了 `c`（客户端）/ `s`（服务端）/ `aot`（AOT 前置）三个分组与对应 target。文件名第 3 段为分组名时，**只有脚本传了 `-x tableImporter.target=<target>` 且目标分组匹配，该表才会导出**；否则整表跳过。当前 8 个 gen 脚本均已接线（client 段 `target=client`、server 段 `target=server`、AOT 段 `target=aot`）。`aot` target 详见 `gen-client-bin/json.bat` 的第二段命令；`cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
 
 #### 扩展：新增多语言资源类型（如多语言图片 / 音频）
 
@@ -185,7 +189,7 @@
 
 中间部分的表名称为英文且不能有空格可以有下划线
 
-导出的组名称必须是定义的`s`、 `c` 之一，可选
+导出的组名称必须是定义的 `c`、`s`、`aot` 之一，可选。**带组名段时，脚本必须传 `tableImporter.target` 且与组名匹配才会导出；未传 target 时所有带组名的表都会被跳过**（`tableImporter.name=fuframework` 之外还需 `-x tableImporter.target=client|server|aot`）。
 
 后面表名称注释可以接任意长度。程序只取第一个`-` 和第二个`-` 之间的内容加上 `Tb` 为最终表名称。
 

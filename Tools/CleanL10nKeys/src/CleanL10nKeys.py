@@ -18,7 +18,8 @@ Runs five checks over the localization Excel tables and their consumers:
 
 Self-reference exclusions (derived from the tables being cleaned, would make
 every key look referenced forever):
-  - tblocalization*.json      exported data of the localization tables themselves
+  - localization split products (Bundles/Config/Localization/*.bytes) live outside
+    CONFIG_DIR (Bundles/Config/Data) and are therefore never scanned as references
   - L10nKey.cs/LaunchL10nKey.cs  generated key classes listing every is_code key
 
 Blind spots: dynamically composed keys ("common_" + x) are statically
@@ -39,12 +40,12 @@ import openpyxl
 
 REPO_ROOT      = Path(__file__).resolve().parents[3]             # repo root (src/ -> tool dir -> Tools -> repo)
 CODE_DIR       = REPO_ROOT / 'Unity/Assets/Scripts'              # all runtime code (AOT + Hotfix)
-CONFIG_DIR     = REPO_ROOT / 'Unity/Assets/Bundles/Config'       # exported config json
+CONFIG_DIR     = REPO_ROOT / 'Unity/Assets/Bundles/Config/Data'  # exported business tables (json variant)
 FGUI_DIR       = REPO_ROOT / 'FairyGUIProject/assets'            # FGUI source xml
 EXCEL_FILES    = [
-    REPO_ROOT / 'Config/Excels/Local/L-Localization-通用.xlsx',
-    REPO_ROOT / 'Config/Excels/Local/L-Localization-成就.xlsx',
-    REPO_ROOT / 'Config/Excels/Local/L-Localization-设置.xlsx',
+    REPO_ROOT / 'Config/Excels/Local/L-Localization-c-通用.xlsx',
+    REPO_ROOT / 'Config/Excels/Local/L-Localization-c-成就.xlsx',
+    REPO_ROOT / 'Config/Excels/Local/L-Localization-c-设置.xlsx',
     REPO_ROOT / 'Config/Excels/Local/L-LocalizationAOT-aot-热更前.xlsx',
 ]
 
