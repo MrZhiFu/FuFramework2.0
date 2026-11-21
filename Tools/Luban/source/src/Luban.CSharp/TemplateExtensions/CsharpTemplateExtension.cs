@@ -75,6 +75,17 @@ public class CsharpTemplateExtension : ScriptObject
         return type.Apply(DataToStringVisitor.Ins, name);
     }
 
+    /// <summary>
+    /// 服务端模板（cs-dotnet-json / cs-dotnet-bin）专用：值转字符串。
+    /// 服务端工程不引用 Luban 运行时，集合转字符串使用项目自带的
+    /// FuFramework.Core.Config.StringUtil（生成文件头已 using 该命名空间），
+    /// 因此这里把 DataToStringVisitor 输出的 Luban.StringUtil 限定名改为短名。
+    /// </summary>
+    public static string ToPrettyStringServer(string name, TType type)
+    {
+        return type.Apply(DataToStringVisitor.Ins, name).Replace("Luban.StringUtil.", "StringUtil.");
+    }
+
     public static string PadRight(string s, int totalWidth)
     {
         return s.PadRight(totalWidth);

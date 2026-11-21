@@ -25,6 +25,7 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension \
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false \
     -x tableImporter.name=fuframework \
+    -x tableImporter.target=client \
     -x l10n.provider=fuframework \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \

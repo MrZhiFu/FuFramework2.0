@@ -182,7 +182,7 @@ end
         {
             return "{{full_name}}{ "
             {{~for field in hierarchy_export_fields ~}}
-            + "{{format_field_name __code_style field.name}}:" + {{to_pretty_string (format_property_name __code_style field.name) field.ctype}} + ","
+            + "{{format_field_name __code_style field.name}}:" + {{to_pretty_string_server (format_property_name __code_style field.name) field.ctype}} + ","
             {{~end~}}
             + "}";
         }

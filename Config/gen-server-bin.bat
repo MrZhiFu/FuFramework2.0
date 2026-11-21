@@ -23,6 +23,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -x outputDataDir=../Server/FuFramework.Config/Json ^
     -x cs-dotnet-bin.outputCodeDir=../Server/FuFramework.Config/Config ^
     -x tableImporter.name=fuframework ^
+    -x tableImporter.target=server ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
