@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "French": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "French": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "French": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "French": ""
+  },
+  {
+    "key": "achievement_cover",
+    "French": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "French": "Gestion des sauvegardes"
+  },
+  {
+    "key": "setting_nav_setting",
+    "French": "Paramètres système"
+  },
+  {
+    "key": "setting_nav_voice",
+    "French": "Paramètres audio"
+  },
+  {
+    "key": "setting_nav_text",
+    "French": "Paramètres de texte"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "French": "Configuration du clavier"
+  },
+  {
+    "key": "common_user_name",
+    "French": ""
+  },
+  {
+    "key": "common_user_password",
+    "French": ""
+  },
+  {
+    "key": "common_start_game",
+    "French": "Commencer"
+  },
+  {
+    "key": "common_load_game",
+    "French": "Charger"
+  },
+  {
+    "key": "common_system_setting",
+    "French": "Paramètres"
+  },
+  {
+    "key": "common_gallerty",
+    "French": "Galerie"
+  },
+  {
+    "key": "common_about",
+    "French": "À propos"
+  },
+  {
+    "key": "common_exit_game",
+    "French": "Quitter"
+  },
+  {
+    "key": "common_pop_start_game",
+    "French": "Nouveau jeu"
+  },
+  {
+    "key": "common_continue_game",
+    "French": "Continuer"
+  },
+  {
+    "key": "common_exit_submit",
+    "French": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "French": "Annuler"
+  },
+  {
+    "key": "common_exit_title",
+    "French": "Quitter le jeu?"
+  },
+  {
+    "key": "common_exit_label",
+    "French": "Toujours confirmer"
+  }
+]

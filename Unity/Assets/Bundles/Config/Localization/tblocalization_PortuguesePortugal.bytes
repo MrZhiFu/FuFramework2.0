@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "achievement_cover",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "PortuguesePortugal": "Gerenciar saves"
+  },
+  {
+    "key": "setting_nav_setting",
+    "PortuguesePortugal": "Configurações do sistema"
+  },
+  {
+    "key": "setting_nav_voice",
+    "PortuguesePortugal": "Configurações de som"
+  },
+  {
+    "key": "setting_nav_text",
+    "PortuguesePortugal": "Configurações de texto"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "PortuguesePortugal": "Configurações de teclado"
+  },
+  {
+    "key": "common_user_name",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "common_user_password",
+    "PortuguesePortugal": ""
+  },
+  {
+    "key": "common_start_game",
+    "PortuguesePortugal": "Iniciar jogo"
+  },
+  {
+    "key": "common_load_game",
+    "PortuguesePortugal": "Carregar jogo"
+  },
+  {
+    "key": "common_system_setting",
+    "PortuguesePortugal": "Configurações"
+  },
+  {
+    "key": "common_gallerty",
+    "PortuguesePortugal": "Galeria"
+  },
+  {
+    "key": "common_about",
+    "PortuguesePortugal": "Sobre"
+  },
+  {
+    "key": "common_exit_game",
+    "PortuguesePortugal": "Sair"
+  },
+  {
+    "key": "common_pop_start_game",
+    "PortuguesePortugal": "Novo jogo"
+  },
+  {
+    "key": "common_continue_game",
+    "PortuguesePortugal": "Continuar"
+  },
+  {
+    "key": "common_exit_submit",
+    "PortuguesePortugal": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "PortuguesePortugal": "Cancelar"
+  },
+  {
+    "key": "common_exit_title",
+    "PortuguesePortugal": "Sair do jogo?"
+  },
+  {
+    "key": "common_exit_label",
+    "PortuguesePortugal": "Confirmar sempre"
+  }
+]

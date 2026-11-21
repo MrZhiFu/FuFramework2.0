@@ -7,6 +7,7 @@ namespace AOT.Launch.Localization
 	/// LaunchLocalization 的数据解析分部。
 	///     json 变体用 SimpleJSON 逐行取字段；
 	///     bin 变体用 Luban.ByteBuf 按记录数 + Excel 列顺序读取（列序硬约定，调整表列须同步解析代码）。
+	///     注意：is_code 列在 Excel 中标记为 none 组（导出代码用、不进入导出产物），故产物与解析均无该字段。
 	/// </summary>
 	public partial class LaunchLocalization
 	{
@@ -23,7 +24,6 @@ namespace AOT.Launch.Localization
 				var row = new LocalizationAOT
 				{
 					Key                = node["key"],
-					IsCode             = node["is_code"].AsBool,
 					ChineseSimplified  = node["ChineseSimplified"],
 					ChineseTraditional = node["ChineseTraditional"],
 					English            = node["English"],
@@ -60,7 +60,6 @@ namespace AOT.Launch.Localization
 				var row = new LocalizationAOT
 				{
 					Key                = buf.ReadString(),
-					IsCode             = buf.ReadBool(),
 					ChineseSimplified  = buf.ReadString(),
 					ChineseTraditional = buf.ReadString(),
 					English            = buf.ReadString(),

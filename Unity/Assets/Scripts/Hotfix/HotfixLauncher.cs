@@ -1,4 +1,5 @@
 using FairyGUI;
+using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using AOT.Launch;
@@ -155,6 +156,13 @@ namespace Hotfix
 			// 设置本地化多语言提供者
 			LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
 
+			// 注入英语兜底表加载器：Provider 目标语种缺失时二段查英语表（懒加载）——
+			// 须在 Provider 创建之后注入（LoadConfigAsync 阶段的 Provider 尚未创建，注入会被本处 new 覆盖）
+			if (LocalizationModule.Instance.LocalizationProvider is LocalizationProvider provider)
+			{
+				provider.EnglishTableLoader = LoadEnglishTableAsync;
+			}
+
 			// 注入 FGUI 声明式多语言的文本解析委托（覆盖 AOT 阶段的 AOT 表版本）
 			GObject.GetLanguageText = key => LocalizationModule.Instance.GetLanguageText(key);
 
@@ -219,6 +227,63 @@ namespace Hotfix
 			s_tableManager = tableManager;
 			return tableManager;
 		}
+
+		/// <summary>
+		/// 英语兜底表显式加载器（注入 LocalizationProvider.EnglishTableLoader）。
+		/// 不走 LanguageModule.Language 路由（兜底场景语言≠English），直取英语文件路径。
+		/// 返回新构造的 TbLocalization 实例（不注册 ConfigModule，Provider 私有兜底）；
+		/// 失败抛异常（调用方捕获清空在途任务允许重试）。
+		/// </summary>
+		private static async UniTask<TbLocalization> LoadEnglishTableAsync()
+		{
+			// 英语 bundle 幂等补齐（本地已有零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）
+			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(nameof(Hotfix.Game.Config.ELanguage.English), GlobalModule.AssetModule.Token))
+			{
+				throw new InvalidOperationException("[HotfixLauncher] 英语兜底表 bundle 下载失败");
+			}
+
+			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_English", ".bytes");
+			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(englishPath, GlobalModule.AssetModule.Token);
+			try
+			{
+				var textAsset = assetHandle.GetAssetObject<TextAsset>();
+				if (textAsset == null)
+					throw new InvalidOperationException($"[HotfixLauncher] 英语兜底表加载失败：{englishPath}");
+
+				// json 变体（ENABLE_BINARY_CONFIG 未定义）：内容是 json 文本，JSON.Parse；
+				// bin 变体：内容是 ByteBuf，ByteBuf.Wrap——产物扩展名统一 .bytes，内容格式随宏
+				var loadFunc = CreateEnglishTableLoadFunc(textAsset);
+				var table = new TbLocalization(loadFunc);
+				await table.LoadAsync();
+				return table;
+			}
+			finally
+			{
+				// 一次性加载，解析后释放句柄并卸载，避免 provider 引用残留
+				assetHandle.Release();
+				GlobalModule.AssetModule.UnloadAsset(englishPath);
+			}
+		}
+
+#if ENABLE_BINARY_CONFIG
+		/// <summary>
+		/// 构造英语兜底表取数委托（bin 变体：ByteBuf 包装）
+		/// </summary>
+		private static Func<UniTask<ByteBuf>> CreateEnglishTableLoadFunc(TextAsset textAsset)
+		{
+			var bytes = textAsset.bytes;
+			return () => UniTask.FromResult(ByteBuf.Wrap(bytes));
+		}
+#else
+		/// <summary>
+		/// 构造英语兜底表取数委托（json 变体：SimpleJSON 解析）
+		/// </summary>
+		private static Func<UniTask<JSONNode>> CreateEnglishTableLoadFunc(TextAsset textAsset)
+		{
+			var node = JSON.Parse(textAsset.text);
+			return () => UniTask.FromResult(node);
+		}
+#endif
 
 		/// <summary>
 		/// 加载初始必要的公共UI资源包

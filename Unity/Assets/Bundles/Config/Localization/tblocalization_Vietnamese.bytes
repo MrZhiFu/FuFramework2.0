@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Vietnamese": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Vietnamese": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Vietnamese": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Vietnamese": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Vietnamese": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Vietnamese": "Quản lý lưu trữ"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Vietnamese": "Cài đặt hệ thống"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Vietnamese": "Cài đặt âm thanh"
+  },
+  {
+    "key": "setting_nav_text",
+    "Vietnamese": "Cài đặt văn bản"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Vietnamese": "Cài đặt bàn phím"
+  },
+  {
+    "key": "common_user_name",
+    "Vietnamese": ""
+  },
+  {
+    "key": "common_user_password",
+    "Vietnamese": ""
+  },
+  {
+    "key": "common_start_game",
+    "Vietnamese": "Bắt đầu trò chơi"
+  },
+  {
+    "key": "common_load_game",
+    "Vietnamese": "Tải trò chơi"
+  },
+  {
+    "key": "common_system_setting",
+    "Vietnamese": "Cài đặt"
+  },
+  {
+    "key": "common_gallerty",
+    "Vietnamese": "Thư viện"
+  },
+  {
+    "key": "common_about",
+    "Vietnamese": "Thông tin"
+  },
+  {
+    "key": "common_exit_game",
+    "Vietnamese": "Thoát"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Vietnamese": "Trò chơi mới"
+  },
+  {
+    "key": "common_continue_game",
+    "Vietnamese": "Tiếp tục"
+  },
+  {
+    "key": "common_exit_submit",
+    "Vietnamese": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Vietnamese": "Hủy"
+  },
+  {
+    "key": "common_exit_title",
+    "Vietnamese": "Thoát trò chơi?"
+  },
+  {
+    "key": "common_exit_label",
+    "Vietnamese": "Luôn xác nhận"
+  }
+]

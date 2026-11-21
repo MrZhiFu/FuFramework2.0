@@ -110,7 +110,11 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
             CollectKeysFromTable(table, keys, keySet);
         }
 
-        s_logger.Info("收集导出到代码中的多语言key: 总共收集到 {Count} 个多语言Key", keys.Count);
+        // 标注 gen target（client/aot）与目标类名，避免同次导出两遍各自的收集日志混淆
+        // 插值拼接而非结构化参数：NLog 对 {Prop} 字符串参数会加引号，日志可读性差
+        var targetName = GenerationContext.Current.Target.Name;
+        var className  = EnvManager.Current.GetOptionOrDefault(Name, "className", true, DefaultClassName);
+        s_logger.Info($"[{targetName}] 收集导出到代码中的多语言key: 总共收集到 {keys.Count} 个多语言Key（{className}）");
 
         // 按 Key 按照字母进行 排序
         return keys.OrderBy(k => k.Key, StringComparer.Ordinal).ToList();
@@ -124,15 +128,20 @@ public class CsharpL10NKeyCodeTarget : CsharpCodeTargetBase
     /// <param name="keySet">用于去重的集合</param>
     private void CollectKeysFromTable(DefTable table, List<L10NKeyInfo> resultKeys, HashSet<string> keySet)
     {
+        // 字段查找用 HierarchyFields（数据层全量字段）：is_code 列在 Excel 中经 ##group 标记为 none 组
+        // （语义：导出代码用，不进入导出产物），不在任何 target 的 ExportFields 中（数据产物与 bean 代码双端剥离），
+        // 但数据加载层（SheetDataCreator）按全量字段构造 DBean，GetField 仍可取值——L10nKey 收集不受字段剥离影响
+        var hierarchyFields = table.ValueTType.DefBean.HierarchyFields;
+
         // 获取 key 字段（通常是第一个字段或名为 key 的字段）
-        var keyField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name == "key") ?? table.ValueTType.DefBean.ExportFields.FirstOrDefault();
+        var keyField = hierarchyFields.FirstOrDefault(f => f.Name == "key") ?? hierarchyFields.FirstOrDefault();
         if (keyField == null) return;
 
         // 获取 ChineseSimplified(简体中文) 字段作为注释
-        var commentField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name is "ChineseSimplified" or "chineseSimplified" or "chinese_simplified");
+        var commentField = hierarchyFields.FirstOrDefault(f => f.Name is "ChineseSimplified" or "chineseSimplified" or "chinese_simplified");
 
         // 获取 is_code 字段（标记该 key 是否导出到代码），所有本地化表必须声明该列
-        var isCodeField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name == "is_code");
+        var isCodeField = hierarchyFields.FirstOrDefault(f => f.Name == "is_code");
         if (isCodeField == null)
         {
             throw new Exception($"本地化表:'{table.Name}' 缺少 'is_code' 列！所有本地化表必须声明 is_code(bool) 列，用于标记该 key 是否导出到 L10nKey 类");

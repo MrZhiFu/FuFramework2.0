@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "ChineseSimplified": "独自享受的日常"
+  },
+  {
+    "key": "achievement_name_02",
+    "ChineseSimplified": "神社的守护者"
+  },
+  {
+    "key": "achievement_content_1",
+    "ChineseSimplified": "您已解锁“独自享受的日常”路线！恭喜您！这是只属于您一人的物语！"
+  },
+  {
+    "key": "achievement_content_2",
+    "ChineseSimplified": "您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）"
+  },
+  {
+    "key": "achievement_cover",
+    "ChineseSimplified": "成就未解锁"
+  },
+  {
+    "key": "setting_nav_document",
+    "ChineseSimplified": "游戏存档管理"
+  },
+  {
+    "key": "setting_nav_setting",
+    "ChineseSimplified": "系统设置"
+  },
+  {
+    "key": "setting_nav_voice",
+    "ChineseSimplified": "音效设置"
+  },
+  {
+    "key": "setting_nav_text",
+    "ChineseSimplified": "文本设置"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "ChineseSimplified": "键盘设置"
+  },
+  {
+    "key": "common_user_name",
+    "ChineseSimplified": "账户名"
+  },
+  {
+    "key": "common_user_password",
+    "ChineseSimplified": "密码"
+  },
+  {
+    "key": "common_start_game",
+    "ChineseSimplified": "开始游戏"
+  },
+  {
+    "key": "common_load_game",
+    "ChineseSimplified": "读取游戏"
+  },
+  {
+    "key": "common_system_setting",
+    "ChineseSimplified": "系统设置"
+  },
+  {
+    "key": "common_gallerty",
+    "ChineseSimplified": "画廊设置"
+  },
+  {
+    "key": "common_about",
+    "ChineseSimplified": "关于更多"
+  },
+  {
+    "key": "common_exit_game",
+    "ChineseSimplified": "退出游戏"
+  },
+  {
+    "key": "common_pop_start_game",
+    "ChineseSimplified": "开始游戏"
+  },
+  {
+    "key": "common_continue_game",
+    "ChineseSimplified": "继续上一次游戏"
+  },
+  {
+    "key": "common_exit_submit",
+    "ChineseSimplified": "确定"
+  },
+  {
+    "key": "common_exit_cancel",
+    "ChineseSimplified": "取消"
+  },
+  {
+    "key": "common_exit_title",
+    "ChineseSimplified": "是否退出游戏？"
+  },
+  {
+    "key": "common_exit_label",
+    "ChineseSimplified": "始终需要确认"
+  }
+]

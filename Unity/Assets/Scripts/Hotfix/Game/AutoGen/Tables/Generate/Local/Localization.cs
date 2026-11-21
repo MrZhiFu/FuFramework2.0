@@ -24,9 +24,6 @@ namespace Hotfix.Game.Config
         /// <summary> ID </summary>
         public string Key { private set; get; }
 
-        /// <summary> 是否导出到代码中 </summary>
-        public bool IsCode { private set; get; }
-
         /// <summary> 简体中文 </summary>
         public string ChineseSimplified { private set; get; }
 
@@ -79,7 +76,6 @@ namespace Hotfix.Game.Config
         /// 创建 Localization 实例(外部使用)
         /// </summary>
         /// <param name="key">ID</param>
-        /// <param name="isCode">是否导出到代码中</param>
         /// <param name="chineseSimplified">简体中文</param>
         /// <param name="chineseTraditional">繁体中文</param>
         /// <param name="english">英语</param>
@@ -95,10 +91,9 @@ namespace Hotfix.Game.Config
         /// <param name="portuguesePortugal">葡萄牙语</param>
         /// <param name="spanish">西班牙语</param>
         /// <param name="vietnamese">越南语</param>
-        public Localization(string key, bool isCode, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portugueseBrazil, string portuguesePortugal, string spanish, string vietnamese) 
+        public Localization(string key, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portugueseBrazil, string portuguesePortugal, string spanish, string vietnamese) 
         {
             Key = key;
-            IsCode = isCode;
             ChineseSimplified = chineseSimplified;
             ChineseTraditional = chineseTraditional;
             English = english;
@@ -124,22 +119,21 @@ namespace Hotfix.Game.Config
         private Localization(JSONNode node)
         {
             { if(!node["key"].IsString) { throw new SerializationException(); }  Key = node["key"]; }
-            { if(!node["is_code"].IsBoolean) { throw new SerializationException(); }  IsCode = node["is_code"]; }
-            { if(!node["ChineseSimplified"].IsString) { throw new SerializationException(); }  ChineseSimplified = node["ChineseSimplified"]; }
-            { if(!node["ChineseTraditional"].IsString) { throw new SerializationException(); }  ChineseTraditional = node["ChineseTraditional"]; }
-            { if(!node["English"].IsString) { throw new SerializationException(); }  English = node["English"]; }
-            { if(!node["Japanese"].IsString) { throw new SerializationException(); }  Japanese = node["Japanese"]; }
-            { if(!node["Korean"].IsString) { throw new SerializationException(); }  Korean = node["Korean"]; }
-            { if(!node["Thai"].IsString) { throw new SerializationException(); }  Thai = node["Thai"]; }
-            { if(!node["Indonesian"].IsString) { throw new SerializationException(); }  Indonesian = node["Indonesian"]; }
-            { if(!node["French"].IsString) { throw new SerializationException(); }  French = node["French"]; }
-            { if(!node["German"].IsString) { throw new SerializationException(); }  German = node["German"]; }
-            { if(!node["Russian"].IsString) { throw new SerializationException(); }  Russian = node["Russian"]; }
-            { if(!node["Italian"].IsString) { throw new SerializationException(); }  Italian = node["Italian"]; }
-            { if(!node["PortugueseBrazil"].IsString) { throw new SerializationException(); }  PortugueseBrazil = node["PortugueseBrazil"]; }
-            { if(!node["PortuguesePortugal"].IsString) { throw new SerializationException(); }  PortuguesePortugal = node["PortuguesePortugal"]; }
-            { if(!node["Spanish"].IsString) { throw new SerializationException(); }  Spanish = node["Spanish"]; }
-            { if(!node["Vietnamese"].IsString) { throw new SerializationException(); }  Vietnamese = node["Vietnamese"]; }
+            { var _j = node["ChineseSimplified"]; ChineseSimplified = _j.IsString ? _j.Value : null; }
+            { var _j = node["ChineseTraditional"]; ChineseTraditional = _j.IsString ? _j.Value : null; }
+            { var _j = node["English"]; English = _j.IsString ? _j.Value : null; }
+            { var _j = node["Japanese"]; Japanese = _j.IsString ? _j.Value : null; }
+            { var _j = node["Korean"]; Korean = _j.IsString ? _j.Value : null; }
+            { var _j = node["Thai"]; Thai = _j.IsString ? _j.Value : null; }
+            { var _j = node["Indonesian"]; Indonesian = _j.IsString ? _j.Value : null; }
+            { var _j = node["French"]; French = _j.IsString ? _j.Value : null; }
+            { var _j = node["German"]; German = _j.IsString ? _j.Value : null; }
+            { var _j = node["Russian"]; Russian = _j.IsString ? _j.Value : null; }
+            { var _j = node["Italian"]; Italian = _j.IsString ? _j.Value : null; }
+            { var _j = node["PortugueseBrazil"]; PortugueseBrazil = _j.IsString ? _j.Value : null; }
+            { var _j = node["PortuguesePortugal"]; PortuguesePortugal = _j.IsString ? _j.Value : null; }
+            { var _j = node["Spanish"]; Spanish = _j.IsString ? _j.Value : null; }
+            { var _j = node["Vietnamese"]; Vietnamese = _j.IsString ? _j.Value : null; }
 
             // Localization Key Begin
             // Localization Key End
@@ -176,7 +170,6 @@ namespace Hotfix.Game.Config
         {
             return "{ "
                    + "key:"                + Key                + ","
-                   + "isCode:"             + IsCode             + ","
                    + "ChineseSimplified:"  + ChineseSimplified  + ","
                    + "ChineseTraditional:" + ChineseTraditional + ","
                    + "English:"            + English            + ","

@@ -1,7 +1,6 @@
 [
   {
     "key": "aot_init_res_package",
-    "is_code": true,
     "ChineseSimplified": "初始化资源",
     "ChineseTraditional": "",
     "English": "Init resource package",
@@ -20,7 +19,6 @@
   },
   {
     "key": "aot_get_res_version",
-    "is_code": true,
     "ChineseSimplified": "获取资源版本号",
     "ChineseTraditional": "",
     "English": "Get version",
@@ -39,7 +37,6 @@
   },
   {
     "key": "aot_get_res_version_fail",
-    "is_code": true,
     "ChineseSimplified": "获取版本号失败，正在重试...",
     "ChineseTraditional": "",
     "English": "Failed to get version number. Retrying...",
@@ -58,7 +55,6 @@
   },
   {
     "key": "aot_update_res_manifest",
-    "is_code": true,
     "ChineseSimplified": "更新资源清单",
     "ChineseTraditional": "",
     "English": "Update resource manifest",
@@ -77,7 +73,6 @@
   },
   {
     "key": "aot_update_res_manifest_fail",
-    "is_code": true,
     "ChineseSimplified": "更新资源清单失败，正在重试...",
     "ChineseTraditional": "",
     "English": "Failed to update resource manifest",
@@ -96,7 +91,6 @@
   },
   {
     "key": "aot_req_remote_update_config_fail",
-    "is_code": true,
     "ChineseSimplified": "请求资源服务器更新配置失败，正在重试...",
     "ChineseTraditional": "",
     "English": "Failed to request resource server configuration update. Retrying...",
@@ -115,7 +109,6 @@
   },
   {
     "key": "aot_res_downloading",
-    "is_code": true,
     "ChineseSimplified": "资源下载中：{0}/{1}",
     "ChineseTraditional": "",
     "English": "Downloading resources: {0}/{1}",
@@ -134,7 +127,6 @@
   },
   {
     "key": "aot_res_download_fail",
-    "is_code": true,
     "ChineseSimplified": "下载失败，正在重试...",
     "ChineseTraditional": "",
     "English": "Download failed. Retrying...",
@@ -153,7 +145,6 @@
   },
   {
     "key": "aot_res_load_fail",
-    "is_code": true,
     "ChineseSimplified": "资源加载失败，请检查网络后重启游戏!",
     "ChineseTraditional": "",
     "English": "Failed to load resources. Please check your network and restart the game!",
@@ -172,7 +163,6 @@
   },
   {
     "key": "aot_res_loading_config",
-    "is_code": true,
     "ChineseSimplified": "正在加载配置...",
     "ChineseTraditional": "",
     "English": "Loading configuration...",
@@ -191,7 +181,6 @@
   },
   {
     "key": "aot_res_loading_init_res",
-    "is_code": true,
     "ChineseSimplified": "正在加载初始化资源...",
     "ChineseTraditional": "",
     "English": "Loading initialization resources...",
@@ -210,7 +199,6 @@
   },
   {
     "key": "aot_update_dialog_ok_btn",
-    "is_code": true,
     "ChineseSimplified": "更新",
     "ChineseTraditional": "",
     "English": "Update",

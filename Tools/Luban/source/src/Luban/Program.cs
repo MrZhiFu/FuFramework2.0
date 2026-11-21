@@ -326,15 +326,21 @@ internal static class Program
 
         NLog.LogManager.Setup().LoadConfigurationFromFile(opts.LogConfig);
         s_logger = LogManager.GetCurrentClassLogger();
-        PrintCopyRight();
+        PrintCopyRight(opts);
     }
 
-    private static void PrintCopyRight()
+    private static void PrintCopyRight(CommandOptions opts)
     {
-        s_logger.Info(" ==========================================================================================");
-        s_logger.Info("");
+        // 标题按 gen target 语义化：同一次 bat 会跑两遍（client 热更 + aot 前置），
+        // 原样重复的横幅无法区分段落，改为一句话标题
+        var title = opts.Target switch
+        {
+            "client" => "处理客户端热更配置",
+            "aot"    => "处理AOT多语言",
+            "server" => "处理服务端配置",
+            _        => "处理配置",
+        };
+        s_logger.Info($"==================== {title} ====================");
         s_logger.Info("  Luban is developed by Code Philosophy Technology Co., LTD. https://code-philosophy.com");
-        s_logger.Info("");
-        s_logger.Info(" ==========================================================================================");
     }
 }

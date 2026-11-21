@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Thai": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Thai": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Thai": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Thai": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Thai": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Thai": "จัดการเซฟเกม"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Thai": "ตั้งค่าระบบ"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Thai": "ตั้งค่าเสียง"
+  },
+  {
+    "key": "setting_nav_text",
+    "Thai": "ตั้งค่าข้อความ"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Thai": "ตั้งค่าคีย์บอร์ด"
+  },
+  {
+    "key": "common_user_name",
+    "Thai": ""
+  },
+  {
+    "key": "common_user_password",
+    "Thai": ""
+  },
+  {
+    "key": "common_start_game",
+    "Thai": "เริ่มเกม"
+  },
+  {
+    "key": "common_load_game",
+    "Thai": "โหลดเกม"
+  },
+  {
+    "key": "common_system_setting",
+    "Thai": "ตั้งค่า"
+  },
+  {
+    "key": "common_gallerty",
+    "Thai": "แกลเลอรี่"
+  },
+  {
+    "key": "common_about",
+    "Thai": "เกี่ยวกับ"
+  },
+  {
+    "key": "common_exit_game",
+    "Thai": "ออกเกม"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Thai": "เกมใหม่"
+  },
+  {
+    "key": "common_continue_game",
+    "Thai": "เล่นต่อ"
+  },
+  {
+    "key": "common_exit_submit",
+    "Thai": "ตกลง"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Thai": "ยกเลิก"
+  },
+  {
+    "key": "common_exit_title",
+    "Thai": "ต้องการออกจากเกมหรือไม่?"
+  },
+  {
+    "key": "common_exit_label",
+    "Thai": "ยืนยันทุกครั้ง"
+  }
+]

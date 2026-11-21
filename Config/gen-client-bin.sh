@@ -20,7 +20,7 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -d bin \
     -c cs-bin \
     -c cs-l10n-key \
-    -x outputDataDir=../Unity/Assets/Bundles/Config \
+    -x outputDataDir=../Unity/Assets/Bundles/Config/Data \
     -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate \
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension \
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false \
@@ -28,6 +28,7 @@ dotnet ../Tools/Luban/bin/Luban.dll \
     -x l10n.provider=fuframework \
     -x l10n.textFile.keyFieldName=key \
     -x l10n.textFile.path=./Excels/Local/ \
+    -x dataPostprocess=split-localization \
     --conf ./Luban.conf
 
 dotnet ../Tools/Luban/bin/Luban.dll \

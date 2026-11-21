@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Japanese": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Japanese": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Japanese": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Japanese": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Japanese": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Japanese": "セーブデータ管理"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Japanese": "システム設定"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Japanese": "サウンド設定"
+  },
+  {
+    "key": "setting_nav_text",
+    "Japanese": "テキスト設定"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Japanese": "キーボード設定"
+  },
+  {
+    "key": "common_user_name",
+    "Japanese": ""
+  },
+  {
+    "key": "common_user_password",
+    "Japanese": ""
+  },
+  {
+    "key": "common_start_game",
+    "Japanese": "ゲームを始める"
+  },
+  {
+    "key": "common_load_game",
+    "Japanese": "ゲームをロード"
+  },
+  {
+    "key": "common_system_setting",
+    "Japanese": "設定"
+  },
+  {
+    "key": "common_gallerty",
+    "Japanese": "ギャラリー"
+  },
+  {
+    "key": "common_about",
+    "Japanese": "詳細情報"
+  },
+  {
+    "key": "common_exit_game",
+    "Japanese": "終了"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Japanese": "新しいゲーム"
+  },
+  {
+    "key": "common_continue_game",
+    "Japanese": "続きから"
+  },
+  {
+    "key": "common_exit_submit",
+    "Japanese": "決定"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Japanese": "キャンセル"
+  },
+  {
+    "key": "common_exit_title",
+    "Japanese": "ゲームを終了しますか？"
+  },
+  {
+    "key": "common_exit_label",
+    "Japanese": "常に確認する"
+  }
+]

@@ -34,14 +34,14 @@ namespace AOT.Framework.Core.Utility
 			public const string BUNDLES_DIRECTORY_SCENE_NAME = "Scene";
 
 			/// <summary>
-			/// 打包资源文件夹Localization名称
+			/// 打包资源文件夹Localization名称（Config 子目录：Bundles/Config/Localization，按语种独立 bundle）
 			/// </summary>
-			public const string BUNDLES_DIRECTORY_LOCALIZATION_NAME_PLACEHOLDER = "Localization";
+			public const string BUNDLES_DIRECTORY_LOCALIZATION_NAME_PLACEHOLDER = "Config/Localization";
 
 			/// <summary>
-			/// 打包资源文件夹Config名称
+			/// 打包资源文件夹Config名称（业务表产物目录：Bundles/Config/Data，整目录一个 bundle）
 			/// </summary>
-			public const string BUNDLES_DIRECTORY_CONFIG_NAME = "Config";
+			public const string BUNDLES_DIRECTORY_CONFIG_NAME = "Config/Data";
 
 			/// <summary>
 			/// 打包资源文件夹AOTCode名称

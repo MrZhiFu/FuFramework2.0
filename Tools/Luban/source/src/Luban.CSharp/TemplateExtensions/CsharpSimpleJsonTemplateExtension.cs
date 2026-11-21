@@ -49,4 +49,16 @@ public class CsharpSimpleJsonTemplateExtension : ScriptObject
             return type.Apply(SimpleJsonDeserializeVisitor.Ins, $"{jsonVar}[\"{jsonFieldName}\"]", fieldName, 0);
         }
     }
+
+    /// <summary>
+    /// 本地化拆分产物专用宽容反序列化：缺键（或 null 值）时字段置 null，不抛 SerializationException。
+    /// 仅限 Localization bean 的语种字段（模板分支控制）；key 字段不经过此函数（保持严格）。
+    /// 依赖产物形态：按语种拆分后每行只有 key + 目标语种两键，缺失语种键 = 该语种在当前语言下无译文（null），
+    /// 空值兜底由运行时英语兜底表二段查询接管。
+    /// </summary>
+    public static string DeserializeLenient(string fieldName, string jsonVar, string jsonFieldName, TType type)
+    {
+        // type 恒为 TString（模板分支保证）；缺键时 SimpleJSON indexer 返回 JSONNode.Null 实例，IsString=false → null
+        return $"{{ var _j = {jsonVar}[\"{jsonFieldName}\"]; {fieldName} = _j.IsString ? _j.Value : null; }}";
+    }
 }

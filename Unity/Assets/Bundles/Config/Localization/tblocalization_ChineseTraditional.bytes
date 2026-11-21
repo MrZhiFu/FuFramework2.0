@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "achievement_cover",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "ChineseTraditional": "遊戲存檔管理"
+  },
+  {
+    "key": "setting_nav_setting",
+    "ChineseTraditional": "系統設置"
+  },
+  {
+    "key": "setting_nav_voice",
+    "ChineseTraditional": "音效設置"
+  },
+  {
+    "key": "setting_nav_text",
+    "ChineseTraditional": "文本設置"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "ChineseTraditional": "鍵盤設置"
+  },
+  {
+    "key": "common_user_name",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "common_user_password",
+    "ChineseTraditional": ""
+  },
+  {
+    "key": "common_start_game",
+    "ChineseTraditional": "開始遊戲"
+  },
+  {
+    "key": "common_load_game",
+    "ChineseTraditional": "讀取遊戲"
+  },
+  {
+    "key": "common_system_setting",
+    "ChineseTraditional": "系統設置"
+  },
+  {
+    "key": "common_gallerty",
+    "ChineseTraditional": "畫廊設置"
+  },
+  {
+    "key": "common_about",
+    "ChineseTraditional": "關於更多"
+  },
+  {
+    "key": "common_exit_game",
+    "ChineseTraditional": "退出遊戲"
+  },
+  {
+    "key": "common_pop_start_game",
+    "ChineseTraditional": "開始遊戲"
+  },
+  {
+    "key": "common_continue_game",
+    "ChineseTraditional": "繼續上一次遊戲"
+  },
+  {
+    "key": "common_exit_submit",
+    "ChineseTraditional": "確定"
+  },
+  {
+    "key": "common_exit_cancel",
+    "ChineseTraditional": "取消"
+  },
+  {
+    "key": "common_exit_title",
+    "ChineseTraditional": "是否退出遊戲？"
+  },
+  {
+    "key": "common_exit_label",
+    "ChineseTraditional": "始終需要確認"
+  }
+]

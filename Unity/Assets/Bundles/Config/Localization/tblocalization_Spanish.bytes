@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Spanish": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Spanish": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Spanish": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Spanish": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Spanish": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Spanish": "Gestión de guardados"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Spanish": "Configuración del sistema"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Spanish": "Configuración de sonido"
+  },
+  {
+    "key": "setting_nav_text",
+    "Spanish": "Configuración de texto"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Spanish": "Configuración de teclado"
+  },
+  {
+    "key": "common_user_name",
+    "Spanish": ""
+  },
+  {
+    "key": "common_user_password",
+    "Spanish": ""
+  },
+  {
+    "key": "common_start_game",
+    "Spanish": "Iniciar juego"
+  },
+  {
+    "key": "common_load_game",
+    "Spanish": "Cargar juego"
+  },
+  {
+    "key": "common_system_setting",
+    "Spanish": "Configuración"
+  },
+  {
+    "key": "common_gallerty",
+    "Spanish": "Galería"
+  },
+  {
+    "key": "common_about",
+    "Spanish": "Acerca de"
+  },
+  {
+    "key": "common_exit_game",
+    "Spanish": "Salir"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Spanish": "Nuevo juego"
+  },
+  {
+    "key": "common_continue_game",
+    "Spanish": "Continuar"
+  },
+  {
+    "key": "common_exit_submit",
+    "Spanish": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Spanish": "Cancelar"
+  },
+  {
+    "key": "common_exit_title",
+    "Spanish": "¿Salir del juego?"
+  },
+  {
+    "key": "common_exit_label",
+    "Spanish": "Confirmar siempre"
+  }
+]

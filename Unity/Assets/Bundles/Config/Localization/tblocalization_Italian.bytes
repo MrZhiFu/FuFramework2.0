@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Italian": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Italian": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Italian": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Italian": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Italian": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Italian": "Gestione salvataggi"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Italian": "Impostazioni di sistema"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Italian": "Impostazioni audio"
+  },
+  {
+    "key": "setting_nav_text",
+    "Italian": "Impostazioni testo"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Italian": "Impostazioni tastiera"
+  },
+  {
+    "key": "common_user_name",
+    "Italian": ""
+  },
+  {
+    "key": "common_user_password",
+    "Italian": ""
+  },
+  {
+    "key": "common_start_game",
+    "Italian": "Inizia gioco"
+  },
+  {
+    "key": "common_load_game",
+    "Italian": "Carica gioco"
+  },
+  {
+    "key": "common_system_setting",
+    "Italian": "Impostazioni"
+  },
+  {
+    "key": "common_gallerty",
+    "Italian": "Galleria"
+  },
+  {
+    "key": "common_about",
+    "Italian": "Info"
+  },
+  {
+    "key": "common_exit_game",
+    "Italian": "Esci"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Italian": "Nuovo gioco"
+  },
+  {
+    "key": "common_continue_game",
+    "Italian": "Continua"
+  },
+  {
+    "key": "common_exit_submit",
+    "Italian": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Italian": "Annulla"
+  },
+  {
+    "key": "common_exit_title",
+    "Italian": "Uscire dal gioco?"
+  },
+  {
+    "key": "common_exit_label",
+    "Italian": "Conferma sempre"
+  }
+]

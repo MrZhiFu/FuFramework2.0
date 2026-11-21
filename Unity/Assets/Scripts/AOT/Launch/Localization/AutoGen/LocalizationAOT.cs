@@ -18,8 +18,6 @@ namespace AOT.Launch.Localization
     {
         /// <summary> ID </summary>
         public string Key { get; set; }
-        /// <summary> 是否导出到代码中 </summary>
-        public bool IsCode { get; set; }
         /// <summary> 简体中文 </summary>
         public string ChineseSimplified { get; set; }
         /// <summary> 繁体中文 </summary>

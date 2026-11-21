@@ -192,7 +192,11 @@ end
             {{~ for field in export_fields
                 fieldName = format_property_name __code_style field.name
             ~}}
+            {{~if __bean.name == 'Localization' && field.type == 'string' && field.name != 'key'~}}
+            {{deserialize_lenient fieldName 'node' field.name field.ctype}}
+            {{~else~}}
             {{deserialize_field fieldName 'node' field.name field.ctype}}
+            {{~end~}}
             {{~if can_generate_ref field~}}
             {{get_ref_name field}} = null;
             {{~end~}}

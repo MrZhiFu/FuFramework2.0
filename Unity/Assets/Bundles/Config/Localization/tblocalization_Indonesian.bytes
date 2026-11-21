@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "Indonesian": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "Indonesian": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "Indonesian": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "Indonesian": ""
+  },
+  {
+    "key": "achievement_cover",
+    "Indonesian": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "Indonesian": "Manajemen Data Simpanan"
+  },
+  {
+    "key": "setting_nav_setting",
+    "Indonesian": "Pengaturan Sistem"
+  },
+  {
+    "key": "setting_nav_voice",
+    "Indonesian": "Pengaturan Suara"
+  },
+  {
+    "key": "setting_nav_text",
+    "Indonesian": "Pengaturan Teks"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "Indonesian": "Pengaturan Keyboard"
+  },
+  {
+    "key": "common_user_name",
+    "Indonesian": ""
+  },
+  {
+    "key": "common_user_password",
+    "Indonesian": ""
+  },
+  {
+    "key": "common_start_game",
+    "Indonesian": "Mulai Game"
+  },
+  {
+    "key": "common_load_game",
+    "Indonesian": "Muat Game"
+  },
+  {
+    "key": "common_system_setting",
+    "Indonesian": "Pengaturan"
+  },
+  {
+    "key": "common_gallerty",
+    "Indonesian": "Galeri"
+  },
+  {
+    "key": "common_about",
+    "Indonesian": "Tentang"
+  },
+  {
+    "key": "common_exit_game",
+    "Indonesian": "Keluar"
+  },
+  {
+    "key": "common_pop_start_game",
+    "Indonesian": "Game Baru"
+  },
+  {
+    "key": "common_continue_game",
+    "Indonesian": "Lanjutkan"
+  },
+  {
+    "key": "common_exit_submit",
+    "Indonesian": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "Indonesian": "Batal"
+  },
+  {
+    "key": "common_exit_title",
+    "Indonesian": "Keluar dari game?"
+  },
+  {
+    "key": "common_exit_label",
+    "Indonesian": "Selalu konfirmasi"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "key": "achievement_name_01",
+    "English": ""
+  },
+  {
+    "key": "achievement_name_02",
+    "English": ""
+  },
+  {
+    "key": "achievement_content_1",
+    "English": ""
+  },
+  {
+    "key": "achievement_content_2",
+    "English": ""
+  },
+  {
+    "key": "achievement_cover",
+    "English": ""
+  },
+  {
+    "key": "setting_nav_document",
+    "English": "Save Data Management"
+  },
+  {
+    "key": "setting_nav_setting",
+    "English": "System Settings"
+  },
+  {
+    "key": "setting_nav_voice",
+    "English": "Sound Settings"
+  },
+  {
+    "key": "setting_nav_text",
+    "English": "Text Settings"
+  },
+  {
+    "key": "setting_nav_keyboard",
+    "English": "Keyboard Settings"
+  },
+  {
+    "key": "common_user_name",
+    "English": "UserName"
+  },
+  {
+    "key": "common_user_password",
+    "English": "Password"
+  },
+  {
+    "key": "common_start_game",
+    "English": "Start Game"
+  },
+  {
+    "key": "common_load_game",
+    "English": "Load Game"
+  },
+  {
+    "key": "common_system_setting",
+    "English": "Settings"
+  },
+  {
+    "key": "common_gallerty",
+    "English": "Gallery"
+  },
+  {
+    "key": "common_about",
+    "English": "About"
+  },
+  {
+    "key": "common_exit_game",
+    "English": "Quit"
+  },
+  {
+    "key": "common_pop_start_game",
+    "English": "New Game"
+  },
+  {
+    "key": "common_continue_game",
+    "English": "Continue"
+  },
+  {
+    "key": "common_exit_submit",
+    "English": "OK"
+  },
+  {
+    "key": "common_exit_cancel",
+    "English": "Cancel"
+  },
+  {
+    "key": "common_exit_title",
+    "English": "Exit game?"
+  },
+  {
+    "key": "common_exit_label",
+    "English": "Always confirm"
+  }
+]
