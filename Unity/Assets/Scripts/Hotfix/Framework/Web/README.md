@@ -54,7 +54,7 @@ FuFramework Web 模块是游戏框架的 HTTP 请求管理系统，基于 `Unity
 
 ### 4.1 WebModule
 
-Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。采用 **partial class 拆分**：`WebModule.cs`（字段/请求入队/生命周期/共享骨架）、`WebModule.API.cs`（公共 API）、`WebModule.Json.cs`（JSON 请求处理）、`WebModule.Pb.cs`（Pb 请求处理）。请求队列在 `OnUpdate` 中轮询处理（经 `UpdateJsonReq`/`UpdatePbReq` 填满并发槽位，完成回调统一经共享骨架 `SendRequest` 写回）。
+Web 管理模块，继承自 `ModuleBase`，实现 `ICancelAsync`（可取消异步对象）。通过 `ModuleManager.GetModule<WebModule>()` 获取实例。采用 **partial class 拆分**：`WebModule.cs`（字段/请求入队/生命周期/共享骨架）、`WebModule.Const.cs`（常量分部，单一事实源）、`WebModule.API.cs`（公共 API）、`WebModule.Json.cs`（JSON 请求处理）、`WebModule.Pb.cs`（Pb 请求处理）。请求队列在 `OnUpdate` 中轮询处理（经 `UpdateJsonReq`/`UpdatePbReq` 填满并发槽位，完成回调统一经共享骨架 `SendRequest` 写回）。
 
 > **可取消异步**：`WebModule` 实现 `ICancelAsync`（`Token` + `CancelAsync`）。
 > 模块销毁（`OnDispose`）时触发 `Token` 取消，在途请求随之中止；此后发起的新请求被入口检查拒绝
@@ -453,6 +453,7 @@ var results = await UniTask.WhenAll(tasks);
 ```text
 Web/
 ├── WebModule.cs                    # Web 管理模块（字段/请求入队/生命周期/共享发送骨架）
+├── WebModule.Const.cs              # Web 管理模块常量分部（请求协议运行时参数，单一事实源）
 ├── WebModule.API.cs                # Web 管理模块公共 API（GET/POST 字符串/字节/Pb）
 ├── WebModule.Json.cs               # JSON 请求处理（出队/构建/发送，partial）
 ├── WebModule.Pb.cs                 # Pb 请求处理（出队/构建/发送，partial）

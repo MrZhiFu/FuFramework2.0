@@ -49,11 +49,6 @@ namespace Hotfix.Framework.Web
 		/// </summary>
 		private readonly List<WebPbData> m_sendingPbList = new(16);
 
-		/// <summary>
-		/// Pb 内容类型常量。
-		/// </summary>
-		private const string PB_CONTENT_TYPE = "application/x-protobuf";
-
 		#region 请求入队
 
 		/// <summary>
