@@ -9,37 +9,48 @@ namespace AOT.Launch.Localization
 {
 	/// <summary>
 	/// AOT 阶段本地化多语言门面。
-	///     从 Resources 加载 AOT 本地化表数据（YooAsset 未就绪阶段的既有加载通道），
+	///     数据按语种拆分：每语种一个 key+value 文件（Resources/LaunchLocalizationText/tblocalizationaot_<语言名>），
+	///     启动时按语言注册表定位当前语种文件加载；当前语种译文缺失时二段查询英语兜底文件。
+	///     语种清单/系统语言映射/兜底全部来自配置生成的 LaunchLanguageRegistry（删语种零代码改动）。
 	///     脱离 UIModule/EventModule 自包含运行（与 LaunchView 同一设计原则）；
 	///     热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
-	///     数据解析自包含（json 用 SimpleJSON / bin 用 Luban.ByteBuf，见 LaunchLocalization.Parse 分部），
-	///     不依赖热更侧配置框架。
+	///     数据解析自包含（json 用 SimpleJSON / bin 用 Luban.ByteBuf，见 LaunchLocalization.Parse 分部）。
 	/// </summary>
 	public static partial class LaunchLocalization
 	{
 		/// <summary>
-		/// 语言偏好在 PlayerPrefs 中的存储键（值为 (int)ELanguage）。
+		/// 语言偏好在 PlayerPrefs 中的存储键（值为语言枚举成员名字符串）。
 		/// 热更侧切换语言时（LocalizationModule）须以本键同步写入，保证下次启动 AOT 阶段读到相同偏好。
 		/// </summary>
 		public const string LANGUAGE_PREF_KEY = "AOT_Localization_Language";
 
 		/// <summary>
-		/// Resources 下 AOT 本地化表数据的加载路径（不含扩展名）。
+		/// Resources 下 AOT 本地化拆分文件的目录（不含文件名与扩展名）
 		/// </summary>
-		private const string DATA_PATH = "LaunchLocalizationText/tblocalizationaot";
+		private const string DATA_DIRECTORY = "LaunchLocalizationText";
 
 		/// <summary>
-		/// 多语言行数据字典。key 为多语言 key，value 为行数据。
+		/// 拆分文件名前缀（完整名 = 前缀_语言枚举成员名）
 		/// </summary>
-		private static readonly Dictionary<string, LocalizationAOT> s_Rows = new();
+		private const string DATA_FILE_PREFIX = "tblocalizationaot_";
 
 		/// <summary>
-		/// 当前使用的语言。
+		/// 当前语种的行数据：key → 译文
+		/// </summary>
+		private static readonly Dictionary<string, string> s_Rows = new();
+
+		/// <summary>
+		/// 英语兜底行数据（当前语言即英语时与 s_Rows 同源，不再重复加载）：key → 译文
+		/// </summary>
+		private static readonly Dictionary<string, string> s_EnglishRows = new();
+
+		/// <summary>
+		/// 当前使用的语言（Unspecified 仅存在于加载前；初始化完成后恒为注册表内的有效语种）
 		/// </summary>
 		public static ELanguage Language { get; private set; } = ELanguage.Unspecified;
 
 		/// <summary>
-		/// 初始化：加载 AOT 本地化表数据并确定当前语言。
+		/// 初始化：确定当前语言 → 加载当前语种文件（+英语兜底文件）。
 		/// 须在启动流程首次展示文本前 await 完成；数据缺失仅记录错误，不阻断启动。
 		/// </summary>
 		/// <returns>初始化异步流程</returns>
@@ -50,75 +61,73 @@ namespace AOT.Launch.Localization
 			// AOT 阶段注入 FGUI 声明式多语言解析委托（热更阶段会被 HotfixLauncher 覆盖为热更表版本）
 			FairyGUI.GObject.GetLanguageText = key => GetLanguage(key);
 
-			var textAsset = Resources.Load<TextAsset>(DATA_PATH);
-			if (textAsset == null)
-			{
-				FuLogger.LogError($"Resources 下未找到 {DATA_PATH}，AOT 本地化不可用!");
-				return;
-			}
-
 			s_Rows.Clear();
+			s_EnglishRows.Clear();
 
 			try
 			{
-#if ENABLE_BINARY_CONFIG
-				ParseBin(textAsset.bytes);
-#else
-				ParseJson(textAsset.text);
-#endif
+				LoadLanguageRows(Language, s_Rows);
+
+				// 当前语言不是英语时额外加载英语兜底文件；英语文件加载失败仅记录错误（译文缺失时显示 key）
+				if (Language != ELanguage.English)
+				{
+					LoadLanguageRows(ELanguage.English, s_EnglishRows);
+				}
 			}
 			catch (Exception e)
 			{
-				// 数据解析失败（变体错配/数据损坏）仅记录错误并清空半解析数据，不阻断启动流程
-				FuLogger.LogError($"AOT 本地化数据解析失败，AOT 本地化不可用：{e.Message}");
+				// 数据缺失/解析失败仅记录错误并清空半解析数据，不阻断启动流程
+				FuLogger.LogError($"AOT 本地化数据加载失败，AOT 本地化不可用：{e.Message}");
 				s_Rows.Clear();
+				s_EnglishRows.Clear();
 			}
 
 			await UniTask.CompletedTask;
 		}
 
 		/// <summary>
-		/// 获取 AOT 本地化多语言文本。
+		/// 加载指定语种的拆分文件到目标字典（同步 Resources.Load：AOT 阶段 YooAsset 未就绪的既有通道）
+		/// </summary>
+		/// <param name="language">目标语言</param>
+		/// <param name="rows">接收行数据的字典</param>
+		private static void LoadLanguageRows(ELanguage language, Dictionary<string, string> rows)
+		{
+			var path = $"{DATA_DIRECTORY}/{DATA_FILE_PREFIX}{language}";
+			var textAsset = Resources.Load<TextAsset>(path);
+			if (textAsset == null)
+			{
+				FuLogger.LogError($"Resources 下未找到 {path}，语种 {language} 数据不可用");
+				return;
+			}
+
+#if ENABLE_BINARY_CONFIG
+			ParseBin(textAsset.bytes, rows);
+#else
+			ParseJson(textAsset.text, rows);
+#endif
+		}
+
+		/// <summary>
+		/// 获取 AOT 本地化多语言文本：当前语种缺失时二段查询英语兜底（与 Hotfix 版同构）。
 		/// </summary>
 		/// <param name="key">多语言 key（使用 AOT 版 LaunchL10nKey 静态类字段）</param>
 		/// <param name="args">格式化参数</param>
-		/// <returns>本地化文本；key 未找到时记录错误并返回空串</returns>
+		/// <returns>本地化文本；key 在两个字典都缺失时记录错误并返回空串</returns>
 		public static string GetLanguage(string key, params object[] args)
 		{
 			if (string.IsNullOrEmpty(key)) return string.Empty;
 
-			if (!s_Rows.TryGetValue(key, out var row))
+			string text = null;
+			if (!s_Rows.TryGetValue(key, out text))
 			{
 				FuLogger.LogError($"多语言key '{key}' 没找到，请检查AOT多语言配置表!");
 				return string.Empty;
 			}
 
-			var text = Language switch
+			// 当前语种译文为空（未翻译）时回退英语兜底
+			if (string.IsNullOrEmpty(text) && Language != ELanguage.English)
 			{
-				// @formatter:off
-				ELanguage.ChineseSimplified  => row.ChineseSimplified,
-				ELanguage.ChineseTraditional => row.ChineseTraditional,
-				ELanguage.English            => row.English,
-				ELanguage.Japanese           => row.Japanese,
-				ELanguage.Korean             => row.Korean,
-				ELanguage.Thai               => row.Thai,
-				ELanguage.Indonesian         => row.Indonesian,
-				ELanguage.French             => row.French,
-				ELanguage.German             => row.German,
-				ELanguage.Italian            => row.Italian,
-				ELanguage.PortuguesePortugal => row.PortuguesePortugal,
-				ELanguage.PortugueseBrazil   => row.PortugueseBrazil,
-				ELanguage.Spanish            => row.Spanish,
-				ELanguage.Vietnamese         => row.Vietnamese,
-				ELanguage.Russian            => row.Russian,
-				_                            => row.English, // 语言类型未支持时，统一使用英语
-				// @formatter:on
-			};
-
-			// 目标语言字段为空时回退英语（与 Hotfix 版同构）
-			if (string.IsNullOrEmpty(text))
-			{
-				text = row.English;
+				s_EnglishRows.TryGetValue(key, out text);
 			}
 
 			text ??= string.Empty;
@@ -127,48 +136,30 @@ namespace AOT.Launch.Localization
 		}
 
 		/// <summary>
-		/// 从系统语言转换出本地化语言类型（枚举为配置生成，映射项与 Hotfix 侧 LocalizationModule 保持一致）。
+		/// 读取语言偏好：字符串名 → 注册表校验；旧 int 值（历史版本）按枚举值一次性迁移；
+		/// 均无效时回落系统语言（再无效由注册表兜底到 English）。
 		/// </summary>
-		/// <returns>本地化语言类型（无法识别时返回 Unspecified）</returns>
-		private static ELanguage FromSystemLanguage()
-		{
-			return Application.systemLanguage switch
-			{
-				// @formatter:off
-				SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
-				SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
-				SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
-				SystemLanguage.English            => ELanguage.English,
-				SystemLanguage.French             => ELanguage.French,
-				SystemLanguage.German             => ELanguage.German,
-				SystemLanguage.Indonesian         => ELanguage.Indonesian,
-				SystemLanguage.Italian            => ELanguage.Italian,
-				SystemLanguage.Japanese           => ELanguage.Japanese,
-				SystemLanguage.Korean             => ELanguage.Korean,
-				SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
-				SystemLanguage.Russian            => ELanguage.Russian,
-				SystemLanguage.Spanish            => ELanguage.Spanish,
-				SystemLanguage.Thai               => ELanguage.Thai,
-				SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
-				SystemLanguage.Unknown            => ELanguage.Unspecified,
-				_                                 => ELanguage.Unspecified
-				// @formatter:on
-			};
-		}
-
-		/// <summary>
-		/// 读取语言偏好：用户持久化选择优先，无记录时回退系统语言。
-		/// </summary>
-		/// <returns>当前语言</returns>
+		/// <returns>当前语言（恒为注册表内有效语种）</returns>
 		private static ELanguage LoadLanguagePreference()
 		{
-			var value = PlayerPrefs.GetInt(LANGUAGE_PREF_KEY, (int)ELanguage.Unspecified);
-			if (value > (int)ELanguage.Unspecified && value <= (int)ELanguage.Vietnamese)
+			// 新版：字符串名存储
+			var name = PlayerPrefs.GetString(LANGUAGE_PREF_KEY, string.Empty);
+			if (!string.IsNullOrEmpty(name) && LaunchLanguageRegistry.TryGetByName(name, out var byName))
 			{
-				return (ELanguage)value;
+				return byName;
 			}
 
-			return FromSystemLanguage();
+			// 旧版迁移：int 值（历史版本按枚举值存储；仅本次改造前存档存在，此后统一写字符串）
+			var legacy = PlayerPrefs.GetInt(LANGUAGE_PREF_KEY, 0);
+			if (legacy > (int)ELanguage.Unspecified && Enum.IsDefined(typeof(ELanguage), legacy))
+			{
+				var migrated = (ELanguage)legacy;
+				PlayerPrefs.SetString(LANGUAGE_PREF_KEY, migrated.ToString());
+				PlayerPrefs.Save();
+				return migrated;
+			}
+
+			return LaunchLanguageRegistry.FromSystemLanguage(Application.systemLanguage);
 		}
 	}
 }

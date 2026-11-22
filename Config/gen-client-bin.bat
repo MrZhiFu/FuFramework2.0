@@ -21,10 +21,13 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -d bin ^
     -c cs-bin ^
     -c cs-l10n-key ^
+    -c cs-l10n-accessor ^
     -x outputDataDir=../Unity/Assets/Bundles/Config/Data ^
     -x cs-bin.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate ^
     -x cs-l10n-key.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension ^
+    -x cs-l10n-accessor.outputCodeDir=../Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Extension ^
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
+    -x outputSaver.cs-l10n-accessor.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=client ^
     -x l10n.provider=fuframework ^
@@ -43,17 +46,35 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -c cs-enums ^
     -x cs-enums.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
     -x outputSaver.cs-enums.cleanUpOutputDir=false ^
-    -c cs-bean ^
-    -x cs-bean.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
-    -x outputSaver.cs-bean.cleanUpOutputDir=false ^
-    -x cs-bean.tables=TbLocalizationAOT ^
     -x outputSaver.cs-l10n-key.cleanUpOutputDir=false ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=aot ^
     -x l10n.provider=fuframework ^
     -x l10n.textFile.keyFieldName=key ^
     -x l10n.textFile.path=./Excels/Local/ ^
+    -x dataPostprocess=split-aot-localization ^
     --conf ./Luban.conf
+
+rem Language registry (short standalone call): LanguageDef is a -c- table,
+rem   must be imported with client importer view; -o bypasses group filter to
+rem   include the table, -f loads table data without producing data files;
+rem   output goes to AOT AutoGen (AOT.Launch.Localization namespace)
+
+dotnet ../Tools/Luban/bin/Luban.dll ^
+    -t aot ^
+    -c cs-language-registry ^
+    -o Tables.TbLanguageDef ^
+    -f ^
+    -x cs-language-registry.outputCodeDir=../Unity/Assets/Scripts/AOT/Launch/Localization/AutoGen ^
+    -x outputSaver.cs-language-registry.cleanUpOutputDir=false ^
+    -x tableImporter.name=fuframework ^
+    -x tableImporter.target=client ^
+    -x l10n.provider=fuframework ^
+    -x l10n.textFile.keyFieldName=key ^
+    -x l10n.textFile.path=./Excels/Local/ ^
+    --conf ./Luban.conf
+
+python sync_localization_yooasset_collectors.py
 
 pause
 

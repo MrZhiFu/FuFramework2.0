@@ -22,7 +22,7 @@
 
 | 脚本 | 目标 | 数据产出 | 代码产出 |
 |---|---|---|---|
-| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（15 语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
+| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（按语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey + LocalizationTextAccessor） |
 | `gen-client-json.bat` / `.sh` | 客户端（json 变体） | 同上（业务表为 `.json`；本地化产物仍为 `.bytes`） | 同上 |
 | `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/json` | `Server/FuFramework.Config/Config` |
 | `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上（两变体共用目录） | 同上 |
@@ -149,13 +149,13 @@
 | 表 / 枚举 | 位置 | 说明 |
 |---|---|---|
 | `TbLocalization` | `Excels/Local/L-Localization-c-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列，表名带 `-c-`（客户端专属，服务端不生成）。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；`is_code` 列标 `##group none`（导出代码用、不进导出产物）；缺失 `is_code` 列时生成报错终止。产物**按语种拆分**：`Bundles/Config/Localization/tblocalization_<语言>.bytes`（每文件只含 key + 目标语种列，两数据变体统一 `.bytes`）；目标语种为空时运行时懒加载英语兜底表二段查询（见 `Localization/README.md` 4.3） |
-| `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物进 `Resources/LaunchLocalizationText/`，代码仅生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
-| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符。供语言切换 UI 等使用 |
-| `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化：16 成员（`Unspecified=0` + 15 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
+| `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物按语种拆分为 `Resources/LaunchLocalizationText/tblocalizationaot_<语言>.<json\|bytes>`（key+value 两字段，`split-aot-localization` 后处理）；代码生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
+| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符 / `system_language`(Unity SystemLanguage 成员名，多值分号分隔)。是 `LaunchLanguageRegistry` 的数据源——删/增语种改本表行 + 本地化表列 + 枚举成员三处数据即可，运行时零代码改动 |
+| `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化（当前 7 成员：`Unspecified=0` + 6 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
 
 > 客户端专属枚举（UI / 红点 / 声音 / 引导 / 实体组 / 语言等）在 `__enums__.xlsx` 的 `group` 列标 `c`；服务端只会生成被其导出表真实引用的枚举（如品质、道具类型）。
 
-**扩语言四步**：`__enums__.xlsx` 追加枚举成员（value 顺延）→ 各本地化表加语言列 → `L-LanguageDef` 加行 → 代码侧 `LocalizationProvider` / `LaunchLocalization` 的 switch 补分支。
+**扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、`LocalizationTextAccessor`（取词分支）、按语种拆分产物、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
 
 **FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
 
@@ -168,10 +168,10 @@
 1. **建数据表**：`Excels/Tables/L-LocalizationImage-多语言图片.xlsx`（表名 `TbLocalizationImage`）。结构参照 `TbLocalization`：`key`(string) + `is_code`(bool) + 各语言列（列值为该语言的**资源路径**）。
    **注意：不能放 `Excels/Local/`**——该目录是 `l10n.textFile` 文本校验专用通道，要求表带 `key` 字段（结构不符会在生成期崩溃）；资源表与 `TbLanguageDef` 一样放 `Excels/Tables/`。
 2. **生成 key 常量**：把表名 `TbLocalizationImage` 加入 `Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` 的 `CollectKeys` 表名筛选列表，key 常量随 `L10nKey` 一起生成；重建 Luban（`build-luban.bat`）。
-3. **运行时提供器**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationProvider.cs` 新建取值实现（查表 → switch 当前语言选列 → 空值回退 English 列 → `string.Format` 参数），返回的资源路径交给 `AssetModule` 加载。
+3. **运行时提供器**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationProvider.cs` 新建取值实现（查表 → 生成访问器按语言取列 → 空值二段查询英语兜底表 → `string.Format` 参数），返回的资源路径交给 `AssetModule` 加载。
 4. **产出**：重跑 `gen-client-bin/json`，数据与代码走常规链路（`TableManager` 自动纳入新表加载）。
 
-**联动提醒**：每新增一种多语言类型表，未来"扩语言"时该表也须同步加语言列（与 `TbLocalization` / `L-LanguageDef` / 枚举 sheet 四处联动，见上文扩语言四步）。
+**联动提醒**：每新增一种多语言类型表，未来"扩语言"时该表也须同步加语言列（与 `TbLocalization` / `L-LanguageDef` / 枚举 sheet 四处联动，见上文「扩语言/删语种」）。
 
 ### 增加自动导表的文件名称扩展识别
 

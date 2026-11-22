@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -91,33 +91,15 @@ namespace Hotfix.Framework.Localization
 		}
 
 		/// <summary>
-		/// 从系统语言转换出本地化语言类型（枚举为配置生成，映射项与 AOT 侧 LaunchLocalization 保持一致）。
+		/// 从系统语言转换出本地化语言类型（映射走配置生成的语言注册表，与 AOT 侧同一事实源；
+		/// 未覆盖的系统语言由注册表兜底到 English）。
 		/// </summary>
-		/// <returns>本地化语言类型（无法识别时返回 Unspecified）</returns>
+		/// <returns>本地化语言类型</returns>
 		private static ELanguage FromSystemLanguage()
 		{
-			return Application.systemLanguage switch
-			{
-				// @formatter:off
-				SystemLanguage.Chinese            => ELanguage.ChineseSimplified,
-				SystemLanguage.ChineseSimplified  => ELanguage.ChineseSimplified,
-				SystemLanguage.ChineseTraditional => ELanguage.ChineseTraditional,
-				SystemLanguage.English            => ELanguage.English,
-				SystemLanguage.French             => ELanguage.French,
-				SystemLanguage.German             => ELanguage.German,
-				SystemLanguage.Indonesian         => ELanguage.Indonesian,
-				SystemLanguage.Italian            => ELanguage.Italian,
-				SystemLanguage.Japanese           => ELanguage.Japanese,
-				SystemLanguage.Korean             => ELanguage.Korean,
-				SystemLanguage.Portuguese         => ELanguage.PortuguesePortugal,
-				SystemLanguage.Russian            => ELanguage.Russian,
-				SystemLanguage.Spanish            => ELanguage.Spanish,
-				SystemLanguage.Thai               => ELanguage.Thai,
-				SystemLanguage.Vietnamese         => ELanguage.Vietnamese,
-				SystemLanguage.Unknown            => ELanguage.Unspecified,
-				_                                 => ELanguage.Unspecified
-				// @formatter:on
-			};
+			var aotLanguage = LaunchLanguageRegistry.FromSystemLanguage(Application.systemLanguage);
+			// AOT 与 Hotfix 各持一份配置生成的 ELanguage（数值一致）；跨程序集传递须显式按名转换
+			return (ELanguage)Enum.Parse(typeof(ELanguage), aotLanguage.ToString());
 		}
 
 		/// <summary>
@@ -147,8 +129,8 @@ namespace Hotfix.Framework.Localization
 			else
 				m_language = FromSystemLanguage();
 
-			// 启动收敛：把本侧最终语言回写 PlayerPrefs，修正 AOT 偏好缺失/漂移（如旧版本仅存档无偏好）的情况
-			PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)m_language);
+			// 启动收敛：把本侧最终语言回写 PlayerPrefs（字符串名），修正 AOT 偏好缺失/漂移（如旧版本仅存档无偏好）的情况
+			PlayerPrefs.SetString(LaunchLocalization.LANGUAGE_PREF_KEY, m_language.ToString());
 			PlayerPrefs.Save();
 		}
 
@@ -290,7 +272,7 @@ namespace Hotfix.Framework.Localization
 
 			// 同步语言偏好到 PlayerPrefs：下次启动 AOT 阶段（LaunchLocalization）从 PlayerPrefs 读取，
 			// 两阶段偏好不同源会导致 AOT 界面文本语言与本侧不一致
-			PlayerPrefs.SetInt(LaunchLocalization.LANGUAGE_PREF_KEY, (int)newLanguage);
+			PlayerPrefs.SetString(LaunchLocalization.LANGUAGE_PREF_KEY, newLanguage.ToString());
 			PlayerPrefs.Save();
 
 			// 发送本地化语言改变事件（订阅者如 TableManager 在事件回调中重译全表）

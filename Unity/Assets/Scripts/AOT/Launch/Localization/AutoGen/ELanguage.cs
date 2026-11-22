@@ -26,40 +26,13 @@ namespace AOT.Launch.Localization
         /// <summary> 英语 </summary>
         English = 3,
 
-        /// <summary> 法语 </summary>
-        French = 4,
-
-        /// <summary> 德语 </summary>
-        German = 5,
-
-        /// <summary> 印尼语 </summary>
-        Indonesian = 6,
-
-        /// <summary> 意大利语 </summary>
-        Italian = 7,
-
         /// <summary> 日语 </summary>
         Japanese = 8,
 
         /// <summary> 韩语 </summary>
         Korean = 9,
 
-        /// <summary> 葡萄牙语(巴西) </summary>
-        PortugueseBrazil = 10,
-
-        /// <summary> 葡萄牙语(葡萄牙) </summary>
-        PortuguesePortugal = 11,
-
-        /// <summary> 俄语 </summary>
-        Russian = 12,
-
         /// <summary> 西班牙语 </summary>
         Spanish = 13,
-
-        /// <summary> 泰语 </summary>
-        Thai = 14,
-
-        /// <summary> 越南语 </summary>
-        Vietnamese = 15,
     }
 }

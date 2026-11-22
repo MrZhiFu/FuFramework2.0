@@ -1,11 +1,11 @@
 [
   {
     "key": "achievement_name_01",
-    "ChineseSimplified": "独自享受的日常"
+    "ChineseSimplified": "\u00A0独自享受的日常"
   },
   {
     "key": "achievement_name_02",
-    "ChineseSimplified": "神社的守护者"
+    "ChineseSimplified": "\u00A0神社的守护者"
   },
   {
     "key": "achievement_content_1",
@@ -13,7 +13,7 @@
   },
   {
     "key": "achievement_content_2",
-    "ChineseSimplified": "您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）"
+    "ChineseSimplified": "\u00A0您已赢得巫女玲奈的芳心，并肩负起守护神社的责任！（大概吧）"
   },
   {
     "key": "achievement_cover",

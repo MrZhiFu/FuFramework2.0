@@ -36,6 +36,9 @@ namespace Hotfix.Game.Config
         /// <summary> 逗号分隔符 </summary>
         public string Separator { private set; get; }
 
+        /// <summary> Unity SystemLanguage 成员名，多值分号分隔；与手写映射一致 </summary>
+        public string SystemLanguage { private set; get; }
+
         /// <summary> 获取 bean 类型标识 </summary>
         public override int GetTypeId() => __ID__;
 
@@ -47,13 +50,15 @@ namespace Hotfix.Game.Config
         /// <param name="icon">旗帜图标</param>
         /// <param name="sort">排序</param>
         /// <param name="separator">逗号分隔符</param>
-        public LanguageDef(ELanguage language, string name, string icon, int sort, string separator) 
+        /// <param name="systemLanguage">Unity SystemLanguage 成员名，多值分号分隔；与手写映射一致</param>
+        public LanguageDef(ELanguage language, string name, string icon, int sort, string separator, string systemLanguage) 
         {
             Language = language;
             Name = name;
             Icon = icon;
             Sort = sort;
             Separator = separator;
+            SystemLanguage = systemLanguage;
             OnInit();
         }
 
@@ -68,6 +73,7 @@ namespace Hotfix.Game.Config
             { if(!node["icon"].IsString) { throw new SerializationException(); }  Icon = node["icon"]; }
             { if(!node["sort"].IsNumber) { throw new SerializationException(); }  Sort = node["sort"]; }
             { if(!node["separator"].IsString) { throw new SerializationException(); }  Separator = node["separator"]; }
+            { if(!node["system_language"].IsString) { throw new SerializationException(); }  SystemLanguage = node["system_language"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -103,11 +109,12 @@ namespace Hotfix.Game.Config
         public override string ToString()
         {
             return "{ "
-                   + "language:"  + Language  + ","
-                   + "name:"      + Name      + ","
-                   + "icon:"      + Icon      + ","
-                   + "sort:"      + Sort      + ","
-                   + "separator:" + Separator + ","
+                   + "language:"       + Language       + ","
+                   + "name:"           + Name           + ","
+                   + "icon:"           + Icon           + ","
+                   + "sort:"           + Sort           + ","
+                   + "separator:"      + Separator      + ","
+                   + "systemLanguage:" + SystemLanguage + ","
                    + "}";
         }
 

@@ -331,8 +331,8 @@ internal static class Program
 
     private static void PrintCopyRight(CommandOptions opts)
     {
-        // 标题按 gen target 语义化：同一次 bat 会跑两遍（client 热更 + aot 前置），
-        // 原样重复的横幅无法区分段落，改为一句话标题
+        // 标题按 gen target 语义化：同一次 bat 会跑多段（client 热更 / aot 前置 / aot 注册表短调用），
+        // 括号说明本段实际挂载的 code target——aot 段会跑两遍（拆表全套 / 仅注册表），无说明无法区分
         var title = opts.Target switch
         {
             "client" => "处理客户端热更配置",
@@ -340,7 +340,9 @@ internal static class Program
             "server" => "处理服务端配置",
             _        => "处理配置",
         };
-        s_logger.Info($"==================== {title} ====================");
+        var codeTargets = opts.CodeTargets?.ToList() ?? new List<string>();
+        var detail = codeTargets.Count > 0 ? $"（code: {string.Join(", ", codeTargets)}）" : "";
+        s_logger.Info($"==================== {title}{detail} ====================");
         s_logger.Info("  Luban is developed by Code Philosophy Technology Co., LTD. https://code-philosophy.com");
     }
 }

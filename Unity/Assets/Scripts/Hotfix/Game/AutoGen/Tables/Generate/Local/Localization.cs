@@ -39,35 +39,8 @@ namespace Hotfix.Game.Config
         /// <summary> 韩语 </summary>
         public string Korean { private set; get; }
 
-        /// <summary> 泰语 </summary>
-        public string Thai { private set; get; }
-
-        /// <summary> 印尼语 </summary>
-        public string Indonesian { private set; get; }
-
-        /// <summary> 法语 </summary>
-        public string French { private set; get; }
-
-        /// <summary> 德语 </summary>
-        public string German { private set; get; }
-
-        /// <summary> 俄语 </summary>
-        public string Russian { private set; get; }
-
-        /// <summary> 意大利语 </summary>
-        public string Italian { private set; get; }
-
-        /// <summary> 葡萄牙语(巴西) </summary>
-        public string PortugueseBrazil { private set; get; }
-
-        /// <summary> 葡萄牙语 </summary>
-        public string PortuguesePortugal { private set; get; }
-
         /// <summary> 西班牙语 </summary>
         public string Spanish { private set; get; }
-
-        /// <summary> 越南语 </summary>
-        public string Vietnamese { private set; get; }
 
         /// <summary> 获取 bean 类型标识 </summary>
         public override int GetTypeId() => __ID__;
@@ -81,17 +54,8 @@ namespace Hotfix.Game.Config
         /// <param name="english">英语</param>
         /// <param name="japanese">日语</param>
         /// <param name="korean">韩语</param>
-        /// <param name="thai">泰语</param>
-        /// <param name="indonesian">印尼语</param>
-        /// <param name="french">法语</param>
-        /// <param name="german">德语</param>
-        /// <param name="russian">俄语</param>
-        /// <param name="italian">意大利语</param>
-        /// <param name="portugueseBrazil">葡萄牙语(巴西)</param>
-        /// <param name="portuguesePortugal">葡萄牙语</param>
         /// <param name="spanish">西班牙语</param>
-        /// <param name="vietnamese">越南语</param>
-        public Localization(string key, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string thai, string indonesian, string french, string german, string russian, string italian, string portugueseBrazil, string portuguesePortugal, string spanish, string vietnamese) 
+        public Localization(string key, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string spanish) 
         {
             Key = key;
             ChineseSimplified = chineseSimplified;
@@ -99,16 +63,7 @@ namespace Hotfix.Game.Config
             English = english;
             Japanese = japanese;
             Korean = korean;
-            Thai = thai;
-            Indonesian = indonesian;
-            French = french;
-            German = german;
-            Russian = russian;
-            Italian = italian;
-            PortugueseBrazil = portugueseBrazil;
-            PortuguesePortugal = portuguesePortugal;
             Spanish = spanish;
-            Vietnamese = vietnamese;
             OnInit();
         }
 
@@ -124,16 +79,7 @@ namespace Hotfix.Game.Config
             { var _j = node["English"]; English = _j.IsString ? _j.Value : null; }
             { var _j = node["Japanese"]; Japanese = _j.IsString ? _j.Value : null; }
             { var _j = node["Korean"]; Korean = _j.IsString ? _j.Value : null; }
-            { var _j = node["Thai"]; Thai = _j.IsString ? _j.Value : null; }
-            { var _j = node["Indonesian"]; Indonesian = _j.IsString ? _j.Value : null; }
-            { var _j = node["French"]; French = _j.IsString ? _j.Value : null; }
-            { var _j = node["German"]; German = _j.IsString ? _j.Value : null; }
-            { var _j = node["Russian"]; Russian = _j.IsString ? _j.Value : null; }
-            { var _j = node["Italian"]; Italian = _j.IsString ? _j.Value : null; }
-            { var _j = node["PortugueseBrazil"]; PortugueseBrazil = _j.IsString ? _j.Value : null; }
-            { var _j = node["PortuguesePortugal"]; PortuguesePortugal = _j.IsString ? _j.Value : null; }
             { var _j = node["Spanish"]; Spanish = _j.IsString ? _j.Value : null; }
-            { var _j = node["Vietnamese"]; Vietnamese = _j.IsString ? _j.Value : null; }
 
             // Localization Key Begin
             // Localization Key End
@@ -175,16 +121,7 @@ namespace Hotfix.Game.Config
                    + "English:"            + English            + ","
                    + "Japanese:"           + Japanese           + ","
                    + "Korean:"             + Korean             + ","
-                   + "Thai:"               + Thai               + ","
-                   + "Indonesian:"         + Indonesian         + ","
-                   + "French:"             + French             + ","
-                   + "German:"             + German             + ","
-                   + "Russian:"            + Russian            + ","
-                   + "Italian:"            + Italian            + ","
-                   + "PortugueseBrazil:"   + PortugueseBrazil   + ","
-                   + "PortuguesePortugal:" + PortuguesePortugal + ","
                    + "Spanish:"            + Spanish            + ","
-                   + "Vietnamese:"         + Vietnamese         + ","
                    + "}";
         }
 

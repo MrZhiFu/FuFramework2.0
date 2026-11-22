@@ -52,6 +52,40 @@ public class CsharpTemplateExtension : ScriptObject
         return bean.ParentDefType != null ? "override" : (bean.IsAbstractType ? "virtual" : "");
     }
 
+    /// <summary>
+    /// 字符串字面量转义（嵌入生成的 C# 字符串字面量：反斜杠/引号/控制字符），模板函数名 escape_string
+    /// </summary>
+    public static string EscapeString(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            return string.Empty;
+        }
+        var sb = new System.Text.StringBuilder(s.Length);
+        foreach (var c in s)
+        {
+            switch (c)
+            {
+                case '\\': sb.Append("\\\\"); break;
+                case '"':  sb.Append("\\\""); break;
+                case '\n': sb.Append("\\n"); break;
+                case '\r': sb.Append("\\r"); break;
+                case '\t': sb.Append("\\t"); break;
+                default:
+                    if (char.IsControl(c))
+                    {
+                        sb.Append($"\\u{(int)c:x4}");
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                    break;
+            }
+        }
+        return sb.ToString();
+    }
+
     public static string NamespaceWithGraceBegin(string ns)
     {
         if (string.IsNullOrEmpty(ns))

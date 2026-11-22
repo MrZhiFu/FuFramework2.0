@@ -1,0 +1,50 @@
+[
+  {
+    "key": "aot_init_res_package",
+    "value": "Init resource package"
+  },
+  {
+    "key": "aot_get_res_version",
+    "value": "Get version"
+  },
+  {
+    "key": "aot_get_res_version_fail",
+    "value": "Failed to get version number. Retrying..."
+  },
+  {
+    "key": "aot_update_res_manifest",
+    "value": "Update resource manifest"
+  },
+  {
+    "key": "aot_update_res_manifest_fail",
+    "value": "Failed to update resource manifest"
+  },
+  {
+    "key": "aot_req_remote_update_config_fail",
+    "value": "Failed to request resource server configuration update. Retrying..."
+  },
+  {
+    "key": "aot_res_downloading",
+    "value": "Downloading resources: {0}/{1}"
+  },
+  {
+    "key": "aot_res_download_fail",
+    "value": "Download failed. Retrying..."
+  },
+  {
+    "key": "aot_res_load_fail",
+    "value": "Failed to load resources. Please check your network and restart the game!"
+  },
+  {
+    "key": "aot_res_loading_config",
+    "value": "Loading configuration..."
+  },
+  {
+    "key": "aot_res_loading_init_res",
+    "value": "Loading initialization resources..."
+  },
+  {
+    "key": "aot_update_dialog_ok_btn",
+    "value": "Update"
+  }
+]

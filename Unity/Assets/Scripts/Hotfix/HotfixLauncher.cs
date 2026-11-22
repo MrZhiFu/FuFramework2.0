@@ -1,4 +1,4 @@
-using FairyGUI;
+﻿using FairyGUI;
 using System;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -236,13 +236,14 @@ namespace Hotfix
 		/// </summary>
 		private static async UniTask<TbLocalization> LoadEnglishTableAsync()
 		{
-			// 英语 bundle 幂等补齐（本地已有零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）
-			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(nameof(Hotfix.Game.Config.ELanguage.English), GlobalModule.AssetModule.Token))
+			// 英语 bundle 幂等补齐（本地已有零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）。
+			// 兜底语种是业务不变量（英语兜底），tag 名取注册表 FallbackName（与文件后缀/资源标签同一事实源）
+			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(AOT.Launch.Localization.LaunchLanguageRegistry.FallbackName, GlobalModule.AssetModule.Token))
 			{
 				throw new InvalidOperationException("[HotfixLauncher] 英语兜底表 bundle 下载失败");
 			}
 
-			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_English", ".bytes");
+			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{AOT.Launch.Localization.LaunchLanguageRegistry.FallbackName}", ".bytes");
 			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(englishPath, GlobalModule.AssetModule.Token);
 			try
 			{

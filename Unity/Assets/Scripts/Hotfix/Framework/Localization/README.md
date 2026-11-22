@@ -2,13 +2,13 @@
 
 ## 1. 简介
 
-FuFramework Localization 模块是游戏框架的本地化/多语言管理系统，支持 15 种语言的文本本地化。该模块通过 Luban 配置表管理多语言文本，支持运行时语言切换并自动广播事件通知所有监听者刷新文本。
+FuFramework Localization 模块是游戏框架的本地化/多语言管理系统，语种清单配置化（当前 6 语种）。该模块通过 Luban 配置表管理多语言文本，支持运行时语言切换并自动广播事件通知所有监听者刷新文本。
 
 ## 2. 核心特性
 
-- **多语言支持**：覆盖 15 种语言（`ELanguage` 枚举，**由 `__enums__.xlsx` 语言 sheet 配置生成**）
+- **多语言支持**：语种由 `ELanguage` 枚举配置生成（`__enums__.xlsx` 语言 sheet）；扩/删语种只改数据（枚举成员 + LanguageDef 行 + 本地化表列），运行时零代码改动
 - **配置表驱动**：本地化文本存储在 Luban 配置表 `TbLocalization` 中，策划可独立维护
-- **按语种拆分**：产物拆成 15 个语种文件（`Bundles/Config/Localization/tblocalization_<语言>.bytes`），切换语言只加载目标语种，避免全部语种同时驻留内存
+- **按语种拆分**：产物拆成每语种一个文件（`Bundles/Config/Localization/tblocalization_<语言>.bytes`，文件数随语种清单自动增减），切换语言只加载目标语种，避免全部语种同时驻留内存
 - **英语兜底懒加载**：目标语种译文为空时二段查询英语表（首次 miss 触发异步加载，加载完成后后续查询生效，不阻塞当前调用）
 - **运行时切换**：通过 `Language` 属性动态切换语言，自动广播 `LanguageChangeEventArgs` 事件
 - **持久化存储**：语言设置通过 `StorageModule` 持久化保存，下次启动自动恢复
@@ -44,9 +44,9 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 命名空间：`Hotfix.Game.Config`（**由 Luban 配置生成，禁止手写**）
 
-定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 16 成员：`Unspecified=0` + 15 个语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`French`、`German`、`Indonesian`、`Italian`、`Japanese`、`Korean`、`PortugueseBrazil`、`PortuguesePortugal`、`Russian`、`Spanish`、`Thai`、`Vietnamese`，value 连续编号 1..15）。
+定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 7 成员：`Unspecified=0` + 6 语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`Japanese`、`Korean`、`Spanish`，value 连续编号）。语种清单的运行时事实源是 AOT 程序集的配置生成类 `LaunchLanguageRegistry`（语种条目/系统语言映射/兜底常量），本枚举与它由同一份数据生成。
 
-**扩语言四步**：枚举 sheet 追加成员（value 顺延）→ `TbLocalization` 加语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加行 → `LocalizationProvider`/AOT 侧 `LaunchLocalization` 的 switch 补分支。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
+**扩语言/删语种（纯数据操作，零代码改动）**：枚举 sheet 追加/删除成员（value 顺延）→ `TbLocalization` 加/删语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。取词分支由配置生成的 `LocalizationTextAccessor` 自动增减；系统语言映射由 `LaunchLanguageRegistry.FromSystemLanguage` 数据驱动；**English 兜底语种不可删除**。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
 
 ## 4. 核心类说明
 
@@ -62,7 +62,7 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 | `Language` | `ELanguage` | 获取或设置当前语言（设置时会持久化并广播事件） |
 | `LocalizationProvider` | `ILocalizationProvider` | 获取或设置本地化多语言提供者 |
 
-系统语言映射为私有方法 `GetSystemLanguage()`（初始化时无持久化记录时使用），映射项与 AOT 侧 `ELanguageHelper.FromSystemLanguage` 保持一致。
+系统语言映射私有方法 `FromSystemLanguage()`（初始化时无持久化记录时使用）内部委托配置生成的 `LaunchLanguageRegistry.FromSystemLanguage`（AOT 程序集），与 AOT 侧同一事实源；跨程序集返回值按枚举名转换（两份 `ELanguage` 数值一致但类型不同）。
 
 **核心方法：**
 
@@ -73,7 +73,7 @@ string GetLanguageText(string key, params object[] args)
 
 `Language` 属性的 setter 内部会：
 1. 通过 `StorageModule` 持久化语言设置
-2. **同步语言偏好到 PlayerPrefs**（`LaunchLocalization.LanguagePrefKey`）——AOT 启动阶段从 PlayerPrefs 读偏好，两源不同步会导致下次启动 AOT 界面语言与本侧不一致（见第 12 节）
+2. **同步语言偏好到 PlayerPrefs**（`LaunchLocalization.LANGUAGE_PREF_KEY`，字符串名）——AOT 启动阶段从 PlayerPrefs 读偏好，两源不同步会导致下次启动 AOT 界面语言与本侧不一致（见第 12 节）
 3. 通过 `EventModule` 广播 `LanguageChangeEventArgs` 事件
 
 `OnInit` 读取存档确定语言后，会把最终语言**回写 PlayerPrefs**（启动收敛，修正旧版本仅存档无偏好的漂移）。
@@ -303,7 +303,7 @@ Localization/
 
 | 阶段 | 存储 | 读取方 |
 |---|---|---|
-| AOT（启动期） | PlayerPrefs 键 `AOT_Localization_Language`（int，常量 `LaunchLocalization.LanguagePrefKey`，已 public） | `LaunchLocalization.LoadLanguagePreference`（无偏好时回落系统语言） |
+| AOT（启动期） | PlayerPrefs 键 `AOT_Localization_Language`（**字符串名**，常量 `LaunchLocalization.LANGUAGE_PREF_KEY`） | `LaunchLocalization.LoadLanguagePreference`（字符串名 → 注册表校验；旧 int 值一次性迁移；无偏好回落系统语言） |
 | 热更期 | StorageModule 文件（键 `Language`，枚举名字符串） | `LocalizationModule.OnInit`（读不到时回落系统语言） |
 
 **同步契约**（违反会导致下次启动 AOT 界面语言与本侧不一致）：

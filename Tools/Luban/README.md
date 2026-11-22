@@ -47,11 +47,16 @@ gen-server-json.bat    :: 服务端（JSON）
 
 | 模块 | 说明 |
 |---|---|
+| `Luban.Core/Pipeline/DefaultPipeline.cs` | 管线顺序修正：先 `LoadDatas()` 再启动 code target 任务（自定义 code target 读表数据的可见性保证） |
 | `Luban.Schema.Builtin/FuFrameworkTableImporter.cs` | 自定义表导入器：文件名 `编号-表名-[分组]-描述`、按目标分组过滤（**脚本须传 `tableImporter.target`**，否则带分组段的表全部跳过）、前缀编号排序 |
 | `Luban.L10N/FuFrameworkTextProvider.cs` | 多语言文本提供器：按目录扫描多份本地化 Excel（`l10n.textFile.path`），按 key 合并 |
 | `Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` | 生成 `L10nKey` / `LaunchL10nKey` 常量类（仅 `is_code=true` 的 key） |
 | `Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs` | 仅生成枚举，供 AOT 侧独立获取 |
-| `Luban.CSharp/PostProcess/LocalizationSplitPostProcess.cs` | 客户端 `TbLocalization` 按语种拆分导出（json/bin 两变体统一 `.bytes`，整表不落盘） |
+| `Luban.CSharp/PostProcess/LocalizationSplitPostProcess.cs` | 客户端 `TbLocalization` 按语种拆分导出（json/bin 两变体统一 `.bytes`，整表不落盘；产物目录残留自动清理含 `.meta`） |
+| `Luban.CSharp/PostProcess/LocalizationAotSplitPostProcess.cs` | AOT 前置表 `tblocalizationaot` 按语种拆分导出（key+value 两字段，写回 outputDataDir 由 FileCleaner 自动清理旧语种） |
+| `Luban.CSharp/CodeTarget/CsharpLanguageRegistryCodeTarget.cs` | 生成语言注册表 `LaunchLanguageRegistry`（语种条目/系统语言映射/兜底常量，数据源 `TbLanguageDef`；生成期校验枚举↔表行一致、English 兜底必存） |
+| `Luban.CSharp/CodeTarget/CsharpLocalizationAccessorCodeTarget.cs` | 生成取词访问器 `LocalizationTextAccessor`（GetText 语言分支由本地化表语言列驱动，删/增语种 case 自动增减） |
+| `Luban.CSharp/TemplateExtensions/CsharpTemplateExtension.cs` 的 `EscapeString` | 模板函数 `escape_string`：字符串字面量转义（注册表条目含非 ASCII 显示名/分隔符） |
 | `Luban.CSharp/Templates/cs-dotnet-json`、`cs-dotnet-bin` | 服务端专用模板：非 string 键统一 `(long)` 强转；集合转字符串用服务端自带的 `FuFramework.Core.Config.StringUtil`（模板函数 `to_pretty_string_server`） |
 
 > 模板修改以 `source/src/.../Templates/` 为准；`build-luban` 会**先清空 `bin/` 再整体构建**并从 source 拷贝模板，不要手工改 `bin/Templates`。

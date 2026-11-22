@@ -118,13 +118,65 @@ public class LocalizationSplitPostProcess : PostProcessBase
         var keyField = table.ValueTType.DefBean.ExportFields.FirstOrDefault(f => f.Name == "key")
             ?? throw new Exception($"本地化表 '{table.Name}' 缺少 key 字段，无法拆分");
 
+        var localOutputFiles = new HashSet<string>();
         foreach (var languageField in languageFields)
         {
             var outputFile = BuildLanguageFile(records, keyField, languageField, oldOutputFileManifest);
             newOutputFileManifest.AddFile(outputFile);
+            localOutputFiles.Add(outputFile.File);
         }
 
+        // FileCleaner 只清理 outputDataDir（outputSaver 层），本处理器写出的兄弟目录 ../Localization 不在清理范围，
+        // 语种删除后旧文件（含 Unity .meta）会永久残留——此处定向清理：只保留本次产出的文件名
+        CleanStaleOutputFiles(localOutputFiles);
+
         s_logger.Info("本地化表拆分完成: {Count} 个语种文件 (源记录 {Rows} 行)", languageFields.Count, records.Count);
+    }
+
+    /// <summary>
+    /// 清理拆分产物目录中的残留文件：遍历目录下 tblocalization_*.bytes 及其 .meta，
+    /// 不在本次产出集合中的直接删除。删除语种（Excel 删语言列）后重导，旧语种文件由此消失。
+    /// </summary>
+    /// <param name="currentFiles">本次产出的文件名集合（相对路径，如 "../Localization/tblocalization_English.bytes"）</param>
+    private void CleanStaleOutputFiles(HashSet<string> currentFiles)
+    {
+        // 产物目录由首个产出文件的相对路径推导（相对 outputDataDir），避免再次硬编码 OutputSubDir 的兄弟目录约定
+        var sampleFile = currentFiles.FirstOrDefault();
+        if (sampleFile == null)
+        {
+            return;
+        }
+
+        var outputDir = Path.GetFullPath(Path.Combine(GetOutputDataDir(), sampleFile));
+        var localDir = Path.GetDirectoryName(outputDir);
+        if (localDir == null || !Directory.Exists(localDir))
+        {
+            return;
+        }
+
+        var currentNames = new HashSet<string>(currentFiles.Select(f => Path.GetFileName(f)));
+        foreach (var file in Directory.GetFiles(localDir, "tblocalization_*", SearchOption.TopDirectoryOnly))
+        {
+            var name = Path.GetFileName(file);
+            // .meta 与主文件同名共存：Unity 的 .meta 随主文件删除
+            var stem = name.EndsWith(".meta", StringComparison.Ordinal) ? name[..^".meta".Length] : name;
+            if (currentNames.Contains(stem))
+            {
+                continue;
+            }
+
+            s_logger.Info("[remove] {0}", file);
+            File.Delete(file);
+        }
+    }
+
+    /// <summary>
+    /// 取本次数据导出的 outputDataDir（与 LocalFileSaver.GetOutputDir 对 Data 类型的解析同一来源）
+    /// </summary>
+    private static string GetOutputDataDir()
+    {
+        // 数据 manifest 的 TargetName 是数据目标名（json/bytes），LocalFileSaver 按 <target>.outputDataDir → 全局 outputDataDir 解析
+        return EnvManager.Current.GetOptionOrDefault("", BuiltinOptionNames.OutputDataDir, true, ".");
     }
 
     /// <summary>

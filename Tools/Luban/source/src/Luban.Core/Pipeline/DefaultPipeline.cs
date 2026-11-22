@@ -109,6 +109,14 @@ public class DefaultPipeline : IPipeline
     protected void ProcessTargets()
     {
         var tasks = new List<Task>();
+
+        // 先加载数据，再启动 code target 任务：自定义 code target（cs-l10n-key 等）会读取
+        // GenerationContext.GetTableDataInfo(...).FinalRecords，若与 LoadDatas 并发则数据可见性无保证。
+        if (_args.ForceLoadTableDatas || _args.DataTargets.Count > 0)
+        {
+            LoadDatas();
+        }
+
         tasks.Add(Task.Run(() =>
         {
             foreach (string target in _args.CodeTargets)
@@ -118,11 +126,6 @@ public class DefaultPipeline : IPipeline
                 ProcessCodeTarget(target, m);
             }
         }));
-
-        if (_args.ForceLoadTableDatas || _args.DataTargets.Count > 0)
-        {
-            LoadDatas();
-        }
 
         if (_args.DataTargets.Count > 0)
         {

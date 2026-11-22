@@ -15,6 +15,7 @@ namespace Hotfix.Framework.Localization
 	///   负责根据当前语言环境返回对应的本地化文本。
 	///   按语种拆分产物下，当前语言表只含目标语种译文；目标语种缺失（未翻译）时
 	///   二段查询英语兜底表（懒加载：首次 miss 触发异步加载，加载完成后后续查询生效）。
+	///   取词走配置生成的 LocalizationTextAccessor（语言分支随语种列自动增减，零手写 switch）。
 	/// </summary>
 	public class LocalizationProvider : ILocalizationProvider
 	{
@@ -47,7 +48,7 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		/// <param name="key">多语言key(使用静态类L10nKey的多语言字段即可)</param>
 		/// <param name="args">参数</param>
-		/// <returns>译文；当前语言缺失时回退英语兜底表；两者皆缺返回空串</returns>
+		/// <returns>译文；当前语种缺失时回退英语兜底表；两者皆缺返回空串</returns>
 		public string GetLanguage(string key, params object[] args)
 		{
 			if (string.IsNullOrEmpty(key)) return string.Empty;
@@ -62,29 +63,8 @@ namespace Hotfix.Framework.Localization
 				return string.Empty;
 			}
 
-			var eLanguage = LocalizationModule.Instance.Language;
-
-			var text = eLanguage switch
-			{
-				// @formatter:off
-				ELanguage.ChineseSimplified  => localization.ChineseSimplified,
-				ELanguage.ChineseTraditional => localization.ChineseTraditional,
-				ELanguage.English            => localization.English,
-				ELanguage.Japanese           => localization.Japanese,
-				ELanguage.Korean             => localization.Korean,
-				ELanguage.Thai               => localization.Thai,
-				ELanguage.Indonesian         => localization.Indonesian,
-				ELanguage.French             => localization.French,
-				ELanguage.German             => localization.German,
-				ELanguage.Italian            => localization.Italian,
-				ELanguage.PortuguesePortugal => localization.PortuguesePortugal,
-				ELanguage.PortugueseBrazil   => localization.PortugueseBrazil,
-				ELanguage.Spanish            => localization.Spanish,
-				ELanguage.Vietnamese         => localization.Vietnamese,
-				ELanguage.Russian            => localization.Russian,
-				_                            => localization.English, // 语言类型未支持时，统一使用英语
-				// @formatter:on
-			};
+			// 取词走生成访问器：语言分支由语言列驱动，删/增语种零代码改动
+			var text = LocalizationTextAccessor.GetText(localization, LocalizationModule.Instance.Language);
 
 			// 二段查询英语兜底：目标语种缺失（拆分产物该语种键缺失→null / 或翻译为空）时查英语表
 			if (text.IsNullOrEmpty())
