@@ -2,49 +2,55 @@
   {
     "language": 1,
     "name": "简体中文",
+    "system_language": "Chinese;ChineseSimplified",
     "icon": "",
     "sort": 1,
     "separator": "，",
-    "system_language": "Chinese;ChineseSimplified"
+    "is_visible": true
   },
   {
     "language": 2,
     "name": "繁体中文",
+    "system_language": "ChineseTraditional",
     "icon": "",
     "sort": 2,
     "separator": "，",
-    "system_language": "ChineseTraditional"
+    "is_visible": true
   },
   {
     "language": 3,
     "name": "English",
+    "system_language": "English",
     "icon": "",
     "sort": 3,
     "separator": ",",
-    "system_language": "English"
+    "is_visible": true
   },
   {
     "language": 8,
     "name": "日本語",
+    "system_language": "Japanese",
     "icon": "",
     "sort": 4,
     "separator": "、",
-    "system_language": "Japanese"
+    "is_visible": true
   },
   {
     "language": 9,
     "name": "한국어",
+    "system_language": "Korean",
     "icon": "",
     "sort": 5,
     "separator": ",",
-    "system_language": "Korean"
+    "is_visible": true
   },
   {
     "language": 13,
     "name": "Español",
+    "system_language": "Spanish",
     "icon": "",
     "sort": 6,
     "separator": ",",
-    "system_language": "Spanish"
+    "is_visible": true
   }
 ]

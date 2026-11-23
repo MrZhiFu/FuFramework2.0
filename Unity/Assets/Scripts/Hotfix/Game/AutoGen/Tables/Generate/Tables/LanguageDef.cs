@@ -21,11 +21,14 @@ namespace Hotfix.Game.Config
         /// <summary> 本 bean 的类型标识常量 </summary>
         public const int __ID__ = 322864004;
 
-        /// <summary> 语言 </summary>
+        /// <summary> 语言(必需,不可删) </summary>
         public ELanguage Language { private set; get; }
 
-        /// <summary> 显示名 </summary>
+        /// <summary> 显示名(必需,不可删) </summary>
         public string Name { private set; get; }
+
+        /// <summary> 对应的Unity SystemLanguage 枚举，多值分号分隔(必需,不可删) </summary>
+        public string SystemLanguage { private set; get; }
 
         /// <summary> 旗帜图标 </summary>
         public string Icon { private set; get; }
@@ -36,8 +39,8 @@ namespace Hotfix.Game.Config
         /// <summary> 逗号分隔符 </summary>
         public string Separator { private set; get; }
 
-        /// <summary> Unity SystemLanguage 成员名，多值分号分隔；与手写映射一致 </summary>
-        public string SystemLanguage { private set; get; }
+        /// <summary> 是否在语言选择列表显示（预留隐藏未完成语种） </summary>
+        public bool IsVisible { private set; get; }
 
         /// <summary> 获取 bean 类型标识 </summary>
         public override int GetTypeId() => __ID__;
@@ -45,20 +48,22 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 LanguageDef 实例(外部使用)
         /// </summary>
-        /// <param name="language">语言</param>
-        /// <param name="name">显示名</param>
+        /// <param name="language">语言(必需,不可删)</param>
+        /// <param name="name">显示名(必需,不可删)</param>
+        /// <param name="systemLanguage">对应的Unity SystemLanguage 枚举，多值分号分隔(必需,不可删)</param>
         /// <param name="icon">旗帜图标</param>
         /// <param name="sort">排序</param>
         /// <param name="separator">逗号分隔符</param>
-        /// <param name="systemLanguage">Unity SystemLanguage 成员名，多值分号分隔；与手写映射一致</param>
-        public LanguageDef(ELanguage language, string name, string icon, int sort, string separator, string systemLanguage) 
+        /// <param name="isVisible">是否在语言选择列表显示（预留隐藏未完成语种）</param>
+        public LanguageDef(ELanguage language, string name, string systemLanguage, string icon, int sort, string separator, bool isVisible) 
         {
             Language = language;
             Name = name;
+            SystemLanguage = systemLanguage;
             Icon = icon;
             Sort = sort;
             Separator = separator;
-            SystemLanguage = systemLanguage;
+            IsVisible = isVisible;
             OnInit();
         }
 
@@ -70,10 +75,11 @@ namespace Hotfix.Game.Config
         {
             { if(!node["language"].IsNumber) { throw new SerializationException(); }  Language = (ELanguage)node["language"].AsInt; }
             { if(!node["name"].IsString) { throw new SerializationException(); }  Name = node["name"]; }
+            { if(!node["system_language"].IsString) { throw new SerializationException(); }  SystemLanguage = node["system_language"]; }
             { if(!node["icon"].IsString) { throw new SerializationException(); }  Icon = node["icon"]; }
             { if(!node["sort"].IsNumber) { throw new SerializationException(); }  Sort = node["sort"]; }
             { if(!node["separator"].IsString) { throw new SerializationException(); }  Separator = node["separator"]; }
-            { if(!node["system_language"].IsString) { throw new SerializationException(); }  SystemLanguage = node["system_language"]; }
+            { if(!node["is_visible"].IsBoolean) { throw new SerializationException(); }  IsVisible = node["is_visible"]; }
 
             // Localization Key Begin
             // Localization Key End
@@ -111,10 +117,11 @@ namespace Hotfix.Game.Config
             return "{ "
                    + "language:"       + Language       + ","
                    + "name:"           + Name           + ","
+                   + "systemLanguage:" + SystemLanguage + ","
                    + "icon:"           + Icon           + ","
                    + "sort:"           + Sort           + ","
                    + "separator:"      + Separator      + ","
-                   + "systemLanguage:" + SystemLanguage + ","
+                   + "isVisible:"      + IsVisible      + ","
                    + "}";
         }
 
