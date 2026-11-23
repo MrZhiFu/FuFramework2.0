@@ -37,12 +37,12 @@ namespace AOT.Launch.Localization
 		/// <summary>
 		/// 当前语种的行数据：key → 译文
 		/// </summary>
-		private static readonly Dictionary<string, string> s_Rows = new();
+		private static readonly Dictionary<string, string> sr_rows = new();
 
 		/// <summary>
 		/// 英语兜底行数据（当前语言即英语时与 s_Rows 同源，不再重复加载）：key → 译文
 		/// </summary>
-		private static readonly Dictionary<string, string> s_EnglishRows = new();
+		private static readonly Dictionary<string, string> sr_englishRows = new();
 
 		/// <summary>
 		/// 当前使用的语言（Unspecified 仅存在于加载前；初始化完成后恒为注册表内的有效语种）
@@ -61,25 +61,25 @@ namespace AOT.Launch.Localization
 			// AOT 阶段注入 FGUI 声明式多语言解析委托（热更阶段会被 HotfixLauncher 覆盖为热更表版本）
 			FairyGUI.GObject.GetLanguageText = key => GetLanguage(key);
 
-			s_Rows.Clear();
-			s_EnglishRows.Clear();
+			sr_rows.Clear();
+			sr_englishRows.Clear();
 
 			try
 			{
-				LoadLanguageRows(Language, s_Rows);
+				LoadLanguageRows(Language, sr_rows);
 
 				// 当前语言不是英语时额外加载英语兜底文件；英语文件加载失败仅记录错误（译文缺失时显示 key）
 				if (Language != ELanguage.English)
 				{
-					LoadLanguageRows(ELanguage.English, s_EnglishRows);
+					LoadLanguageRows(ELanguage.English, sr_englishRows);
 				}
 			}
 			catch (Exception e)
 			{
 				// 数据缺失/解析失败仅记录错误并清空半解析数据，不阻断启动流程
 				FuLogger.LogError($"AOT 本地化数据加载失败，AOT 本地化不可用：{e.Message}");
-				s_Rows.Clear();
-				s_EnglishRows.Clear();
+				sr_rows.Clear();
+				sr_englishRows.Clear();
 			}
 
 			await UniTask.CompletedTask;
@@ -92,7 +92,7 @@ namespace AOT.Launch.Localization
 		/// <param name="rows">接收行数据的字典</param>
 		private static void LoadLanguageRows(ELanguage language, Dictionary<string, string> rows)
 		{
-			var path = $"{DATA_DIRECTORY}/{DATA_FILE_PREFIX}{language}";
+			var path      = $"{DATA_DIRECTORY}/{DATA_FILE_PREFIX}{language}";
 			var textAsset = Resources.Load<TextAsset>(path);
 			if (textAsset == null)
 			{
@@ -117,8 +117,7 @@ namespace AOT.Launch.Localization
 		{
 			if (string.IsNullOrEmpty(key)) return string.Empty;
 
-			string text = null;
-			if (!s_Rows.TryGetValue(key, out text))
+			if (!sr_rows.TryGetValue(key, out var text))
 			{
 				FuLogger.LogError($"多语言key '{key}' 没找到，请检查AOT多语言配置表!");
 				return string.Empty;
@@ -127,7 +126,7 @@ namespace AOT.Launch.Localization
 			// 当前语种译文为空（未翻译）时回退英语兜底
 			if (string.IsNullOrEmpty(text) && Language != ELanguage.English)
 			{
-				s_EnglishRows.TryGetValue(key, out text);
+				sr_englishRows.TryGetValue(key, out text);
 			}
 
 			text ??= string.Empty;

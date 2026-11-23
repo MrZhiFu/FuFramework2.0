@@ -54,55 +54,55 @@ namespace AOT.Launch.Localization
             new Entry(ELanguage.ChineseSimplified, "ChineseSimplified", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "简体中文",
+                ["system_languages"] = "Chinese;ChineseSimplified",
                 ["icon"] = "",
                 ["sort"] = "1",
                 ["separator"] = "，",
-                ["system_languages"] = "Chinese;ChineseSimplified",
                 ["is_visible"] = "True",
             }),
             new Entry(ELanguage.ChineseTraditional, "ChineseTraditional", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "繁体中文",
+                ["system_languages"] = "ChineseTraditional",
                 ["icon"] = "",
                 ["sort"] = "2",
                 ["separator"] = "，",
-                ["system_languages"] = "ChineseTraditional",
                 ["is_visible"] = "True",
             }),
             new Entry(ELanguage.English, "English", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "English",
+                ["system_languages"] = "English",
                 ["icon"] = "",
                 ["sort"] = "3",
                 ["separator"] = ",",
-                ["system_languages"] = "English",
                 ["is_visible"] = "True",
             }),
             new Entry(ELanguage.Japanese, "Japanese", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "日本語",
+                ["system_languages"] = "Japanese",
                 ["icon"] = "",
                 ["sort"] = "4",
                 ["separator"] = "、",
-                ["system_languages"] = "Japanese",
                 ["is_visible"] = "True",
             }),
             new Entry(ELanguage.Korean, "Korean", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "한국어",
+                ["system_languages"] = "Korean",
                 ["icon"] = "",
                 ["sort"] = "5",
                 ["separator"] = ",",
-                ["system_languages"] = "Korean",
                 ["is_visible"] = "True",
             }),
             new Entry(ELanguage.Spanish, "Spanish", new Dictionary<string, string>(System.StringComparer.Ordinal)
             {
                 ["display_name"] = "Español",
+                ["system_languages"] = "Spanish",
                 ["icon"] = "",
                 ["sort"] = "6",
                 ["separator"] = ",",
-                ["system_languages"] = "Spanish",
                 ["is_visible"] = "True",
             }),
         };
