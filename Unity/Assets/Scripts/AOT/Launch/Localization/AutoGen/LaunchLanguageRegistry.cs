@@ -7,18 +7,21 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 namespace AOT.Launch.Localization
 {
     /// <summary>
     /// 语言注册表（配置生成，禁止手改）。
     ///     数据源：Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx。
+    ///     Entry 为数据驱动字段包：主键 Name + Fields 字典（LanguageDef 全部非主键列，加列零改动）。
+    ///     取值用 GetField("列名")，拼错键名返回空串不抛异常；bool/int 值为原字符串（"True"/"1"），消费端自行解析。
     ///     删除/新增语种只改配置数据（LanguageDef 行 + 本地化表语言列 + ELanguage 枚举成员），本类随生成自动更新。
     ///     文件名后缀 / YooAsset 资源标签 / 偏好存储名一律使用 Name（ELanguage 枚举成员名）。
     /// </summary>
     public static class LaunchLanguageRegistry
     {
         /// <summary>
-        /// 语言条目
+        /// 语言条目（数据驱动字段包）
         /// </summary>
         public sealed class Entry
         {
@@ -26,33 +29,82 @@ namespace AOT.Launch.Localization
             public readonly ELanguage Language;
             /// <summary>语言枚举成员名（文件后缀 / 资源标签 / 偏好存储名）</summary>
             public readonly string Name;
-            /// <summary>显示名</summary>
-            public readonly string DisplayName;
-            /// <summary>排序</summary>
-            public readonly int Sort;
-            /// <summary>逗号分隔符</summary>
-            public readonly string Separator;
-            public Entry(ELanguage language, string name, string displayName, int sort, string separator)
+            /// <summary>全部非主键字段（键 = 列展示名，值 = Excel 原值字符串）</summary>
+            public readonly Dictionary<string, string> Fields;
+
+            public Entry(ELanguage language, string name, Dictionary<string, string> fields)
             {
                 Language = language;
                 Name = name;
-                DisplayName = displayName;
-                Sort = sort;
-                Separator = separator;
+                Fields = fields;
+            }
+
+            /// <summary>取字段值；键不存在时返回空串（调用方自行决定缺省语义）</summary>
+            public string GetField(string key)
+            {
+                return Fields.TryGetValue(key, out var value) ? value : string.Empty;
             }
         }
 
         /// <summary>
-        /// 全部语言条目（按 sort 升序）
+        /// 全部语言条目（按 sort 字段升序）
         /// </summary>
         public static readonly Entry[] Entries = new Entry[]
         {
-            new Entry(ELanguage.ChineseSimplified, "ChineseSimplified", "简体中文", 1, "，"),
-            new Entry(ELanguage.ChineseTraditional, "ChineseTraditional", "繁体中文", 2, "，"),
-            new Entry(ELanguage.English, "English", "English", 3, ","),
-            new Entry(ELanguage.Japanese, "Japanese", "日本語", 4, "、"),
-            new Entry(ELanguage.Korean, "Korean", "한국어", 5, ","),
-            new Entry(ELanguage.Spanish, "Spanish", "Español", 6, ","),
+            new Entry(ELanguage.ChineseSimplified, "ChineseSimplified", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "简体中文",
+                ["icon"] = "",
+                ["sort"] = "1",
+                ["separator"] = "，",
+                ["system_languages"] = "Chinese;ChineseSimplified",
+                ["is_visible"] = "True",
+            }),
+            new Entry(ELanguage.ChineseTraditional, "ChineseTraditional", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "繁体中文",
+                ["icon"] = "",
+                ["sort"] = "2",
+                ["separator"] = "，",
+                ["system_languages"] = "ChineseTraditional",
+                ["is_visible"] = "True",
+            }),
+            new Entry(ELanguage.English, "English", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "English",
+                ["icon"] = "",
+                ["sort"] = "3",
+                ["separator"] = ",",
+                ["system_languages"] = "English",
+                ["is_visible"] = "True",
+            }),
+            new Entry(ELanguage.Japanese, "Japanese", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "日本語",
+                ["icon"] = "",
+                ["sort"] = "4",
+                ["separator"] = "、",
+                ["system_languages"] = "Japanese",
+                ["is_visible"] = "True",
+            }),
+            new Entry(ELanguage.Korean, "Korean", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "한국어",
+                ["icon"] = "",
+                ["sort"] = "5",
+                ["separator"] = ",",
+                ["system_languages"] = "Korean",
+                ["is_visible"] = "True",
+            }),
+            new Entry(ELanguage.Spanish, "Spanish", new Dictionary<string, string>(System.StringComparer.Ordinal)
+            {
+                ["display_name"] = "Español",
+                ["icon"] = "",
+                ["sort"] = "6",
+                ["separator"] = ",",
+                ["system_languages"] = "Spanish",
+                ["is_visible"] = "True",
+            }),
         };
 
         /// <summary>
@@ -105,7 +157,7 @@ namespace AOT.Launch.Localization
         }
 
         /// <summary>
-        /// Unity 系统语言 → 语言枚举（映射由 system_language 列生成；未覆盖的系统语言回落兜底语种）
+        /// Unity 系统语言 → 语言枚举（映射由 system_languages 字段生成；未覆盖的系统语言回落兜底语种）
         /// </summary>
         // 由模板按数据静态生成 switch，default 兜底，无需运行时查找
         public static ELanguage FromSystemLanguage(UnityEngine.SystemLanguage systemLanguage)

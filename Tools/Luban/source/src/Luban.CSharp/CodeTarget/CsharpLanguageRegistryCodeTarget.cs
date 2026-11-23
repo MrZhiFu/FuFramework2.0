@@ -1,4 +1,5 @@
 using Luban.CodeTarget;
+using System.Linq;
 using Luban.CSharp.TemplateExtensions;
 using Luban.Datas;
 using Luban.Defs;
@@ -31,32 +32,49 @@ public class CsharpLanguageRegistryCodeTarget : CsharpCodeTargetBase
     protected const string DefaultClassName = "LaunchLanguageRegistry";
 
     /// <summary>
-    /// 注册表条目
+    /// 必需字段清单：LanguageDef 删列/改名时生成期报错而非静默退化；
+    /// 加列零改动（Entry 为数据驱动字段包，新列自动进入 Fields）
+    /// </summary>
+    private static readonly string[] RequiredFieldNames = { "language", "name", "sort", "separator", "system_language" };
+
+    /// <summary>
+    /// 字段名在生成产物中的展示名（Excel 列名 → Entry.Fields 键），未列出的字段按 Excel 原列名入包
+    /// </summary>
+    private static readonly Dictionary<string, string> FieldDisplayNames = new(StringComparer.Ordinal)
+    {
+        { "name", "display_name" },
+        { "system_language", "system_languages" }, // 语义修正：该列是 SystemLanguage 名列表（分号分隔）
+    };
+
+    /// <summary>
+    /// 主键列名（language）：转为 Entry.Name + ELanguage，不进 Fields 字段包
+    /// </summary>
+    private const string KeyFieldName = "language";
+
+    /// <summary>
+    /// 注册表条目（数据驱动字段包）：主键 Name + 其余全部字段的字符串键值对。
+    /// LanguageDef 加列零改动（新列自动出现在 Fields）；取值用 GetField，拼错键名返回 null 不抛异常。
+    /// bool/int 值以原字符串存储（"True"/"1"/"3"），由消费端解析。
     /// </summary>
     public class LanguageEntry
     {
         /// <summary>
-        /// 语言枚举名（同时是拆分文件后缀与 YooAsset 标签）
+        /// 语言枚举名（同时是拆分文件后缀与 YooAsset 标签 / 偏好存储名）
         /// </summary>
         public string Name { get; set; } = "";
 
         /// <summary>
-        /// 显示名
+        /// 全部非主键字段（键 = 字段展示名，值 = Excel 单元格原值字符串；空单元格为空串）
         /// </summary>
-        public string DisplayName { get; set; } = "";
+        public Dictionary<string, string> Fields { get; set; } = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// 排序
+        /// Fields 的有序键值对视图（scriban 模板遍历用；按 C# 端遍历顺序）
         /// </summary>
-        public int Sort { get; set; }
+        public List<KeyValuePair<string, string>> FieldsList => Fields.ToList();
 
         /// <summary>
-        /// 逗号分隔符
-        /// </summary>
-        public string Separator { get; set; } = "";
-
-        /// <summary>
-        /// Unity SystemLanguage 成员名列表（生成 FromSystemLanguage switch 的 case）
+        /// Unity SystemLanguage 成员名列表（由 system_languages 字段解析，生成 FromSystemLanguage switch 的 case）
         /// </summary>
         public List<string> SystemLanguages { get; set; } = new();
     }
@@ -92,24 +110,56 @@ public class CsharpLanguageRegistryCodeTarget : CsharpCodeTargetBase
         {
             if (record.Data is not DBean bean) continue;
 
-            var language = bean.GetField("language") as DEnum
+            // 必需字段存在性校验：LanguageDef 删列/改名时生成期报错，而非静默退化
+            foreach (var required in RequiredFieldNames)
+            {
+                if (bean.GetField(required) == null)
+                {
+                    throw new Exception($"cs-language-registry: 表 '{LanguageDefTableName}' 缺少必需字段 '{required}'（LanguageDef 表结构变更须同步 cs-language-registry 生成器）");
+                }
+            }
+
+            var language = bean.GetField(KeyFieldName) as DEnum
                 ?? throw new Exception($"cs-language-registry: 表 '{LanguageDefTableName}' 缺少 language(ELanguage) 字段");
             if (language.Type.DefEnum.Name != "ELanguage")
             {
                 throw new Exception($"cs-language-registry: language 字段类型须为 ELanguage，实际 {language.Type.DefEnum.Name}");
             }
 
-            entries.Add(new LanguageEntry
+            // 数据驱动字段包：按 DefBean 导出字段遍历（除主键），名值对入 Fields——加列零改动
+            var entry = new LanguageEntry { Name = language.StrValue };
+            foreach (var field in bean.ImplType.ExportFields)
             {
-                Name            = language.StrValue,
-                DisplayName     = (bean.GetField("name") as DString)?.Value ?? "",
-                Sort            = (bean.GetField("sort") as DInt)?.Value ?? 0,
-                Separator       = (bean.GetField("separator") as DString)?.Value ?? "",
-                SystemLanguages = ParseSystemLanguages((bean.GetField("system_language") as DString)?.Value),
-            });
+                if (field.Name == KeyFieldName) continue;
+
+                var key = FieldDisplayNames.TryGetValue(field.Name, out var display) ? display : field.Name;
+                entry.Fields[key] = GetCellValue(bean, field.Name);
+            }
+
+            entry.SystemLanguages = ParseSystemLanguages(entry.Fields.GetValueOrDefault("system_languages"));
+            entries.Add(entry);
         }
 
         return entries;
+    }
+
+    /// <summary>
+    /// 取字段单元格原值字符串（string 直取；其余类型转字符串表示——空/null 统一空串）
+    /// </summary>
+    private static string GetCellValue(DBean bean, string fieldName)
+    {
+        var value = bean.GetField(fieldName);
+        return value switch
+        {
+            DString s  => s.Value ?? "",
+            DBool b    => b.Value ? "True" : "False",
+            DInt i     => i.Value.ToString(),
+            DLong l    => l.Value.ToString(),
+            DFloat f   => f.Value.ToString(),
+            DDouble d  => d.Value.ToString(),
+            DEnum en   => en.StrValue,
+            _          => value?.ToString() ?? "",
+        };
     }
 
     /// <summary>
@@ -184,13 +234,18 @@ public class CsharpLanguageRegistryCodeTarget : CsharpCodeTargetBase
         var template = GetTemplate("registry");
         var tplCtx = CreateTemplateContext(template);
 
+        // 排序键从字段包读取（sort 列），缺失按 0
+        var sorted = entries
+            .OrderBy(e => int.TryParse(e.Fields.GetValueOrDefault("sort"), out var sort) ? sort : 0)
+            .ToList();
+
         var extraEnvs = new ScriptObject
         {
             { "__ctx", ctx },
             { "__namespace", ctx.Target.TopModule },
             { "__class_name", className },
-            { "__entries", entries.OrderBy(e => e.Sort).ToList() },
-            { "__fallback_index", entries.OrderBy(e => e.Sort).ToList().FindIndex(e => e.Name == "English") },
+            { "__entries", sorted },
+            { "__fallback_index", sorted.FindIndex(e => e.Name == "English") },
             { "__code_style", CodeStyle },
         };
         tplCtx.PushGlobal(extraEnvs);

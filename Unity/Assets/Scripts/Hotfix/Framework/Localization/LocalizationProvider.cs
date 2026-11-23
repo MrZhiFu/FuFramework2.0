@@ -119,6 +119,7 @@ namespace Hotfix.Framework.Localization
 				{
 					// 共享等待者忽略结果：主加载链负责记录错误与清空完成源
 				}
+
 				return;
 			}
 

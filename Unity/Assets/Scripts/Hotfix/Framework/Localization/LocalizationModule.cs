@@ -87,18 +87,6 @@ namespace Hotfix.Framework.Localization
 		}
 
 		/// <summary>
-		/// 从系统语言转换出本地化语言类型（映射走配置生成的语言注册表，与 AOT 侧同一事实源；
-		/// 未覆盖的系统语言由注册表兜底到 English）。
-		/// </summary>
-		/// <returns>本地化语言类型</returns>
-		private static ELanguage FromSystemLanguage()
-		{
-			var aotLanguage = LaunchLanguageRegistry.FromSystemLanguage(Application.systemLanguage);
-			// AOT 与 Hotfix 各持一份配置生成的 ELanguage（数值一致）；跨程序集传递须显式按名转换
-			return (ELanguage)Enum.Parse(typeof(ELanguage), aotLanguage.ToString());
-		}
-
-		/// <summary>
 		/// 初始化
 		/// </summary>
 		protected internal override void OnInit()
@@ -186,7 +174,7 @@ namespace Hotfix.Framework.Localization
 			if (language == m_language) return true; // 同语言幂等直过
 
 			m_barrier.Token.ThrowIfCancellationRequested(); // 模块已销毁则拒绝
-			token.ThrowIfCancellationRequested();         // 调用方已取消则拒绝
+			token.ThrowIfCancellationRequested();           // 调用方已取消则拒绝
 
 			// 防抖：取消在途旧链路（其 catch OCE 回滚内存语言后抛出，不影响本链路）
 			if (m_switchCts != null)
@@ -197,56 +185,59 @@ namespace Hotfix.Framework.Localization
 			}
 
 			var oldLanguage = m_language;
-			m_language = language; // 先改内存语言：loader 路由与 AssetModule 按 tag 下载都读它（失败/取消路径须回滚）
+			m_language  = language; // 先改内存语言：loader 路由与 AssetModule 按 tag 下载都读它（失败/取消路径须回滚）
 			m_switchCts = new CancellationTokenSource();
 			var switchCts = m_switchCts; // 本链路凭据：finally 清理时识别自己是否仍是最新链路
 			using (m_barrier.Register())
-			using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token, switchCts.Token))
 			{
-				try
+				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token, switchCts.Token))
 				{
-					// 1. 下载目标语种 bundle（本地已有则直过；失败回滚返回）
-					if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(language.ToString(), linkedCts.Token))
+					try
 					{
-						m_language = oldLanguage;
-						return false;
-					}
+						// 1. 下载目标语种 bundle（本地已有则直过；失败回滚返回）
+						if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(language.ToString(), linkedCts.Token))
+						{
+							m_language = oldLanguage;
+							return false;
+						}
 
-					// 2. 重填本地化表（loader 此时路由到新语言文件）；重填失败（含空表/损坏数据）同样回滚
-					if (LocalizationReloader == null)
-					{
-						FuLogger.LogError("本地化表重填回调未注入，切换语言失败（HotfixLauncher 表加载完成后须注入 LocalizationReloader）");
-						m_language = oldLanguage;
-						return false;
-					}
-					if (!await LocalizationReloader())
-					{
-						m_language = oldLanguage;
-						return false;
-					}
+						// 2. 重填本地化表（loader 此时路由到新语言文件）；重填失败（含空表/损坏数据）同样回滚
+						if (LocalizationReloader == null)
+						{
+							FuLogger.LogError("本地化表重填回调未注入，切换语言失败（HotfixLauncher 表加载完成后须注入 LocalizationReloader）");
+							m_language = oldLanguage;
+							return false;
+						}
 
-					// 3. 表就绪后才持久化 + 广播（TableManager 订阅者此时重译拿到的已是新表）
-					ApplyLanguageChange(oldLanguage, language);
-					return true;
-				}
-				catch (OperationCanceledException)
-				{
-					m_language = oldLanguage; // 取消链路回滚内存语言（数据未换，必须还原）
-					throw;
-				}
-				catch (Exception e)
-				{
-					FuLogger.LogError($"切换本地化语言 {language} 失败：{e.Message}");
-					m_language = oldLanguage;
-					return false;
-				}
-				finally
-				{
-					// 链路收尾：仅当自己仍是最新链路时清空凭据（被防抖取消的旧链路不动新链路的 CTS）
-					if (m_switchCts == switchCts)
+						if (!await LocalizationReloader())
+						{
+							m_language = oldLanguage;
+							return false;
+						}
+
+						// 3. 表就绪后才持久化 + 广播（TableManager 订阅者此时重译拿到的已是新表）
+						ApplyLanguageChange(oldLanguage, language);
+						return true;
+					}
+					catch (OperationCanceledException)
 					{
-						m_switchCts.Dispose();
-						m_switchCts = null;
+						m_language = oldLanguage; // 取消链路回滚内存语言（数据未换，必须还原）
+						throw;
+					}
+					catch (Exception e)
+					{
+						FuLogger.LogError($"切换本地化语言 {language} 失败：{e.Message}");
+						m_language = oldLanguage;
+						return false;
+					}
+					finally
+					{
+						// 链路收尾：仅当自己仍是最新链路时清空凭据（被防抖取消的旧链路不动新链路的 CTS）
+						if (m_switchCts == switchCts)
+						{
+							m_switchCts.Dispose();
+							m_switchCts = null;
+						}
 					}
 				}
 			}
@@ -273,6 +264,18 @@ namespace Hotfix.Framework.Localization
 			// 发送本地化语言改变事件（订阅者如 TableManager 在事件回调中重译全表）
 			var languageChangeEventArgs = LanguageChangeEventArgs.Create(oldLanguage, newLanguage);
 			m_eventModule.Broadcast(languageChangeEventArgs);
+		}
+
+		/// <summary>
+		/// 从系统语言转换出本地化语言类型（映射走配置生成的语言注册表，与 AOT 侧同一事实源；
+		/// 未覆盖的系统语言由注册表兜底到 English）。
+		/// </summary>
+		/// <returns>本地化语言类型</returns>
+		private static ELanguage FromSystemLanguage()
+		{
+			var aotLanguage = LaunchLanguageRegistry.FromSystemLanguage(Application.systemLanguage);
+			// AOT 与 Hotfix 各持一份配置生成的 ELanguage（数值一致）；跨程序集传递须显式按名转换
+			return (ELanguage)Enum.Parse(typeof(ELanguage), aotLanguage.ToString());
 		}
 	}
 }
