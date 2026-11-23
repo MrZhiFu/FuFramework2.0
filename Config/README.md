@@ -22,7 +22,7 @@
 
 | 脚本 | 目标 | 数据产出 | 代码产出 |
 |---|---|---|---|
-| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（按语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey + LocalizationTextAccessor） |
+| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（按语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
 | `gen-client-json.bat` / `.sh` | 客户端（json 变体） | 同上（业务表为 `.json`；本地化产物仍为 `.bytes`） | 同上 |
 | `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/json` | `Server/FuFramework.Config/Config` |
 | `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上（两变体共用目录） | 同上 |
@@ -155,7 +155,7 @@
 
 > 客户端专属枚举（UI / 红点 / 声音 / 引导 / 实体组 / 语言等）在 `__enums__.xlsx` 的 `group` 列标 `c`；服务端只会生成被其导出表真实引用的枚举（如品质、道具类型）。
 
-**扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、`LocalizationTextAccessor`（取词分支）、按语种拆分产物、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
+**扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、按语种拆分产物（统一 key+value 两字段）、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
 
 **FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
 

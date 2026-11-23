@@ -1,98 +1,98 @@
 [
   {
     "key": "achievement_name_01",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "achievement_name_02",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "achievement_content_1",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "achievement_content_2",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "achievement_cover",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "setting_nav_document",
-    "Korean": "세이브 관리"
+    "value": "세이브 관리"
   },
   {
     "key": "setting_nav_setting",
-    "Korean": "시스템 설정"
+    "value": "시스템 설정"
   },
   {
     "key": "setting_nav_voice",
-    "Korean": "사운드 설정"
+    "value": "사운드 설정"
   },
   {
     "key": "setting_nav_text",
-    "Korean": "텍스트 설정"
+    "value": "텍스트 설정"
   },
   {
     "key": "setting_nav_keyboard",
-    "Korean": "키보드 설정"
+    "value": "키보드 설정"
   },
   {
     "key": "common_user_name",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "common_user_password",
-    "Korean": ""
+    "value": ""
   },
   {
     "key": "common_start_game",
-    "Korean": "게임 시작"
+    "value": "게임 시작"
   },
   {
     "key": "common_load_game",
-    "Korean": "게임 불러오기"
+    "value": "게임 불러오기"
   },
   {
     "key": "common_system_setting",
-    "Korean": "환경설정"
+    "value": "환경설정"
   },
   {
     "key": "common_gallerty",
-    "Korean": "갤러리"
+    "value": "갤러리"
   },
   {
     "key": "common_about",
-    "Korean": "더 보기"
+    "value": "더 보기"
   },
   {
     "key": "common_exit_game",
-    "Korean": "종료"
+    "value": "종료"
   },
   {
     "key": "common_pop_start_game",
-    "Korean": "새 게임"
+    "value": "새 게임"
   },
   {
     "key": "common_continue_game",
-    "Korean": "이어하기"
+    "value": "이어하기"
   },
   {
     "key": "common_exit_submit",
-    "Korean": "확인"
+    "value": "확인"
   },
   {
     "key": "common_exit_cancel",
-    "Korean": "취소"
+    "value": "취소"
   },
   {
     "key": "common_exit_title",
-    "Korean": "게임을 종료하시겠습니까?"
+    "value": "게임을 종료하시겠습니까?"
   },
   {
     "key": "common_exit_label",
-    "Korean": "항상 확인"
+    "value": "항상 확인"
   }
 ]

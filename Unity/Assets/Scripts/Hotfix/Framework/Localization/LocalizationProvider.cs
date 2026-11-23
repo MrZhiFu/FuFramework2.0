@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
@@ -15,7 +15,7 @@ namespace Hotfix.Framework.Localization
 	///   负责根据当前语言环境返回对应的本地化文本。
 	///   按语种拆分产物下，当前语言表只含目标语种译文；目标语种缺失（未翻译）时
 	///   二段查询英语兜底表（懒加载：首次 miss 触发异步加载，加载完成后后续查询生效）。
-	///   取词走配置生成的 LocalizationTextAccessor（语言分支随语种列自动增减，零手写 switch）。
+	///   拆分产物统一 key+value 两字段，运行时 bean 只有 Key/Value 两属性——取词直接读 Value，语言维度消失。
 	/// </summary>
 	public class LocalizationProvider : ILocalizationProvider
 	{
@@ -63,8 +63,8 @@ namespace Hotfix.Framework.Localization
 				return string.Empty;
 			}
 
-			// 取词走生成访问器：语言分支由语言列驱动，删/增语种零代码改动
-			var text = LocalizationTextAccessor.GetText(localization, LocalizationModule.Instance.Language);
+			// 拆分产物每文件只含当前语种，直接取 Value（与 AOT 侧 LaunchLocalization 同构）
+			var text = localization.Value;
 
 			// 二段查询英语兜底：目标语种缺失（拆分产物该语种键缺失→null / 或翻译为空）时查英语表
 			if (text.IsNullOrEmpty())
@@ -90,8 +90,8 @@ namespace Hotfix.Framework.Localization
 			}
 
 			var englishRow = m_tbEnglishFallback.Get(key);
-			// 英语表的语种字段中只有 English 有值（英语产物文件的目标语种位），取其 English 属性
-			var english = englishRow?.English;
+			// 拆分产物统一 key+value：英语文件的 value 即英语译文
+			var english = englishRow?.Value;
 			return string.IsNullOrEmpty(english) ? string.Empty : english;
 		}
 

@@ -129,6 +129,13 @@ end
         public const int __ID__ = {{__bean.id}};
         {{~end~}}
 
+        {{~if __bean.name == 'Localization'~}}
+        /// <summary> 多语言 key </summary>
+        public string Key { private set; get; }
+        /// <summary> 当前语种译文（拆分产物每文件只含一种语言，与 Excel 语言列不对应） </summary>
+        public string Value { private set; get; }
+
+        {{~else~}}
         {{~ for field in export_fields ~}}
         {{~if field.comment != '' ~}}
         /// <summary> {{escape_comment field.comment}} </summary>
@@ -152,6 +159,7 @@ end
         {{~end~}}
 
         {{~end~}}
+        {{~end~}}
         {{~if !__bean.is_abstract_type && !__bean.is_value_type~}}
         /// <summary> 获取 bean 类型标识 </summary>
         public override int GetTypeId() => __ID__;
@@ -160,6 +168,15 @@ end
         /// <summary>
         /// 创建 {{__name}} 实例(外部使用)
         /// </summary>
+        {{~if __bean.name == 'Localization'~}}
+        public {{__name}}(string key, string value)
+        {
+            Key = key;
+            Value = value;
+            OnInit();
+        }
+
+        {{~else~}}
         {{~ for field in export_fields ~}}
         /// <param name="{{lower_case_first (format_property_name __code_style field.name)}}">{{escape_comment field.comment}}</param>
         {{~ end ~}}
@@ -183,20 +200,21 @@ end
             OnInit();
         }
 
+        {{~end~}}
         /// <summary>
         /// 从 JSONNode 反序列化创建 {{__name}} 实例(内部序列化使用)
         /// </summary>
         /// <param name="node">配置数据节点</param>
         private {{__name}}(JSONNode node){{if parent_def_type}} : base(node) {{end}}
         {
+            {{~if __bean.name == 'Localization'~}}
+            Key   = node["key"];
+            Value = node["value"];
+            {{~else~}}
             {{~ for field in export_fields
                 fieldName = format_property_name __code_style field.name
             ~}}
-            {{~if __bean.name == 'Localization' && field.type == 'string' && field.name != 'key'~}}
-            {{deserialize_lenient fieldName 'node' field.name field.ctype}}
-            {{~else~}}
             {{deserialize_field fieldName 'node' field.name field.ctype}}
-            {{~end~}}
             {{~if can_generate_ref field~}}
             {{get_ref_name field}} = null;
             {{~end~}}
@@ -215,6 +233,7 @@ end
             {{~end~}}
             {{~end~}}
             // Localization Key End
+            {{~end~}}
             OnInit();
         }
 
@@ -267,12 +286,16 @@ end
         /// </summary>
         public override string ToString()
         {
+            {{~if __bean.name == 'Localization'~}}
+            return "{ key:" + Key + ", value:" + Value + " }";
+            {{~else~}}
             return "{ "
         {{~ maxLen = max_field_len(hierarchy_export_fields) ~}}
         {{~ for field in hierarchy_export_fields ~}}
                    + {{ pad_right ('"' + (format_field_name __code_style field.name) + ':"') (maxLen + 3) }} + {{ pad_right (to_pretty_string (format_property_name __code_style field.name) field.ctype) maxLen }} + ","
         {{~end~}}
                    + "}";
+            {{~end~}}
         }
 
         /// <summary>

@@ -21,26 +21,10 @@ namespace Hotfix.Game.Config
         /// <summary> 本 bean 的类型标识常量 </summary>
         public const int __ID__ = -1694250884;
 
-        /// <summary> ID </summary>
+        /// <summary> 多语言 key </summary>
         public string Key { private set; get; }
-
-        /// <summary> 简体中文 </summary>
-        public string ChineseSimplified { private set; get; }
-
-        /// <summary> 繁体中文 </summary>
-        public string ChineseTraditional { private set; get; }
-
-        /// <summary> 英语 </summary>
-        public string English { private set; get; }
-
-        /// <summary> 日语 </summary>
-        public string Japanese { private set; get; }
-
-        /// <summary> 韩语 </summary>
-        public string Korean { private set; get; }
-
-        /// <summary> 西班牙语 </summary>
-        public string Spanish { private set; get; }
+        /// <summary> 当前语种译文（拆分产物每文件只含一种语言，与 Excel 语言列不对应） </summary>
+        public string Value { private set; get; }
 
         /// <summary> 获取 bean 类型标识 </summary>
         public override int GetTypeId() => __ID__;
@@ -48,22 +32,10 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 创建 Localization 实例(外部使用)
         /// </summary>
-        /// <param name="key">ID</param>
-        /// <param name="chineseSimplified">简体中文</param>
-        /// <param name="chineseTraditional">繁体中文</param>
-        /// <param name="english">英语</param>
-        /// <param name="japanese">日语</param>
-        /// <param name="korean">韩语</param>
-        /// <param name="spanish">西班牙语</param>
-        public Localization(string key, string chineseSimplified, string chineseTraditional, string english, string japanese, string korean, string spanish) 
+        public Localization(string key, string value)
         {
             Key = key;
-            ChineseSimplified = chineseSimplified;
-            ChineseTraditional = chineseTraditional;
-            English = english;
-            Japanese = japanese;
-            Korean = korean;
-            Spanish = spanish;
+            Value = value;
             OnInit();
         }
 
@@ -73,16 +45,8 @@ namespace Hotfix.Game.Config
         /// <param name="node">配置数据节点</param>
         private Localization(JSONNode node)
         {
-            { if(!node["key"].IsString) { throw new SerializationException(); }  Key = node["key"]; }
-            { var _j = node["ChineseSimplified"]; ChineseSimplified = _j.IsString ? _j.Value : null; }
-            { var _j = node["ChineseTraditional"]; ChineseTraditional = _j.IsString ? _j.Value : null; }
-            { var _j = node["English"]; English = _j.IsString ? _j.Value : null; }
-            { var _j = node["Japanese"]; Japanese = _j.IsString ? _j.Value : null; }
-            { var _j = node["Korean"]; Korean = _j.IsString ? _j.Value : null; }
-            { var _j = node["Spanish"]; Spanish = _j.IsString ? _j.Value : null; }
-
-            // Localization Key Begin
-            // Localization Key End
+            Key   = node["key"];
+            Value = node["value"];
             OnInit();
         }
 
@@ -114,15 +78,7 @@ namespace Hotfix.Game.Config
         /// </summary>
         public override string ToString()
         {
-            return "{ "
-                   + "key:"                + Key                + ","
-                   + "ChineseSimplified:"  + ChineseSimplified  + ","
-                   + "ChineseTraditional:" + ChineseTraditional + ","
-                   + "English:"            + English            + ","
-                   + "Japanese:"           + Japanese           + ","
-                   + "Korean:"             + Korean             + ","
-                   + "Spanish:"            + Spanish            + ","
-                   + "}";
+            return "{ key:" + Key + ", value:" + Value + " }";
         }
 
         /// <summary>

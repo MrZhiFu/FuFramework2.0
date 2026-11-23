@@ -115,9 +115,6 @@
       <None Update="Templates\cs-language-registry\registry.sbn">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Templates\cs-l10n-accessor\accessor.sbn">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
 </Project>

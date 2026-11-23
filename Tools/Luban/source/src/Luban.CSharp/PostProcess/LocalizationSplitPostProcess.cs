@@ -32,10 +32,10 @@ namespace Luban.CSharp.PostProcess;
 
 /// <summary>
 /// 本地化表按语种拆分后处理（dataPostprocess=split-localization，仅挂 client target）。
-///     把 tblocalization 整表在 manifest 内拆为 15 个单语种文件（整表不再落盘）：
-///     - json 数据变体：每行 2 键（key + 目标语种），其余语种键缺失（运行时宽容反序列化 + 英语兜底表二段查询接管）；
-///     - bin 数据变体：16 字段顺序列序（WriteSize 行数 + 逐行 key + 15 语种字符串），目标语种有值其余空串
-///       （列序与生成模板读取序天然对齐，模板零改动）。
+///     把 tblocalization 整表在 manifest 内拆为每语种一文件（整表不再落盘）：
+///     - 两个数据变体统一 key+value 两字段：json 每行 2 键（key + value）；bin 为 WriteSize 行数 + 逐行 key + value。
+///     运行时 bean 同为 Key/Value 两属性（cs-bin/cs-simple-json 模板按 __bean.name == 'Localization' 特判生成），
+///     与 AOT 侧 tblocalizationaot_<lang> 产物同构；兜底语义由运行时二段查询英语兜底表接管。
 ///     运行时消费见 Unity 工程 LocalizationModule.SetLanguageAsync / LocalizationProvider（英语兜底懒加载）。
 ///     aot/server target 不挂本处理器（bat 参数隔离）+ TargetName 守卫双保险。
 ///     自校验内置：行数/首行值断言失败即抛异常中断导出。
@@ -225,7 +225,7 @@ public class LocalizationSplitPostProcess : PostProcessBase
     }
 
     /// <summary>
-    /// json 变体内容：2 键数组（key + 目标语种），中文保留 UTF-8 原文
+    /// json 变体内容：2 键数组（key + value），中文保留 UTF-8 原文
     /// </summary>
     private static string BuildJsonContent(List<Record> records, string keyFieldName, string languageFieldName)
     {
@@ -237,7 +237,7 @@ public class LocalizationSplitPostProcess : PostProcessBase
             var targetText = GetStringValue(record, languageFieldName);
             sb.Append("\n  {");
             sb.Append($"\n    \"{keyFieldName}\": {JsonSerializer.Serialize(key, JsonWriteOptions)},");
-            sb.Append($"\n    \"{languageFieldName}\": {JsonSerializer.Serialize(targetText, JsonWriteOptions)}");
+            sb.Append($"\n    \"value\": {JsonSerializer.Serialize(targetText, JsonWriteOptions)}");
             sb.Append("\n  },");
         }
 
@@ -256,7 +256,7 @@ public class LocalizationSplitPostProcess : PostProcessBase
     }
 
     /// <summary>
-    /// bin 变体内容：16 字段顺序列序（WriteSize 行数 + 逐行 key + 15 语种字符串），Luban ByteBuf 同源编码
+    /// bin 变体内容：key+value 两字段（WriteSize 行数 + 逐行 key + value），Luban ByteBuf 同源编码，与 AOT 侧拆分产物同构
     /// </summary>
     private static byte[] BuildBinContent(List<Record> records, string keyFieldName, DefField languageField)
     {
@@ -265,17 +265,7 @@ public class LocalizationSplitPostProcess : PostProcessBase
         foreach (var record in records)
         {
             buf.WriteString(GetStringValue(record, keyFieldName));
-            foreach (var field in languageField.HostType.ExportFields)
-            {
-                if (field == languageField)
-                {
-                    buf.WriteString(GetStringValue(record, field.Name));
-                }
-                else if (field.CType is TString && field.Name != keyFieldName)
-                {
-                    buf.WriteString(string.Empty);
-                }
-            }
+            buf.WriteString(GetStringValue(record, languageField.Name));
         }
         return buf.CopyData();
     }
@@ -305,14 +295,14 @@ public class LocalizationSplitPostProcess : PostProcessBase
         var expectKey = GetStringValue(records[0], keyFieldName);
         var expectText = GetStringValue(records[0], languageFieldName);
         if (first.GetProperty(keyFieldName).GetString() != expectKey
-            || first.GetProperty(languageFieldName).GetString() != expectText)
+            || first.GetProperty("value").GetString() != expectText)
         {
             throw new Exception($"本地化拆分自校验失败(json): 首行值与源数据不一致");
         }
     }
 
     /// <summary>
-    /// bin 产物自校验：行数前缀一致 + 首行 key/目标值与 Record[0] 一致（Luban ByteBuf 读回）
+    /// bin 产物自校验：行数前缀一致 + 首行 key/value 与 Record[0] 一致（Luban ByteBuf 读回）
     /// </summary>
     private static void VerifyBin(byte[] bytes, List<Record> records, string keyFieldName, DefField languageField)
     {
@@ -332,18 +322,9 @@ public class LocalizationSplitPostProcess : PostProcessBase
             throw new Exception($"本地化拆分自校验失败(bin): 首行 key 与源数据不一致");
         }
 
-        // 读回首行 15 语种，断言目标语种位与源一致
-        foreach (var field in languageField.HostType.ExportFields)
+        if (buf.ReadString() != GetStringValue(records[0], languageField.Name))
         {
-            if (field.CType is not TString || field.Name == keyFieldName)
-            {
-                continue;
-            }
-            var readBack = buf.ReadString();
-            if (field == languageField && readBack != GetStringValue(records[0], field.Name))
-            {
-                throw new Exception($"本地化拆分自校验失败(bin): 首行目标语种值与源数据不一致");
-            }
+            throw new Exception($"本地化拆分自校验失败(bin): 首行 value 与源数据不一致");
         }
     }
 

@@ -1,98 +1,98 @@
 [
   {
     "key": "achievement_name_01",
-    "English": ""
+    "value": ""
   },
   {
     "key": "achievement_name_02",
-    "English": ""
+    "value": ""
   },
   {
     "key": "achievement_content_1",
-    "English": ""
+    "value": ""
   },
   {
     "key": "achievement_content_2",
-    "English": ""
+    "value": ""
   },
   {
     "key": "achievement_cover",
-    "English": ""
+    "value": ""
   },
   {
     "key": "setting_nav_document",
-    "English": "Save Data Management"
+    "value": "Save Data Management"
   },
   {
     "key": "setting_nav_setting",
-    "English": "System Settings"
+    "value": "System Settings"
   },
   {
     "key": "setting_nav_voice",
-    "English": "Sound Settings"
+    "value": "Sound Settings"
   },
   {
     "key": "setting_nav_text",
-    "English": "Text Settings"
+    "value": "Text Settings"
   },
   {
     "key": "setting_nav_keyboard",
-    "English": "Keyboard Settings"
+    "value": "Keyboard Settings"
   },
   {
     "key": "common_user_name",
-    "English": "UserName"
+    "value": "UserName"
   },
   {
     "key": "common_user_password",
-    "English": "Password"
+    "value": "Password"
   },
   {
     "key": "common_start_game",
-    "English": "Start Game"
+    "value": "Start Game"
   },
   {
     "key": "common_load_game",
-    "English": "Load Game"
+    "value": "Load Game"
   },
   {
     "key": "common_system_setting",
-    "English": "Settings"
+    "value": "Settings"
   },
   {
     "key": "common_gallerty",
-    "English": "Gallery"
+    "value": "Gallery"
   },
   {
     "key": "common_about",
-    "English": "About"
+    "value": "About"
   },
   {
     "key": "common_exit_game",
-    "English": "Quit"
+    "value": "Quit"
   },
   {
     "key": "common_pop_start_game",
-    "English": "New Game"
+    "value": "New Game"
   },
   {
     "key": "common_continue_game",
-    "English": "Continue"
+    "value": "Continue"
   },
   {
     "key": "common_exit_submit",
-    "English": "OK"
+    "value": "OK"
   },
   {
     "key": "common_exit_cancel",
-    "English": "Cancel"
+    "value": "Cancel"
   },
   {
     "key": "common_exit_title",
-    "English": "Exit game?"
+    "value": "Exit game?"
   },
   {
     "key": "common_exit_label",
-    "English": "Always confirm"
+    "value": "Always confirm"
   }
 ]

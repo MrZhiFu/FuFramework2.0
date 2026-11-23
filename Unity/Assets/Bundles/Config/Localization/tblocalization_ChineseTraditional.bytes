@@ -1,98 +1,98 @@
 [
   {
     "key": "achievement_name_01",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "achievement_name_02",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "achievement_content_1",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "achievement_content_2",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "achievement_cover",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "setting_nav_document",
-    "ChineseTraditional": "遊戲存檔管理"
+    "value": "遊戲存檔管理"
   },
   {
     "key": "setting_nav_setting",
-    "ChineseTraditional": "系統設置"
+    "value": "系統設置"
   },
   {
     "key": "setting_nav_voice",
-    "ChineseTraditional": "音效設置"
+    "value": "音效設置"
   },
   {
     "key": "setting_nav_text",
-    "ChineseTraditional": "文本設置"
+    "value": "文本設置"
   },
   {
     "key": "setting_nav_keyboard",
-    "ChineseTraditional": "鍵盤設置"
+    "value": "鍵盤設置"
   },
   {
     "key": "common_user_name",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "common_user_password",
-    "ChineseTraditional": ""
+    "value": ""
   },
   {
     "key": "common_start_game",
-    "ChineseTraditional": "開始遊戲"
+    "value": "開始遊戲"
   },
   {
     "key": "common_load_game",
-    "ChineseTraditional": "讀取遊戲"
+    "value": "讀取遊戲"
   },
   {
     "key": "common_system_setting",
-    "ChineseTraditional": "系統設置"
+    "value": "系統設置"
   },
   {
     "key": "common_gallerty",
-    "ChineseTraditional": "畫廊設置"
+    "value": "畫廊設置"
   },
   {
     "key": "common_about",
-    "ChineseTraditional": "關於更多"
+    "value": "關於更多"
   },
   {
     "key": "common_exit_game",
-    "ChineseTraditional": "退出遊戲"
+    "value": "退出遊戲"
   },
   {
     "key": "common_pop_start_game",
-    "ChineseTraditional": "開始遊戲"
+    "value": "開始遊戲"
   },
   {
     "key": "common_continue_game",
-    "ChineseTraditional": "繼續上一次遊戲"
+    "value": "繼續上一次遊戲"
   },
   {
     "key": "common_exit_submit",
-    "ChineseTraditional": "確定"
+    "value": "確定"
   },
   {
     "key": "common_exit_cancel",
-    "ChineseTraditional": "取消"
+    "value": "取消"
   },
   {
     "key": "common_exit_title",
-    "ChineseTraditional": "是否退出遊戲？"
+    "value": "是否退出遊戲？"
   },
   {
     "key": "common_exit_label",
-    "ChineseTraditional": "始終需要確認"
+    "value": "始終需要確認"
   }
 ]

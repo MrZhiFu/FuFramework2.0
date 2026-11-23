@@ -1,98 +1,98 @@
 [
   {
     "key": "achievement_name_01",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "achievement_name_02",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "achievement_content_1",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "achievement_content_2",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "achievement_cover",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "setting_nav_document",
-    "Spanish": "Gestión de guardados"
+    "value": "Gestión de guardados"
   },
   {
     "key": "setting_nav_setting",
-    "Spanish": "Configuración del sistema"
+    "value": "Configuración del sistema"
   },
   {
     "key": "setting_nav_voice",
-    "Spanish": "Configuración de sonido"
+    "value": "Configuración de sonido"
   },
   {
     "key": "setting_nav_text",
-    "Spanish": "Configuración de texto"
+    "value": "Configuración de texto"
   },
   {
     "key": "setting_nav_keyboard",
-    "Spanish": "Configuración de teclado"
+    "value": "Configuración de teclado"
   },
   {
     "key": "common_user_name",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "common_user_password",
-    "Spanish": ""
+    "value": ""
   },
   {
     "key": "common_start_game",
-    "Spanish": "Iniciar juego"
+    "value": "Iniciar juego"
   },
   {
     "key": "common_load_game",
-    "Spanish": "Cargar juego"
+    "value": "Cargar juego"
   },
   {
     "key": "common_system_setting",
-    "Spanish": "Configuración"
+    "value": "Configuración"
   },
   {
     "key": "common_gallerty",
-    "Spanish": "Galería"
+    "value": "Galería"
   },
   {
     "key": "common_about",
-    "Spanish": "Acerca de"
+    "value": "Acerca de"
   },
   {
     "key": "common_exit_game",
-    "Spanish": "Salir"
+    "value": "Salir"
   },
   {
     "key": "common_pop_start_game",
-    "Spanish": "Nuevo juego"
+    "value": "Nuevo juego"
   },
   {
     "key": "common_continue_game",
-    "Spanish": "Continuar"
+    "value": "Continuar"
   },
   {
     "key": "common_exit_submit",
-    "Spanish": "OK"
+    "value": "OK"
   },
   {
     "key": "common_exit_cancel",
-    "Spanish": "Cancelar"
+    "value": "Cancelar"
   },
   {
     "key": "common_exit_title",
-    "Spanish": "¿Salir del juego?"
+    "value": "¿Salir del juego?"
   },
   {
     "key": "common_exit_label",
-    "Spanish": "Confirmar siempre"
+    "value": "Confirmar siempre"
   }
 ]
