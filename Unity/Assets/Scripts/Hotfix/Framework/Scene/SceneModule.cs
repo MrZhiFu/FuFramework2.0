@@ -16,10 +16,7 @@ using UnityEngine.SceneManagement;
 namespace Hotfix.Framework.Scene
 {
 	/// <summary>
-	/// 场景管理模块。
-	/// 功能：
-	///     1. 配合资源管理模块，管理场景资源的加载、卸载。
-	///     2. 提供场景加载进度，加载成功、加载失败，卸载成功、卸载失败的事件。
+	/// 场景管理模块：配合资源管理模块加载/卸载场景，广播加载进度与成败事件。
 	/// </summary>
 	public sealed class SceneModule : ModuleBase, ICancelAsync
 	{
@@ -307,7 +304,7 @@ namespace Hotfix.Framework.Scene
 		/// <summary>
 		/// 设置活动场景。
 		/// </summary>
-		/// <param name="activeScene"></param>
+		/// <param name="activeScene">激活的场景。</param>
 		private void SetActiveScene(UnityEngine.SceneManagement.Scene activeScene)
 		{
 			var lastActiveScene = SceneManager.GetActiveScene();
@@ -342,7 +339,7 @@ namespace Hotfix.Framework.Scene
 		/// <param name="sceneAssetPath">场景资源路径。</param>
 		/// <param name="userData">用户自定义数据。</param>
 		/// <param name="token">取消令牌。</param>
-		/// <param name="sceneMode"></param>
+		/// <param name="sceneMode">场景加载模式。</param>
 		public async UniTask<SceneHandle> LoadScene(string sceneAssetPath, CancellationToken token, LoadSceneMode sceneMode = LoadSceneMode.Additive, object userData = null)
 		{
 			if (string.IsNullOrEmpty(sceneAssetPath))
@@ -503,7 +500,7 @@ namespace Hotfix.Framework.Scene
 		/// <summary>
 		/// 加载场景完成回调。
 		/// </summary>
-		/// <param name="sceneHandle"></param>
+		/// <param name="sceneHandle">场景句柄。</param>
 		private void OnLoadSceneCompleted(SceneHandle sceneHandle)
 		{
 			if (sceneHandle == null)

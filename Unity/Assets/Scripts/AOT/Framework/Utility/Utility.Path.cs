@@ -8,13 +8,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// 文件路径相关的实用函数。
-		/// 功能：
-		///     1. 获取规范的路径。
-		///     2. 拼接路径。
-		///     3. 移除空文件夹。
-		///     4. 是否是在StreamingAssets下的路径。
-		///     5. 获取相对于StreamingAssets的路径。
+		/// 文件路径实用函数：路径规范化/拼接、空文件夹清理、StreamingAssets 归属判定与相对路径。
 		/// </summary>
 		public static class Path
 		{
@@ -44,9 +38,8 @@ namespace AOT.Framework.Core.Utility
 			/// <summary>
 			/// 拼接路径，如："Assets/Resources/", "test.txt" => Assets/Resources/test.txt
 			/// </summary>
-			/// <param name="paths"></param>
-			/// <returns></returns>
-			public static string Combine(params string[] paths)
+			/// <param name="paths">路径片段（按序拼接）。</param>
+				public static string Combine(params string[] paths)
 			{
 				const string separatorA = "/";
 				const string separatorB = "\\";
@@ -105,8 +98,7 @@ namespace AOT.Framework.Core.Utility
 			/// 是否是在StreamingAssets下的路径
 			/// </summary>
 			/// <param name="path">完整路径</param>
-			/// <returns></returns>
-			public static bool IsStreamingAssetsPath(string path)
+				public static bool IsStreamingAssetsPath(string path)
 			{
 				var regularPath = GetRegularPath(path);
 				return regularPath.StartsWith(AppResPath);

@@ -6,9 +6,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体信息。
-	/// 功能：
-	///     1. 用于管理实体的状态、及其下子实体，如添加、移除子实体。
+	/// 实体信息：管理实体状态与其子实体（添加/移除）。
 	/// </summary>
 	public sealed class EntityInfo : IReference
 	{
@@ -41,8 +39,7 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 创建实体信息。
 		/// </summary>
-		/// <param name="entity"></param>
-		/// <returns></returns>
+		/// <param name="entity">实体。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public static EntityInfo Create(Entity entity)
 		{
@@ -67,13 +64,11 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 获取第一个子实体。
 		/// </summary>
-		/// <returns></returns>
 		public Entity GetChildEntity() => m_childEntities.Count > 0 ? m_childEntities[0] : null;
 
 		/// <summary>
 		/// 获取所有子实体。
 		/// </summary>
-		/// <returns></returns>
 		public Entity[] GetChildEntities()
 		{
 			var results = new Entity[m_childEntities.Count];
@@ -84,7 +79,7 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 获取所有子实体。
 		/// </summary>
-		/// <param name="results"></param>
+		/// <param name="results">结果列表。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public void GetChildEntities(List<Entity> results)
 		{
@@ -96,7 +91,7 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 添加子实体。
 		/// </summary>
-		/// <param name="childEntity"></param>
+		/// <param name="childEntity">要附加的子实体。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public void AddChildEntity(Entity childEntity)
 		{
@@ -107,7 +102,7 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 移除子实体。
 		/// </summary>
-		/// <param name="childEntity"></param>
+		/// <param name="childEntity">要附加的子实体。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public void RemoveChildEntity(Entity childEntity)
 		{

@@ -8,12 +8,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// 程序集相关的实用函数。
-		/// 功能：
-		///     1. 获取已加载的程序集。
-		///     2. 获取其中的所有类型。
-		///     3. 获取其中的指定类型。
-		///     4. 获取指定类型的子类列表。
+		/// 程序集实用函数：已加载程序集枚举，类型/子类查询。
 		/// </summary>
 		public static class Assembly
 		{
@@ -103,8 +98,7 @@ namespace AOT.Framework.Core.Utility
 			/// 获取已加载的程序集中的指定类型的子类列表。
 			/// </summary>
 			/// <param name="type">指定类型</param>
-			/// <returns></returns>
-			public static List<string> GetRuntimeTypeNames(Type type)
+				public static List<string> GetRuntimeTypeNames(Type type)
 			{
 				var types   = GetTypes();
 				var results = new List<string>();

@@ -7,13 +7,9 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 计时器管理模块。
-	/// 目标： 用于管理计时器任务，提供启动计时器、暂停计时器、恢复计时器、停止计时器、获取计时器状态等功能。
-	/// 功能：
-	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
-	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
-	/// 说明：统一帧驱动——本模块 override OnUpdate，每帧一次遍历驱动所有计时器，
-	/// 不为每个计时器起独立异步链（无 UniTask 任务、无每计时器 CancellationTokenSource）。
+	/// 计时器管理模块：启动倒计时/时间间隔/帧间隔计时器，按 id 或全部暂停/继续/取消/停止与状态查询。
+	/// 统一帧驱动——override OnUpdate 每帧一次遍历驱动所有计时器，不为每个计时器起独立异步链
+	/// （无 UniTask 任务、无每计时器 CancellationTokenSource）。
 	/// </summary>
 	public sealed partial class TimerModule : ModuleBase
 	{
@@ -368,14 +364,12 @@ namespace Hotfix.Framework.Timer
 		/// 检查计时器是否存在
 		/// </summary>
 		/// <param name="timerId">计时器ID</param>
-		/// <returns></returns>
 		public bool IsTimerExist(int timerId) => m_timerDict.ContainsKey(timerId);
 
 		/// <summary>
 		/// 检查计时器是否处于暂停状态
 		/// </summary>
 		/// <param name="timerId">计时器ID</param>
-		/// <returns></returns>
 		public bool IsTimerPaused(int timerId) => m_timerDict.TryGetValue(timerId, out var timerInfo) && timerInfo.IsPaused;
 
 		#endregion

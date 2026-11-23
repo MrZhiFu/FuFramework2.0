@@ -9,10 +9,7 @@ using EntityGroupCfg = Hotfix.Game.Config.EntityGroup;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体组。
-	/// 功能：
-	///     1. 管理实体组中的实体，
-	///     2. 对外提供获取实体、获取实体组中实体数量、设置实体实例的优先级等接口。
+	/// 实体组：管理组内实体，提供获取实体/实体数量/设置实例优先级等接口。
 	/// </summary>
 	public sealed class EntityGroup
 	{
@@ -272,21 +269,20 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 创建并注册一个指定实体实例对象。
 		/// </summary>
-		/// <param name="obj"></param>
+		/// <param name="obj">目标对象。</param>
 		/// <param name="inUse">对象注册时是否已处于使用中。</param>
 		public void RegisterEntityObject(EntityObject obj, bool inUse) => m_entityPool.Register(obj, inUse);
 
 		/// <summary>
 		/// 生成一个指定实体实例对象。
 		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
+		/// <param name="name">名称。</param>
 		public EntityObject SpawnEntityObject(string name) => m_entityPool.Spawn(name);
 
 		/// <summary>
 		/// 回收指定实体实例对象。
 		/// </summary>
-		/// <param name="entity"></param>
+		/// <param name="entity">实体。</param>
 		public void RecycleEntity(Entity entity) => m_entityPool.Recycle(entity.Go);
 
 		/// <summary>
@@ -298,8 +294,8 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 设置实体实例对象是否被锁定。
 		/// </summary>
-		/// <param name="entityGo"></param>
-		/// <param name="locked"></param>
+		/// <param name="entityGo">实体实例 GameObject。</param>
+		/// <param name="locked">是否加锁。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public void SetEntityObjectLocked(object entityGo, bool locked)
 		{
@@ -310,8 +306,8 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 设置实体实例对象优先级。
 		/// </summary>
-		/// <param name="entityGo"></param>
-		/// <param name="priority"></param>
+		/// <param name="entityGo">实体实例 GameObject。</param>
+		/// <param name="priority">优先级。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public void SetEntityObjectPriority(object entityGo, int priority)
 		{

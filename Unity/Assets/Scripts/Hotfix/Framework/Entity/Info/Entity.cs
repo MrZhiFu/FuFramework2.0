@@ -7,9 +7,7 @@ using UnityEngine;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体显示类。
-	/// 功能：
-	///     1. 定义实体的基本属性和生命周期。并将生命周期的逻辑委托给实体逻辑类(EntityLogic)去处理。
+	/// 实体显示类：定义实体基本属性与生命周期，生命周期逻辑委托给 EntityLogic 处理。
 	/// </summary>
 	public sealed class Entity : MonoBehaviour
 	{

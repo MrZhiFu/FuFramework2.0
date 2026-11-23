@@ -5,15 +5,9 @@ using YooAsset;
 namespace AOT.Framework.ModuleSetting.Runtime
 {
 	/// <summary>
-	/// 游戏全局配置。
-	/// 功能：
-	///     1. 管理游戏基本设置，包括帧率、游戏速度、后台运行、禁止休眠等。
-	///     2. 管理资源系统配置（YooAsset 运行模式、下载参数、CDN 地址等）。
-	///     3. 管理本地数据存储配置（自动保存、加密等）。
-	///     4. 提供游戏暂停、恢复、重置正常速度等功能。
-	///
-	/// 注意：
-	///     1. 该类为单例，挂载到首个初始化场景的 GameObject 上，并且 DontDestroyOnLoad。
+	/// 游戏全局配置（单例，挂载首个初始化场景并 DontDestroyOnLoad）：游戏基本设置（帧率/速度/后台运行/
+	/// 禁止休眠）、资源系统配置（YooAsset 运行模式/下载参数/CDN）、本地存储配置（自动保存/加密），
+	/// 并提供游戏暂停/恢复/速度重置。
 	/// </summary>
 	public class GameSetting : MonoBehaviour
 	{

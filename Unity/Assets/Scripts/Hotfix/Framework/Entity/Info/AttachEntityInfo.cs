@@ -5,9 +5,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 附加实体信息。
-	/// 功能：
-	///     1. 用于在实体附加到其他实体时保存附加实体的信息。
+	/// 附加实体信息：实体附加到其他实体时暂存附加信息。
 	/// </summary>
 	internal sealed class AttachEntityInfo : IReference
 	{
@@ -24,9 +22,8 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 创建附加实体信息实例
 		/// </summary>
-		/// <param name="parentTransform"></param>
-		/// <param name="userData"></param>
-		/// <returns></returns>
+		/// <param name="parentTransform">父级 Transform。</param>
+		/// <param name="userData">用户自定义数据。</param>
 		public static AttachEntityInfo Create(Transform parentTransform, object userData)
 		{
 			var attachEntityInfo = ReferencePool.Acquire<AttachEntityInfo>();

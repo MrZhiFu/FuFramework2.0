@@ -47,7 +47,16 @@ grep -rnE "Delay\([0-9]{2,}|CancelAfter\([0-9]+\)|BufferSize|= [0-9]{2,}f?;" <�
 
 ### A4. 参数链删除
 
-API 带默认值参数且全项目**无定制调用方**：删参数，内部直取 Const 常量（YAGNI——不为假想灵活性留参数）。沿调用链删干净：签名 → 实现 → 构造函数 → 下游工厂 → `<param>` 文档注释。
+**核心原则：常量用时直取，绝不可通过类字段或方法参数中转。**
+
+两层清除（先做①再②，均需全项目 grep 调用方核实）：
+
+1. **API 默认值参数**：带默认值参数且全项目**无定制调用方** → 删参数（收拢为单签名可选参或全显式），内部直取 Const 常量（YAGNI——不为假想灵活性留参数）。沿调用链删干净：签名 → 实现 → 构造函数 → 下游工厂 → `<param>` 文档注释。
+2. **常量中转链**：`Const 常量 → 属性/字段初始化 → 方法参数 → 消费点` 的整条中转一律拆掉——属性/字段若全项目零外部写入方且仅被常量初始化 → 删除，消费点直取 `XxxModule.CONST`（如 `Download.Timeout/FlushSize` 属性、`UIModule.Pool*` 转发属性、`DownloadTask` 同名字段）。零调用方的冗余重载一并裁撤。
+   - 例外：参数是**数据组织维度**而非固定常量（如 Storage 的 `fileName`）→ 保留；运行时调度语义参数（如任务池 `priority`）→ 保留参数本身，只删冗余重载。
+   - 常量可见性随消费点调整：跨类消费升 `internal`。
+
+**编译验证注意**：`get_compilation_state` 的 `errorCount` 可能 stale——判错前先 `clear_console` + `refresh_assets` 重触发；错误详情用 `read_console` 过滤 `logType == Exception` 读取。
 
 ---
 
@@ -77,3 +86,12 @@ API 带默认值参数且全项目**无定制调用方**：删参数，内部直
 
 - 全模块 grep：旧常量名/旧命名/过时关键词**零残留**
 - 编译 0 错 → 向用户汇报两任务的修正清单 → 询问提交（信息建议：`[AI]refactor: <模块名>常量收敛至 Const 分部 + [AI]docs: 注释全量修正（最小可用风格）`）
+
+### 多模块批量整理的拆分提交
+
+多模块一次整理、拆 refactor+docs 两笔提交时，同文件可能既有常量改动又有注释改动。**不要用 stash push/pop 往返**（会把工作树状态搞乱）；稳定方案：
+
+1. 从完整 diff 生成「refactor 轮前向补丁」：混合 hunk 行级拆分——refactor 轮的代码行保留，注释轮的删除行转上下文、新增行丢弃，重算 hunk 头计数
+2. 干净 index（`git restore --staged`）上 `git apply --cached <补丁>` → `git add` 纯 refactor 新文件
+3. index 拆分用 `git diff --cached` / `git show :<file>` 逻辑验证替代编译验证（编译只看工作树）
+4. 少量混合文件可用「工作树临时回退注释 → add → 还原」python 脚本（模式替换前 count==1 校验）

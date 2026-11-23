@@ -4,9 +4,7 @@
 namespace AOT.Framework.Extension
 {
 	/// <summary>
-	/// Type 相关的扩展方法。
-	/// 功能：
-	///     1. 判断类型是否实现了指定的接口（直接实现或继承实现）。
+	/// Type 扩展方法：判断类型是否实现了指定接口（直接实现或继承实现）。
 	/// </summary>
 	public static class TypeEx
 	{

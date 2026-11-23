@@ -10,12 +10,7 @@ using UnityEngine;
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
-	/// 引导管理模块的公共 API。
-	/// 功能：
-	///     1. 提供引导的启动、中断接口。
-	///     2. 提供步骤的推进、跳转、回退接口。
-	///     3. 提供引导完成状态的查询与标记。
-	///     4. 提供引导相关事件订阅。
+	/// 引导管理模块公共 API：引导启动/中断，步骤推进/跳转/回退，完成状态查询与标记，事件订阅。
 	/// </summary>
 	public partial class GuideModule : ModuleBase, ICancelAsync
 	{

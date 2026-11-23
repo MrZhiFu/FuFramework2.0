@@ -11,10 +11,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Asset
 {
 	/// <summary>
-	/// 资源管理模块。
-	/// 功能：
-	///     1. 封装了 YooAsset 的资源管理接口，提供更高级的 UniTask 异步资源加载相关接口。
-	///     2. 提供默认资源包的资源加载、卸载与查询能力。
+	/// 资源管理模块：封装 YooAsset 接口为 UniTask 异步形态，提供默认资源包的加载/卸载/查询。
 	/// </summary>
 	public partial class AssetModule : ModuleBase, ICancelAsync
 	{

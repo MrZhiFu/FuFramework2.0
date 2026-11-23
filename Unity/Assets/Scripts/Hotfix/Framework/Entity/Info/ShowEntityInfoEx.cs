@@ -5,9 +5,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 显示时的实体额外信息(逻辑处理对象和用户数据)。
-	/// 功能：
-	///     1. 用于在显示时暂时保存实体的逻辑处理对象和用户数据信息，以便在显示过程中传递数据。
+	/// 显示时的实体额外信息：显示过程中暂存传递逻辑处理对象与用户数据。
 	/// </summary>
 	public sealed class ShowEntityInfoEx : IReference
 	{
@@ -24,9 +22,8 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 创建实体显示额外信息。
 		/// </summary>
-		/// <param name="entityLogicType"></param>
-		/// <param name="userData"></param>
-		/// <returns></returns>
+		/// <param name="entityLogicType">实体逻辑类型。</param>
+		/// <param name="userData">用户自定义数据。</param>
 		public static ShowEntityInfoEx Create(Type entityLogicType, object userData)
 		{
 			var showEntityInfo = ReferencePool.Acquire<ShowEntityInfoEx>();

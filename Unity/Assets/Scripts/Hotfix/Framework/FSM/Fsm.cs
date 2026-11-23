@@ -7,11 +7,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.FSM
 {
 	/// <summary>
-	/// 有限状态机。
-	/// 功能：
-	///     1. 管理一个有限状态机下的状态和数据变量。
-	///     2. 创建有限状态机实例。
-	///     3. 提供切换状态、设置数据变量等便捷方法。
+	/// 有限状态机：管理状态与数据变量，提供切换状态/设置数据变量等便捷方法。
 	/// </summary>
 	public sealed class Fsm : IReference
 	{

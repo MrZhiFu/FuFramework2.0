@@ -5,10 +5,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Config
 {
 	/// <summary>
-	/// 配置管理模块。
-	/// 功能：
-	///     1. 存储所有配置表。
-	///     2. 配置表在启动期一次性加载，加载后只读。
+	/// 配置管理模块：存储全部配置表；启动期一次性加载，加载后只读。
 	/// </summary>
 	public sealed partial class ConfigModule : ModuleBase
 	{

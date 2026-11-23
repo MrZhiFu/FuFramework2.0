@@ -6,10 +6,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Model
 {
 	/// <summary>
-	/// 数据模型管理模块。
-	/// 功能：
-	///     1.将所有的Model存到字典里统一管理。
-	///     2.提供获取、删除指定Model的方法。
+	/// 数据模型管理模块：全部 Model 字典式统一管理，提供获取/删除。
 	/// </summary>
 	public class ModelModule : ModuleBase
 	{
@@ -44,7 +41,6 @@ namespace Hotfix.Framework.Model
 		/// 获取指定类型的Model
 		/// </summary>
 		/// <typeparam name="T">指定类型</typeparam>
-		/// <returns></returns>
 		public T GetModel<T>() where T : BaseModel, new()
 		{
 			var key = typeof(T);
@@ -87,7 +83,6 @@ namespace Hotfix.Framework.Model
 		/// 创建指定类型的Model
 		/// </summary>
 		/// <typeparam name="T">指定类型</typeparam>
-		/// <returns></returns>
 		private T CreateModel<T>() where T : BaseModel, new()
 		{
 			var key = typeof(T);

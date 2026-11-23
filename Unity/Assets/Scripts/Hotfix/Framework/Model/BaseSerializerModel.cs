@@ -5,9 +5,7 @@ using Hotfix.Framework.Storage;
 namespace Hotfix.Framework.Model
 {
 	/// <summary>
-	/// 可序列化的Model基类(数据字段存储在本地的Model)。
-	/// 功能：
-	///     1. 配合数据存储模块，提供Model数据的序列化，反序列化功能。
+	/// 可序列化的 Model 基类（数据字段存储在本地的 Model）：配合数据存储模块提供序列化/反序列化。
 	///
 	/// 序列化规则说明：
 	/// 1.默认情况下，以下元素会被JSON序列化保存：

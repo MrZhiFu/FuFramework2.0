@@ -96,7 +96,7 @@ namespace Hotfix.Framework.Guide
 		/// <summary>
 		/// 步骤帧更新
 		/// </summary>
-		/// <param name="deltaTime"></param>
+		/// <param name="deltaTime">帧间隔时间（秒）。</param>
 		public void Update(float deltaTime)
 		{
 			if (State == EStepState.Executing)

@@ -6,10 +6,7 @@ using UnityEngine;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体逻辑基类。
-	/// 功能：
-	///     1. 实现实体逻辑的基本功能，如初始化、回收、显示、隐藏、附加子实体、解除子实体等。
-	///     2. 可继承此类实现自身的实体逻辑。
+	/// 实体逻辑基类：初始化/回收/显隐/附加与解除子实体等基本逻辑，业务继承实现自身实体逻辑。
 	/// </summary>
 	public abstract class EntityLogic : MonoBehaviour
 	{

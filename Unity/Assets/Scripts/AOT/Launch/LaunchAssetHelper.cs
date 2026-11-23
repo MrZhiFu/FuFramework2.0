@@ -9,9 +9,8 @@ using AOT.Framework.ModuleSetting.Runtime;
 namespace AOT.Launch
 {
 	/// <summary>
-	/// AOT 资源启动助手。
-	/// 功能：启动期直连 YooAsset 完成「初始化默认包 / 请求版本号 / 更新清单 / 创建下载器 / 加载原始字节」等流程。
-	///      不依赖 AssetModule。YooAssetInitialized 字段供 AOT/Hotfix 共用，防止二次初始化。
+	/// AOT 资源启动助手：启动期直连 YooAsset 完成初始化包/请求版本/更新清单/创建下载器/加载原始字节，
+	/// 不依赖 AssetModule；YooAssetInitialized 字段供 AOT/Hotfix 共用防二次初始化。
 	/// </summary>
 	public static class LaunchAssetHelper
 	{

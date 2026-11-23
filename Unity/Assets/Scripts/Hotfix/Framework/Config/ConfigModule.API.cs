@@ -5,11 +5,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Config
 {
 	/// <summary>
-	/// 配置管理模块的公共 API。
-	/// 功能：
-	///     1. 获取配置表。
-	///     2. 检查配置表是否存在。
-	///     3. 增加/移除配置表。
+	/// 配置管理模块公共 API：配置表的获取/存在性检查/增删。
 	/// </summary>
 	public sealed partial class ConfigModule : ModuleBase
 	{

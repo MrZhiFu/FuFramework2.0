@@ -7,9 +7,7 @@ using UnityEngine;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体对象。
-	/// 功能：
-	///     1. 包装实体资源和实体帮助器，用于实体实例对象池管理，方便销毁实体资源。
+	/// 实体对象：包装实体资源与辅助器供对象池管理，统一销毁实体资源。
 	/// </summary>
 	public sealed class EntityObject : ObjectBase
 	{
@@ -29,8 +27,7 @@ namespace Hotfix.Framework.Entity
 		/// <param name="name">实体名称</param>
 		/// <param name="entityAssetHandle">实体资源句柄</param>
 		/// <param name="entityGo">实体实例GameObject</param>
-		/// <param name="entityHelper"></param>
-		/// <returns></returns>
+		/// <param name="entityHelper">实体辅助器。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public static EntityObject Create(string name, object entityAssetHandle, GameObject entityGo, EntityHelper entityHelper)
 		{

@@ -7,11 +7,8 @@ using System.Collections.Generic;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 计时器注册器。
-	/// 目标： 用于单独管理属于自己模块的相关计时器。
-	/// 功能：
-	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
-	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
+	/// 计时器注册器：按所有权隔离管理一组计时器——启动倒计时/时间间隔/帧间隔计时器，
+	/// 按 id 或全部暂停/继续/取消/停止。
 	/// </summary>
 	public class TimerRegister : IReference
 	{
@@ -128,7 +125,7 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 暂停计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void PauseTimer(int timerId)
 		{
 			if (!m_timerList.Contains(timerId)) return;
@@ -138,7 +135,7 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 恢复计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void ResumeTimer(int timerId)
 		{
 			if (!m_timerList.Contains(timerId)) return;
@@ -148,7 +145,7 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 停止计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void StopTimer(int timerId)
 		{
 			if (!m_timerList.Contains(timerId)) return;
@@ -159,7 +156,7 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 重置计时器进度
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void ResetTimer(int timerId)
 		{
 			if (!m_timerList.Contains(timerId)) return;
@@ -233,15 +230,13 @@ namespace Hotfix.Framework.Timer
 		/// <summary>
 		/// 检查计时器是否存在
 		/// </summary>
-		/// <param name="timerId"></param>
-		/// <returns></returns>
+		/// <param name="timerId">计时器编号。</param>
 		public bool IsTimerExist(int timerId) => m_timerModule != null && m_timerModule.IsTimerExist(timerId);
 
 		/// <summary>
 		/// 检查计时器是否处于暂停状态
 		/// </summary>
-		/// <param name="timerId"></param>
-		/// <returns></returns>
+		/// <param name="timerId">计时器编号。</param>
 		public bool IsTimerPaused(int timerId) => m_timerModule != null && m_timerModule.IsTimerPaused(timerId);
 
 		/// <summary>

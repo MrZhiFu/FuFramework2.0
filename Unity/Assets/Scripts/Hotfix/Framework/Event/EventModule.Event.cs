@@ -23,9 +23,8 @@ namespace Hotfix.Framework.Event
 			/// <summary>
 			/// 创建事件节点
 			/// </summary>
-			/// <param name="eventArgs"></param>
-			/// <returns></returns>
-			public static Event Create(GameEventArgs eventArgs)
+			/// <param name="eventArgs">事件参数。</param>
+				public static Event Create(GameEventArgs eventArgs)
 			{
 				var eventNodeNode = ReferencePool.Acquire<Event>();
 				eventNodeNode.EventArgs = eventArgs;

@@ -7,11 +7,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Procedure
 {
 	/// <summary>
-	/// 流程管理模块。
-	/// 功能：
-	///     1. 初始化流程状态机。
-	///     2. 开始指定的流程。
-	///     3. 获取当前流程持续时间。
+	/// 流程管理模块：初始化流程状态机、开始指定流程、查询当前流程持续时间。
 	/// </summary>
 	public sealed class ProcedureModule : ModuleBase
 	{
@@ -67,7 +63,7 @@ namespace Hotfix.Framework.Procedure
 		/// <summary>
 		/// 初始化流程状态机。
 		/// </summary>
-		/// <param name="procedure"></param>
+		/// <param name="procedure">流程类型。</param>
 		public void InitProcedures(ProcedureBase[] procedure)
 		{
 			if (m_fsmModule == null)

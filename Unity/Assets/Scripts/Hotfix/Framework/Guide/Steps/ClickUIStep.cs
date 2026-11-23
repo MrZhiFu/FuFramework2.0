@@ -8,12 +8,7 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
-	/// UI点击引导步骤。
-	/// 功能：
-	///     1. 查找点击目标UI组件。
-	///     2. 添加目标UI点击回调。
-	///     3. 执行点击UI引导。
-	///     4. 点击UI引导完成后，移除点击回调。
+	/// UI 点击引导步骤：查找目标组件 → 挂点击回调 → 引导完成后移除回调。
 	/// </summary>
 	public class ClickUIStep : BaseStep
 	{
@@ -119,7 +114,6 @@ namespace Hotfix.Framework.Guide
 		/// 创建默认步骤实例
 		/// </summary>
 		/// <param name="stepInfo">步骤数据信息</param>
-		/// <returns></returns>
 		public static ClickUIStep Create(GuideStep stepInfo)
 		{
 			var step = ReferencePool.Acquire<ClickUIStep>();

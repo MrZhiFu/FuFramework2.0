@@ -13,10 +13,7 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Asset
 {
 	/// <summary>
-	/// 资源管理模块的公共 API。
-	/// 功能：
-	///     1. 异步加载资源/场景，异步实例化游戏物体。
-	///     2. 资源卸载与查询。
+	/// 资源管理模块公共 API：异步加载资源/场景与实例化游戏物体，资源卸载与查询。
 	/// </summary>
 	public partial class AssetModule : ModuleBase
 	{

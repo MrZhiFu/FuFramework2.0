@@ -6,9 +6,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 显示时的实体信息。
-	/// 功能：
-	///     1. 用于在显示时暂时保存实体信息，以便在显示过程中传递实体信息。
+	/// 显示时的实体信息：显示过程中暂存传递实体信息。
 	/// </summary>
 	public sealed class ShowEntityInfo : IReference
 	{
@@ -36,11 +34,10 @@ namespace Hotfix.Framework.Entity
 		/// <summary>
 		/// 创建实体信息。
 		/// </summary>
-		/// <param name="serialId"></param>
-		/// <param name="entityId"></param>
-		/// <param name="entityGroup"></param>
-		/// <param name="userData"></param>
-		/// <returns></returns>
+		/// <param name="serialId">序列编号。</param>
+		/// <param name="entityId">实体编号。</param>
+		/// <param name="entityGroup">实体组。</param>
+		/// <param name="userData">用户自定义数据。</param>
 		public static ShowEntityInfo Create(int serialId, int entityId, EntityGroup entityGroup, object userData)
 		{
 			var showEntityInfo = ReferencePool.Acquire<ShowEntityInfo>();

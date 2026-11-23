@@ -5,12 +5,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 时间间隔计时器。
-	/// 目标：按照固定的时间间隔重复执行回调，支持立即执行和重复次数限制。
-	/// 功能：
-	///     1. 抗时间跳跃：通过累计时间机制处理卡顿情况，确保间隔准确性。
-	///     2. 灵活的重置策略：支持无限循环或指定次数执行。
-	///     3. 实时性保障：在时间累积超过间隔时，会连续执行直到追赶上进度。
+	/// 时间间隔计时器：按固定时间间隔重复执行（支持立即执行与次数限制）；累计时间机制抗卡顿，
+	/// 落后进度时连续执行追赶，支持无限循环或指定次数。
 	/// </summary>
 	internal class IntervalTimer : TimerBase
 	{
@@ -65,7 +61,7 @@ namespace Hotfix.Framework.Timer
 		/// 机制：使用while循环确保在卡顿情况下也能正确执行所有遗漏的回调
 		/// </summary>
 		/// <param name="deltaTime">增量时间（秒）</param>
-		/// <param name="_"></param>
+		/// <param name="_">未使用的占位参数（统一帧驱动签名保留位）。</param>
 		public override void OnUpdate(float deltaTime, int _)
 		{
 			if (IsPaused) return;
@@ -111,7 +107,6 @@ namespace Hotfix.Framework.Timer
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		/// <returns></returns>
 		public static IntervalTimer Create(int timerId, float interval, Action intervalCallback, int repeatCount, bool immediate, bool ignoreTimeScale)
 		{
 			var timerInfo = ReferencePool.Acquire<IntervalTimer>();

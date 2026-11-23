@@ -10,10 +10,7 @@ namespace Hotfix.Framework.Guide
 	public class WaitStep : BaseStep
 	{
 		/// <summary>
-		/// 等待时间计时器。
-		/// 功能：
-		///     1. 记录等待时间。
-		///     2. 等待时间到后，完成步骤。
+		/// 等待时间计时器：记录等待时长，到时完成步骤。
 		/// </summary>
 		private float m_waitTimer;
 
@@ -70,7 +67,6 @@ namespace Hotfix.Framework.Guide
 		/// 创建等待时间步骤实例
 		/// </summary>
 		/// <param name="stepInfo">步骤数据信息</param>
-		/// <returns></returns>
 		public static WaitStep Create(GuideStep stepInfo)
 		{
 			var step = ReferencePool.Acquire<WaitStep>();

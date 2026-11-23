@@ -5,10 +5,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// Bundle资源路径相关的实用函数集。
-		/// 功能：
-		///     1. Bundle资源目录定义。
-		///     2. Bundle资源路径拼接。
+		/// Bundle 资源路径实用函数集：目录定义与路径拼接。
 		/// </summary>
 		// ReSharper disable once MemberHidesStaticFromOuterClass
 		public static class AssetPath

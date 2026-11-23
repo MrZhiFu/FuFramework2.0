@@ -13,14 +13,9 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体管理模块的公共 API。
-	/// 功能：
-	///     1. 提供实体组的查询与添加。
-	///     2. 提供实体的查询（按编号/资源名/父子关系）。
-	///     3. 提供实体的异步显示与隐藏。
-	///     4. 提供实体的依附与解除。
-	///     5. 实现 ICancelAsync：Token 观察生命周期取消，CancelAsync 供框架重启排水等待。
-	/// 内部实现（字段、生命周期、私有处理）见 EntityModule.cs。
+	/// 实体管理模块公共 API：实体组查询/添加，实体查询（按编号/资源名/父子关系）、
+	/// 异步显示/隐藏、依附/解除；实现 ICancelAsync（Token 观察生命周期取消，CancelAsync 供重启排水）。
+	/// 内部实现见 EntityModule.cs。
 	/// </summary>
 	public sealed partial class EntityModule
 	{

@@ -5,9 +5,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// 游戏版本号相关的实用函数。
-		/// 功能：
-		///     1. 获取主版本号、次版本号、修订号。
+		/// 游戏版本号实用函数：主版本号/次版本号/修订号解析。
 		/// </summary>
 		public static class Version
 		{

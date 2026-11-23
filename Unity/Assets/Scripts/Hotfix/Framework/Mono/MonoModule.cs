@@ -7,10 +7,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Mono
 {
 	/// <summary>
-	/// Mono管理模块。
-	/// 功能：
-	///     1.管理游戏中 MonoBehaviour 的生命周期事件，例如 FixedUpdate、LateUpdate、OnDestroy等。
-	///     2.提供简便的方式来添加和移除这些事件的监听。
+	/// Mono 管理模块：托管 MonoBehaviour 生命周期事件（FixedUpdate/LateUpdate/OnDestroy 等）的监听增删。
 	/// </summary>
 	public class MonoModule : ModuleBase
 	{
@@ -274,8 +271,8 @@ namespace Hotfix.Framework.Mono
 		/// 2. 交换后，waitInvokeList可以继续收集新的回调函数，为下一次执行做准备。
 		/// 3. 遍历 invokeList，调用其中的函数.
 		/// </summary>
-		/// <param name="invokeList"></param>
-		/// <param name="waitInvokeList"></param>
+		/// <param name="invokeList">本帧分发的调用列表。</param>
+		/// <param name="waitInvokeList">等待分发的调用列表。</param>
 		private static void QueueInvoking(List<Action> invokeList, List<Action> waitInvokeList)
 		{
 			Utility.Object.Swap(ref invokeList, ref waitInvokeList);
@@ -299,9 +296,9 @@ namespace Hotfix.Framework.Mono
 		/// 2. 交换后，waitInvokeList可以继续收集新的回调函数，为下一次执行做准备。
 		/// 3. 遍历 invokeList，调用其中的函数.
 		/// </summary>
-		/// <param name="a"></param>
-		/// <param name="b"></param>
-		/// <param name="value"></param>
+		/// <param name="a">比较左值。</param>
+		/// <param name="b">比较右值。</param>
+		/// <param name="value">要写入的值。</param>
 		private static void QueueInvoking(ref List<Action<bool>> a, ref List<Action<bool>> b, bool value)
 		{
 			Utility.Object.Swap(ref a, ref b);

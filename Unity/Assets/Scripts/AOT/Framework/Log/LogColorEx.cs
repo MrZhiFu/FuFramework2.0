@@ -5,11 +5,8 @@ using UnityEngine;
 namespace AOT.Framework.Core.Log
 {
 	/// <summary>
-	/// 日志颜色扩展。
-	/// 功能：
-	///     1. Color 转十六进制色值（#RRGGBB）。
-	///     2. 文本富文本染色（&lt;color=#RRGGBB&gt; 包裹）。
-	///     3. 按调用方源文件生成染色的 [类名] 标签（供 FuLogger 自动前缀使用）。
+	/// 日志颜色扩展：Color 转十六进制色值、文本富文本染色、
+	/// 按调用方源文件生成染色 [类名] 标签（供 FuLogger 自动前缀使用）。
 	/// </summary>
 	public static class LogColorEx
 	{

@@ -6,10 +6,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
-	/// 对话引导步骤。
-	/// 功能：
-	///     1. 执行对话引导。
-	///     2. 对话引导完成后，移除对话引导。
+	/// 对话引导步骤：执行对话，完成后移除。
 	/// </summary>
 	public class DialogStep : BaseStep
 	{
@@ -64,7 +61,6 @@ namespace Hotfix.Framework.Guide
 		/// 创建对话引导步骤实例
 		/// </summary>
 		/// <param name="stepInfo">步骤数据信息</param>
-		/// <returns></returns>
 		public static DialogStep Create(GuideStep stepInfo)
 		{
 			var step = ReferencePool.Acquire<DialogStep>();

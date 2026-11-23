@@ -5,10 +5,8 @@ using Cysharp.Threading.Tasks;
 namespace Hotfix.Framework.Config
 {
 	/// <summary>
-	/// 数据表基类。
-	/// 功能：
-	///     1. 维护数据表每行数据的key与数据的映射关系，支持long类型的id和string类型的id。
-	///     2. 实现数据表泛型基础接口IDataTable-T 相关的相关操作方法，如获取，查找，遍历，最大值，求最小值，求和等。
+	/// 数据表基类：维护行 key→数据 映射（支持 long/string 双 id 类型），实现 IDataTable&lt;T&gt;
+	/// 的获取/查找/遍历/最值/求和等操作。
 	/// </summary>
 	/// <typeparam name="T">具体数据表类型</typeparam>
 	public abstract class BaseDataTable<T> : IDataTable<T> where T : class
@@ -31,14 +29,12 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 异步加载数据表。
 		/// </summary>
-		/// <returns></returns>
 		public abstract UniTask LoadAsync();
 
 		/// <summary>
 		/// 通过int类型的id获取数据。
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
+		/// <param name="id">数据行 id。</param>
 		public T Get(int id)
 		{
 			LongKeyDataDict.TryGetValue(id, out var value);
@@ -48,8 +44,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 通过long类型的id获取数据。
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
+		/// <param name="id">数据行 id。</param>
 		public T Get(long id)
 		{
 			LongKeyDataDict.TryGetValue(id, out var value);
@@ -59,8 +54,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 通过string类型的id获取数据。
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
+		/// <param name="id">数据行 id。</param>
 		public T Get(string id)
 		{
 			StrKeyDataDict.TryGetValue(id, out var value);
@@ -70,7 +64,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 索引器。
 		/// </summary>
-		/// <param name="index"></param>
+		/// <param name="index">索引。</param>
 		public T this[int index] => index >= Count || index < 0 ? throw new IndexOutOfRangeException(nameof(index)) : DataList[index];
 
 		/// <summary>
@@ -96,7 +90,6 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 数据表List转化为数组。
 		/// </summary>
-		/// <returns></returns>
 		public T[] ToArray()
 		{
 			var results = new T[DataList.Count];
@@ -107,14 +100,12 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 数据表List转化为List copy。
 		/// </summary>
-		/// <returns></returns>
 		public List<T> ToList() => new List<T>(DataList);
 
 		/// <summary>
 		/// 查找符合条件的第一个数据。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public T Find(Func<T, bool> func)
 		{
 			foreach (var item in DataList)
@@ -129,8 +120,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 查找所有符合条件的数据。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public T[] FindListArray(Func<T, bool> func)
 		{
 			var results = new List<T>();
@@ -146,8 +136,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 查找所有符合条件的数据。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public List<T> FindList(Func<T, bool> func)
 		{
 			var results = new List<T>();
@@ -163,15 +152,14 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 遍历数据表。
 		/// </summary>
-		/// <param name="func"></param>
+		/// <param name="func">数据处理函数。</param>
 		public void ForEach(Action<T> func) => DataList.ForEach(func);
 
 		/// <summary>
 		/// 获取数据表的最大值。
 		/// </summary>
-		/// <param name="func"></param>
+		/// <param name="func">数据处理函数。</param>
 		/// <typeparam name="TK"></typeparam>
-		/// <returns></returns>
 		public TK Max<TK>(Func<T, TK> func) where TK : IComparable<TK>
 		{
 			if (DataList.Count == 0) return default;
@@ -189,9 +177,8 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的最小值。
 		/// </summary>
-		/// <param name="func"></param>
+		/// <param name="func">数据处理函数。</param>
 		/// <typeparam name="TK"></typeparam>
-		/// <returns></returns>
 		public TK Min<TK>(Func<T, TK> func) where TK : IComparable<TK>
 		{
 			if (DataList.Count == 0) return default;
@@ -209,8 +196,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的和。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public int Sum(Func<T, int> func)
 		{
 			var sum = 0;
@@ -225,8 +211,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的和。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public long Sum(Func<T, long> func)
 		{
 			var sum = 0L;
@@ -241,8 +226,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的和。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public float Sum(Func<T, float> func)
 		{
 			var sum = 0f;
@@ -257,8 +241,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的和。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public double Sum(Func<T, double> func)
 		{
 			var sum = 0.0;
@@ -273,8 +256,7 @@ namespace Hotfix.Framework.Config
 		/// <summary>
 		/// 获取数据表的和。
 		/// </summary>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <param name="func">数据处理函数。</param>
 		public decimal Sum(Func<T, decimal> func)
 		{
 			var sum = 0m;

@@ -9,11 +9,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Event
 {
 	/// <summary>
-	/// 事件管理模块。
-	/// 功能：
-	///     1. 管理事件，提供订阅/退订/抛出等便捷方法（原独立事件池 EventPool 已并入本模块）。
-	///     2. 支持多播订阅与幂等去重；同一事件的不同处理函数各自独立条目。
-	///     3. 事件默认延迟到下一帧统一分发（Broadcast），亦可立即同步分发（BroadcastNow）。
+	/// 事件管理模块：订阅/退订/抛出的统一入口（原独立事件池 EventPool 已并入）；
+	/// 多播订阅 + 幂等去重，默认下一帧统一分发（Broadcast），可立即同步分发（BroadcastNow）。
 	/// 线程契约：仅允许主线程访问（跨线程产生的事件由网络频道封送到主线程后再 Broadcast）。
 	/// </summary>
 	public sealed partial class EventModule : ModuleBase

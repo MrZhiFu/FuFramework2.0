@@ -5,12 +5,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 帧间隔计时器。
-	/// 目标：按照固定的帧数间隔重复执行回调，基于帧率而非时间。
-	/// 功能：
-	///     1. 帧率无关性：执行频率与游戏帧率绑定，不受时间缩放影响。
-	///     2. 帧精确控制：适用于需要与渲染帧同步的逻辑。
-	///     3. 抗帧率波动：通过累计帧数机制处理帧率波动，确保执行准确性。
+	/// 帧间隔计时器：按固定帧数间隔重复执行（基于帧率而非时间，不受时间缩放影响），
+	/// 累计帧数机制抗帧率波动，适用于与渲染帧同步的逻辑。
 	/// </summary>
 	internal class FrameTimer : TimerBase
 	{
@@ -111,7 +107,6 @@ namespace Hotfix.Framework.Timer
 		/// <param name="intervalCallback">计时器每次帧间隔回调</param>
 		/// <param name="repeatCount">计时器重复次数，-1表示无限循环</param>
 		/// <param name="immediate">是否立即执行第一次回调</param>
-		/// <returns></returns>
 		public static FrameTimer Create(int timerId, int frameInterval, Action intervalCallback, int repeatCount, bool immediate)
 		{
 			var timerInfo = ReferencePool.Acquire<FrameTimer>();

@@ -9,9 +9,8 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 namespace AOT.Launch
 {
 	/// <summary>
-	/// AOT 启动加载界面。
-	///     功能：显示进度、提示文本、更新确认框，脱离 UIModule/EventModule 自包含运行。
-	///     UI 组件绑定部分见 WinLauncher.Gen.cs。
+	/// AOT 启动加载界面：显示进度/提示文本/更新确认框，脱离 UIModule/EventModule 自包含运行；
+	/// UI 组件绑定部分见 WinLauncher.Gen.cs。
 	/// </summary>
 	public sealed class LaunchView : ILaunchView
 	{
@@ -128,7 +127,7 @@ namespace AOT.Launch
 		/// <summary>
 		/// 确认按钮点击事件处理。
 		/// </summary>
-		/// <param name="ctx"></param>
+		/// <param name="ctx">FairyGUI 事件上下文。</param>
 		private void OnBtnOkClick(EventContext ctx) => m_onConfirm?.Invoke();
 
 		/// <summary>

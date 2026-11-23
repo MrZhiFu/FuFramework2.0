@@ -7,9 +7,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.FSM
 {
 	/// <summary>
-	/// 有限状态机管理模块。
-	/// 功能：
-	///     1. 管理多个有限状态机，包括创建、销毁、轮询等；
+	/// 有限状态机管理模块：多个状态机的创建/销毁/轮询。
 	/// </summary>
 	public sealed class FsmModule : ModuleBase
 	{
@@ -354,8 +352,7 @@ namespace Hotfix.Framework.FSM
 		/// <summary>
 		/// 销毁有限状态机。
 		/// </summary>
-		/// <param name="typeNamePair"></param>
-		/// <returns></returns>
+		/// <param name="typeNamePair">类型与名称的组合。</param>
 		private bool InternalDestroyFsm(TypeNamePair typeNamePair)
 		{
 			if (!m_fsmDict.TryGetValue(typeNamePair, out var fsm)) return false;

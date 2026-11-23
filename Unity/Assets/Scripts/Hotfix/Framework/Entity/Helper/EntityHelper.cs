@@ -8,9 +8,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 默认实体辅助器。
-	/// 功能：
-	///     1. 用于实现实体的实例化、创建、释放等操作。
+	/// 默认实体辅助器：实体的实例化、创建、释放等操作实现。
 	/// </summary>
 	public class EntityHelper : MonoBehaviour
 	{

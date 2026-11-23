@@ -6,10 +6,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// 应用相关的实用函数。
-		/// 功能：
-		///     1. 平台相关的获取和判断。
-		///     2. 打开URL。
+		/// 应用实用函数：平台获取与判断、打开 URL。
 		/// </summary>
 		public static class Application
 		{

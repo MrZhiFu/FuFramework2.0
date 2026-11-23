@@ -15,15 +15,8 @@ using Hotfix.Framework.ObjectPool;
 namespace Hotfix.Framework.Entity
 {
 	/// <summary>
-	/// 实体管理模块。
-	/// 功能：
-	///     1. 管理实体组的创建、销毁等流程。
-	///     2. 管理实体的创建、销毁、显示、隐藏等流程。
-	///     3. 管理实体的生命周期。
-	///     4. 管理实体的资源加载。
-	///     5. 管理实体的对象池。
-	///     6. 管理实体的依赖资源加载。
-	/// 对外公共接口见 EntityModule.API.cs。
+	/// 实体管理模块：实体组与实体的创建/销毁/显隐/依附流程，及实体生命周期、
+	/// 资源与依赖资源加载、对象池管理。对外公共接口见 EntityModule.API.cs。
 	/// </summary>
 	public sealed partial class EntityModule : ModuleBase, ICancelAsync
 	{
@@ -154,8 +147,8 @@ namespace Hotfix.Framework.Entity
 		/// 1.回收待回收的实体
 		/// 2.驱动每个实体组轮询
 		/// </summary>
-		/// <param name="deltaTime"></param>
-		/// <param name="unscaledDeltaTime"></param>
+		/// <param name="deltaTime">帧间隔时间（秒）。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间（秒）。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{

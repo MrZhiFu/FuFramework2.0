@@ -12,12 +12,7 @@ using Object = UnityEngine.Object;
 namespace Hotfix.Framework.Asset
 {
 	/// <summary>
-	/// 资源加载注册器，实现 ICancelAsync（可取消异步对象）。
-	/// 功能：
-	///     1.异步加载资源。
-	///     2.记录加载过的资源句柄，避免重复加载。
-	///     3.异步实例化游戏物体。
-	///     4.卸载资源。
+	/// 资源加载注册器（实现 ICancelAsync）：异步加载/实例化/卸载并记录已加载句柄避免重复加载。
 	/// 作为「逻辑分组的资源装载器」使用（如 UI 包：包打开时加载、包关闭时 UnloadAll 整组释放）。
 	/// 每个实例归单一调用方持有，用完 UnloadAll（临时卸载，装载器可复用）或 Dispose（永久废弃，在途加载随之取消）后弃引用由 GC 回收。
 	/// 装载器自身即异步链的生命周期所有者：内部透传 m_barrier.Token 给 AssetModule，不接收调用方 token（整组加载/整组释放模型）。

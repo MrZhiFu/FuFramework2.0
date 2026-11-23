@@ -6,12 +6,8 @@ using UnityEngine;
 namespace Hotfix.Framework.Timer
 {
 	/// <summary>
-	/// 一次性倒计时计时器。
-	/// 目标：在指定的持续时间结束后触发完成回调，期间可接收每帧更新回调。
-	/// 功能：
-	///     1. 精确控制执行时长，支持进度查询。
-	///     2. 可配置是否忽略时间缩放，适用于UI动画、游戏逻辑延时等场景。
-	///     3. 提供更新回调，便于实现进度条、倒计时显示等需求。
+	/// 一次性倒计时计时器：指定时长结束后触发完成回调，期间可接收每帧更新（进度查询，
+	/// 可忽略时间缩放，适用于 UI 动画/逻辑延时/进度条等场景）。
 	/// </summary>
 	internal class CountdownTimer : TimerBase
 	{
@@ -57,7 +53,6 @@ namespace Hotfix.Framework.Timer
 		/// <param name="finishCallBack">计时器结束回调</param>
 		/// <param name="updateCallBack">计时器更新回调</param>
 		/// <param name="ignoreTimeScale">是否忽略时间缩放</param>
-		/// <returns></returns>
 		public static CountdownTimer Create(int timerId, float duration, Action finishCallBack, Action updateCallBack, bool ignoreTimeScale)
 		{
 			var timerInfo = ReferencePool.Acquire<CountdownTimer>();

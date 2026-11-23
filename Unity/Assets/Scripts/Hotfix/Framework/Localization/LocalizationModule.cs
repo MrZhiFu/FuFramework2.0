@@ -12,12 +12,8 @@ using ELanguage = Hotfix.Game.Config.ELanguage;
 namespace Hotfix.Framework.Localization
 {
 	/// <summary>
-	/// 本地化管理模块。
-	/// 功能：
-	///     1. 获取/设置当前使用的语言。
-	///     2. 配合数据保存模块，保存当前使用的语言设置。
-	///     3. 配合事件管理模块，发送本地化语言改变事件。
-	///     4. 使用指定的具体本地化多语言提供器获取本地化多语言字符串。
+	/// 本地化管理模块：当前语言的获取/设置与持久化（经 StorageModule）、语言变更事件广播（经 EventModule）、
+	/// 经具体 Provider 获取多语言字符串。
 	/// </summary>
 	public sealed class LocalizationModule : ModuleBase
 	{
@@ -153,7 +149,6 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		/// <param name="key">多语言key</param>
 		/// <param name="args">参数</param>
-		/// <returns></returns>
 		public string GetLanguageText(string key, params object[] args)
 		{
 			if (LocalizationProvider is null)

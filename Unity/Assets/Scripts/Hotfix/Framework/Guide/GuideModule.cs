@@ -11,12 +11,7 @@ using UnityEngine;
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
-	/// 引导管理模块。
-	/// 功能：
-	///     1. 从配置表加载引导步骤信息。
-	///     2. 执行/跳转/取消引导步骤。
-	///     3. 缓存完成的引导。
-	///     4. 提供引导相关事件。
+	/// 引导管理模块：配置表驱动引导步骤，执行/跳转/取消与完成缓存，广播引导事件。
 	/// 对外公共 API 见 GuideModule.API.cs（partial 分部类）。
 	/// </summary>
 	public partial class GuideModule : ModuleBase, ICancelAsync

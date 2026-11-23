@@ -9,19 +9,8 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// 文件相关的实用函数。
-		/// 功能：
-		///     1.获取带有单位的字节大小。
-		///     2.获取目录下的所有文件。
-		///     3.清理目录。
-		///     4.目录复制。
-		///     5.复制文件到目标目录。
-		///     6.删除文件。
-		///     7.判断文件是否存在。
-		///     8.判断是否是Android的只读路径。
-		///     9.移动文件到目标目录。
-		///     10.读取指定路径的文件内容。
-		///     11.写入指定路径的文件内容。
+		/// 文件实用函数：字节大小格式化、目录枚举/清理/复制、文件增删改查/移动/读写、
+		/// Android 只读路径判定。
 		/// </summary>
 		public static class File
 		{
@@ -154,8 +143,7 @@ namespace AOT.Framework.Core.Utility
 			/// 判断文件是否存在
 			/// </summary>
 			/// <param name="path">文件路径</param>
-			/// <returns></returns>
-			public static bool IsExists(string path)
+				public static bool IsExists(string path)
 			{
 				// 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
 				if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
@@ -182,8 +170,7 @@ namespace AOT.Framework.Core.Utility
 			/// 读取指定路径的文件内容
 			/// </summary>
 			/// <param name="path">文件路径</param>
-			/// <returns></returns>
-			public static byte[] ReadAllBytes(string path)
+				public static byte[] ReadAllBytes(string path)
 			{
 				// 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
 				if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
@@ -198,8 +185,7 @@ namespace AOT.Framework.Core.Utility
 			/// 读取指定路径的文件内容
 			/// </summary>
 			/// <param name="path">文件路径</param>
-			/// <returns></returns>
-			public static string ReadAllText(string path)
+				public static string ReadAllText(string path)
 			{
 				// 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
 				if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
@@ -215,8 +201,7 @@ namespace AOT.Framework.Core.Utility
 			/// </summary>
 			/// <param name="path">文件路径</param>
 			/// <param name="encoding">编码</param>
-			/// <returns></returns>
-			public static string[] ReadAllLines(string path, Encoding encoding)
+				public static string[] ReadAllLines(string path, Encoding encoding)
 			{
 				// 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
 				if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
@@ -231,8 +216,7 @@ namespace AOT.Framework.Core.Utility
 			/// 读取指定路径的文件内容
 			/// </summary>
 			/// <param name="path">文件路径</param>
-			/// <returns></returns>
-			public static string[] ReadAllLines(string path)
+				public static string[] ReadAllLines(string path)
 			{
 				// 如果是Android的SteamingAssets路径，则使用插件BetterStreamingAssets读取
 				if (Application.IsAndroid && Path.IsStreamingAssetsPath(path))
@@ -248,8 +232,7 @@ namespace AOT.Framework.Core.Utility
 			/// </summary>
 			/// <param name="path">文件路径</param>
 			/// <param name="buffer">写入内容</param>
-			/// <returns></returns>
-			public static void WriteAllLines(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
+				public static void WriteAllLines(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
 
 			/// <summary>
 			/// 写入指定路径的文件内容
@@ -257,16 +240,14 @@ namespace AOT.Framework.Core.Utility
 			/// <param name="path">文件路径</param>
 			/// <param name="lines">写入的内容</param>
 			/// <param name="encoding">编码</param>
-			/// <returns></returns>
-			public static void WriteAllLines(string path, string[] lines, Encoding encoding) => System.IO.File.WriteAllLines(path, lines, encoding);
+				public static void WriteAllLines(string path, string[] lines, Encoding encoding) => System.IO.File.WriteAllLines(path, lines, encoding);
 
 			/// <summary>
 			/// 写入指定路径的文件内容
 			/// </summary>
 			/// <param name="path">文件路径</param>
 			/// <param name="lines">写入的内容</param>
-			/// <returns></returns>
-			public static void WriteAllLines(string path, string[] lines) => System.IO.File.WriteAllLines(path, lines, Encoding.UTF8);
+				public static void WriteAllLines(string path, string[] lines) => System.IO.File.WriteAllLines(path, lines, Encoding.UTF8);
 
 			/// <summary>
 			/// 写入指定路径的文件内容
@@ -274,24 +255,21 @@ namespace AOT.Framework.Core.Utility
 			/// <param name="path">文件路径</param>
 			/// <param name="content">写入的内容</param>
 			/// <param name="encoding">编码</param>
-			/// <returns></returns>
-			public static void WriteAllText(string path, string content, Encoding encoding) => System.IO.File.WriteAllText(path, content, encoding);
+				public static void WriteAllText(string path, string content, Encoding encoding) => System.IO.File.WriteAllText(path, content, encoding);
 
 			/// <summary>
 			/// 写入指定路径的文件内容，UTF-8
 			/// </summary>
 			/// <param name="path">文件路径</param>
 			/// <param name="content">写入的内容</param>
-			/// <returns></returns>
-			public static void WriteAllText(string path, string content) => System.IO.File.WriteAllText(path, content, Encoding.UTF8);
+				public static void WriteAllText(string path, string content) => System.IO.File.WriteAllText(path, content, Encoding.UTF8);
 
 			/// <summary>
 			/// 写入指定路径的文件内容
 			/// </summary>
 			/// <param name="path">文件路径</param>
 			/// <param name="buffer">写入的内容</param>
-			/// <returns></returns>
-			public static void WriteAllBytes(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
+				public static void WriteAllBytes(string path, byte[] buffer) => System.IO.File.WriteAllBytes(path, buffer);
 		}
 	}
 }

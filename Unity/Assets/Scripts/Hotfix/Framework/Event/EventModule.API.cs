@@ -6,10 +6,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Event
 {
 	/// <summary>
-	/// 事件管理模块的公共 API。
-	/// 功能：
-	///     1. 订阅/退订事件处理函数（幂等去重、即时退订；类型键：事件参数类型即事件标识）。
-	///     2. 抛出事件（下一帧分发 / 立即分发；无 sender 形态）。
+	/// 事件管理模块公共 API：订阅/退订（幂等去重、即时退订，类型键）、
+	/// 抛出事件（下一帧分发 / 立即分发，无 sender 形态）。
 	/// </summary>
 	public sealed partial class EventModule : ModuleBase
 	{

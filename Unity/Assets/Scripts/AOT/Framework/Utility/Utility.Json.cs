@@ -7,10 +7,7 @@ namespace AOT.Framework.Core.Utility
 	public static partial class UtilityAOT
 	{
 		/// <summary>
-		/// JSON 相关的实用函数。
-		/// 功能：
-		///     1. 使用Newtonsoft.Json序列化对象为 JSON 字符串。
-		///     2. 使用Newtonsoft.Json反序列化 JSON 字符串为对象。
+		/// JSON 实用函数：Newtonsoft.Json 序列化/反序列化。
 		/// </summary>
 		public static class Json
 		{

@@ -25,7 +25,6 @@ namespace Hotfix.Framework.Guide
 		/// 创建默认步骤实例
 		/// </summary>
 		/// <param name="stepInfo">步骤数据信息</param>
-		/// <returns></returns>
 		public static DefaultStep Create(GuideStep stepInfo)
 		{
 			var step = ReferencePool.Acquire<DefaultStep>();

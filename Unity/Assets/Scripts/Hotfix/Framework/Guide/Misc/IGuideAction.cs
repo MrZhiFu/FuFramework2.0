@@ -5,9 +5,7 @@ using FairyGUI;
 namespace Hotfix.Framework.Guide
 {
 	/// <summary>
-	/// 执行引导动作接口。
-	/// 功能：
-	///     1. 定义执行引导动作的相关接口，由热更代码中指定具体的实现类。
+	/// 执行引导动作接口：具体实现类由热更代码指定。
 	/// </summary>
 	public interface IGuideAction
 	{

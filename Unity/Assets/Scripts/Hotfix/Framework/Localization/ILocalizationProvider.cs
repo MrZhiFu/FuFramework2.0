@@ -1,9 +1,7 @@
 namespace Hotfix.Framework.Localization
 {
 	/// <summary>
-	/// 本地化多语言提供器。
-	/// 功能：
-	///     1. 定义获取本地化多语言字符串，由热更代码中的实现类具体实现。
+	/// 本地化多语言提供器：定义多语言字符串获取，具体实现由热更代码提供。
 	/// </summary>
 	public interface ILocalizationProvider
 	{
@@ -12,7 +10,6 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		/// <param name="key">多语言key</param>
 		/// <param name="args">参数</param>
-		/// <returns></returns>
 		string GetLanguage(string key, params object[] args);
 	}
 }

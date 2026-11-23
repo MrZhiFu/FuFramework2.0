@@ -4,9 +4,7 @@ using Hotfix.Framework.FSM;
 namespace Hotfix.Framework.Procedure
 {
 	/// <summary>
-	/// 流程基类。
-	/// 功能：
-	///     1. 继承自有限状态机基类，定义了流程的生命周期。可补充加入只属于流程的自定义逻辑。
+	/// 流程基类（继承有限状态机状态基类）：定义流程生命周期，可补充流程自定义逻辑。
 	/// </summary>
 	public abstract class ProcedureBase : FsmStateBase
 	{

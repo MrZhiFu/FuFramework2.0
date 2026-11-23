@@ -4,10 +4,7 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Model
 {
 	/// <summary>
-	/// Model基类。
-	/// 功能：
-	///     1. 提供Model事件的注册，广播功能。
-	///     2. 定义Model生命周期的接口。
+	/// Model 基类：Model 事件注册与广播，生命周期接口定义。
 	/// </summary>
 	public abstract class BaseModel
 	{
