@@ -238,12 +238,12 @@ namespace Hotfix
 		{
 			// 英语 bundle 幂等补齐（本地已有零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）。
 			// 兜底语种是业务不变量（英语兜底），tag 名取注册表 FallbackName（与文件后缀/资源标签同一事实源）
-			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(AOT.Launch.Localization.LaunchLanguageRegistry.FallbackName, GlobalModule.AssetModule.Token))
+			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(LaunchLanguageRegistry.FallbackName, GlobalModule.AssetModule.Token))
 			{
 				throw new InvalidOperationException("[HotfixLauncher] 英语兜底表 bundle 下载失败");
 			}
 
-			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{AOT.Launch.Localization.LaunchLanguageRegistry.FallbackName}", ".bytes");
+			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{LaunchLanguageRegistry.FallbackName}", ".bytes");
 			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(englishPath, GlobalModule.AssetModule.Token);
 			try
 			{
@@ -254,7 +254,7 @@ namespace Hotfix
 				// json 变体（ENABLE_BINARY_CONFIG 未定义）：内容是 json 文本，JSON.Parse；
 				// bin 变体：内容是 ByteBuf，ByteBuf.Wrap——产物扩展名统一 .bytes，内容格式随宏
 				var loadFunc = CreateEnglishTableLoadFunc(textAsset);
-				var table = new TbLocalization(loadFunc);
+				var table    = new TbLocalization(loadFunc);
 				await table.LoadAsync();
 				return table;
 			}
@@ -306,14 +306,14 @@ namespace Hotfix
 			// 语言来源: LocalizationModule.OnInit 先于本加载执行（RegisterBaseModules 先于 LoadConfigAsync），恒已确定
 			if (file == LOCALIZATION_TABLE_NAME)
 			{
-				var lang      = LocalizationModule.Instance.Language.ToString();
+				var lang = LocalizationModule.Instance.Language.ToString();
 				var localPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
 				var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(localPath, GlobalModule.AssetModule.Token);
 				try
 				{
 					var textAsset = assetHandle.GetAssetObject<TextAsset>();
 					if (textAsset == null)
-						throw new System.InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
+						throw new InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
 					return ByteBuf.Wrap(textAsset.bytes);
 				}
 				finally
@@ -329,7 +329,7 @@ namespace Hotfix
 			{
 				var textAsset = handle.GetAssetObject<TextAsset>();
 				if (textAsset == null)
-					throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
+					throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{configPath}");
 				return ByteBuf.Wrap(textAsset.bytes);
 			}
 			finally
@@ -353,14 +353,14 @@ namespace Hotfix
 			// 扩展名恒为 .bytes（产物统一扩展名裁决：json 变体内容是 json 文本、bin 变体是 ByteBuf，同为 TextAsset）
 			if (file == LOCALIZATION_TABLE_NAME)
 			{
-				var lang      = LocalizationModule.Instance.Language.ToString();
-				var localPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
+				var lang        = LocalizationModule.Instance.Language.ToString();
+				var localPath   = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
 				var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(localPath, GlobalModule.AssetModule.Token);
 				try
 				{
 					var textAsset = assetHandle.GetAssetObject<TextAsset>();
 					if (textAsset == null)
-						throw new System.InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
+						throw new InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
 					return JSON.Parse(textAsset.text);
 				}
 				finally
@@ -370,13 +370,13 @@ namespace Hotfix
 				}
 			}
 
-			var cfgPath     = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
-			var handle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
+			var cfgPath = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
+			var handle  = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
 			try
 			{
 				var textAsset = handle.GetAssetObject<TextAsset>();
 				if (textAsset == null)
-					throw new System.InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
+					throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
 				return JSON.Parse(handle.GetAssetObject<TextAsset>().text);
 			}
 			finally
