@@ -4,9 +4,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Sound
 {
 	/// <summary>
-	/// 播放时的声音参数。
-	/// 包括：播放位置(以秒为单位)、是否静音、是否循环播放、声音优先级、声音大小、声音淡入时间、声音音调、
-	///      声音立体声声相、声音空间混合量、声音最大距离、声音多普勒等级。
+	/// 播放时的声音参数（引用池对象）：时间/静音/循环/优先级/音量/淡入/音调/声相/空间混合/最大距离/多普勒等级。
+	/// 所有权契约：调用方创建的参数由调用方复用或归还，模块不回收。
 	/// </summary>
 	public sealed class SoundParams : IReference
 	{

@@ -11,13 +11,8 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载管理模块。
-	/// 功能：
-	///     1. 负责管理下载任务，核心实现是任务池，用来存储执行下载任务。
-	///     2. 提供下载进度事件和下载完成事件。
-	///     3. 支持断点续传。
-	///     4. 提供下载速度的计算。
-	///     5. 添加/移除/获取下载任务。
+	/// 下载管理模块：任务池驱动的下载任务管理，支持断点续传，
+	/// 提供添加/移除/查询接口与进度/完成事件、速度计算。
 	/// </summary>
 	public sealed partial class DownloadModule : ModuleBase, ICancelAsync
 	{
@@ -127,10 +122,10 @@ namespace Hotfix.Framework.Download
 		}
 
 		/// <summary>
-		/// 帧更新
+		/// 帧更新。
 		/// </summary>
-		/// <param name="deltaTime"></param>
-		/// <param name="unscaledDeltaTime"></param>
+		/// <param name="deltaTime">帧间隔时间。</param>
+		/// <param name="unscaledDeltaTime">无缩放的帧间隔时间。</param>
 		protected internal override void OnUpdate(float deltaTime, float unscaledDeltaTime)
 		{
 			m_taskPool.Update(deltaTime, unscaledDeltaTime);

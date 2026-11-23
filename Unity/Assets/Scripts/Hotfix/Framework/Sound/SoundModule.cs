@@ -18,11 +18,8 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Sound
 {
 	/// <summary>
-	/// 声音管理模块。
-	/// 功能：
-	///     1. 配合资源管理模块，管理声音资源的加载、卸载。
-	///     2. 提供声音播放、暂停、继续、停止等接口。
-	///     3. 提供声音组管理接口。
+	/// 声音管理模块：配合资源管理模块完成声音资源加载/卸载，提供播放/暂停/停止控制与声音组管理。
+	/// 边界：播放参数所有权按来源划分——模块自建参数由模块回收，调用方传入参数归调用方。
 	/// </summary>
 	public sealed partial class SoundModule : ModuleBase, ICancelAsync
 	{
@@ -124,10 +121,6 @@ namespace Hotfix.Framework.Sound
 		/// 混音器
 		/// </summary>
 		private AudioMixer m_audioMixer;
-
-		/// <summary>
-		/// AudioMixer 资源路径，需在 Unity Editor 中确认实际路径后填入
-		/// </summary>
 
 		/// <summary>
 		/// 声音监听器
@@ -777,14 +770,14 @@ namespace Hotfix.Framework.Sound
 		/// <summary>
 		/// 场景加载成功时刷新AudioListener。
 		/// </summary>
-		/// <param name="scene"></param>
-		/// <param name="loadSceneMode"></param>
+		/// <param name="scene">已加载的场景。</param>
+		/// <param name="loadSceneMode">场景加载模式。</param>
 		private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode loadSceneMode) => RefreshAudioListener();
 
 		/// <summary>
 		/// 场景卸载时刷新AudioListener。
 		/// </summary>
-		/// <param name="scene"></param>
+		/// <param name="scene">已卸载的场景。</param>
 		private void OnSceneUnloaded(UnityEngine.SceneManagement.Scene scene) => RefreshAudioListener();
 
 		/// <summary>

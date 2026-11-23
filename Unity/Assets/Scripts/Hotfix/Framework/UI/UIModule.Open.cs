@@ -9,13 +9,7 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI管理模块分部类之一。
-	/// 目标：用于打开UI界面。
-	/// 功能：
-	///     1. 异步打开UI界面。
-	///     2. 创建FairyUI界面。
-	///     3. 设置界面实例是否加锁，如果加锁，则不会被释放(销毁)。
-	///     4. 设置界面实例对象的优先级。优先级小的实例会优先被释放。
+	/// UI管理模块分部：打开界面——异步加载并创建 FUI 实例，支持加锁防释放与优先级控制（小者优先释放）。
 	/// </summary>
 	public sealed partial class UIModule
 	{

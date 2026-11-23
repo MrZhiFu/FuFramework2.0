@@ -8,10 +8,7 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载代理。
-	/// 功能：
-	///     1. 使用下载帮助类UnityWebRequest下载文件。
-	///     2. 监听下载代理辅助器的下载进度相关事件。
+	/// 下载代理：经 UnityWebRequest 辅助器下载文件，监听其进度事件驱动任务状态流转。
 	/// </summary>
 	internal sealed class DownloadAgent : ITaskAgent<DownloadTask>, IDisposable
 	{

@@ -7,20 +7,16 @@ using Hotfix.Framework.ObjectPool;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面实例对象。
-	/// 目标：创建和销毁界面实例对象。
-	/// 功能：
-	///     1. 创建界面实例对象。
-	///     2. 销毁界面实例对象。
+	/// 界面实例对象（对象池单元）：负责界面实例的创建与销毁。
 	/// </summary>
 	public sealed class WinObject : ObjectBase
 	{
 		/// <summary>
 		/// 创建界面实例对象。
 		/// </summary>
-		/// <param name="winName"></param>
-		/// <param name="winBase"></param>
-		/// <returns></returns>
+		/// <param name="winName">界面名称。</param>
+		/// <param name="winBase">界面基类实例。</param>
+		/// <returns>创建的界面实例对象。</returns>
 		public static WinObject Create(string winName, WinBase winBase)
 		{
 			var winObject = ReferencePool.Acquire<WinObject>();

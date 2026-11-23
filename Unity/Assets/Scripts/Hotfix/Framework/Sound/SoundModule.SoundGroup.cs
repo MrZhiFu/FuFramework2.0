@@ -9,10 +9,7 @@ namespace Hotfix.Framework.Sound
 	public partial class SoundModule
 	{
 		/// <summary>
-		/// 声音组。
-		/// 功能：
-		///     1. 管理该组中的声音, 包括播放、停止、暂停、恢复等。
-		///     2. 提供声音组静音、音量设置等接口。
+		/// 声音组：管理组内声音代理的播放/停止/暂停/恢复，提供组级静音与音量设置（持久化经 StorageModule）。
 		/// </summary>
 		public class SoundGroup : MonoBehaviour
 		{

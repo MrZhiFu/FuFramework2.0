@@ -8,10 +8,8 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 具体管理对象的对象池。
-	/// 功能：
-	///     1. 允许/禁止自动销毁：可以设置池中空闲对象是否在一定时间后自动销毁，以节省内存。
-	///     2. 设置优先级：可以设置对象池的优先级，在需要强制销毁对象时（如内存不足），优先销毁低优先级池中的对象。
+	/// 具体管理对象的对象池：支持空闲对象定时自动销毁（省内存）与池优先级
+	/// （内存不足等强制销毁场景下优先销毁低优先级池）。
 	/// </summary>
 	/// <typeparam name="T">对象池中的对象类型。</typeparam>
 	public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase

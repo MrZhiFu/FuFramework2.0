@@ -7,10 +7,8 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 对象池内的对象基类。实现了引用对象的接口。
-	/// 功能：
-	///     1. 记录了对象的基本信息，如对象名称、目标真实对象、是否被加锁、优先级、上次使用时间，自定义销毁检查标记等属性。
-	///     2. 定义了对象生成时、回收时、销毁时等生命周期事件。
+	/// 对象池内的对象基类：记录名称/目标真实对象/加锁/优先级/上次使用时间/自定义销毁检查标记，
+	/// 定义生成、回收、销毁生命周期事件。
 	/// </summary>
 	public abstract class ObjectBase : IReference
 	{

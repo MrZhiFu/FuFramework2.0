@@ -9,12 +9,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.Storage
 {
 	/// <summary>
-	/// 本地存储的数据。
-	/// 功能：
-	///     1. 序列化/反序列化本地存储的数据。
-	///     2. 读写本地存储的数据项。
-	///     3. 维护一个本地存储的数据项的字典。
-	///     4. 所有类型都被序列化为字符串。
+	/// 本地存储的数据：维护数据项字典（全部值序列化为字符串），提供数据项读写。
 	/// </summary>
 	public sealed class Data
 	{
@@ -144,9 +139,8 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定本地存储的数据项中读取长整数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public long GetLong(string dataName, long defaultValue = 0)
 		{
@@ -171,9 +165,8 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定本地存储的数据项中读取双精度浮点数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public double GetDouble(string dataName, double defaultValue = 0)
 		{
@@ -214,8 +207,8 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定本地存储的数据项写入长整数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="value"></param>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="value">要写入的值。</param>
 		public void SetLong(string dataName, long value) => m_dataDict[dataName] = value.ToString();
 
 		/// <summary>

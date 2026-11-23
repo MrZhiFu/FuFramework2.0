@@ -4,10 +4,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载计数器节点。
-	/// 功能：
-	///     1. 记录差值大小。
-	///     2. 记录下载流逝时间。
+	/// 下载计数器链表节点：记录区间下载量差值与流逝时间。
 	/// </summary>
 	internal sealed class DownloadCounterNode : IReference
 	{
@@ -20,7 +17,6 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 创建一个下载计数器节点
 		/// </summary>
-		/// <returns></returns>
 		public static DownloadCounterNode Create()
 		{
 			return ReferencePool.Acquire<DownloadCounterNode>();

@@ -15,40 +15,16 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI管理模块分部类之一。
-	/// 目标：为 UIConfig.Blur == true 的界面提供全屏背景模糊（3D 场景 + 下方 UI）。
-	/// 功能：
-	///     1. 截屏冻结：利用 StageCamera 的 OnRenderImage 捕获"UI界面出现前"的完整合成帧。
-	///     2. 模糊覆盖层：全屏 GImage 采样冻结帧，渲染在对话框层级下方。
-	///     3. 渐入动画：驱动 _BlurProgress 0→1，与界面开屏 Fade 同步。
-	/// 原理：
-	///     1. StageCamera 的 clearFlags=Depth（只清深度保留颜色），其 OnRenderImage 的 source 即
-	///        "3D 场景 + UI"完整合成帧；BlurCapture 在捕获帧将其截取到半分辨率 RT 后冻结。
-	///     2. 冻结帧采集于对话框上屏前，不含对话框自身，避免自反馈。
-	///     3. 覆盖层使用三级星型模糊 Shader 采样冻结帧，_BlurSize/_MaskPower/_BlurProgress 控制
-	///        模糊强度、压暗与渐变进度。
-	/// 流程：
-	///     1. UIModule.OnInit → InitBlur：挂载 BlurCapture 到 StageCamera + 异步加载 Shader 创建材质。
-	///     2. 打开 Blur=true 界面 → _OpenAsync 调 OnWinOpeningAsync：捕获一帧并冻结。
-	///     3. CreateFuiWin → OnWinOpened：定位覆盖层到界面层级下方、注入冻结帧、播放渐入。
-	///     4. 关闭界面 → Close/CloseNow 调 OnWinClosed：隐藏覆盖层；叠加时重定位复用冻结帧。
-	///     5. UIModule.OnDispose → ReleaseBlur：释放 RT/材质/覆盖层/Shader 句柄。
+	/// UI管理模块分部：为 UIConfig.Blur == true 的界面提供全屏背景模糊（3D 场景 + 下方 UI）——
+	/// 截屏冻结帧、全屏 GImage 覆盖层采样渲染于对话框层下方、驱动 _BlurProgress 渐入与开屏 Fade 同步。
+	/// 原理：StageCamera 的 clearFlags=Depth（只清深度保留颜色），其 OnRenderImage 的 source 即
+	/// "3D 场景 + UI"完整合成帧；冻结帧采集于对话框上屏前，不含对话框自身，避免自反馈；
+	/// 三级星型模糊 Shader 的 _BlurSize/_MaskPower/_BlurProgress 控制模糊强度、压暗与渐变进度。
+	/// 流程：OnInit → InitBlur（挂 BlurCapture + 加载 Shader 建材质）→ 开 Blur 界面时捕获冻结 →
+	/// CreateFuiWin 时注入覆盖层播放渐入 → 关闭时隐藏（叠加时复用冻结帧）→ OnDispose 释放 RT/材质/覆盖层/Shader。
 	/// </summary>
 	public sealed partial class UIModule
 	{
-		/// <summary>
-		/// 模糊 Shader 资源名称。
-		/// </summary>
-
-		/// <summary>
-		/// 模糊采样步长（BRP 半分辨率纹素翻倍 → URP 0.8 × 2）。
-		/// </summary>
-
-		/// <summary>
-		/// 压暗强度（0=不压暗，1=全黑）。参考文档 Blur 类型：强模糊 + 强压暗。
-		/// </summary>
-
-
 		/// <summary>
 		/// 截屏组件（挂在 FairyGUI StageCamera 上）。
 		/// </summary>
@@ -109,17 +85,17 @@ namespace Hotfix.Framework.UI
 		private static readonly int sr_blurBgTex = Shader.PropertyToID("_BlurBGTex");
 
 		/// <summary>
-		/// Shader 属性 ID - 模糊采样步长。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// Shader 属性 ID - 模糊采样步长。
 		/// </summary>
 		private static readonly int sr_blurSize = Shader.PropertyToID("_BlurSize");
 
 		/// <summary>
-		/// Shader 属性 ID - 压暗强度。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// Shader 属性 ID - 压暗强度。
 		/// </summary>
 		private static readonly int sr_maskPower = Shader.PropertyToID("_MaskPower");
 
 		/// <summary>
-		/// Shader 属性 ID - 渐变进度。参考文档 Blur 类型：强模糊 + 强压暗。");
+		/// Shader 属性 ID - 渐变进度。
 		/// </summary>
 		private static readonly int sr_blurProgress = Shader.PropertyToID("_BlurProgress");
 

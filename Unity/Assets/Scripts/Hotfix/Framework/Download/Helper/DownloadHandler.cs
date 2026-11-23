@@ -7,10 +7,8 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载处理器，继承自 DownloadHandlerScript。
-	/// 功能：
-	///     1. 接收数据(在从远程服务器接收数据时每帧被调用, 这个方法的返回值是一个布尔值，表示是否继续下载，从而实现断点续传)
-	///     2. 发送更新数据流事件和更新数据大小事件
+	/// 下载处理器（继承 DownloadHandlerScript）：接收远程数据（返回 false 即中止下载，实现断点续传），
+	/// 广播更新数据流/更新数据大小事件。
 	/// </summary>
 	internal sealed class DownloadHandler : DownloadHandlerScript
 	{
@@ -45,7 +43,7 @@ namespace Hotfix.Framework.Download
 		/// </summary>
 		/// <param name="datas">字节缓冲区，包含从远程服务器接收的未处理数据</param>
 		/// <param name="dataLength">缓冲区新接收的字节数</param>
-		/// <returns></returns>
+		/// <returns>是否继续下载（false 即中止，实现断点续传）。</returns>
 		protected override bool ReceiveData(byte[] datas, int dataLength)
 		{
 			if (m_owner == null || m_owner.m_Disposed || m_owner.m_UnityWebRequest == null || dataLength <= 0)

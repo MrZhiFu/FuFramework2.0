@@ -13,13 +13,8 @@ namespace Hotfix.Framework.Sound
 	public partial class SoundModule
 	{
 		/// <summary>
-		/// 声音播放代理。
-		/// 功能：
-		///     1.使用AudioSource组件，实现了声音播放，暂停，停止，重置，渐入渐出等方法。
-		///     2.提供事件机制，用于通知绑定实体的声音资源发生变化。
-		///     3.提供接口，用于绑定实体的声音资源。
-		///     4.提供接口，用于获取声音的长度，播放位置，是否静音，是否循环播放，声音优先级，音量大小，声音音调，声音立体声声相，
-		///       声音空间混合量，声音最大距离，声音多普勒等级，声音混音组等属性。
+		/// 声音播放代理：封装 AudioSource 完成播放/暂停/停止/重置/渐入渐出，支持绑定实体或 3D 位置，
+		/// 并暴露长度/播放位置/静音/循环/优先级/音量/音调/声相/空间混合/最大距离/多普勒等级等属性。
 		/// </summary>
 		public sealed class SoundAgent : MonoBehaviour
 		{
@@ -338,7 +333,7 @@ namespace Hotfix.Framework.Sound
 			/// </summary>
 			/// <param name="assetPath">声音资源路径。</param>
 			/// <param name="fadeInSeconds">声音淡入时间，以秒为单位。</param>
-			/// <param name="onPlayEnd"></param>
+			/// <param name="onPlayEnd">正常播放完成回调。</param>
 			public void Play(string assetPath, float fadeInSeconds, Action onPlayEnd = null)
 			{
 				var fadeToken = BeginFade();
@@ -567,7 +562,7 @@ namespace Hotfix.Framework.Sound
 			/// <summary>
 			/// 应用暂停/恢复时(进入后台/回到前台)时，设置标志位，暂停/恢复播放声音。
 			/// </summary>
-			/// <param name="isPause"></param>
+			/// <param name="isPause">是否暂停（true=进入后台，false=回到前台）。</param>
 			private void OnApplicationPause(bool isPause)
 			{
 				m_isAppPause = isPause;

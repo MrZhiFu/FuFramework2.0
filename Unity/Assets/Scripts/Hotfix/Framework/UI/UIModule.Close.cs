@@ -4,11 +4,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI管理模块分部类之一。
-	/// 目标：用于关闭UI界面。
-	/// 功能：
-	///     1. 关闭界面(加入待回收队列，等待update轮询中回收)。
-	///     2. 立即关闭界面(立即回收)。
+	/// UI管理模块分部：关闭界面——延迟关闭（入待回收队列，Update 轮询回收）与立即关闭两种路径。
 	/// </summary>
 	public sealed partial class UIModule
 	{
@@ -200,7 +196,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 回收界面实例
 		/// </summary>
-		/// <param name="win"></param>
+		/// <param name="win">要处理的界面。</param>
 		private void Recycle(WinBase win)
 		{
 			// 先让窗口自身完成回收清理，再还回对象池；避免池超容量同步销毁后操作已销毁对象。

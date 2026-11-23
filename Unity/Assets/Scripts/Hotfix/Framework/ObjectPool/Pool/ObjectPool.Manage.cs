@@ -7,10 +7,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 对象池中对象的存取与管理。
-	/// 功能：
-	///     1. 提供对象的注册、获取与回收接口。
-	///     2. 提供对象的锁定、优先级设置与信息查询。
+	/// 对象池中对象的存取与管理：注册/获取/回收与锁定、优先级、信息查询。
 	/// </summary>
 	public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 	{

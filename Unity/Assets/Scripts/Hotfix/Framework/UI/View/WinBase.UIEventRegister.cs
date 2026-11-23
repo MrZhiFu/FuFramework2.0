@@ -7,12 +7,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面基类分部类之一。
-	/// 目标：提供一个UI事件订阅器，用于管理界面的UI事件。
-	/// 功能：
-	///     1. 添加UI上指定组件的监听事件。
-	///     2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
-	///     3. 移除UI上指定组件的监听事件。
+	/// 界面基类分部：UI 组件事件订阅器——添加/设置（覆盖旧监听）/移除指定组件的监听事件。
 	/// </summary>
 	public abstract partial class WinBase
 	{

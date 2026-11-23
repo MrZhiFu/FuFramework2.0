@@ -11,25 +11,11 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.RedDot
 {
 	/// <summary>
-	/// 红点管理模块
-	/// 功能：
-	///     1. 树形结构管理 — 支持父子节点层级关系，LogicType(Any/Sum)控制聚合
-	///     2. 节点红点计算函数 — Calculator，业务注册 Func&lt;int&gt; 在OnUpdate 批处理重算
-	///     3. 批量广播 — 每帧统一广播 RedDotChangedEventArgs，UI 端按 Key 过滤
-	///     4. 配置化驱动 — 通过 Luban 配置表 TbRedDot 初始化红点树结构
-	///     5. 动态红点 — SyncDynamicNode 批量管理动态子节点
-	///     6. 静态红点已读持久化 — MarkRead 通过 StorageModule 持久保存已读状态。
-	///        动态红点不持久化，原因：
-	///        - 动态节点由 SyncDynamicNode 批量管理，生命周期随数据列表增删
-	///        - 下次登录数据从服务器重新拉取，本地缓存的已读状态无意义
-	///        - 每条数据的已读/未读状态应由服务端维护，客户端无需冗余存储
-	///
-	/// 使用流程：
-	///     1. 在Luban配置表中定义红点树结构
-	///     2. 在UI界面中创建CompRedDot组件并绑定红点枚举
-	///     3. 业务模块调用Register注册计算函数
-	///     4. 业务触发事件 → OnUpdate 重算 → 广播红点变更事件
-	///     5. UI组件CompRedDot监听广播事件，按Key过滤自动刷新
+	/// 红点管理模块：树形层级（LogicType Any/Sum 聚合）+ 业务注册计算函数 OnUpdate 批处理重算 + 每帧统一广播，
+	/// 结构由 Luban 配置表 TbRedDot 初始化，支持 SyncDynamicNode 动态子节点与静态红点已读持久化（StorageModule）。
+	/// 动态红点不持久化：节点生命周期随数据列表增删，数据下次登录从服务器重拉，已读状态应由服务端维护。
+	/// 使用流程：配置表定义红点树 → UI 建 CompRedDot 绑定枚举 → 业务 Register 注册计算函数 →
+	/// 业务触发事件 → OnUpdate 重算广播 → CompRedDot 监听刷新。
 	/// </summary>
 	public partial class RedDotModule : ModuleBase
 	{
@@ -79,14 +65,6 @@ namespace Hotfix.Framework.RedDot
 		/// 已读静态节点 Key 集合(存为 ERedDotKey 的 int 值)
 		/// </summary>
 		private readonly HashSet<int> m_readSet = new();
-
-		/// <summary>
-		/// 已读状态在 StorageModule 中的 Key
-		/// </summary>
-
-		/// <summary>
-		/// 已读状态在 StorageModule 中的文件名
-		/// </summary>
 
 		#endregion
 

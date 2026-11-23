@@ -8,12 +8,7 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI分组管理器。
-	/// 目标：用于管理所有UI界面的分组。
-	/// 功能：
-	///     1. 是否存在界面组。
-	///     2. 获取界面组。
-	///     3. 添加界面组。
+	/// UI管理模块分部：界面组管理——存在性判断、获取与添加界面组。
 	/// </summary>
 	public sealed partial class UIModule
 	{

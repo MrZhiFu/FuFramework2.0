@@ -10,14 +10,10 @@ namespace Hotfix.Framework.UI
 	/// <summary>
 	/// FUI事件注册器
 	/// 目标：用于管理FUI组件的UI响应事件。
-	/// 功能：
-	///     1. 添加UI上指定组件的监听事件。
-	///     2. 设置UI上指定组件的监听事件(会删除以前添加的事件)。
-	///     3. 移除UI上指定组件的监听事件。
-	///     4. 支持异步(UniTask)回调：处理器签名直接写 async UniTask，由本注册器包装成同步回调
-	///        挂上 FairyGUI 总线，统一吞 OperationCanceledException、其余异常记日志。取消契约：
-	///        取消由处理器内部 await 点携带 Token 实现（网络/资源类 API 按铁律必传 Token），
-	///        窗口关闭时业务于自身 await 点原生取消，本层统一静默 OCE——详见 FuiAsyncBinding。
+	/// 功能：添加/设置（覆盖旧监听）/移除 UI 组件监听事件；支持 async UniTask 回调
+	/// （处理器签名直接写 async UniTask，本注册器包装成同步回调挂 FairyGUI 总线，统一吞
+	/// OperationCanceledException、其余异常记日志；取消由处理器内部 await 点携带 Token 实现——
+	/// 窗口关闭时业务于自身 await 点原生取消，本层统一静默 OCE，详见 FuiAsyncBinding）。
 	/// 错误契约：全部守卫以 FuLogger 日志表达，不抛异常——监听器为空、账本无对应条目等
 	/// 异常调用均记日志并忽略，调用流程不中断（失效可观测但不致命）。与 EventRegister 守卫风格对齐。
 	/// 账本契约：m_uiEventListenerDic 为账本，FairyGUI EventListener 内部回调为总线。EventBridge.Add
@@ -46,7 +42,6 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 创建FUI事件注册器
 		/// </summary>
-		/// <returns></returns>
 		public static FuiEventRegister Create() => ReferencePool.Acquire<FuiEventRegister>();
 
 		/// <summary>

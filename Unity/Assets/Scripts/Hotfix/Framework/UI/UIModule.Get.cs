@@ -6,12 +6,7 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI管理模块分部类之一。
-	/// 目标：用于获取已加载的UI界面。
-	/// 功能：
-	///     1. 判断是否存在界面。
-	///     2. 获取界面。
-	///     3. 获取顶部界面。
+	/// UI管理模块分部：查询已加载界面——存在性判断、按类型/名称获取、获取顶部界面。
 	/// </summary>
 	public sealed partial class UIModule
 	{

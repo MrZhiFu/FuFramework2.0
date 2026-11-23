@@ -7,9 +7,7 @@ namespace Hotfix.Framework.Sound
 	public sealed partial class SoundModule
 	{
 		/// <summary>
-		/// 播放的声音信息。
-		/// 功能：
-		///    1. 用于在加载声音资源时保存相关信息。
+		/// 播放的声音信息：一次播放的完整上下文（资源/句柄/声音组/参数/回调），随代理流转，引用池回收。
 		/// </summary>
 		public class PlaySoundInfo : IReference
 		{

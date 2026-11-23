@@ -4,9 +4,7 @@ using Cysharp.Threading.Tasks;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载任务信息数据。
-	/// 功能：
-	///     1. 用于包装一个异步的下载任务的信息，包括标签、URL、序列编号、用户自定义数据等。
+	/// 下载任务信息数据：包装一次异步下载的标签/URL/序列编号/用户自定义数据等信息。
 	/// </summary>
 	internal sealed class DownloadData
 	{

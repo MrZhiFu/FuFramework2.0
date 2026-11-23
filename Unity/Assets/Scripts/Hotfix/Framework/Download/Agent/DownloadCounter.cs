@@ -5,11 +5,7 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载计数器。
-	/// 功能：
-	///     1. 记录下载进度。
-	///     2. 计算下载速度。
-	///     3. 记录下载时间。
+	/// 下载计数器：记录下载进度与时间，计算下载速度。
 	/// </summary>
 	internal sealed class DownloadCounter
 	{

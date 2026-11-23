@@ -8,10 +8,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 对象池中对象的销毁与筛选。
-	/// 功能：
-	///     1. 提供容量/过期驱动的销毁接口与全部闲置对象销毁。
-	///     2. 提供销毁对象的筛选策略与过期清理。
+	/// 对象池中对象的销毁与筛选：容量/过期驱动的销毁接口与筛选策略。
 	/// </summary>
 	public sealed partial class ObjectPool<T> : ObjectPoolBase where T : ObjectBase
 	{

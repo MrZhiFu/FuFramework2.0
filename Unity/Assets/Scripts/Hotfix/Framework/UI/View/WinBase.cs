@@ -211,15 +211,14 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 获取界面子对象。
 		/// </summary>
-		/// <param name="childName"></param>
-		/// <returns></returns>
+		/// <param name="childName">子组件名称。</param>
+		/// <returns>子组件实例。</returns>
 		protected GObject GetChild(string childName) => WinUI.GetChild(childName);
 
 		/// <summary>
 		/// 添加界面子对象。
 		/// </summary>
-		/// <param name="child"></param>
-		/// <returns></returns>
+		/// <param name="child">子组件实例。</param>
 		protected void AddChild(GObject child) => WinUI.AddChild(child);
 
 		/// <summary>

@@ -6,11 +6,7 @@ using Hotfix.Framework.Timer;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面基类分部类之一。
-	/// 目标：提供一个计时器订阅器，用于管理界面的计时器。
-	/// 功能：
-	///     1. 启动一次性倒计时计时器、时间间隔计时器、帧间隔计时器。
-	///     2. 暂停，继续，取消，停止(单个/所有)计时器。
+	/// 界面基类分部：计时器订阅器——启动倒计时/时间间隔/帧间隔计时器，按 id 或全部暂停/继续/取消/停止。
 	/// </summary>
 	public abstract partial class WinBase
 	{
@@ -63,25 +59,25 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 暂停计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void PauseTimer(int timerId) => TimerRegister?.PauseTimer(timerId);
 
 		/// <summary>
 		/// 恢复计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void ResumeTimer(int timerId) => TimerRegister?.ResumeTimer(timerId);
 
 		/// <summary>
 		/// 停止计时器
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void StopTimer(int timerId) => TimerRegister?.StopTimer(timerId);
 
 		/// <summary>
 		/// 重置计时器进度
 		/// </summary>
-		/// <param name="timerId"></param>
+		/// <param name="timerId">计时器编号。</param>
 		public void ResetTimer(int timerId) => TimerRegister?.ResetTimer(timerId);
 
 		/// <summary>
@@ -107,15 +103,15 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 检查计时器是否存在
 		/// </summary>
-		/// <param name="timerId"></param>
-		/// <returns></returns>
+		/// <param name="timerId">计时器编号。</param>
+		/// <returns>计时器是否存在。</returns>
 		public bool IsTimerExist(int timerId) => TimerRegister != null && TimerRegister.IsTimerExist(timerId);
 
 		/// <summary>
 		/// 检查计时器是否处于暂停状态
 		/// </summary>
-		/// <param name="timerId"></param>
-		/// <returns></returns>
+		/// <param name="timerId">计时器编号。</param>
+		/// <returns>计时器是否处于暂停状态。</returns>
 		public bool IsTimerPaused(int timerId) => TimerRegister != null && TimerRegister.IsTimerPaused(timerId);
 
 

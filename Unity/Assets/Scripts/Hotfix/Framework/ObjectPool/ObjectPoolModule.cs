@@ -8,28 +8,10 @@ using UnityEngine;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 对象池管理模块。
-	/// 功能：
-	///     1. 提供对象池的创建、获取、销毁接口。
+	/// 对象池管理模块：提供对象池的创建、获取、销毁接口。
 	/// </summary>
 	public sealed partial class ObjectPoolModule : ModuleBase
 	{
-		/// <summary>
-		/// 对象池默认容量。
-		/// </summary>
-
-		/// <summary>
-		/// 对象池默认自动销毁检查间隔秒数(默认不检查自动销毁)。
-		/// </summary>
-
-		/// <summary>
-		/// 对象池默认过期时间(默认不会过期)。
-		/// </summary>
-
-		/// <summary>
-		/// 对象池默认优先级。
-		/// </summary>
-
 		/// <summary>
 		/// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。
 		/// </summary>

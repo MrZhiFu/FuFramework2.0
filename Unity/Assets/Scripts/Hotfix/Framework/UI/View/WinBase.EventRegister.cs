@@ -6,12 +6,7 @@ using Hotfix.Framework.Event;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面基类分部类之一。
-	/// 目标：提供一个事件订阅器，用于管理界面的业务逻辑事件。
-	/// 功能：
-	///     1. 订阅事件。
-	///     2. 取消订阅事件。
-	///     3. 分发事件。
+	/// 界面基类分部：业务事件订阅器——订阅/取消订阅/分发，随窗口生命周期统一清理。
 	/// </summary>
 	public abstract partial class WinBase
 	{

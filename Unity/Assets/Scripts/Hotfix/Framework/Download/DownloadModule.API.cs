@@ -7,11 +7,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载管理模块的公共 API。
-	/// 功能：
-	///     1. 提供配置属性：暂停(Paused)、写盘临界(FlushSize)、超时(Timeout)与代理/任务数量查询。
-	///     2. 提供下载任务添加（AddDownload/AddDownloadAsync）、移除（RemoveDownload(s)/RemoveAllDownloads）。
-	///     3. 提供下载任务信息查询（GetDownloadInfo(s)/GetAllDownloadInfos）与当前下载速度(CurrentSpeed)。
+	/// 下载管理模块公共 API：配置属性（暂停/写盘临界/超时）与代理/任务数量查询，
+	/// 任务添加/移除/信息查询与当前下载速度。
 	/// </summary>
 	public sealed partial class DownloadModule : ModuleBase
 	{

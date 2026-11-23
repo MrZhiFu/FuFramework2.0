@@ -7,10 +7,7 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.ObjectPool
 {
 	/// <summary>
-	/// 对象池管理模块的公共 API。
-	/// 功能：
-	///     1. 提供对象池的创建、获取、查询、销毁接口。
-	///     2. 提供模块级的资源释放接口。
+	/// 对象池管理模块公共 API：对象池的创建/获取/查询/销毁与模块级资源释放。
 	/// </summary>
 	public sealed partial class ObjectPoolModule : ModuleBase
 	{

@@ -8,15 +8,7 @@ using Hotfix.Game.Config;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面基类分部类之一。
-	/// 目标：提供界面的生命周期相关方法。
-	/// 功能：
-	///     1. 初始化。
-	///     2. 打开。
-	///     3. 轮询。
-	///     4. 暂停。
-	///     5. 恢复。
-	///     6. 销毁。
+	/// 界面基类分部：生命周期方法——初始化/打开/轮询/暂停/恢复/销毁（含 IWinLifecycleAware 组件树广播）。
 	/// </summary>
 	public abstract partial class WinBase
 	{
@@ -250,7 +242,7 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 本地化语言改变事件处理函数。
 		/// </summary>
-		/// <param name="e"></param>
+		/// <param name="e">事件参数。</param>
 		private void _OnLanguageChanged(GameEventArgs e)
 		{
 			if (Visible)

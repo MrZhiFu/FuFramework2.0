@@ -4,11 +4,8 @@ using UnityEngine;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// UI 背景模糊截屏组件。
-	/// 目标：在 StageCamera 渲染完成后，将"场景 + UI"完整合成帧截取到半分辨率 RT。
-	/// 功能：
-	///     1. 运行时由 UIModule 动态挂载到 FairyGUI StageCamera 上。
-	///     2. 捕获一帧后关闭，实现"冻结帧"（不含对话框自身，无自反馈）。
+	/// UI 背景模糊截屏组件：运行时由 UIModule 挂载到 FairyGUI StageCamera，捕获一帧"场景+UI"完整合成帧
+	/// 到半分辨率 RT 后即关闭（冻结帧，不含对话框自身，无自反馈）。
 	/// 原理：StageCamera 的 clearFlags=Depth（只清深度保留颜色），故 OnRenderImage 的 source 即完整合成帧。
 	/// </summary>
 	public sealed class BlurCaptureComp : MonoBehaviour

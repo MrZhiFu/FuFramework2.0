@@ -10,12 +10,7 @@ using Utility = Hotfix.Framework.Core.Utility;
 namespace Hotfix.Framework.Storage
 {
 	/// <summary>
-	/// 本地数据存储辅助器。
-	/// 功能：
-	///     1. 加载/保存数据。
-	///     2. 获取/数据数据。
-	///     3. 序列化/反序列化数据。
-	/// 注意：每个实例对应一个特定的数据文件。
+	/// 本地数据存储辅助器（每实例对应一个数据文件）：加载/保存数据，读写与序列化/反序列化数据项。
 	/// </summary>
 	public class StorageHelper
 	{
@@ -328,9 +323,8 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定数据项中读取长整数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		public long GetLong(string dataName, long defaultValue = 0) => Data.GetLong(dataName, defaultValue);
 
 		/// <summary>
@@ -344,9 +338,8 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定数据项中读取双精度浮点数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		public double GetDouble(string dataName, double defaultValue = 0) => Data.GetDouble(dataName, defaultValue);
 
 		/// <summary>
@@ -423,8 +416,8 @@ namespace Hotfix.Framework.Storage
 		/// <remarks>
 		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被"值相同"早退吞掉，导致新键永不落盘。
 		/// </remarks>
-		/// <param name="dataName"></param>
-		/// <param name="value"></param>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="value">要写入的值。</param>
 		public void SetLong(string dataName, long value)
 		{
 			if (Data.HasData(dataName) && Data.GetLong(dataName) == value) return;
@@ -453,8 +446,8 @@ namespace Hotfix.Framework.Storage
 		/// <remarks>
 		/// 键不存在时必写：缺失键的 Get 默认值（0）与写入值相同会被近似相等早退吞掉，导致新键永不落盘。
 		/// </remarks>
-		/// <param name="dataName"></param>
-		/// <param name="value"></param>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="value">要写入的值。</param>
 		public void SetDouble(string dataName, double value)
 		{
 			if (Data.HasData(dataName) && Math.Abs(Data.GetDouble(dataName) - value) < DOUBLE_COMPARE_EPSILON) return;

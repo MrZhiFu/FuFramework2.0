@@ -10,25 +10,14 @@ using UtilityAOT = AOT.Framework.Core.Utility.UtilityAOT;
 namespace Hotfix.Framework.Storage
 {
 	/// <summary>
-	/// 本地数据存储管理模块。
-	/// 功能：
-	///     1. 负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
+	/// 本地数据存储管理模块：按文件组织游戏本地存档，提供各类型数据的保存/获取接口。
 	/// </summary>
-	public sealed class StorageModule : ModuleBase
 	public sealed partial class StorageModule : ModuleBase
 	{
 		/// <summary>
 		/// 模块单例
 		/// </summary>
 		public static StorageModule Instance { get; private set; }
-
-		/// <summary>
-		/// 数据根目录
-		/// </summary>
-
-		/// <summary>
-		/// 默认数据存储文件名
-		/// </summary>
 
 		/// <summary>
 		/// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例
@@ -355,10 +344,9 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定本地存储项中读取长整数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="fileName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="fileName">数据文件名。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public long GetLong(string dataName, string fileName = DEFAULT_FILE_NAME, long defaultValue = 0)
 		{
@@ -382,10 +370,9 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 从指定本地存储项中读取双精度浮点数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="fileName"></param>
-		/// <param name="defaultValue"></param>
-		/// <returns></returns>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="fileName">数据文件名。</param>
+		/// <param name="defaultValue">数据项不存在时返回的默认值。</param>
 		/// <exception cref="InvalidOperationException"></exception>
 		public double GetDouble(string dataName, string fileName = DEFAULT_FILE_NAME, double defaultValue = 0)
 		{
@@ -476,9 +463,9 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定本地存储项写入长整数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="value"></param>
-		/// <param name="fileName"></param>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="value">要写入的值。</param>
+		/// <param name="fileName">数据文件名。</param>
 		public void SetLong(string dataName, long value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName))
@@ -512,9 +499,9 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 向指定本地存储项写入双精度浮点数值。
 		/// </summary>
-		/// <param name="dataName"></param>
-		/// <param name="value"></param>
-		/// <param name="fileName"></param>
+		/// <param name="dataName">数据项名称。</param>
+		/// <param name="value">要写入的值。</param>
+		/// <param name="fileName">数据文件名。</param>
 		public void SetDouble(string dataName, double value, string fileName = DEFAULT_FILE_NAME)
 		{
 			if (string.IsNullOrEmpty(dataName))

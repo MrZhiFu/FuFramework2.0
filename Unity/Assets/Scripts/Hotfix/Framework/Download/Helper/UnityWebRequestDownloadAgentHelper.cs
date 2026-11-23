@@ -19,25 +19,10 @@ namespace Hotfix.Framework.Download
 	}
 
 	/// <summary>
-	/// 使用 UnityWebRequest 实现的下载代理辅助器。
-	/// 功能：
-	///     1. 用于下载指定地址的数据。
-	///     2. 支持断点续传。
-	///     3. 提供下载进度事件和下载完成事件。
+	/// 使用 UnityWebRequest 实现的下载代理辅助器：下载指定地址数据，支持断点续传，广播进度与完成事件。
 	/// </summary>
 	public sealed class UnityWebRequestDownloadAgentHelper
 	{
-		/// <summary>
-		/// 范围不适用错误码。
-		/// </summary>
-
-		/// <summary>
-		/// 缓存目标数据的字节数组的长度。
-		/// </summary>
-		/// <remarks>
-		/// 0x1000 = 4096
-		/// </remarks>
-
 		/// <summary>
 		/// 缓存目标数据的字节数组。
 		/// </summary>

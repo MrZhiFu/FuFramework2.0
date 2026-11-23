@@ -9,13 +9,8 @@ using AOT.Framework.Core.Log;
 namespace Hotfix.Framework.UI
 {
 	/// <summary>
-	/// 界面组。
-	/// 目标：管理同一层级下的多个界面，继承自 FairyGUI 的 GComponent。
-	/// 功能：
-	///     1. 界面列表管理 (FuLinkedList[UIInfo])。
-	///     2. 暂停/恢复整个组。
-	///     3. 界面深度排序。
-	///     4. 被覆盖/恢复处理。
+	/// 界面组（继承 FairyGUI GComponent）：FuLinkedList 管理同层界面，提供组级暂停/恢复、
+	/// 深度排序与被覆盖/恢复处理。
 	/// </summary>
 	public sealed class UIGroup : GComponent
 	{
@@ -135,7 +130,6 @@ namespace Hotfix.Framework.UI
 		/// 界面组中是否存在界面。
 		/// </summary>
 		/// <typeparam name="T">界面类型。</typeparam>
-		/// <returns></returns>
 		public bool Has<T>() where T : WinBase => Has(typeof(T).Name);
 
 		/// <summary>
