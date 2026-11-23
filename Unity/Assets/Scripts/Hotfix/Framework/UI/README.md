@@ -126,9 +126,6 @@ UI 管理模块，继承自 ModuleBase，实现 `ICancelAsync`（可取消异步
 
 | 属性 | 类型 | 说明 |
 |------|------|------|
-| PoolAutoDisposeCheckInterval | float | 对象池自动销毁检查间隔 |
-| PoolCapacity | int | 对象池容量 |
-| PoolExpireTimeAfterIdle | float | 对象闲置超过该秒数即视为过期 |
 | GroupCount | int | 界面组数量 |
 
 **核心方法：**
@@ -1041,6 +1038,7 @@ public partial class CompRedDot : GComponent
 ```
 Hotfix.Framework/UI/
 ├── UIModule.cs                    # UI管理模块主类（初始化/帧更新/释放/安全区）
+├── UIModule.Const.cs              # UI管理模块常量分部（窗口池默认参数/背景模糊参数，单一事实源）
 ├── UIModule.Open.cs               # 打开界面功能
 ├── UIModule.Close.cs              # 关闭界面功能
 ├── UIModule.Get.cs                # 获取界面功能

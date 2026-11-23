@@ -282,6 +282,7 @@ eventModule.Subscribe<PlaySoundFailureEventArgs>(e =>
 Sound/
 ├── Runtime/
 │   ├── SoundModule.cs                    # 声音管理模块
+│   ├── SoundModule.Const.cs              # 声音管理模块常量分部（资源路径/声音参数，单一事实源）
 │   ├── SoundModule.SoundAgent.cs         # 声音播放代理 (AudioSource 封装)
 │   ├── SoundModule.SoundGroup.cs         # 声音组
 │   ├── SoundModule.PlaySoundInfo.cs      # 播放声音信息 (引用池)

@@ -61,24 +61,15 @@ Todo → Doing → Done
 | `WorkingAgentCount` | `int` | 工作中下载代理数量 |
 | `WaitingTaskCount` | `int` | 等待中的下载任务数量 |
 | `CurrentSpeed` | `float` | 当前下载速度（字节/秒） |
-| `FlushSize` | `int` | 缓冲区写入磁盘的临界大小（默认 1MB） |
-| `Timeout` | `float` | 下载超时时长（秒） |
 
 **核心方法：**
 
 ```csharp
-// 添加下载任务（多种重载）
-int AddDownload(string downloadedFullPath, string downloadUri)
-int AddDownload(string downloadedFullPath, string downloadUri, string taskTag)
-int AddDownload(string downloadedFullPath, string downloadUri, int priority)
-int AddDownload(string downloadedFullPath, string downloadUri, object userData)
-int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority)
-int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, object userData)
-int AddDownload(string downloadedFullPath, string downloadUri, int priority, object userData)
-int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority, object userData)
+// 添加下载任务（可选参数：标签/优先级/自定义数据；写盘临界与超时为模块常量直取，无配置属性）
+int AddDownload(string downloadedFullPath, string downloadUri, string taskTag = null, int priority = 0, object userData = null)
 
 // 异步下载（await 方式）
-UniTask<bool> AddDownloadAsync(string downloadPath, string downloadUri)
+UniTask<bool> AddDownloadAsync(string downloadPath, string downloadUri, string taskTag = null, int priority = 0, object userData = null)
 
 // 移除下载任务
 bool RemoveDownload(int serialId)
@@ -229,6 +220,7 @@ m_downloadModule.Paused = false;
 ```text
 Download/
 ├── DownloadModule.cs                          # 模块核心（生命周期 / 内部实现 / 私有回调）
+├── DownloadModule.Const.cs                    # 模块常量分部（下载运行时参数，单一事实源）
 ├── DownloadModule.API.cs                      # 模块公共 API（单例 Instance / 属性 / 添加·移除·查询接口）
 ├── Task/                                      # 下载任务域（顶层 internal 类）
 │   ├── DownloadTask.cs                        # 下载任务（继承 TaskBase）

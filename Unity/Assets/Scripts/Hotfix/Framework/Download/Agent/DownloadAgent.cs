@@ -122,7 +122,7 @@ namespace Hotfix.Framework.Download
 			if (Task == null || Task.Status != DownloadTaskStatus.Doing) return;
 
 			WaitTime += unscaledDeltaTime;
-			if (WaitTime < Task.Timeout) return;
+			if (WaitTime < DownloadModule.TIMEOUT_SECONDS) return;
 
 			// 调用下载代理辅助器错误事件
 			var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, false, "Timeout");
@@ -291,7 +291,7 @@ namespace Hotfix.Framework.Download
 				m_waitFlushSize += e.Length;
 				SavedLength     += e.Length;
 
-				if (m_waitFlushSize >= Task.FlushSize)
+				if (m_waitFlushSize >= DownloadModule.FLUSH_SIZE_BYTES)
 				{
 					m_fileStream.Flush();
 					m_waitFlushSize = 0;

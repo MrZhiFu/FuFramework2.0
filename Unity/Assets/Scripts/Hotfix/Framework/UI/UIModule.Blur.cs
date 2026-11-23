@@ -39,17 +39,14 @@ namespace Hotfix.Framework.UI
 		/// <summary>
 		/// 模糊 Shader 资源名称。
 		/// </summary>
-		private const string BLUR_SHADER_NAME = "UIBlurBackground";
 
 		/// <summary>
 		/// 模糊采样步长（BRP 半分辨率纹素翻倍 → URP 0.8 × 2）。
 		/// </summary>
-		private const float BLUR_SIZE = 1.6f;
 
 		/// <summary>
 		/// 压暗强度（0=不压暗，1=全黑）。参考文档 Blur 类型：强模糊 + 强压暗。
 		/// </summary>
-		private const float MASK_POWER = 0.35f;
 
 
 		/// <summary>

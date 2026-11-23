@@ -83,12 +83,10 @@ namespace Hotfix.Framework.RedDot
 		/// <summary>
 		/// 已读状态在 StorageModule 中的 Key
 		/// </summary>
-		private const string READ_STORAGE_KEY = "ReadSet";
 
 		/// <summary>
 		/// 已读状态在 StorageModule 中的文件名
 		/// </summary>
-		private const string READ_STORAGE_FILE = "RedDotData";
 
 		#endregion
 

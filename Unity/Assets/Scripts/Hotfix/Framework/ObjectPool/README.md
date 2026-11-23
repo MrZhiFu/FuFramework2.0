@@ -621,6 +621,7 @@ ObjectPool/
 │   ├── ObjectPool.Manage.cs                # 对象存取与管理
 │   └── ObjectPool.Dispose.cs               # 对象销毁与筛选
 ├── ObjectPoolModule.cs                     # 对象池管理模块（生命周期、低内存、内部方法）
+├── ObjectPoolModule.Const.cs               # 对象池管理模块常量分部（创建池默认参数，单一事实源）
 ├── ObjectPoolModule.API.cs                 # 对象池管理模块公共 API（创建/查询/销毁）
 └── README.md                               # 本文档
 ```

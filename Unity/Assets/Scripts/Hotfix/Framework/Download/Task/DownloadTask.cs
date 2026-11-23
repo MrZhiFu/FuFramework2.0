@@ -4,10 +4,8 @@ using Hotfix.Framework.Core;
 namespace Hotfix.Framework.Download
 {
 	/// <summary>
-	/// 下载任务。
-	/// 功能：
-	///     1. 继承于任务池的任务基类，这样可使用任务池优化下载任务。
-	///     2. 单个下载任务，存储了一次下载的任务信息，包括序列编号、状态、下载后存放全路径、原始下载地址、将缓冲区写入磁盘的临界大小、下载超时时长。
+	/// 下载任务（任务池任务基类派生）：存储一次下载的序列编号/状态/存放路径/原始地址；
+	/// 写盘临界与超时为模块级固定参数，代理处直取 DownloadModule 常量。
 	/// </summary>
 	internal sealed class DownloadTask : TaskBase
 	{
@@ -30,16 +28,6 @@ namespace Hotfix.Framework.Download
 		public string DownloadUri { get; private set; }
 
 		/// <summary>
-		/// 获取将缓冲区写入磁盘的临界大小。
-		/// </summary>
-		public int FlushSize { get; private set; }
-
-		/// <summary>
-		/// 获取下载超时时长，以秒为单位。
-		/// </summary>
-		public float Timeout { get; private set; }
-
-		/// <summary>
 		/// 获取下载任务的描述。
 		/// </summary>
 		public override string Description => DownloadedFullPath;
@@ -51,8 +39,6 @@ namespace Hotfix.Framework.Download
 		{
 			base.Clear();
 
-			FlushSize          = 0;
-			Timeout            = 0f;
 			DownloadedFullPath = null;
 			DownloadUri        = null;
 			Status             = DownloadTaskStatus.Todo;
@@ -65,18 +51,14 @@ namespace Hotfix.Framework.Download
 		/// <param name="downloadUri">原始下载地址。</param>
 		/// <param name="tag">下载任务的标签。</param>
 		/// <param name="priority">下载任务的优先级。</param>
-		/// <param name="flushSize">将缓冲区写入磁盘的临界大小。</param>
-		/// <param name="timeout">下载超时时长，以秒为单位。</param>
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>创建的下载任务。</returns>
-		public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, int flushSize, float timeout, object userData)
+		public static DownloadTask Create(string downloadedFullPath, string downloadUri, string tag, int priority, object userData)
 		{
 			var downloadTask = ReferencePool.Acquire<DownloadTask>();
 			downloadTask.Initialize(++s_serial, tag, priority, userData);
 			downloadTask.DownloadedFullPath = downloadedFullPath;
 			downloadTask.DownloadUri        = downloadUri;
-			downloadTask.FlushSize          = flushSize;
-			downloadTask.Timeout            = timeout;
 			return downloadTask;
 		}
 	}

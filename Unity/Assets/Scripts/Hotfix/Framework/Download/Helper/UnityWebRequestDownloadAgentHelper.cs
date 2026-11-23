@@ -30,7 +30,6 @@ namespace Hotfix.Framework.Download
 		/// <summary>
 		/// 范围不适用错误码。
 		/// </summary>
-		private const int RANGE_NOT_SATISFIABLE_ERROR_CODE = 416;
 
 		/// <summary>
 		/// 缓存目标数据的字节数组的长度。
@@ -38,12 +37,11 @@ namespace Hotfix.Framework.Download
 		/// <remarks>
 		/// 0x1000 = 4096
 		/// </remarks>
-		private const int CACHED_BYTES_LENGTH = 0x1000;
 
 		/// <summary>
 		/// 缓存目标数据的字节数组。
 		/// </summary>
-		internal readonly byte[] m_CachedBytes = new byte[CACHED_BYTES_LENGTH];
+		internal readonly byte[] m_CachedBytes = new byte[DownloadModule.CACHED_BYTES_LENGTH];
 
 		/// <summary>
 		/// 记录是否已销毁。
@@ -71,7 +69,7 @@ namespace Hotfix.Framework.Download
 			var isError = m_UnityWebRequest.result != UnityWebRequest.Result.Success;
 			if (isError)
 			{
-				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, m_UnityWebRequest.responseCode == RANGE_NOT_SATISFIABLE_ERROR_CODE, m_UnityWebRequest.error);
+				var downloadAgentHelperErrorEventArgs = DownloadAgentHelperErrorEventArgs.Create(this, m_UnityWebRequest.responseCode == DownloadModule.RANGE_NOT_SATISFIABLE_ERROR_CODE, m_UnityWebRequest.error);
 				m_eventModule.Broadcast(downloadAgentHelperErrorEventArgs);
 			}
 			else
@@ -134,7 +132,7 @@ namespace Hotfix.Framework.Download
 				m_UnityWebRequest = null;
 			}
 
-			Array.Clear(m_CachedBytes, 0, CACHED_BYTES_LENGTH);
+			Array.Clear(m_CachedBytes, 0, DownloadModule.CACHED_BYTES_LENGTH);
 		}
 
 		/// <summary>

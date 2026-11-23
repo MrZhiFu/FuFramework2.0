@@ -17,22 +17,18 @@ namespace Hotfix.Framework.ObjectPool
 		/// <summary>
 		/// 对象池默认容量。
 		/// </summary>
-		private const int DEFAULT_CAPACITY = int.MaxValue;
 
 		/// <summary>
 		/// 对象池默认自动销毁检查间隔秒数(默认不检查自动销毁)。
 		/// </summary>
-		private const float DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL = float.MaxValue;
 
 		/// <summary>
 		/// 对象池默认过期时间(默认不会过期)。
 		/// </summary>
-		private const float DEFAULT_EXPIRE_TIME = float.MaxValue;
 
 		/// <summary>
 		/// 对象池默认优先级。
 		/// </summary>
-		private const int DEFAULT_PRIORITY = 0;
 
 		/// <summary>
 		/// 存储所有对象池的字典, Key为对象池中的对象类型+对象池名称，Value为对象池。

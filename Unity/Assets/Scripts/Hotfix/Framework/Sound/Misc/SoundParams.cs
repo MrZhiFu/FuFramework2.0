@@ -80,7 +80,7 @@ namespace Hotfix.Framework.Sound
 			Pitch         = 1;
 			PanStereo     = 0;
 			SpatialBlend  = 0;
-			MaxDistance   = 100;
+			MaxDistance   = SoundModule.SOUND_MAX_DISTANCE;
 			DopplerLevel  = 1;
 		}
 
@@ -104,7 +104,7 @@ namespace Hotfix.Framework.Sound
 			Pitch         = 1;
 			PanStereo     = 0;
 			SpatialBlend  = 0;
-			MaxDistance   = 100;
+			MaxDistance   = SoundModule.SOUND_MAX_DISTANCE;
 			DopplerLevel  = 1;
 		}
 	}

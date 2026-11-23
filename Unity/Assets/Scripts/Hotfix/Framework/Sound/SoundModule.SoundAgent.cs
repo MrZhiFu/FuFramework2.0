@@ -439,7 +439,7 @@ namespace Hotfix.Framework.Sound
 				PanStereo          = 0;
 				SpatialBlend       = 0;
 				DopplerLevel       = 1;
-				MaxDistance        = 100;
+				MaxDistance        = SoundModule.SOUND_MAX_DISTANCE;
 				VolumeInSoundGroup = 1;
 				MuteInSoundGroup   = false;
 			}

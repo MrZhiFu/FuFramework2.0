@@ -30,16 +30,6 @@ namespace Hotfix.Framework.Download
 		}
 
 		/// <summary>
-		/// 获取或设置将缓冲区写入磁盘的临界大小。(默认为1M)
-		/// </summary>
-		public int FlushSize { get; set; }
-
-		/// <summary>
-		/// 获取或设置下载超时时长，以秒为单位。
-		/// </summary>
-		public float Timeout { get; set; }
-
-		/// <summary>
 		/// 获取下载代理总数量。
 		/// </summary>
 		public int TotalAgentCount => m_taskPool.TotalAgentCount;
@@ -104,25 +94,17 @@ namespace Hotfix.Framework.Download
 		#region 添加下载任务
 
 		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, null, DEFAULT_PRIORITY, null);
-		}
-
-		/// <summary>
 		/// 异步增加下载任务(await方式)。
 		/// </summary>
 		/// <param name="downloadPath">存储路径</param>
 		/// <param name="downloadUri">下载地址</param>
+		/// <param name="taskTag">下载任务的标签。</param>
+		/// <param name="priority">下载任务的优先级。</param>
+		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>返回是否下载成功</returns>
-		public UniTask<bool> AddDownloadAsync(string downloadPath, string downloadUri)
+		public UniTask<bool> AddDownloadAsync(string downloadPath, string downloadUri, string taskTag = null, int priority = DEFAULT_PRIORITY, object userData = null)
 		{
-			var serialId = AddDownload(downloadPath, downloadUri, null, DEFAULT_PRIORITY, null);
+			var serialId = AddDownload(downloadPath, downloadUri, taskTag, priority, userData);
 			return m_downloadingTaskDict.TryGetValue(serialId, out var downloadData) ? downloadData.Tcs.Task : default;
 		}
 
@@ -132,85 +114,10 @@ namespace Hotfix.Framework.Download
 		/// <param name="downloadedFullPath">下载后存放全路径。</param>
 		/// <param name="downloadUri">原始下载地址。</param>
 		/// <param name="taskTag">下载任务的标签。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, taskTag, DEFAULT_PRIORITY, null);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <param name="priority">下载任务的优先级。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, int priority)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, null, priority, null);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, object userData)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, null, DEFAULT_PRIORITY, userData);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <param name="taskTag">下载任务的标签。</param>
-		/// <param name="priority">下载任务的优先级。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, taskTag, priority, null);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <param name="taskTag">下载任务的标签。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, object userData)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, taskTag, DEFAULT_PRIORITY, userData);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
 		/// <param name="priority">下载任务的优先级。</param>
 		/// <param name="userData">用户自定义数据。</param>
 		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, int priority, object userData)
-		{
-			return AddDownload(downloadedFullPath, downloadUri, null, priority, userData);
-		}
-
-		/// <summary>
-		/// 增加下载任务。
-		/// </summary>
-		/// <param name="downloadedFullPath">下载后存放全路径。</param>
-		/// <param name="downloadUri">原始下载地址。</param>
-		/// <param name="taskTag">下载任务的标签。</param>
-		/// <param name="priority">下载任务的优先级。</param>
-		/// <param name="userData">用户自定义数据。</param>
-		/// <returns>新增下载任务的序列编号。</returns>
-		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag, int priority, object userData)
+		public int AddDownload(string downloadedFullPath, string downloadUri, string taskTag = null, int priority = DEFAULT_PRIORITY, object userData = null)
 		{
 			if (string.IsNullOrEmpty(downloadedFullPath)) throw new InvalidOperationException("下载路径不能为空.");
 			if (string.IsNullOrEmpty(downloadUri)) throw new InvalidOperationException("下载地址不能为空.");
@@ -218,7 +125,7 @@ namespace Hotfix.Framework.Download
 			if (TotalAgentCount <= 0) throw new InvalidOperationException("可用的下载代理个数为0.");
 
 			// 创建下载任务
-			var downloadTask = DownloadTask.Create(downloadedFullPath, downloadUri, taskTag, priority, FlushSize, Timeout, userData);
+			var downloadTask = DownloadTask.Create(downloadedFullPath, downloadUri, taskTag, priority, userData);
 			m_taskPool.AddTask(downloadTask);
 
 			// 记录下载任务信息

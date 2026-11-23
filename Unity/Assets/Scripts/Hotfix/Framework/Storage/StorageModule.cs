@@ -15,6 +15,7 @@ namespace Hotfix.Framework.Storage
 	///     1. 负责管理游戏的本地存档数据，允许您保存和获取各种类型的本地数据。
 	/// </summary>
 	public sealed class StorageModule : ModuleBase
+	public sealed partial class StorageModule : ModuleBase
 	{
 		/// <summary>
 		/// 模块单例
@@ -24,12 +25,10 @@ namespace Hotfix.Framework.Storage
 		/// <summary>
 		/// 数据根目录
 		/// </summary>
-		public const string DIR_ROOT = "GameData";
 
 		/// <summary>
 		/// 默认数据存储文件名
 		/// </summary>
-		private const string DEFAULT_FILE_NAME = "DefaultData";
 
 		/// <summary>
 		/// 数据存储辅助器字典，key为数据文件名，value为数据辅助器实例

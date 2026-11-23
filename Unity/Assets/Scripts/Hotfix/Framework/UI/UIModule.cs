@@ -71,50 +71,6 @@ namespace Hotfix.Framework.UI
 
 
 		/// <summary>
-		/// 界面实例对象池自动销毁检查的间隔秒数
-		/// </summary>
-		private const float DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL = 60f;
-
-		/// <summary>
-		/// 界面实例对象池的容量
-		/// </summary>
-		private const int DEFAULT_POOL_CAPACITY = 16;
-
-		/// <summary>
-		/// 界面实例对象池对象过期秒数
-		/// </summary>
-		private const float DEFAULT_POOL_EXPIRE_TIME_AFTER_IDLE = 60f;
-
-
-		/// <summary>
-		/// 获取或设置界面实例对象池自动销毁检查的间隔秒数。
-		/// </summary>
-		public float PoolAutoDisposeCheckInterval
-		{
-			get => m_winObjPool.AutoDisposeCheckInterval;
-			set => m_winObjPool.AutoDisposeCheckInterval = value;
-		}
-
-		/// <summary>
-		/// 获取或设置界面实例对象池的容量。
-		/// </summary>
-		public int PoolCapacity
-		{
-			get => m_winObjPool.Capacity;
-			set => m_winObjPool.Capacity = value;
-		}
-
-		/// <summary>
-		/// 获取或设置界面实例对象池对象过期秒数。
-		/// 对象闲置（距上次使用或回收）超过该秒数即视为过期，纳入销毁候选。
-		/// </summary>
-		public float PoolExpireTimeAfterIdle
-		{
-			get => m_winObjPool.ExpireTimeAfterIdle;
-			set => m_winObjPool.ExpireTimeAfterIdle = value;
-		}
-
-		/// <summary>
 		/// 初始化。
 		/// </summary>
 		protected internal override void OnInit()
@@ -125,16 +81,15 @@ namespace Hotfix.Framework.UI
 			m_waitRecycleQueue = new Queue<WinBase>();
 
 			m_objectPoolModule = ModuleManager.GetModule<ObjectPoolModule>();
-			m_winObjPool       = m_objectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool");
+
+			// 窗口池参数直取模块常量（无配置属性，调用方无定制入口）
+			m_winObjPool = m_objectPoolModule.CreateObjectPool<WinObject>("UIWinObjectPool",
+				DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL, DEFAULT_POOL_CAPACITY, DEFAULT_POOL_EXPIRE_TIME_AFTER_IDLE, ObjectPoolModule.DEFAULT_PRIORITY);
 
 			m_eventModule = ModuleManager.GetModule<EventModule>();
 			PkgManager    = new FuiPkgManager();
 
 			m_serialId = 0;
-
-			PoolAutoDisposeCheckInterval = DEFAULT_AUTO_DISPOSE_CHECK_INTERVAL;
-			PoolCapacity                 = DEFAULT_POOL_CAPACITY;
-			PoolExpireTimeAfterIdle      = DEFAULT_POOL_EXPIRE_TIME_AFTER_IDLE;
 
 			// 刘海屏适配：初始化安全区数据，并将 GRoot 移动到安全区内
 			SafeAreaHelper.Refresh();

@@ -22,21 +22,6 @@ namespace Hotfix.Framework.Download
 	public sealed partial class DownloadModule : ModuleBase, ICancelAsync
 	{
 		/// <summary>
-		/// 默认下载任务优先级。
-		/// </summary>
-		internal const int DEFAULT_PRIORITY = 0;
-
-		/// <summary>
-		///  1 兆字节: 1M(Megabyte）= 1024KB = 1024*1024byte
-		/// </summary>
-		private const int ONE_MEGA_BYTES = 1024 * 1024;
-
-		/// <summary>
-		/// 下载代理辅助器个数
-		/// </summary>
-		private const int DOWNLOAD_AGENT_HELPER_COUNT = 3;
-
-		/// <summary>
 		/// 事件管理模块
 		/// </summary>
 		private EventModule m_eventModule;
@@ -126,9 +111,6 @@ namespace Hotfix.Framework.Download
 		{
 			Instance = this;
 			m_barrier  = new CancellationBarrier(); // 新生命周期 = 新 Token
-
-			Timeout   = 30f;
-			FlushSize = ONE_MEGA_BYTES;
 
 			m_eventModule = ModuleManager.GetModule<EventModule>();
 			if (m_eventModule == null)

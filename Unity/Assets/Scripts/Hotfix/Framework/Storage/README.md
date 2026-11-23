@@ -239,6 +239,7 @@ m_storageModule.SaveAll();
 Storage/
 ├── Runtime/
 │   ├── StorageModule.cs           # 存储管理模块
+│   ├── StorageModule.Const.cs     # 存储管理模块常量分部（路径/默认文件名，单一事实源）
 │   ├── StorageHelper.cs           # 存储辅助器
 │   ├── Data.cs                    # 数据容器 (SortedDictionary)
 │   ├── DataSerializer.cs          # 数据序列化器 (GMD 头)
