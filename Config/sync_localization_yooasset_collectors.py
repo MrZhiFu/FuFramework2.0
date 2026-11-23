@@ -39,6 +39,16 @@ COLLECT_TEMPLATE = [
     "        UserData: ",
 ]
 
+# 英语兜底覆盖率门禁：低于 100% 时兜底链路对缺漏 key 实际失效
+LOCAL_DIR = os.path.join(REPO_ROOT, "Config", "Excels", "Local")
+FALLBACK_LANGUAGE = "English"
+
+# ANSI 颜色（Windows 10+ 终端默认支持 VT 序列；os.system("") 触发启用）
+_ANSI_YELLOW = "[93m"
+_ANSI_GREEN = "[92m"
+_ANSI_RESET = "[0m"
+os.system("")  # 启用 ANSI 转义支持
+
 
 def resolve_language_names():
     """语言清单 = ELanguage 枚举成员（除 Unspecified）∩ 拆分产物文件集合。"""
@@ -73,12 +83,60 @@ def resolve_language_names():
     if not langs:
         raise SystemExit("[YooAsset多语言资源收集器更新] 枚举与拆分产物交集为空，拒绝同步")
     if missing:
-        print(f"[YooAsset多语言资源收集器更新] 警告：枚举成员缺少拆分产物（将不出现在收集器）：{missing}")
+        print(f"{_ANSI_YELLOW}[YooAsset多语言资源收集器更新] 警告：枚举成员缺少拆分产物（将不出现在收集器）：{missing}{_ANSI_RESET}")
     return langs
+
+
+def check_fallback_coverage(check_only):
+    """英语兜底覆盖率门禁：统计全部本地化表的英语非空率，<100% 时告警（--check 模式失败退出）。
+
+    兜底链路的价值取决于这份数据：英语缺漏的 key 在其他语种也未翻译时会直接显示 [key]。
+    """
+    wb_total = 0
+    wb_filled = 0
+    missing = []
+    for name in sorted(os.listdir(LOCAL_DIR)):
+        if not (name.startswith("L-Localization-c-") and name.endswith(".xlsx")):
+            continue
+        wb = openpyxl.load_workbook(os.path.join(LOCAL_DIR, name), read_only=True)
+        ws = wb.worksheets[0]
+        rows = list(ws.iter_rows(values_only=True))
+        wb.close()
+        if not rows:
+            continue
+        header = [str(c).strip() if c is not None else "" for c in rows[0]]
+        if FALLBACK_LANGUAGE not in header or "key" not in header:
+            continue
+        i_key = header.index("key")
+        i_fb = header.index(FALLBACK_LANGUAGE)
+        for row in rows[3:]:
+            key = row[i_key] if i_key < len(row) else None
+            if not key or str(key).startswith("#"):
+                continue
+            wb_total += 1
+            value = row[i_fb] if i_fb < len(row) else None
+            if value not in (None, ""):
+                wb_filled += 1
+            else:
+                missing.append(str(key))
+
+    if wb_total == 0:
+        print(f"[YooAsset多语言资源收集器更新] 警告：未找到本地化表或 {FALLBACK_LANGUAGE} 列，覆盖率门禁跳过")
+        return
+    if wb_filled == wb_total:
+        print(f"{_ANSI_GREEN}[YooAsset多语言资源收集器更新] {FALLBACK_LANGUAGE} 兜底覆盖率 100%（{wb_filled}/{wb_total}）{_ANSI_RESET}")
+        return
+
+    pct = wb_filled * 100 // wb_total
+    msg = f"{FALLBACK_LANGUAGE} 兜底覆盖率 {pct}%（{wb_filled}/{wb_total}），缺漏 key：{missing}"
+    if check_only:
+        raise SystemExit(f"[YooAsset多语言资源收集器更新] 门禁失败：{msg}")
+    print(f"{_ANSI_YELLOW}[YooAsset多语言资源收集器更新] 警告：{msg}{_ANSI_RESET}")
 
 
 def sync(check_only):
     print("==================== 更新YooAsset多语言资源收集器 ====================")
+    check_fallback_coverage(check_only)
     langs = resolve_language_names()
     print(f"[YooAsset多语言资源收集器更新] 语言清单（{len(langs)}）：{langs}")
 

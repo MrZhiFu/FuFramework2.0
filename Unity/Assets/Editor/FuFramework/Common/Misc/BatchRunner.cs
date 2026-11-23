@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
@@ -11,6 +12,7 @@ namespace FuFramework.Core.Editor
 	/// 批处理执行工具类。
 	/// 功能：
 	///     1. 执行批处理命令(.bat或.sh)。
+	///     2. 标准输出逐行镜像到 Unity Console（按行内容分级：警告黄/错误红/普通白），进度条同步展示当前行。
 	/// </summary>
 	public static class BatchRunner
 	{
@@ -18,6 +20,17 @@ namespace FuFramework.Core.Editor
 		/// 0 ~ 0.1 表示模拟执行前的准备时间(视觉效果，不影响功能)
 		/// </summary>
 		private const float READY_TIME = 0.1f;
+
+		/// <summary>
+		/// ANSI 转义序列（颜色码等）——子进程输出里混入会导致 Console 显示乱码标记，转发前剥离
+		/// </summary>
+		private static readonly Regex s_ansiRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
+
+		/// <summary>
+		/// Unity Console rich text 黄色标记（警告行内嵌用；Debug.Log 文本支持 &lt;color&gt; 标签，需 Console 开启 rich text——默认开启）
+		/// </summary>
+		private const string WARNING_COLOR_OPEN  = "<color=#FFD54F>";
+		private const string WARNING_COLOR_CLOSE = "</color>";
 
 		/// <summary>
 		/// 执行批处理命令(.bat或.sh)
@@ -34,10 +47,9 @@ namespace FuFramework.Core.Editor
 				// 获取平台对应的命令执行工具和前缀参数
 				var (runner, preArg) = GetPlatformCommand();
 
-				// 执行进程
+				// 执行进程（完整输出已在 RunProcess 内合并为一条 Log 级日志，此处不再重复打完成日志）
 				ExecuteProcess(cmdPath, workDir, runner, preArg);
 
-				Debug.Log($"[执行批处理完成] {cmdPath}");
 				return true;
 			}
 			catch (Exception ex)
@@ -126,15 +138,23 @@ namespace FuFramework.Core.Editor
 			};
 			process.BeginErrorReadLine();
 
-			// 同步读取批处理的标准输出，实时更新进度
-			var lineCount = 0;
+			// 同步读取批处理的标准输出：进度条逐行刷新，Console 在进程结束后合并输出一条完整日志
+			var logBuilder = new System.Text.StringBuilder();
+			var lineCount  = 0;
 			while (true)
 			{
 				var line = process.StandardOutput.ReadLine();
 				if (line == null) break;
 
+				// ANSI 转义码剥离后收集；警告行内嵌 rich text 黄色标记（Console 中该行黄色显示，日志级别不变）
+				var cleanLine = s_ansiRegex.Replace(line, string.Empty);
+				if (!string.IsNullOrWhiteSpace(cleanLine))
+				{
+					logBuilder.AppendLine(ContainsWarning(cleanLine) ? WARNING_COLOR_OPEN + cleanLine + WARNING_COLOR_CLOSE : cleanLine);
+				}
+
 				// 模拟视觉上的进度感，每读取批处理的标准输出一行，进度条增加0.01f
-				EditorUtility.DisplayProgressBar("执行批处理", line, fProgress);
+				EditorUtility.DisplayProgressBar("执行批处理", cleanLine, fProgress);
 				fProgress =  Math.Min(fProgress + 0.01f, 0.9f);
 				lineCount += 1;
 
@@ -151,10 +171,26 @@ namespace FuFramework.Core.Editor
 				process.WaitForExit(100);
 			}
 
+			// 完整输出合并为一条 Log 级日志；警告行已内嵌黄色 rich text，不改变日志级别
+			var fullLog = logBuilder.ToString().TrimEnd();
+			if (fullLog.Length > 0)
+			{
+				Debug.Log(fullLog);
+			}
+
 			if (process.ExitCode != 0)
 			{
 				throw new Exception("[执行批处理错误]: " + errorBuilder);
 			}
+		}
+
+		/// <summary>
+		/// 判断行是否为警告特征（命中则该行在 Console 中以黄色显示，日志级别不变）。
+		/// 判定基于中英文关键词（与 gen 脚本/Luban/同步工具的输出约定对齐），不追求完备——漏判只是普通白色显示。
+		/// </summary>
+		private static bool ContainsWarning(string line)
+		{
+			return line.Contains("警告") || line.Contains("WARNING") || line.Contains("Warning");
 		}
 	}
 }
