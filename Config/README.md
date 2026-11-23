@@ -150,12 +150,19 @@
 |---|---|---|
 | `TbLocalization` | `Excels/Local/L-Localization-c-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列，表名带 `-c-`（客户端专属，服务端不生成）。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；`is_code` 列标 `##group none`（导出代码用、不进导出产物）；缺失 `is_code` 列时生成报错终止。产物**按语种拆分**：`Bundles/Config/Localization/tblocalization_<语言>.bytes`（每文件只含 key + 目标语种列，两数据变体统一 `.bytes`）；目标语种为空时运行时懒加载英语兜底表二段查询（见 `Localization/README.md` 4.3） |
 | `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物按语种拆分为 `Resources/LaunchLocalizationText/tblocalizationaot_<语言>.<json\|bytes>`（key+value 两字段，`split-aot-localization` 后处理）；代码生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
-| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键) / `name` 显示名 / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符 / `system_language`(Unity SystemLanguage 成员名，多值分号分隔)。是 `LaunchLanguageRegistry` 的数据源——删/增语种改本表行 + 本地化表列 + 枚举成员三处数据即可，运行时零代码改动 |
+| `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键，**必需**) / `name` 显示名（**必需**） / `system_language`(Unity SystemLanguage 成员名，多值分号分隔，**必需**) / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符 / `is_visible` 是否在语言选择列表显示。是 `LaunchLanguageRegistry` 的数据源——删/增语种改本表行 + 本地化表列 + 枚举成员三处数据即可，运行时零代码改动。**加列零改动**（Entry 为字段包，新列自动进入 `Fields`）；删/改必需列生成期报错（其余列缺失无害退化） |
 | `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化（当前 7 成员：`Unspecified=0` + 6 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
 
 > 客户端专属枚举（UI / 红点 / 声音 / 引导 / 实体组 / 语言等）在 `__enums__.xlsx` 的 `group` 列标 `c`；服务端只会生成被其导出表真实引用的枚举（如品质、道具类型）。
 
 **扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、按语种拆分产物（统一 key+value 两字段）、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
+
+**LanguageDef 字段级变更（加列/删列）**：
+- **加列**：零改动——注册表 Entry 为数据驱动字段包（主键 Name + 其余全部列的字符串键值对），新列自动出现在 `Entry.Fields`（bool/int 值为原字符串，消费端自行解析）；取值 `entry.GetField("列名")`，拼错键名返回空串不抛异常
+- **删/改非必需列**（sort/separator/icon/is_visible 等）：零改动，缺失无害退化（如 sort 缺失时 Entries 顺序回退表行序）
+- **删/改必需列**（language/name/system_language）：**生成期报错中断**——恢复列，或确属结构变更时同步 `cs-language-registry` 生成器（`RequiredFieldNames`）
+
+**ELanguage 枚举定位**：语种清单的权威来源是 `TbLanguageDef`（行级）+ 本地化表语言列（列级），枚举不是权威而是**权威清单在代码层的编译期投影**——让"语言"在 C# 里是类型而非字符串约定（API 参数编译期安全、表字段白名单校验）。增删语种时枚举 sheet 的同步由三方校验兜底，漏改必报错。经评估**维持现状不做字符串化**（收益小、丢失编译期安全与配置表校验）。
 
 **FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
 

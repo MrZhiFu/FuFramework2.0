@@ -46,7 +46,9 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 7 成员：`Unspecified=0` + 6 语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`Japanese`、`Korean`、`Spanish`，value 连续编号）。语种清单的运行时事实源是 AOT 程序集的配置生成类 `LaunchLanguageRegistry`（语种条目/系统语言映射/兜底常量），本枚举与它由同一份数据生成。
 
-**扩语言/删语种（纯数据操作，零代码改动）**：枚举 sheet 追加/删除成员（value 顺延）→ `TbLocalization` 加/删语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。取词为 key+value 直读（拆分产物统一两字段，语言维度消失）；系统语言映射由 `LaunchLanguageRegistry.FromSystemLanguage` 数据驱动；**English 兜底语种不可删除**。语言元数据（显示名/旗帜 icon/分隔符）由语言定义表管理。
+**扩语言/删语种（纯数据操作，零代码改动）**：枚举 sheet 追加/删除成员（value 顺延）→ `TbLocalization` 加/删语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。取词为 key+value 直读（拆分产物统一两字段，语言维度消失）；系统语言映射由 `LaunchLanguageRegistry.FromSystemLanguage` 数据驱动；**English 兜底语种不可删除**。语言元数据（显示名/旗帜 icon/分隔符/是否可见）由语言定义表管理。
+
+**LanguageDef 字段级变更**：加列零改动（注册表 Entry 为字段包，新列自动进 `Entry.Fields`，取值 `GetField("列名")` 返回原字符串，bool/int 由消费端解析）；删/改必需列（language/name/system_language）生成期报错，其余列缺失无害退化。
 
 ## 4. 核心类说明
 

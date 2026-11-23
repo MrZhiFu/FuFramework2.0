@@ -54,7 +54,7 @@ gen-server-json.bat    :: 服务端（JSON）
 | `Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs` | 仅生成枚举，供 AOT 侧独立获取 |
 | `Luban.CSharp/PostProcess/LocalizationSplitPostProcess.cs` | 客户端 `TbLocalization` 按语种拆分导出（json/bin 两变体统一 `.bytes`，整表不落盘；产物目录残留自动清理含 `.meta`） |
 | `Luban.CSharp/PostProcess/LocalizationAotSplitPostProcess.cs` | AOT 前置表 `tblocalizationaot` 按语种拆分导出（key+value 两字段，写回 outputDataDir 由 FileCleaner 自动清理旧语种） |
-| `Luban.CSharp/CodeTarget/CsharpLanguageRegistryCodeTarget.cs` | 生成语言注册表 `LaunchLanguageRegistry`（语种条目/系统语言映射/兜底常量，数据源 `TbLanguageDef`；生成期校验枚举↔表行一致、English 兜底必存） |
+| `Luban.CSharp/CodeTarget/CsharpLanguageRegistryCodeTarget.cs` | 生成语言注册表 `LaunchLanguageRegistry`（Entry 为数据驱动字段包：主键 + Fields 字典，LanguageDef 加列零改动；系统语言映射/兜底常量；生成期校验枚举↔表行一致、English 兜底必存、必需列缺失报错） |
 | `Luban.CSharp/TemplateExtensions/CsharpTemplateExtension.cs` 的 `EscapeString` | 模板函数 `escape_string`：字符串字面量转义（注册表条目含非 ASCII 显示名/分隔符） |
 | `Luban.CSharp/Templates/cs-dotnet-json`、`cs-dotnet-bin` | 服务端专用模板：非 string 键统一 `(long)` 强转；集合转字符串用服务端自带的 `FuFramework.Core.Config.StringUtil`（模板函数 `to_pretty_string_server`） |
 
