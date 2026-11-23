@@ -32,10 +32,12 @@ public class CsharpLanguageRegistryCodeTarget : CsharpCodeTargetBase
     protected const string DefaultClassName = "LaunchLanguageRegistry";
 
     /// <summary>
-    /// 必需字段清单：LanguageDef 删列/改名时生成期报错而非静默退化；
-    /// 加列零改动（Entry 为数据驱动字段包，新列自动进入 Fields）
+    /// 必需字段清单：LanguageDef 删列/改名时生成期报错而非静默退化；加列零改动（新列自动进入 Fields）。
+    /// language = 结构主键（Name/ELanguage/文件名/tag/偏好全链路）；name = 显示名（UI 直接可感）；
+    /// system_language = 系统语言映射数据源（缺失会使 FromSystemLanguage 无 case，新用户静默全回落 English）。
+    /// sort/separator 为普通数据：缺失无害退化（sort 失败按 0 走表行序），不锁入清单。
     /// </summary>
-    private static readonly string[] RequiredFieldNames = { "language", "name", "sort", "separator", "system_language" };
+    private static readonly string[] RequiredFieldNames = { "language", "name", "system_language" };
 
     /// <summary>
     /// 字段名在生成产物中的展示名（Excel 列名 → Entry.Fields 键），未列出的字段按 Excel 原列名入包
