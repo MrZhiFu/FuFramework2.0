@@ -6,7 +6,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
@@ -16,25 +15,23 @@ namespace FuFramework.Config.Tables
     /// </summary>
     public partial class TbItem : BaseDataTable<Tables.Item>
     {
-        //private readonly System.Collections.Generic.Dictionary<int, Tables.Item> _dataMap;
-        //private readonly System.Collections.Generic.List<Tables.Item> _dataList;
-    
-        //public System.Collections.Generic.Dictionary<int, Tables.Item> DataMap => _dataMap;
-        //public System.Collections.Generic.List<Tables.Item> DataList => _dataList;
-        //public Tables.Item GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-        //public Tables.Item Get(int key) => _dataMap[key];
-        //public Tables.Item this[int key] => _dataMap[key];
-    
+        private readonly System.Func<System.Threading.Tasks.Task<ByteBuf>> _loadFunc;
+
+        public TbItem(System.Func<System.Threading.Tasks.Task<ByteBuf>> loadFunc)
+        {
+            _loadFunc = loadFunc;
+        }
+
         public override async System.Threading.Tasks.Task LoadAsync()
         {
-            var jsonElement = await _loadFunc();
+            ByteBuf _buf = await _loadFunc();
             DataList.Clear();
             LongDataMaps.Clear();
             StringDataMaps.Clear();
-            foreach(var element in jsonElement.EnumerateArray())
+            for(int n = _buf.ReadSize() ; n > 0 ; --n)
             {
                 Tables.Item _v;
-                _v = global::FuFramework.Config.Tables.Item.DeserializeItem(element);
+                _v = global::FuFramework.Config.Tables.Item.DeserializeItem(_buf);
                 DataList.Add(_v);
                 LongDataMaps.Add((long)_v.Id, _v);
                 StringDataMaps.Add(_v.Id.ToString(), _v);
@@ -42,19 +39,18 @@ namespace FuFramework.Config.Tables
             PostInit();
         }
 
-        public void ResolveRef(TableManager tables)
+
+
+        public void TranslateText(System.Func<string, string, string> translator)
         {
-            foreach(var element in DataList)
+            foreach(var v in DataList)
             {
-                element.ResolveRef(tables);
+                v.TranslateText(translator);
             }
         }
-    
-    
-        partial void PostInit();
 
-        public TbItem(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
-        {
-        }
+
+        partial void PostInit();
+        partial void PostResolveRef();
     }
 }
