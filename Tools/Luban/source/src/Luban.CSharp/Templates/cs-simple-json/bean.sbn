@@ -15,6 +15,12 @@ func get_index_var_name
     ret (format_property_name __code_style $0.name) + '_Index'
 end
 
+func get_get_arg
+    # Get 调用参数：枚举键不能隐式转 int/long（BaseDataTable.Get 只有 int/long/string 重载），
+    # 与 table.sbn 加载处的 (long) 强转保持一致
+    ret $0.ctype.type_name == 'enum' ? '(long)' + $1 : $1
+end
+
 func generate_resolve_field_ref
     field = $0
     fieldName = format_property_name __code_style field.name
@@ -22,9 +28,9 @@ func generate_resolve_field_ref
     if can_generate_ref field
         tableName = format_property_name __code_style refTable.name
         if field.is_nullable
-            ret (get_ref_name field) + ' = ' + fieldName + '!= null ? tableManager.' + tableName + '.Get(' + (get_value_of_nullable_type field.ctype fieldName) + ') : null;'
+            ret (get_ref_name field) + ' = ' + fieldName + '!= null ? tableManager.' + tableName + '.Get(' + (get_get_arg field (get_value_of_nullable_type field.ctype fieldName)) + ') : null;'
         else
-            ret (get_ref_name field) + ' = tableManager.' + tableName + '.Get(' + fieldName + ');'
+            ret (get_ref_name field) + ' = tableManager.' + tableName + '.Get(' + (get_get_arg field fieldName) + ');'
         end
     else if can_generate_collection_ref field
         collection_ref_table = get_collection_ref_table field
@@ -160,7 +166,7 @@ end
         private readonly string {{format_property_name __code_style field.name}}_Localization_Key;
         {{~end~}}
         {{~if can_generate_ref field~}}
-        public {{declaring_type_name (get_ref_type field)}} {{get_ref_name field}} { private set; get; }
+        public {{ref_target_type_name field}} {{get_ref_name field}} { private set; get; }
         {{~else if can_generate_collection_ref field~}}
         public {{declaring_collection_ref_name field.ctype}} {{get_ref_name field}} { private set; get; }
         {{~end~}}

@@ -14,7 +14,7 @@ using Cysharp.Threading.Tasks;
         {{~else~}}
         /// <summary> {{table.name}} </summary>
         {{~end~}}
-        private {{table.name}} {{format_property_name __code_style table.name}} { set; get; }
+        internal {{table.name}} {{format_property_name __code_style table.name}} { set; get; }
 
         {{~end~}}
 

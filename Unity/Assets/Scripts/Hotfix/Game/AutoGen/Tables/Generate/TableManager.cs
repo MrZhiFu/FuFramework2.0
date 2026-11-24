@@ -18,40 +18,40 @@ namespace Hotfix.Game.Config
     public partial class TableManager
     {
         /// <summary> 本地化多语言表 </summary>
-        private TbLocalization TbLocalization { set; get; }
+        internal TbLocalization TbLocalization { set; get; }
 
         /// <summary> 成就表 </summary>
-        private TbAchievement TbAchievement { set; get; }
+        internal TbAchievement TbAchievement { set; get; }
 
         /// <summary> 道具表 </summary>
-        private TbItem TbItem { set; get; }
+        internal TbItem TbItem { set; get; }
 
         /// <summary> 实体组配置表 </summary>
-        private TbEntityGroup TbEntityGroup { set; get; }
+        internal TbEntityGroup TbEntityGroup { set; get; }
 
         /// <summary> 全局常量定义表 </summary>
-        private TbGlobalDefine TbGlobalDefine { set; get; }
+        internal TbGlobalDefine TbGlobalDefine { set; get; }
 
         /// <summary> 引导表 </summary>
-        private TbGuide TbGuide { set; get; }
+        internal TbGuide TbGuide { set; get; }
 
         /// <summary> 引导步骤表 </summary>
-        private TbGuideStep TbGuideStep { set; get; }
+        internal TbGuideStep TbGuideStep { set; get; }
 
         /// <summary> 语言定义 </summary>
-        private TbLanguageDef TbLanguageDef { set; get; }
+        internal TbLanguageDef TbLanguageDef { set; get; }
 
         /// <summary> 红点表 </summary>
-        private TbRedDot TbRedDot { set; get; }
+        internal TbRedDot TbRedDot { set; get; }
 
         /// <summary> 声音表 </summary>
-        private TbSound TbSound { set; get; }
+        internal TbSound TbSound { set; get; }
 
         /// <summary> 声音组配置表 </summary>
-        private TbSoundGroup TbSoundGroup { set; get; }
+        internal TbSoundGroup TbSoundGroup { set; get; }
 
         /// <summary> UI配置表 </summary>
-        private TbUIConfig TbUIConfig { set; get; }
+        internal TbUIConfig TbUIConfig { set; get; }
 
 
         /// <summary> 是否加载完成 </summary>

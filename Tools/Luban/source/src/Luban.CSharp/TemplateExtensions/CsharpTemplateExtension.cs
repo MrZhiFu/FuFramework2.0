@@ -153,6 +153,20 @@ public class CsharpTemplateExtension : ScriptObject
         return target != null && BeanNeedsResolveRef(target);
     }
 
+    /// <summary>
+    /// ref 字段目标类型的 C# 声明名（模板函数 ref_target_type_name）。
+    /// Luban 逻辑 FullName（如 Tables.SoundGroup）与本项目生成 bean 的 C# 命名空间
+    /// （Hotfix.Game.Config，由自定义导入器改写）不一致，全名无法解析导致 CS0234；
+    /// 本项目全部 bean 生成在同一命名空间，用短类名即可编译期解析。
+    /// 注意：不能与 TType 参数重载共存——scriban 对重载解析歧义（"Unable to convert
+    /// DefField to TType"），模板函数只保留 DefField 单一签名。
+    /// </summary>
+    public static string RefTargetTypeName(DefField field)
+    {
+        var refTable = TypeTemplateExtension.GetRefTable(field);
+        return refTable?.ValueTType.DefBean?.Name ?? string.Empty;
+    }
+
     private static DefBean GetNestedResolveTargetBean(DefField field)
     {
         if (field.CType is TBean b && TypeTemplateExtension.IsBeanNeedResolveRef(b))
