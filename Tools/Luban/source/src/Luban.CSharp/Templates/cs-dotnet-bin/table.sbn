@@ -67,6 +67,7 @@ using FuFramework.Core.Config;
         //public T GetAs<T>({{declaring_type_name key_type}} key) where T : {{declaring_type_name value_type}} => (T)_dataMap[key];
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref value_type.def_bean~}}
         public void ResolveRef({{__manager_name}} tables)
         {
             foreach(var value in DataList)
@@ -75,7 +76,9 @@ using FuFramework.Core.Config;
             }
             PostResolveRef();
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text value_type.def_bean~}}
         public void TranslateText(System.Func<string, string, string> translator)
         {
             foreach(var v in DataList)
@@ -83,6 +86,7 @@ using FuFramework.Core.Config;
                 v.TranslateText(translator);
             }
         }
+        {{~end~}}
 
         {{~else if __table.is_list_table ~}}
         private readonly System.Collections.Generic.List<{{declaring_type_name value_type}}> _dataList;
@@ -147,6 +151,7 @@ using FuFramework.Core.Config;
         {{~end~}}
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref value_type.def_bean~}}
         public void ResolveRef({{__manager_name}} tables)
         {
             foreach(var _v in _dataList)
@@ -155,7 +160,9 @@ using FuFramework.Core.Config;
             }
             PostResolveRef();
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text value_type.def_bean~}}
         public void TranslateText(System.Func<string, string, string> translator)
         {
             foreach(var v in DataList)
@@ -163,6 +170,7 @@ using FuFramework.Core.Config;
                 v.TranslateText(translator);
             }
         }
+        {{~end~}}
 
         {{~else~}}
 
@@ -193,16 +201,20 @@ using FuFramework.Core.Config;
         public {{declaring_type_name field.ctype}} {{format_property_name __code_style field.name}} => _data.{{format_property_name __code_style field.name}};
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref value_type.def_bean~}}
         public void ResolveRef({{__manager_name}} tables)
         {
             _data.ResolveRef(tables);
             PostResolveRef();
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text value_type.def_bean~}}
         public void TranslateText(System.Func<string, string, string> translator)
         {
             _data.TranslateText(translator);
         }
+        {{~end~}}
         {{~end~}}
 
         partial void PostInit();

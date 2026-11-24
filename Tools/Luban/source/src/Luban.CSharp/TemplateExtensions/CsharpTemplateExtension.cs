@@ -20,6 +20,7 @@
 
 using Luban.CSharp.TypeVisitors;
 using Luban.Defs;
+using Luban.TemplateExtensions;
 using Luban.Types;
 using Scriban.Runtime;
 
@@ -50,6 +51,123 @@ public class CsharpTemplateExtension : ScriptObject
     public static string MethodModifier(DefBean bean)
     {
         return bean.ParentDefType != null ? "override" : (bean.IsAbstractType ? "virtual" : "");
+    }
+
+    // ========== 条件生成判定：TranslateText / ResolveRef 仅在有实际工作时生成 ==========
+    //
+    // 目的：没有 text 字段 / 跨表引用的 bean 不生成空方法，表级与 TableManager 的调用行同步剔除，
+    // 消除切语言、加载解析时的全链空转（如 TbLocalization 每次切语言白跑数千行空方法）。
+    //
+    // 一致性铁律：bean.sbn / table.sbn / tables.sbn 三层条件必须使用同一判定函数，
+    // 否则上层调用不存在的下层方法将直接编译失败。
+
+    /// <summary>
+    /// bean 是否需要生成 TranslateText：本 bean 或任一后代 bean 存在 text 字段。
+    /// 后代 override 调 base，故父链需一并生成；表级经根 bean 虚分派，根覆盖整棵子树。
+    /// 嵌套 bean 字段不经 TranslateText 递归（沿用既有模板语义），故无需沿字段边传播。
+    /// </summary>
+    public static bool BeanNeedsTranslateText(DefBean bean)
+    {
+        foreach (var f in bean.ExportFields)
+        {
+            if (f.Type == "text")
+            {
+                return true;
+            }
+        }
+        if (bean.Children == null)
+        {
+            return false;
+        }
+        foreach (var child in bean.Children)
+        {
+            if (BeanNeedsTranslateText(child))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// bean 是否需要生成 ResolveRef（最小不动点判定）：
+    /// 自身有产生 _Ref 赋值的引用字段，或嵌套 bean 字段的目标需要生成（调用行存在），
+    /// 或任一后代需要生成（override 调 base 要求父链提供 virtual）。
+    /// DFS 环路按 false 处理：无种子的引用环不产生任何方法，符合最小不动点语义。
+    /// </summary>
+    public static bool BeanNeedsResolveRef(DefBean bean)
+    {
+        var visited = new HashSet<DefBean>();
+        return BeanNeedsResolveRefCore(bean, visited);
+    }
+
+    private static bool BeanNeedsResolveRefCore(DefBean bean, HashSet<DefBean> visited)
+    {
+        if (!visited.Add(bean))
+        {
+            return false;
+        }
+        try
+        {
+            foreach (var f in bean.ExportFields)
+            {
+                if (TypeTemplateExtension.CanGenerateRef(f) || TypeTemplateExtension.CanGenerateCollectionRef(f))
+                {
+                    return true;
+                }
+            }
+            if (bean.Children != null)
+            {
+                foreach (var child in bean.Children)
+                {
+                    if (BeanNeedsResolveRefCore(child, visited))
+                    {
+                        return true;
+                    }
+                }
+            }
+            foreach (var f in bean.ExportFields)
+            {
+                var target = GetNestedResolveTargetBean(f);
+                if (target != null && BeanNeedsResolveRefCore(target, visited))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        finally
+        {
+            visited.Remove(bean);
+        }
+    }
+
+    /// <summary>
+    /// 字段是否生成对嵌套 bean 的 ResolveRef 调用行：字段为需要生成 ResolveRef 的
+    /// 非值类型 bean（直接/数组元素/Map 值三种形态），且目标 bean 经判定需要生成方法。
+    /// 与模板既有三分支的形态判定保持一致，叠加目标 needs 条件。
+    /// </summary>
+    public static bool FieldGeneratesResolveRefCall(DefField field)
+    {
+        var target = GetNestedResolveTargetBean(field);
+        return target != null && BeanNeedsResolveRef(target);
+    }
+
+    private static DefBean GetNestedResolveTargetBean(DefField field)
+    {
+        if (field.CType is TBean b && TypeTemplateExtension.IsBeanNeedResolveRef(b))
+        {
+            return b.DefBean;
+        }
+        if (TypeTemplateExtension.IsFieldArrayLikeNeedResolveRef(field))
+        {
+            return ((TBean)field.CType.ElementType).DefBean;
+        }
+        if (TypeTemplateExtension.IsFieldMapNeedResolveRef(field))
+        {
+            return ((TBean)((TMap)field.CType).ValueType).DefBean;
+        }
+        return null;
     }
 
     /// <summary>

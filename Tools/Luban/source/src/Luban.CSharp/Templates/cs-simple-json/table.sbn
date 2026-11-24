@@ -87,6 +87,7 @@ using Cysharp.Threading.Tasks;
         //public T GetAs<T>({{declaring_type_name __key_type}} key) where T : {{value_simple_name}} => (T)_dataMap[key];
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref __value_type.def_bean~}}
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
@@ -98,7 +99,9 @@ using Cysharp.Threading.Tasks;
                 value.ResolveRef(tableManager);
             }
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text __value_type.def_bean~}}
         /// <summary>
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
@@ -110,6 +113,7 @@ using Cysharp.Threading.Tasks;
                 v.TranslateText(translator);
             }
         }
+        {{~end~}}
 
         {{~else if __table.is_list_table ~}}
         private readonly List<{{value_simple_name}}> _dataList;
@@ -187,6 +191,7 @@ using Cysharp.Threading.Tasks;
         {{~end~}}
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref __value_type.def_bean~}}
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
@@ -198,7 +203,9 @@ using Cysharp.Threading.Tasks;
                 _v.ResolveRef(tableManager);
             }
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text __value_type.def_bean~}}
         /// <summary>
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
@@ -210,6 +217,7 @@ using Cysharp.Threading.Tasks;
                 v.TranslateText(translator);
             }
         }
+        {{~end~}}
 
         {{~else~}}
 
@@ -246,6 +254,7 @@ using Cysharp.Threading.Tasks;
         public {{declaring_type_name field.ctype}} {{format_property_name __code_style field.name}} => _data.{{format_property_name __code_style field.name}};
         {{~end~}}
 
+        {{~if bean_needs_resolve_ref __value_type.def_bean~}}
         /// <summary>
         /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
         /// </summary>
@@ -254,7 +263,9 @@ using Cysharp.Threading.Tasks;
         {
             _data.ResolveRef(tableManager);
         }
+        {{~end~}}
 
+        {{~if bean_needs_translate_text __value_type.def_bean~}}
         /// <summary>
         /// 用指定翻译器刷新本表所有多语言字段
         /// </summary>
@@ -263,6 +274,7 @@ using Cysharp.Threading.Tasks;
         {
             _data.TranslateText(translator);
         }
+        {{~end~}}
         {{~end~}}
         /// <summary>
         /// 分部初始化钩子，由使用方补实现。

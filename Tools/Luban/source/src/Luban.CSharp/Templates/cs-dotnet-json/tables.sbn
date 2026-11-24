@@ -58,7 +58,9 @@ using FuFramework.Config;
         private void ResolveRef()
         {
             {{~for table in __tables ~}}
+            {{~if bean_needs_resolve_ref table.value_ttype.def_bean~}}
             {{format_property_name __code_style table.name}}.ResolveRef(this);
+            {{~end~}}
             {{~end~}}
         }
     
