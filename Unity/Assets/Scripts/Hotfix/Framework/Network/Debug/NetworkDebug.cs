@@ -439,8 +439,6 @@ namespace Hotfix.Framework.Network
 			{
 				return FindRecordLocked(seq);
 			}
-
-			return null;
 		}
 
 		#endregion

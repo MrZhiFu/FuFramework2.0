@@ -88,7 +88,7 @@ namespace Hotfix.Framework.Network
 				Send(msgObj);
 				return await m_rpcState.Call(msgObj);
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				// 重发异步失败（未连接/发送异常）：把本次重发请求记录回写为错误态——列表可见痕迹；
 				// Send 前失败则无记录产生，OnRpcSettled 按 UniqueId 查不到即静默忽略。
