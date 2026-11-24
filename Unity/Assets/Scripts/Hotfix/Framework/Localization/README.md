@@ -173,6 +173,8 @@ LocalizationModule.Instance.Language = ELanguage.ChineseSimplified;
 // 设置时会自动广播 LanguageChangeEventArgs 事件
 ```
 
+**配置表自动重译**：含 `text` 字段的配置表（如 Achievement/Item）在语言切换时会自动重译——`TableManager`（手写分部 `TableManager.Localization.cs`）订阅 `LanguageChangeEventArgs`，广播前由 `LocalizationModule` 先调 `ReloadLocalizationAsync` 重填本地化表（失败回滚语言），广播后 `RefreshTranslateText` 对全部含 text 字段的表执行全量同步重译。生成层为**条件生成**：无 text 字段的表不生成 `TranslateText` 链（无空转）；重译成本与 text 字段规模线性相关（万行级约 2ms，十万行级约 20ms 才有掉帧风险，届时再评估分表分帧）。业务侧取配置表文本是**读时快照**——切语言后已打开的窗口靠监听语言事件重新 SetData 刷新，bean 字段直读的组件在下次读取时自动拿到新译文。
+
 ### 5.3 监听语言变更
 
 ```csharp

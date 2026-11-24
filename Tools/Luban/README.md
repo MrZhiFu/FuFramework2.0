@@ -56,6 +56,7 @@ gen-server-json.bat    :: 服务端（JSON）
 | `Luban.CSharp/PostProcess/LocalizationAotSplitPostProcess.cs` | AOT 前置表 `tblocalizationaot` 按语种拆分导出（key+value 两字段，写回 outputDataDir 由 FileCleaner 自动清理旧语种） |
 | `Luban.CSharp/CodeTarget/CsharpLanguageRegistryCodeTarget.cs` | 生成语言注册表 `LaunchLanguageRegistry`（Entry 为数据驱动字段包：主键 + Fields 字典，LanguageDef 加列零改动；系统语言映射/兜底常量；生成期校验枚举↔表行一致、English 兜底必存、必需列缺失报错） |
 | `Luban.CSharp/TemplateExtensions/CsharpTemplateExtension.cs` 的 `EscapeString` | 模板函数 `escape_string`：字符串字面量转义（注册表条目含非 ASCII 显示名/分隔符） |
+| `Luban.CSharp/TemplateExtensions/CsharpTemplateExtension.cs` 的条件判定函数 | 模板函数 `bean_needs_translate_text` / `bean_needs_resolve_ref` / `field_generates_resolve_ref_call` / `ref_target_type_name` / `get_get_arg`：**条件生成**的判定核心——无 `text` 字段 / 无跨表引用的 bean 与表，不生成 `TranslateText` / `ResolveRef` 方法及调用行（三层联动：bean.sbn / table.sbn / tables.sbn 必须用同一函数，否则上层调用不存在的下层方法直接编译失败）。`ref_target_type_name` 输出目标 bean 短类名（Luban 逻辑全名与本项目生成命名空间不一致）；`get_get_arg` 对枚举键生成 `(long)` 强转。判定逻辑放 C# 扩展而非模板的原因：scriban 嵌套 for 内赋值不穿透作用域，且模板函数不能有 DefField/TType 双重载（解析歧义） |
 | `Luban.CSharp/Templates/cs-dotnet-json`、`cs-dotnet-bin` | 服务端专用模板：非 string 键统一 `(long)` 强转；集合转字符串用服务端自带的 `FuFramework.Core.Config.StringUtil`（模板函数 `to_pretty_string_server`） |
 
 > 模板修改以 `source/src/.../Templates/` 为准；`build-luban` 会**先清空 `bin/` 再整体构建**并从 source 拷贝模板，不要手工改 `bin/Templates`。

@@ -55,8 +55,9 @@
 | `double` | 对应 C# 的 `double`；可填空，自动赋默认值 |
 | `bool` | `true` / `false` / `0` / `1` 都能识别，**大小写不敏感**（如 `True`、`TRUE` 亦有效）；可填空，自动赋默认值 |
 | `string` | 对应 C# 的 `string`；可填空，自动赋默认值 |
-| `text` | 本地化（多语言 key）；可填空，自动赋默认值 |
+| `text` | 本地化（多语言 key）；可填空，自动赋默认值。生成层为含 `text` 字段的表/bean 自动生成 `TranslateText` 重译链（切语言时全表重译），无 text 字段则整链不生成（条件生成，见下） |
 | `datetime` | 对应 C# 的 `long`，值为自 UTC `1970-01-01 00:00:00` 起的**秒数**；**不可填空**。数据格式：`yyyy-mm-dd hh:mm:ss`，或 `yyyy-mm-dd hh:mm`（自动补秒 0）、`yyyy-mm-dd hh`（自动补时分秒 0）、`yyyy-mm-dd`（补 0） |
+| `<类型>#ref=<表全名>` | **跨表引用**（如 `ESoundGroup#ref=Tables.TbSoundGroup`）：生成 `Xxx_Ref` 属性，加载后 `ResolveRef` 阶段自动替换为引用表的行对象（`row.Xxx_Ref` 直读）。**语法要点**：tag 与类型用 `#` 分隔（不是逗号）；表全名为 Luban 逻辑全名（`Tables.TbSoundGroup`）；支持可空引用（`<类型>?#ref=...`，解析为 null 而非报错）。生成层为含 ref 字段的 bean 自动生成 `ResolveRef` 链（嵌套 bean 字段逐层传播），无 ref 字段则整链不生成（条件生成，见下） |
 
 **容器类型**（`#sep` 为元素分隔符）：
 
@@ -68,6 +69,13 @@
 | `(map#sep),T` | `Dictionary<K,V>`（要求键唯一） | `1:1,2:3` |
 
 > **可空**：基本类型与自定义类型都支持可空类型，语法 `<类型>?`（如 `int?`、`Color?`，与 C# 相同）；**容器类型不支持可空**，其 key / value 也不支持可空。
+
+**条件生成（TranslateText / ResolveRef）**：生成器按表/bean 的真实数据决定是否生成对应链路——
+
+- 含 `text` 字段 → 生成 `TranslateText`（bean → 表 → TableManager 三层）；无则三层全部不生成（不产生空方法与空转调用）
+- 含 `ref` 字段（含嵌套 bean 字段的目标 bean 需要时）→ 生成 `ResolveRef`；孤立无引用 bean（如纯数据子结构）不生成
+- 判定是**数据驱动的可逆过程**：策划加/删 text 或 ref 字段后重跑 gen，链路自动恢复/剔除，零手动接线
+- 枚举主键的引用表，生成代码自动带 `(long)` 强转（`BaseDataTable.Get` 仅 int/long/string 重载）
 
 ### 2. 枚举类型（`Excels/__enums__.xlsx`）
 
