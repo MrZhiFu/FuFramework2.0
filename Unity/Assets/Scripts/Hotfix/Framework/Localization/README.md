@@ -158,6 +158,8 @@ public class LocalizationExample
 }
 ```
 
+> **适用边界**：`GetLanguageText` 是查询型消费——适合 UI 固定文案与一次性/海量文本（任务对话、公告正文）。跟随数据行走的文本（物品名、成就描述等）应放进配置表 text 字段由重译链维护（业务代码 `config.Name` 直读、零本地化感知），两种机制的完整分工见 5.2「两种文本消费机制的分工」。
+
 ### 5.2 切换语言
 
 ```csharp
@@ -173,7 +175,19 @@ LocalizationModule.Instance.Language = ELanguage.ChineseSimplified;
 // 设置时会自动广播 LanguageChangeEventArgs 事件
 ```
 
-**配置表自动重译**：含 `text` 字段的配置表（如 Achievement/Item）在语言切换时会自动重译——`TableManager`（手写分部 `TableManager.Localization.cs`）订阅 `LanguageChangeEventArgs`，广播前由 `LocalizationModule` 先调 `ReloadLocalizationAsync` 重填本地化表（失败回滚语言），广播后 `RefreshTranslateText` 对全部含 text 字段的表执行全量同步重译。生成层为**条件生成**：无 text 字段的表不生成 `TranslateText` 链（无空转）；重译成本与 text 字段规模线性相关（万行级约 2ms，十万行级约 20ms 才有掉帧风险，届时再评估分表分帧）。业务侧取配置表文本是**读时快照**——切语言后已打开的窗口靠监听语言事件重新 SetData 刷新，bean 字段直读的组件在下次读取时自动拿到新译文。
+**配置表自动重译**：含 `text` 字段的配置表（如 Achievement/Item）在语言切换时会自动重译——`TableManager`（手写分部 `TableManager.Localization.cs`）订阅 `LanguageChangeEventArgs`，广播前由 `LocalizationModule` 先调 `ReloadLocalizationAsync` 重填本地化表（失败回滚语言），广播后 `RefreshTranslateText` 对全部含 text 字段的表执行全量同步重译。生成层为**条件生成**：无 text 字段的表不生成 `TranslateText` 链（无空转）；重译单次调用是 `TryGetValue + Value 直读`（**无 string.Format**——Format 仅在带 args 的查询时发生，配置表重译不带 args），成本与 text 字段规模线性相关（万行级约 1~2ms，十万行级约 20ms 才有掉帧风险，淹没在切语言本身的 bundle 下载+表重填耗时里）。业务侧取配置表文本是**读时快照**——切语言后已打开的窗口靠监听语言事件重新 SetData 刷新，bean 字段直读的组件在下次读取时自动拿到新译文。
+
+**两种文本消费机制的分工（勿混用，勿互相替代）**：
+
+| | `GetLanguageText(key)`（查询型） | 配置表 text 字段 + 重译链（数据型） |
+|---|---|---|
+| 消费方 | UI/框架层，消费方自己持有 key（FGUI 绑定、固定文案） | 任意业务逻辑，把行当普通数据用（`config.Name` 与读 `config.Attack` 同形，零本地化感知） |
+| 文本存在形态 | 只在读的瞬间存在 | 常驻 bean 字段 |
+| 跟进语言切换 | 读时天然是当前语言 | 重译链维护"字段恒为当前语言"不变量 |
+
+- **行挂载的元数据**（物品名/成就描述等"跟着数据行走"的文本）→ text 字段 + 重译链。这是业务侧能写 `config.Name` 的前提；且非显示场景（按本地化名排序/搜索、名字拼进邮件/日志）依赖字段恒为当前语言，查询型模型覆盖不了。
+- **一次性/海量/不挂行的文案**（任务对话、公告正文等）→ 走 `GetLanguageText(key)` 查询，不进 bean、不给重译链加量。**text 上量时的第一个动作是把这类文案移出配置表，而不是给重译加脏标记/延迟**——延迟重译会引入"表已新、译文旧"的混合语言窗口，省的毫秒与切换链路耗时不在一个量级。
+- `RefreshTranslateText` 的存在意义即此：**维护不变量换消费模型**——删掉它省毫秒级重译，赔进去的是整个"业务代码零本地化感知"的读法（本地化调用泄漏进 N 处业务点 + 非显示场景静默拿到旧语言快照）。
 
 ### 5.3 监听语言变更
 
