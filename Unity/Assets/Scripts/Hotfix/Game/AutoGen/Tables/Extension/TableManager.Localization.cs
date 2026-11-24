@@ -62,7 +62,7 @@ namespace Hotfix.Game.Config
         {
             if (string.IsNullOrEmpty(key)) return original;
 
-            var text = LocalizationModule.Instance?.GetLanguageText(key);
+            var text = LocalizationModule.Instance?.GetL10nText(key);
             return string.IsNullOrEmpty(text) || text == $"[{key}]" ? original : text;
         }
 

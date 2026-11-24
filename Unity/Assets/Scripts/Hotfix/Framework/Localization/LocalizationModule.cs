@@ -137,7 +137,7 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		/// <param name="key">多语言key</param>
 		/// <param name="args">参数</param>
-		public string GetLanguageText(string key, params object[] args)
+		public string GetL10nText(string key, params object[] args)
 		{
 			if (LocalizationProvider is null)
 			{
@@ -145,7 +145,7 @@ namespace Hotfix.Framework.Localization
 				return $"[{key}]";
 			}
 
-			var result = LocalizationProvider.GetLanguage(key, args);
+			var result = LocalizationProvider.GetL10n(key, args);
 			return result.IsNullOrEmpty() ? $"[{key}]" : result;
 		}
 

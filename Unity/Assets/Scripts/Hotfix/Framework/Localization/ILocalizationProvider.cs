@@ -10,6 +10,6 @@ namespace Hotfix.Framework.Localization
 		/// </summary>
 		/// <param name="key">多语言key</param>
 		/// <param name="args">参数</param>
-		string GetLanguage(string key, params object[] args);
+		string GetL10n(string key, params object[] args);
 	}
 }

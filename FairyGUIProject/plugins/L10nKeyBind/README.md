@@ -19,7 +19,7 @@
 
 ## 运行时链路
 
-包构造时 `GObject.SetupL10nGear` 解析 `L10n:` 段 → `GetLanguageText` 委托（**两阶段注入**：AOT 阶段注 `LaunchLocalization.GetLanguage`，热更后由 `HotfixLauncher` 覆盖为 `LocalizationModule.GetLanguageText`）→ 文本写入 `text`/`title`；语言切换时 `WinBase._OnLanguageChanged` 调 `RefreshAllL10n` 遍历重应用。
+包构造时 `GObject.SetupL10nGear` 解析 `L10n:` 段 → `GetL10nText` 委托（**两阶段注入**：AOT 阶段注 `LaunchLocalization.GetL10n`，热更后由 `HotfixLauncher` 覆盖为 `LocalizationModule.GetL10nText`）→ 文本写入 `text`/`title`；语言切换时 `WinBase._OnLanguageChanged` 调 `RefreshAllL10n` 遍历重应用。
 
 ## 文件
 

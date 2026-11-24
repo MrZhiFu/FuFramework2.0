@@ -44,7 +44,7 @@ namespace FairyGUI
         /// 语言文本解析委托：由热更层启动时注入（AOT 阶段注 AOT 表版本，热更后覆盖为热更表版本）。
         /// 未注入时 ResolveL10nText 原样返回 key。
         /// </summary>
-        public static Func<string, string> GetLanguageText;
+        public static Func<string, string> GetL10nText;
 
         /// <summary>
         /// L10n 段解析结果（SetupL10nGear 时填充）。
@@ -181,7 +181,7 @@ namespace FairyGUI
         /// <returns>对应语言的文本</returns>
         internal string ResolveL10nText(string key)
         {
-            var getter = GetLanguageText;
+            var getter = GetL10nText;
             if (getter == null) return key;
             var text = getter(key);
             return string.IsNullOrEmpty(text) ? key : text;

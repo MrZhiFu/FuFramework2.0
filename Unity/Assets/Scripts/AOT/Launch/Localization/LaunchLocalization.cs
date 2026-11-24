@@ -59,7 +59,7 @@ namespace AOT.Launch.Localization
 			Language = LoadLanguagePreference();
 
 			// AOT 阶段注入 FGUI 声明式多语言解析委托（热更阶段会被 HotfixLauncher 覆盖为热更表版本）
-			FairyGUI.GObject.GetLanguageText = key => GetLanguage(key);
+			FairyGUI.GObject.GetL10nText = key => GetL10n(key);
 
 			sr_rows.Clear();
 			sr_englishRows.Clear();
@@ -113,7 +113,7 @@ namespace AOT.Launch.Localization
 		/// <param name="key">多语言 key（使用 AOT 版 LaunchL10nKey 静态类字段）</param>
 		/// <param name="args">格式化参数</param>
 		/// <returns>本地化文本；key 在两个字典都缺失时记录错误并返回空串</returns>
-		public static string GetLanguage(string key, params object[] args)
+		public static string GetL10n(string key, params object[] args)
 		{
 			if (string.IsNullOrEmpty(key)) return string.Empty;
 

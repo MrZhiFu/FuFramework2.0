@@ -49,7 +49,7 @@ namespace Hotfix.Framework.Localization
 		/// <param name="key">多语言key(使用静态类L10nKey的多语言字段即可)</param>
 		/// <param name="args">参数</param>
 		/// <returns>译文；当前语种缺失时回退英语兜底表；两者皆缺返回空串</returns>
-		public string GetLanguage(string key, params object[] args)
+		public string GetL10n(string key, params object[] args)
 		{
 			if (string.IsNullOrEmpty(key)) return string.Empty;
 

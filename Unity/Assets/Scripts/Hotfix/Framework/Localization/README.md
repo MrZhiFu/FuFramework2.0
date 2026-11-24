@@ -70,7 +70,7 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 ```csharp
 // 获取本地化文本（使用当前语言）
-string GetLanguageText(string key, params object[] args)
+string GetL10nText(string key, params object[] args)
 ```
 
 `Language` 属性的 setter 内部会：
@@ -95,7 +95,7 @@ public interface ILocalizationProvider
     /// <param name="key">多语言 key</param>
     /// <param name="args">格式化参数</param>
     /// <returns>对应语言下的文本</returns>
-    string GetLanguage(string key, params object[] args);
+    string GetL10n(string key, params object[] args);
 }
 ```
 
@@ -108,7 +108,7 @@ public interface ILocalizationProvider
 2. 取该语种列的值；为空（未翻译或拆分产物中该键缺失）时进入**二段查询**：查英语兜底表
 3. 英语兜底表为**懒加载**：首次 miss 触发异步加载（`HotfixLauncher` 注入的 `EnglishTableLoader` 直取英语文件，不走语言路由）；加载未就绪时本次同步返回空串，加载完成后后续查询生效。并发 miss 通过 `UniTaskCompletionSource` 共享同一次加载，失败/取消后允许重试
 4. 若有 `args` 参数，使用 `string.Format` 格式化
-5. 当前语种与英语兜底都缺失时返回空串，`LocalizationModule.GetLanguageText` 外层再包装为 `[key]` 占位符
+5. 当前语种与英语兜底都缺失时返回空串，`LocalizationModule.GetL10nText` 外层再包装为 `[key]` 占位符
 
 > Provider 无独立生命周期，英语兜底加载的取消令牌挂在 `AssetModule` 模块生命周期上。
 
@@ -149,16 +149,16 @@ public class LocalizationExample
         var localizationModule = LocalizationModule.Instance;
 
         // 获取当前语言下的本地化文本（无参数；key 建议使用 L10nKey 常量类字段，避免硬编码）
-        return localizationModule.GetLanguageText(L10nKey.common_continue_game);
+        return localizationModule.GetL10nText(L10nKey.common_continue_game);
 
         // 获取当前语言下的本地化文本（带参数格式化）
-        // return localizationModule.GetLanguageText(L10nKey.xxx_gold_count, 1000);
+        // return localizationModule.GetL10nText(L10nKey.xxx_gold_count, 1000);
         // 对应配置表中的文本如: "金币: {0}" → 输出 "金币: 1000"
     }
 }
 ```
 
-> **适用边界**：`GetLanguageText` 是查询型消费——适合 UI 固定文案与一次性/海量文本（任务对话、公告正文）。跟随数据行走的文本（物品名、成就描述等）应放进配置表 text 字段由重译链维护（业务代码 `config.Name` 直读、零本地化感知），两种机制的完整分工见 5.2「两种文本消费机制的分工」。
+> **适用边界**：`GetL10nText` 是查询型消费——适合 UI 固定文案与一次性/海量文本（任务对话、公告正文）。跟随数据行走的文本（物品名、成就描述等）应放进配置表 text 字段由重译链维护（业务代码 `config.Name` 直读、零本地化感知），两种机制的完整分工见 5.2「两种文本消费机制的分工」。
 
 ### 5.2 切换语言
 
@@ -179,14 +179,14 @@ LocalizationModule.Instance.Language = ELanguage.ChineseSimplified;
 
 **两种文本消费机制的分工（勿混用，勿互相替代）**：
 
-| | `GetLanguageText(key)`（查询型） | 配置表 text 字段 + 重译链（数据型） |
+| | `GetL10nText(key)`（查询型） | 配置表 text 字段 + 重译链（数据型） |
 |---|---|---|
 | 消费方 | UI/框架层，消费方自己持有 key（FGUI 绑定、固定文案） | 任意业务逻辑，把行当普通数据用（`config.Name` 与读 `config.Attack` 同形，零本地化感知） |
 | 文本存在形态 | 只在读的瞬间存在 | 常驻 bean 字段 |
 | 跟进语言切换 | 读时天然是当前语言 | 重译链维护"字段恒为当前语言"不变量 |
 
 - **行挂载的元数据**（物品名/成就描述等"跟着数据行走"的文本）→ text 字段 + 重译链。这是业务侧能写 `config.Name` 的前提；且非显示场景（按本地化名排序/搜索、名字拼进邮件/日志）依赖字段恒为当前语言，查询型模型覆盖不了。
-- **一次性/海量/不挂行的文案**（任务对话、公告正文等）→ 走 `GetLanguageText(key)` 查询，不进 bean、不给重译链加量。**text 上量时的第一个动作是把这类文案移出配置表，而不是给重译加脏标记/延迟**——延迟重译会引入"表已新、译文旧"的混合语言窗口，省的毫秒与切换链路耗时不在一个量级。
+- **一次性/海量/不挂行的文案**（任务对话、公告正文等）→ 走 `GetL10nText(key)` 查询，不进 bean、不给重译链加量。**text 上量时的第一个动作是把这类文案移出配置表，而不是给重译加脏标记/延迟**——延迟重译会引入"表已新、译文旧"的混合语言窗口，省的毫秒与切换链路耗时不在一个量级。
 - `RefreshTranslateText` 的存在意义即此：**维护不变量换消费模型**——删掉它省毫秒级重译，赔进去的是整个"业务代码零本地化感知"的读法（本地化调用泄漏进 N 处业务点 + 非显示场景静默拿到旧语言快照）。
 
 ### 5.3 监听语言变更
@@ -253,7 +253,7 @@ Localization/
 ## 8. 最佳实践
 
 1. **Key 命名规范**：使用 `模块_功能_元素` 格式，如 `UI_Shop_BuyBtn`
-2. **避免硬编码**：所有用户可见文本都应通过 `GetLanguageText` 获取
+2. **避免硬编码**：所有用户可见文本都应通过 `GetL10nText` 获取
 3. **缓存文本**：频繁使用的文本可在初始化时缓存，避免重复查询
 4. **语言变更时刷新**：UI 界面应监听 `LanguageChangeEventArgs` 事件，及时刷新文本
 5. **兜底语言**：目标语种译文为空时二段查询英语兜底表（懒加载：首次 miss 触发加载，加载完成后后续查询生效；首次 miss 可能短暂返回空串）
@@ -263,7 +263,7 @@ Localization/
 
 1. 语言切换后的文本刷新：FGUI 声明式绑定（第 11 节）与业务数据绑定（`WinBase._OnLanguageChanged` 的 `OnOpen`）自动执行；仅自管文本的界面需要自行订阅 `Subscribe<LanguageChangeEventArgs>(...)` 手动刷新
 2. 本地化文本 Key 在配置表中必须唯一
-3. 若 `LocalizationProvider` 未设置，`GetLanguageText` 会返回 `[key]` 格式的占位符文本并输出警告日志
+3. 若 `LocalizationProvider` 未设置，`GetL10nText` 会返回 `[key]` 格式的占位符文本并输出警告日志
 4. 语言设置存储在本地，卸载游戏后不会丢失
 5. 设置语言为 `ELanguage.Unspecified` 会抛出 `InvalidOperationException`
 
@@ -277,7 +277,7 @@ Localization/
 
 ## 11. FGUI 声明式多语言（L10n 插件）
 
-除代码取文本（`GetLanguageText`）外，FGUI 界面还支持**声明式**多语言：编辑器插件把 key 写进组件 `customData`，运行时自动应用，业务代码零参与。
+除代码取文本（`GetL10nText`）外，FGUI 界面还支持**声明式**多语言：编辑器插件把 key 写进组件 `customData`，运行时自动应用，业务代码零参与。
 
 ### 11.1 链路
 
