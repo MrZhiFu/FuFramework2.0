@@ -63,8 +63,6 @@ namespace Hotfix
 		{
 			FuLogger.LogInfo("------热更逻辑完毕，进入热更后的代码逻辑入口------".Color(LogColorEx.Green));
 
-			// 初始化协议消息处理器：
-
 			// 初始化 FairyGUI相关：注册自定义加载器（CustomLoader）与自定义组件绑定（CustomCompBind）。
 			InitFGUI();
 
