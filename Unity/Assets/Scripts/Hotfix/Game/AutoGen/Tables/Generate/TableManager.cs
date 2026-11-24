@@ -146,18 +146,6 @@ namespace Hotfix.Game.Config
         /// </summary>
         private void ResolveRef()
         {
-            TbLocalization.ResolveRef(this);
-            TbAchievement.ResolveRef(this);
-            TbItem.ResolveRef(this);
-            TbEntityGroup.ResolveRef(this);
-            TbGlobalDefine.ResolveRef(this);
-            TbGuide.ResolveRef(this);
-            TbGuideStep.ResolveRef(this);
-            TbLanguageDef.ResolveRef(this);
-            TbRedDot.ResolveRef(this);
-            TbSound.ResolveRef(this);
-            TbSoundGroup.ResolveRef(this);
-            TbUIConfig.ResolveRef(this);
         }
 
         /// <summary>
@@ -169,18 +157,8 @@ namespace Hotfix.Game.Config
         {
             if (IsLoaded == false) throw new InvalidOperationException("为配置表设置本地化翻译器失败，配置表没有被加载!");
 
-            TbLocalization.TranslateText(translator);
             TbAchievement.TranslateText(translator);
             TbItem.TranslateText(translator);
-            TbEntityGroup.TranslateText(translator);
-            TbGlobalDefine.TranslateText(translator);
-            TbGuide.TranslateText(translator);
-            TbGuideStep.TranslateText(translator);
-            TbLanguageDef.TranslateText(translator);
-            TbRedDot.TranslateText(translator);
-            TbSound.TranslateText(translator);
-            TbSoundGroup.TranslateText(translator);
-            TbUIConfig.TranslateText(translator);
         }
 
         /// <summary>

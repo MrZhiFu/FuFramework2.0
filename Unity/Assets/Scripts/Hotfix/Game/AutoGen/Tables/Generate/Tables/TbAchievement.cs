@@ -55,17 +55,6 @@ namespace Hotfix.Game.Config
             OnInit();
         }
 
-        /// <summary>
-        /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
-        /// </summary>
-        /// <param name="tableManager">表管理器，用于跨表查找</param>
-        public void ResolveRef(TableManager tableManager)
-        {
-            foreach(var value in DataList)
-            {
-                value.ResolveRef(tableManager);
-            }
-        }
 
         /// <summary>
         /// 用指定翻译器刷新本表所有多语言字段

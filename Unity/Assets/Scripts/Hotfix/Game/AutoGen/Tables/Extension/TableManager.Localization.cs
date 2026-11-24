@@ -46,7 +46,9 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 刷新全部配置表的本地化文本（首次翻译与语言切换刷新共用入口）
+        /// 刷新全部配置表的本地化文本（首次翻译与语言切换刷新共用入口）。
+        /// 生成层已剔除无 text 字段的表的调用（Luban 条件生成），此处只遍历含多语言字段（如 Achievement/Item）的表。
+        /// 全量同步重译语义保留；text 字段规模上量到万行级（约 2ms/次）再评估分表分帧，十万行级（约 20ms）才有掉帧风险。
         /// </summary>
         public void RefreshTranslateText() => SetTranslateText(Translate);
 

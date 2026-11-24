@@ -55,29 +55,7 @@ namespace Hotfix.Game.Config
             OnInit();
         }
 
-        /// <summary>
-        /// 解析本表内所有跨表引用（把引用的 id 换成实际对象）
-        /// </summary>
-        /// <param name="tableManager">表管理器，用于跨表查找</param>
-        public void ResolveRef(TableManager tableManager)
-        {
-            foreach(var value in DataList)
-            {
-                value.ResolveRef(tableManager);
-            }
-        }
 
-        /// <summary>
-        /// 用指定翻译器刷新本表所有多语言字段
-        /// </summary>
-        /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
-        public void TranslateText(Func<string, string, string> translator)
-        {
-            foreach(var v in DataList)
-            {
-                v.TranslateText(translator);
-            }
-        }
 
         /// <summary>
         /// 分部初始化钩子，由使用方补实现。

@@ -57,21 +57,7 @@ namespace Hotfix.Game.Config
         /// <returns>反序列化后的 Localization</returns>
         public static Localization DeserializeLocalization(JSONNode node) => new(node);
 
-        /// <summary>
-        /// 解析本 bean 的跨表引用（引用的 id 换成实际对象）
-        /// </summary>
-        /// <param name="tableManager">表管理器，用于跨表查找</param>
-        public  void ResolveRef(TableManager tableManager)
-        {
-        }
 
-        /// <summary>
-        /// 用指定翻译器刷新本 bean 的多语言字段
-        /// </summary>
-        /// <param name="translator">翻译委托：传入 (key, original) 返回译文</param>
-        public void TranslateText(Func<string, string, string> translator)
-        {
-        }
 
         /// <summary>
         /// 返回本对象的字段字符串表示
