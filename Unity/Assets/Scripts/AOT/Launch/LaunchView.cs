@@ -115,7 +115,7 @@ namespace AOT.Launch
 		public void ShowUpdateDialog(string content, Action onConfirm)
 		{
 			SetNeedUpgrade(true);
-			m_winLauncher.btnOk.title     = LaunchLocalization.GetL10n(LaunchL10nKey.aot_update_dialog_ok_btn);
+			m_winLauncher.btnOk.title     = LaunchLocalization.GetL10nText(LaunchL10nKey.aot_update_dialog_ok_btn);
 			m_winLauncher.txtContent.text = content;
 			m_winLauncher.txtContent.onClick.Set(ctx =>
 			{

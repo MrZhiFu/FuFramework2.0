@@ -65,7 +65,7 @@ namespace AOT.Launch
 			}
 
 			// 初始化资源包
-			s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_init_res_package));
+			s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_init_res_package));
 			if (updateConfig == null)
 			{
 				await LaunchAssetHelper.InitPackageAsync();
@@ -79,19 +79,19 @@ namespace AOT.Launch
 			}
 
 			// 获取版本号（失败重试）
-			s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_get_res_version));
+			s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_get_res_version));
 			string packageVersion;
 			while ((packageVersion = await LaunchAssetHelper.RequestVersionAsync()) == null)
 			{
-				s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_get_res_version_fail));
+				s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_get_res_version_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 
 			// 更新资源清单（失败重试）
-			s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_update_res_manifest));
+			s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_update_res_manifest));
 			while (!await LaunchAssetHelper.UpdateManifestAsync(packageVersion))
 			{
-				s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_update_res_manifest_fail));
+				s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_update_res_manifest_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 
@@ -132,7 +132,7 @@ namespace AOT.Launch
 					FuLogger.LogError($"获取远端更新配置异常：{e.Message}");
 				}
 
-				s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_req_remote_update_config_fail));
+				s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_req_remote_update_config_fail));
 				await UniTask.WaitForSeconds(3);
 			}
 		}
@@ -169,7 +169,7 @@ namespace AOT.Launch
 					var progress = args.CurrentDownloadBytes / (args.TotalDownloadBytes * 1f);
 					var cur      = UtilityAOT.File.GetBytesSizeWithUnit(args.CurrentDownloadBytes);
 					var tot      = UtilityAOT.File.GetBytesSizeWithUnit(args.TotalDownloadBytes);
-					s_launchView.SetProgress(progress, LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_downloading, cur, tot));
+					s_launchView.SetProgress(progress, LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_downloading, cur, tot));
 				};
 				var failed = false;
 				downloader.DownloadError += _ => failed = true;
@@ -179,7 +179,7 @@ namespace AOT.Launch
 				await downloader;
 
 				if (!failed && downloader.Status == EOperationStatus.Succeeded) return; // 下载成功
-				s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_download_fail));
+				s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_download_fail));
 				await UniTask.WaitForSeconds(3); // 失败后重建下载器重试
 			}
 		}
@@ -208,7 +208,7 @@ namespace AOT.Launch
 				if (bytes == null)
 				{
 					FuLogger.LogError($"加载 AOT 补充元数据失败，中止热更移交：{aotPath}");
-					s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_load_fail));
+					s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_load_fail));
 					return;
 				}
 
@@ -224,7 +224,7 @@ namespace AOT.Launch
 			if (dllBytes == null)
 			{
 				FuLogger.LogError($"加载 Hotfix 程序集失败，中止热更移交：{dllPath}");
-				s_launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_load_fail));
+				s_launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_load_fail));
 				return;
 			}
 

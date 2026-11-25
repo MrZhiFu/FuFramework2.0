@@ -144,11 +144,11 @@ namespace Hotfix
 		private static async UniTask InitDependenciesAsync(ILaunchView launchView)
 		{
 			// 加载配置表
-			launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_loading_config));
+			launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_loading_config));
 			var tableManager = await LoadConfigAsync();
 
 			// 加载初始必要的公共UI资源包
-			launchView.SetTip(LaunchLocalization.GetL10n(LaunchL10nKey.aot_res_loading_init_res));
+			launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_loading_init_res));
 			await LoadCommonUIAsync();
 
 			// 设置本地化多语言提供者
