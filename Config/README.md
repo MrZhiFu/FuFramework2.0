@@ -24,8 +24,10 @@
 |---|---|---|---|
 | `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（按语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
 | `gen-client-json.bat` / `.sh` | 客户端（json 变体） | 同上（业务表为 `.json`；本地化产物仍为 `.bytes`） | 同上 |
-| `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/json` | `Server/FuFramework.Config/Config` |
-| `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上（两变体共用目录） | 同上 |
+| `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/Data`（`.bytes`） | `Server/FuFramework.Config/Config` |
+| `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上目录（`.json`） | 同上 |
+
+> **服务端双变体（对齐客户端"开发 json / 发布 bin"模式）**：两套脚本共用数据目录 `Server/FuFramework.Config/Data`，但**同时只存在一种格式**——每个脚本跑时 Luban 默认清理会把另一变体的数据清掉，与代码变体（`cs-dotnet-bin`/`cs-dotnet-json` 生成的 `TableManager.LoadAsync` 委托签名）成对翻转，`ConfigComponent` 的两个 Loader 按签名自动绑定对应格式（bin 读 `Data/{file}.bytes`、json 读 `Data/{file}.json`）。csproj 将 `Data\*.json` 与 `Data\*.bytes` 都挂了 `CopyToOutputDirectory`，部署目录始终有当前变体的数据。
 
 > **分组过滤（重要）**：表与枚举的导出由分组决定——表用文件名第 3 段（`-c-` / `-s-` / `-aot-`），枚举/Bean 用 `Excels/__enums__.xlsx` / `__beans__.xlsx` 的 `group` 列。**生成脚本必须传 `-x tableImporter.target=<target>`**，否则所有带分组段的表都会被跳过。当前客户端专属表（`-c-`）不进入服务端，服务端只生成 `Achievement` / `Item` / `GlobalDefine` 三张表。
 

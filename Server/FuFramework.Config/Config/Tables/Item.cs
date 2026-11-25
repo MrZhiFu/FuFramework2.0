@@ -6,12 +6,14 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
 {
     public sealed partial class Item : BeanBase
     {
+        /*
         public Item(int Id, string Name, string Desc, string Icon, string Bg, EQuality Quality, EItemType Type, EItemSubType SubType, EItemUseType CanUse) 
         {
             this.Id = Id;
@@ -24,27 +26,23 @@ namespace FuFramework.Config.Tables
             this.SubType = SubType;
             this.CanUse = CanUse;
             PostInit();
-        }
+        }        
+        */
 
-        public Item(ByteBuf _buf) 
+        public Item(JsonElement _buf) 
         {
-            Id = _buf.ReadInt();
-            Name = _buf.ReadString();
-            Desc = _buf.ReadString();
-            Icon = _buf.ReadString();
-            Bg = _buf.ReadString();
-            Quality = (EQuality)_buf.ReadInt();
-            Type = (EItemType)_buf.ReadInt();
-            SubType = (EItemSubType)_buf.ReadInt();
-            CanUse = (EItemUseType)_buf.ReadInt();
-            // Localization Key Begin
-            Name_Localization_Key = Name;
-            Desc_Localization_Key = Desc;
-            // Localization Key End
-            PostInit();
+            Id = _buf.GetProperty("id").GetInt32();
+            Name = _buf.GetProperty("name").GetString();
+            Desc = _buf.GetProperty("desc").GetString();
+            Icon = _buf.GetProperty("icon").GetString();
+            Bg = _buf.GetProperty("bg").GetString();
+            Quality = (EQuality)_buf.GetProperty("quality").GetInt32();
+            Type = (EItemType)_buf.GetProperty("type").GetInt32();
+            SubType = (EItemSubType)_buf.GetProperty("sub_type").GetInt32();
+            CanUse = (EItemUseType)_buf.GetProperty("can_use").GetInt32();
         }
-
-        public static Item DeserializeItem(ByteBuf _buf)
+    
+        public static Item DeserializeItem(JsonElement _buf)
         {
             return new Tables.Item(_buf);
         }
@@ -58,17 +56,9 @@ namespace FuFramework.Config.Tables
         /// </summary>
         public string Name { private set; get; }
         /// <summary>
-        /// 名称 的多语言Key
-        /// </summary>
-        public readonly string Name_Localization_Key;
-        /// <summary>
         /// 描述
         /// </summary>
         public string Desc { private set; get; }
-        /// <summary>
-        /// 描述 的多语言Key
-        /// </summary>
-        public readonly string Desc_Localization_Key;
         /// <summary>
         /// 图标
         /// </summary>
@@ -93,15 +83,10 @@ namespace FuFramework.Config.Tables
         /// 能否使用
         /// </summary>
         public EItemUseType CanUse { private set; get; }
-        public const int __ID__ = -1513240324;
+
+        private const int __ID__ = -1513240324;
         public override int GetTypeId() => __ID__;
 
-
-        public  void TranslateText(System.Func<string, string, string> translator)
-        {
-            Name = translator(Name_Localization_Key, Name);
-            Desc = translator(Desc_Localization_Key, Desc);
-        }
 
         public override string ToString()
         {
@@ -119,6 +104,5 @@ namespace FuFramework.Config.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

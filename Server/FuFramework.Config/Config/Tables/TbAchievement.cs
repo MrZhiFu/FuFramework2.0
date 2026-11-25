@@ -6,6 +6,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
@@ -15,23 +16,25 @@ namespace FuFramework.Config.Tables
     /// </summary>
     public partial class TbAchievement : BaseDataTable<Tables.Achievement>
     {
-        private readonly System.Func<System.Threading.Tasks.Task<ByteBuf>> _loadFunc;
-
-        public TbAchievement(System.Func<System.Threading.Tasks.Task<ByteBuf>> loadFunc)
-        {
-            _loadFunc = loadFunc;
-        }
-
+        //private readonly System.Collections.Generic.Dictionary<int, Tables.Achievement> _dataMap;
+        //private readonly System.Collections.Generic.List<Tables.Achievement> _dataList;
+    
+        //public System.Collections.Generic.Dictionary<int, Tables.Achievement> DataMap => _dataMap;
+        //public System.Collections.Generic.List<Tables.Achievement> DataList => _dataList;
+        //public Tables.Achievement GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+        //public Tables.Achievement Get(int key) => _dataMap[key];
+        //public Tables.Achievement this[int key] => _dataMap[key];
+    
         public override async System.Threading.Tasks.Task LoadAsync()
         {
-            ByteBuf _buf = await _loadFunc();
+            var jsonElement = await _loadFunc();
             DataList.Clear();
             LongDataMaps.Clear();
             StringDataMaps.Clear();
-            for(int n = _buf.ReadSize() ; n > 0 ; --n)
+            foreach(var element in jsonElement.EnumerateArray())
             {
                 Tables.Achievement _v;
-                _v = global::FuFramework.Config.Tables.Achievement.DeserializeAchievement(_buf);
+                _v = global::FuFramework.Config.Tables.Achievement.DeserializeAchievement(element);
                 DataList.Add(_v);
                 LongDataMaps.Add((long)_v.Id, _v);
                 StringDataMaps.Add(_v.Id.ToString(), _v);
@@ -40,17 +43,11 @@ namespace FuFramework.Config.Tables
         }
 
 
-
-        public void TranslateText(System.Func<string, string, string> translator)
-        {
-            foreach(var v in DataList)
-            {
-                v.TranslateText(translator);
-            }
-        }
-
-
+    
         partial void PostInit();
-        partial void PostResolveRef();
+
+        public TbAchievement(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
+        {
+        }
     }
 }

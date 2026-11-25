@@ -6,8 +6,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
+using System.Text.Json;
 using FuFramework.Core.Config;
+using FuFramework.Config;
 
 namespace FuFramework.Config
 {
@@ -25,6 +26,7 @@ namespace FuFramework.Config
         /// 全局常量定义表
         /// </summary>
         internal Tables.TbGlobalDefine TbGlobalDefine { private set; get; }
+    
         private ConfigComponent m_ConfigComponent;
 
         public void Init(ConfigComponent configComponent)
@@ -33,62 +35,37 @@ namespace FuFramework.Config
             configComponent.RemoveAllConfigs();
         }
 
-        /// <summary>
-        /// 是否加载完成
-        /// </summary>
-        public bool IsLoaded { get; private set; }
-
-        /// <summary>
-        /// 异步加载配置文件
-        /// </summary>
-        /// <param name="loader">加载器</param>
-        public async System.Threading.Tasks.Task LoadAsync(System.Func<string, bool, System.Threading.Tasks.Task<ByteBuf>> loader)
+        public async System.Threading.Tasks.Task LoadAsync(System.Func<string, System.Threading.Tasks.Task<JsonElement>> loader)
         {
-            if (IsLoaded)
-            {
-                return;
-            }
-            IsLoaded = false;
-            m_ConfigComponent.RemoveAllConfigs();
+            //m_ConfigComponent.RemoveAllConfigs();
             var loadTasks = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-
-            TbAchievement = new Tables.TbAchievement(() => loader("tbachievement", true));
+    
+            TbAchievement = new Tables.TbAchievement(() => loader("tbachievement"));
             loadTasks.Add(TbAchievement.LoadAsync());
             m_ConfigComponent.Add(nameof(Tables.TbAchievement), TbAchievement);
 
-            TbItem = new Tables.TbItem(() => loader("tbitem", true));
+            TbItem = new Tables.TbItem(() => loader("tbitem"));
             loadTasks.Add(TbItem.LoadAsync());
             m_ConfigComponent.Add(nameof(Tables.TbItem), TbItem);
 
-            TbGlobalDefine = new Tables.TbGlobalDefine(() => loader("tbglobaldefine", true));
+            TbGlobalDefine = new Tables.TbGlobalDefine(() => loader("tbglobaldefine"));
             loadTasks.Add(TbGlobalDefine.LoadAsync());
             m_ConfigComponent.Add(nameof(Tables.TbGlobalDefine), TbGlobalDefine);
 
-
+    
             await System.Threading.Tasks.Task.WhenAll(loadTasks);
-
+    
             Refresh();
-            IsLoaded = true;
         }
 
-        /// <summary>
-        /// 设置本地化的适配器
-        /// </summary>
-        /// <param name="translator">适配器对象</param>
-        /// <exception cref="InvalidOperationException">如果未加载完成将抛出此异常</exception>
-        public void SetTranslateText(System.Func<string, string, string> translator)
+        public TableManager()
         {
-            if (IsLoaded == false)
-            {
-                throw new InvalidOperationException("Table is not loaded!");
-            }
-            TbAchievement.TranslateText(translator);
-            TbItem.TranslateText(translator);
-        }
-
-        private void ResolveRef()
-        {
-            PostResolveRef();
+            //TablesMemory.BeginRecord();
+    
+            // TbAchievement = new Tables.TbAchievement();
+            // TbItem = new Tables.TbItem();
+            // TbGlobalDefine = new Tables.TbGlobalDefine();
+            //TablesMemory.EndRecord();
         }
 
         public void Refresh()
@@ -97,7 +74,10 @@ namespace FuFramework.Config
             ResolveRef();
         }
 
+        private void ResolveRef()
+        {
+        }
+    
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

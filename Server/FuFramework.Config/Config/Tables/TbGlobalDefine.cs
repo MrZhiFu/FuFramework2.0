@@ -6,6 +6,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
@@ -15,23 +16,25 @@ namespace FuFramework.Config.Tables
     /// </summary>
     public partial class TbGlobalDefine : BaseDataTable<Tables.GlobalDefine>
     {
-        private readonly System.Func<System.Threading.Tasks.Task<ByteBuf>> _loadFunc;
-
-        public TbGlobalDefine(System.Func<System.Threading.Tasks.Task<ByteBuf>> loadFunc)
-        {
-            _loadFunc = loadFunc;
-        }
-
+        //private readonly System.Collections.Generic.Dictionary<long, Tables.GlobalDefine> _dataMap;
+        //private readonly System.Collections.Generic.List<Tables.GlobalDefine> _dataList;
+    
+        //public System.Collections.Generic.Dictionary<long, Tables.GlobalDefine> DataMap => _dataMap;
+        //public System.Collections.Generic.List<Tables.GlobalDefine> DataList => _dataList;
+        //public Tables.GlobalDefine GetOrDefault(long key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+        //public Tables.GlobalDefine Get(long key) => _dataMap[key];
+        //public Tables.GlobalDefine this[long key] => _dataMap[key];
+    
         public override async System.Threading.Tasks.Task LoadAsync()
         {
-            ByteBuf _buf = await _loadFunc();
+            var jsonElement = await _loadFunc();
             DataList.Clear();
             LongDataMaps.Clear();
             StringDataMaps.Clear();
-            for(int n = _buf.ReadSize() ; n > 0 ; --n)
+            foreach(var element in jsonElement.EnumerateArray())
             {
                 Tables.GlobalDefine _v;
-                _v = global::FuFramework.Config.Tables.GlobalDefine.DeserializeGlobalDefine(_buf);
+                _v = global::FuFramework.Config.Tables.GlobalDefine.DeserializeGlobalDefine(element);
                 DataList.Add(_v);
                 LongDataMaps.Add((long)_v.PlayerInitialCoin, _v);
                 StringDataMaps.Add(_v.PlayerInitialCoin.ToString(), _v);
@@ -40,10 +43,11 @@ namespace FuFramework.Config.Tables
         }
 
 
-
-
-
+    
         partial void PostInit();
-        partial void PostResolveRef();
+
+        public TbGlobalDefine(Func<Task<JsonElement>> loadFunc) : base(loadFunc)
+        {
+        }
     }
 }

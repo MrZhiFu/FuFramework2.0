@@ -20,7 +20,7 @@ dotnet ../Tools/Luban/bin/Luban.dll ^
     -t server ^
     -d bin ^
     -c cs-dotnet-bin ^
-    -x outputDataDir=../Server/FuFramework.Config/Json ^
+    -x outputDataDir=../Server/FuFramework.Config/Data ^
     -x cs-dotnet-bin.outputCodeDir=../Server/FuFramework.Config/Config ^
     -x tableImporter.name=fuframework ^
     -x tableImporter.target=server ^

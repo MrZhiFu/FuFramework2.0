@@ -6,29 +6,29 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
 {
     public sealed partial class GlobalDefine : BeanBase
     {
+        /*
         public GlobalDefine(long PlayerInitialCoin, int PlayerInitialHp) 
         {
             this.PlayerInitialCoin = PlayerInitialCoin;
             this.PlayerInitialHp = PlayerInitialHp;
             PostInit();
-        }
+        }        
+        */
 
-        public GlobalDefine(ByteBuf _buf) 
+        public GlobalDefine(JsonElement _buf) 
         {
-            PlayerInitialCoin = _buf.ReadLong();
-            PlayerInitialHp = _buf.ReadInt();
-            // Localization Key Begin
-            // Localization Key End
-            PostInit();
+            PlayerInitialCoin = _buf.GetProperty("player_initial_coin").GetInt64();
+            PlayerInitialHp = _buf.GetProperty("player_initial_hp").GetInt32();
         }
-
-        public static GlobalDefine DeserializeGlobalDefine(ByteBuf _buf)
+    
+        public static GlobalDefine DeserializeGlobalDefine(JsonElement _buf)
         {
             return new Tables.GlobalDefine(_buf);
         }
@@ -41,9 +41,9 @@ namespace FuFramework.Config.Tables
         /// 玩家初始血量
         /// </summary>
         public int PlayerInitialHp { private set; get; }
-        public const int __ID__ = -1887201241;
-        public override int GetTypeId() => __ID__;
 
+        private const int __ID__ = -1887201241;
+        public override int GetTypeId() => __ID__;
 
 
         public override string ToString()
@@ -55,6 +55,5 @@ namespace FuFramework.Config.Tables
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }

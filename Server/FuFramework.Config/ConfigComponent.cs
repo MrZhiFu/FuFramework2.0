@@ -30,13 +30,13 @@ public class ConfigComponent
 
     private static async Task<ByteBuf> Loader(string file, bool tag)
     {
-        var configBytes = await File.ReadAllBytesAsync($"json/{file}.bytes");
+        var configBytes = await File.ReadAllBytesAsync($"Data/{file}.bytes");
         return ByteBuf.Wrap(configBytes);
     }
 
     private static async Task<JsonElement> Loader(string file)
     {
-        var configJson = await File.ReadAllTextAsync($"json/{file}.json");
+        var configJson = await File.ReadAllTextAsync($"Data/{file}.json");
         var jsonElement = JsonDocument.Parse(configJson).RootElement;
         return jsonElement;
     }

@@ -6,6 +6,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config
@@ -15,6 +16,7 @@ namespace FuFramework.Config
     /// </summary>
     public sealed partial class Property : BeanBase
     {
+        /*
         public Property(int PhysicalAttack, int MagicAttack, int PhysicalDefense, int MagicDefense, int Life, int Crit, int BurstDamage, int Precise, int Block) 
         {
             this.PhysicalAttack = PhysicalAttack;
@@ -27,25 +29,23 @@ namespace FuFramework.Config
             this.Precise = Precise;
             this.Block = Block;
             PostInit();
-        }
+        }        
+        */
 
-        public Property(ByteBuf _buf) 
+        public Property(JsonElement _buf) 
         {
-            PhysicalAttack = _buf.ReadInt();
-            MagicAttack = _buf.ReadInt();
-            PhysicalDefense = _buf.ReadInt();
-            MagicDefense = _buf.ReadInt();
-            Life = _buf.ReadInt();
-            Crit = _buf.ReadInt();
-            BurstDamage = _buf.ReadInt();
-            Precise = _buf.ReadInt();
-            Block = _buf.ReadInt();
-            // Localization Key Begin
-            // Localization Key End
-            PostInit();
+            PhysicalAttack = _buf.GetProperty("PhysicalAttack").GetInt32();
+            MagicAttack = _buf.GetProperty("MagicAttack").GetInt32();
+            PhysicalDefense = _buf.GetProperty("PhysicalDefense").GetInt32();
+            MagicDefense = _buf.GetProperty("MagicDefense").GetInt32();
+            Life = _buf.GetProperty("Life").GetInt32();
+            Crit = _buf.GetProperty("Crit").GetInt32();
+            BurstDamage = _buf.GetProperty("burstDamage").GetInt32();
+            Precise = _buf.GetProperty("precise").GetInt32();
+            Block = _buf.GetProperty("block").GetInt32();
         }
-
-        public static Property DeserializeProperty(ByteBuf _buf)
+    
+        public static Property DeserializeProperty(JsonElement _buf)
         {
             return new Property(_buf);
         }
@@ -86,9 +86,9 @@ namespace FuFramework.Config
         /// 格挡
         /// </summary>
         public int Block { private set; get; }
-        public const int __ID__ = -928497163;
-        public override int GetTypeId() => __ID__;
 
+        private const int __ID__ = -928497163;
+        public override int GetTypeId() => __ID__;
 
 
         public override string ToString()
@@ -107,6 +107,5 @@ namespace FuFramework.Config
         }
 
         partial void PostInit();
-        partial void PostResolveRef();
     }
 }
