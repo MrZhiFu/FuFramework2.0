@@ -15,13 +15,13 @@ Game Hotfix 模块是游戏的可热更新代码部分，通过 HybridCLR 技术
 - 异步加载配置表
 - 加载初始 UI 资源
 - 绑定 FairyGUI 自定义组件
-- 设置多语言提供器
+- 注入多语言取词依赖（英语兜底表加载器 / 表重填回调 / FGUI 声明式解析委托）
 - 打开登录界面
 - 初始化引导系统
 
 **入口方法**：
 ```csharp
-public static async UniTask Main()
+public static async UniTask MainAsync(ILaunchView launchView)
 ```
 
 ### 2.2 协议消息注册（原 HotfixProtoHandler 已移除）
@@ -84,6 +84,6 @@ proto 变更后请运行 Unity 菜单 **`FuFramework/网络/导出Proto—全部
 2. **程序集引用**：热更程序集可以引用 AOT 程序集，反之不行
 3. **反射注意**：使用反射访问 AOT 类型时需要注意性能
 4. **配置表缓存**：`TableManager` 加载后会缓存配置表，避免重复加载
-5. **多语言缓存**：`LocalizationProvider` 会缓存 `TbLocalization` 引用
+5. **多语言缓存**：`LocalizationModule` 会缓存 `TbLocalization` 引用
 6. **事件释放**：界面销毁时需要取消订阅事件，避免内存泄漏
 7. **红点释放**：界面关闭时会自动释放红点，无需手动处理

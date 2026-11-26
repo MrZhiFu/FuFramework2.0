@@ -163,7 +163,7 @@
 
 > 客户端专属枚举（UI / 红点 / 声音 / 引导 / 实体组 / 语言等）在 `__enums__.xlsx` 的 `group` 列标 `c`；服务端只会生成被其导出表真实引用的枚举（如品质、道具类型）。
 
-**扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、按语种拆分产物（统一 key+value 两字段）、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
+**扩语言/删语种（纯数据操作，零代码改动）**：`__enums__.xlsx` 追加/删除枚举成员（value 顺延）→ 各本地化表加/删语言列 → `L-LanguageDef` 加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-bin`。生成器自动联动：`LaunchLanguageRegistry`（语种清单/系统语言映射/兜底）、按语种拆分产物（统一 key+value 两字段）、`sync_localization_yooasset_collectors.py`（YooAsset 收集器）。生成期校验三方一致（枚举成员 ↔ LanguageDef 行 ↔ 本地化表语言列），不一致直接报错终止；**English 兜底语种不可删除**（删除报 `兜底语种 English 缺失`）。
 
 **LanguageDef 字段级变更（加列/删列）**：
 - **加列**：零改动——注册表 Entry 为数据驱动字段包（主键 Name + 其余全部列的字符串键值对），新列自动出现在 `Entry.Fields`（bool/int 值为原字符串，消费端自行解析）；取值 `entry.GetField("列名")`，拼错键名返回空串不抛异常
@@ -183,7 +183,7 @@
 1. **建数据表**：`Excels/Tables/L-LocalizationImage-多语言图片.xlsx`（表名 `TbLocalizationImage`）。结构参照 `TbLocalization`：`key`(string) + `is_code`(bool) + 各语言列（列值为该语言的**资源路径**）。
    **注意：不能放 `Excels/Local/`**——该目录是 `l10n.textFile` 文本校验专用通道，要求表带 `key` 字段（结构不符会在生成期崩溃）；资源表与 `TbLanguageDef` 一样放 `Excels/Tables/`。
 2. **生成 key 常量**：把表名 `TbLocalizationImage` 加入 `Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` 的 `CollectKeys` 表名筛选列表，key 常量随 `L10nKey` 一起生成；重建 Luban（`build-luban.bat`）。
-3. **运行时提供器**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationProvider.cs` 新建取值实现（查表 → 生成访问器按语言取列 → 空值二段查询英语兜底表 → `string.Format` 参数），返回的资源路径交给 `AssetModule` 加载。
+3. **运行时取值**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationModule.cs` 的取词实现（查表 → 取当前语种 `Value` → 空值二段查询英语兜底表 → `string.Format` 参数）新建资源取值类；返回的资源路径交给 `AssetModule` 加载。
 4. **产出**：重跑 `gen-client-bin`，数据与代码走常规链路（`TableManager` 自动纳入新表加载）。
 
 **联动提醒**：每新增一种多语言类型表，未来"扩语言"时该表也须同步加语言列（与 `TbLocalization` / `L-LanguageDef` / 枚举 sheet 四处联动，见上文「扩语言/删语种」）。

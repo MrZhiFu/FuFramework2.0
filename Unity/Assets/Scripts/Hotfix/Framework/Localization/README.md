@@ -26,7 +26,7 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 │  │  - 当前语言设置（读/写属性）                          │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  GetL10nText / GetL10n（模块内取词实现）              │   │
+│  │  GetL10nText（模块内取词实现）                        │   │
 │  │  - 当前语种表直读 → 空则二段查询英语兜底表             │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
@@ -45,7 +45,7 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 
 定义源：`Config/Excels/__enums__.xlsx` 语言 sheet。当前 7 成员：`Unspecified=0` + 6 语言成员（`ChineseSimplified`、`ChineseTraditional`、`English`、`Japanese`、`Korean`、`Spanish`，value 连续编号）。语种清单的运行时事实源是 AOT 程序集的配置生成类 `LaunchLanguageRegistry`（语种条目/系统语言映射/兜底常量），本枚举与它由同一份数据生成。
 
-**扩语言/删语种（纯数据操作，零代码改动）**：枚举 sheet 追加/删除成员（value 顺延）→ `TbLocalization` 加/删语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-*`。取词为 key+value 直读（拆分产物统一两字段，语言维度消失）；系统语言映射由 `LaunchLanguageRegistry.FromSystemLanguage` 数据驱动；**English 兜底语种不可删除**。语言元数据（显示名/旗帜 icon/分隔符/是否可见）由语言定义表管理。
+**扩语言/删语种（纯数据操作，零代码改动）**：枚举 sheet 追加/删除成员（value 顺延）→ `TbLocalization` 加/删语言列 → `TbLanguageDef`（`Config/Excels/Tables/L-LanguageDef-c-语言定义.xlsx`）加/删行（`system_language` 填 Unity 系统语言映射）→ 重跑 `gen-client-bin`。取词为 key+value 直读（拆分产物统一两字段，语言维度消失）；系统语言映射由 `LaunchLanguageRegistry.FromSystemLanguage` 数据驱动；**English 兜底语种不可删除**。语言元数据（显示名/旗帜 icon/分隔符/是否可见）由语言定义表管理。
 
 **LanguageDef 字段级变更**：加列零改动（注册表 Entry 为字段包，新列自动进 `Entry.Fields`，取值 `GetField("列名")` 返回原字符串，bool/int 由消费端解析）；删/改必需列（language/name/system_language）生成期报错，其余列缺失无害退化。
 
@@ -80,18 +80,18 @@ string GetL10nText(string key, params object[] args)
 
 ### 4.2 取词实现（模块内私有）
 
-取词逻辑内联在 `LocalizationModule` 中（`GetL10n` 私有实现 + `GetL10nText` 公共门面），不再有独立 Provider 类与接口。
+取词逻辑内联在 `LocalizationModule` 的 `GetL10nText` 单入口中（无独立 Provider 类与接口，也无双层转发）。
 
 按语种拆分后，`TbLocalization` 由 `TableManager` 随语言切换加载**目标语种文件**（文件内只含 `key` + 该语种），模块通过 `ConfigModule.Instance.GetConfig<TbLocalization>()` 获取并缓存当前语言表。
 
 文本查找逻辑：
-1. 从当前语种表按 key 查找配置行（行缺失记错误日志并返回空）
+1. 从当前语种表按 key 查找配置行（行缺失记错误日志并返回 `[key]` 占位）
 2. 取该行 `Value`（拆分产物每文件只含当前语种，语言维度已消失）；为空（未翻译）时进入**二段查询**：查英语兜底表
 3. 英语兜底表为**懒加载**：首次 miss 触发异步加载（`HotfixLauncher` 注入的 `EnglishTableLoader` 直取英语文件，不走语言路由）；加载未就绪时本次同步返回空串，加载完成后后续查询生效。并发 miss 通过 `UniTaskCompletionSource` 共享同一次加载，失败/取消后允许重试
 4. 若有 `args` 参数，使用 `string.Format` 格式化
-5. 当前语种与英语兜底都缺失时返回空串，`GetL10nText` 门面再包装为 `[key]` 占位符
+5. 当前语种与英语兜底都缺失时返回 `[key]` 占位符
 
-> 英语兜底加载的取消令牌挂在**本模块取消栅栏**（`m_barrier.Token`，随 `OnDispose` 取消）。
+> 英语兜底加载的取消令牌由**注入的加载器内部持有**（`HotfixLauncher.LoadEnglishTableAsync` 使用 `GlobalModule.AssetModule.Token`），即随 AssetModule 生命周期取消；模块自身不持有该链路令牌。
 
 ### 4.3 LanguageChangeEventArgs
 
@@ -236,7 +236,7 @@ Localization/
 2. 本地化文本 Key 在配置表中必须唯一
 3. 取不到译文（key 在表中不存在，或目标语种与英语兜底皆为空）时，`GetL10nText` 返回 `[key]` 占位符并输出错误日志
 4. 语言设置存储在本地，卸载游戏后不会丢失
-5. 设置语言为 `ELanguage.Unspecified` 会抛出 `InvalidOperationException`
+5. 设置语言为 `ELanguage.Unspecified` 视为非法输入：记错误日志并忽略（`Language` setter 不改语言、`SetLanguageAsync` 返回 false），不抛异常
 
 ## 10. 扩展：新增多语言资源类型
 
@@ -292,7 +292,7 @@ Localization/
 
 | 阶段 | 存储 | 读取方 |
 |---|---|---|
-| AOT（启动期） | PlayerPrefs 键 `AOT_Localization_Language`（**字符串名**，常量 `LaunchLocalization.LANGUAGE_PREF_KEY`） | `LaunchLocalization.LoadLanguagePreference`（字符串名 → 注册表校验；旧 int 值一次性迁移；无偏好回落系统语言） |
+| AOT（启动期） | PlayerPrefs 键 `AOT_Localization_Language`（**字符串名**，常量 `LaunchLocalization.LANGUAGE_PREF_KEY`） | `LaunchLocalization.LoadLanguagePreference`（字符串名 → 注册表校验；无偏好回落系统语言） |
 | 热更期 | StorageModule 文件（键 `Language`，枚举名字符串） | `LocalizationModule.OnInit`（读不到时回落系统语言） |
 
 **同步契约**（违反会导致下次启动 AOT 界面语言与本侧不一致）：
@@ -318,7 +318,7 @@ Localization/
 
 **盲区**：动态拼接 key（`"common_" + x`）双向静态分析均不可检测，清理/缺失清单须人工核对。
 
-## 14. 改造历程索引（2026-09）
+## 14. 改造历程索引（2026-09 ~ 2026-11）
 
 | 提交 | 内容 |
 |---|---|
@@ -330,5 +330,10 @@ Localization/
 | `361ac543` `2fc26efa` `d6761b7b` | 插件控制器模式交互 / 面板自适应 / None 首项（批4） |
 | `fee02235` | 产物按语种拆分（Luban PostProcess）+ is_code 三端剥离 + 英语兜底二段查询 |
 | `71c8978c` | 服务端配置生成修复 + 表/枚举分组接线 + 客户端专属表排除（多语言表重命名 `-c-`） |
+| `96c9fbe5` `331a8df9` `a6fc0648` `81d27834` | 热更侧产物/bean 切 key+value；注册表 Entry 字段包化；必需列收缩至 language/name/system_language；运维口径文档化 |
+| `06261030` `41039ddf` `c34d8e51` | 配置数据格式收敛单 bin（删 json 生成链路与模板/宏），本地化拆分产物恒 `.bytes` |
+| `a489c6c4` `e4ac68e3` | Provider 接口/类并入模块 + 抽 `LocalizationModule.API.cs`；取词双层合并为单入口 `GetL10nText` |
+| `fd825dc6` | AOT LaunchLocalization 收敛单文件（合并 Parse 分部/去假异步/删死迁移分支） |
+| `d1a1dc66` | 补挂 `ICancelAsync`：热重启排水此前跳过本模块在途切语言 |
 
 详细设计：`Docs/superpowers/specs/2026-09-17-aot-localization-design.md`、`Docs/superpowers/specs/2026-09-19-fgui-l10n-design.md`。
