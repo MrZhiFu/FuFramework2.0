@@ -125,39 +125,6 @@ namespace Hotfix.Framework.Localization
 		}
 
 		/// <summary>
-		/// 按 key 取当前语言译文（取词实现）：当前语种表直读 → 空则二段查询英语兜底。
-		/// </summary>
-		/// <param name="key">多语言key(使用静态类L10nKey的多语言字段即可)</param>
-		/// <param name="args">参数</param>
-		/// <returns>译文；当前语种缺失时回退英语兜底表；两者皆缺返回空串</returns>
-		private string GetL10n(string key, params object[] args)
-		{
-			if (string.IsNullOrEmpty(key)) return string.Empty;
-
-			// 获取多语言配置表并缓存
-			m_tbLocalization ??= ConfigModule.Instance.GetConfig<TbLocalization>();
-
-			var localization = m_tbLocalization?.Get(key);
-			if (localization == null)
-			{
-				FuLogger.LogError($"多语言key '{key}' 没找到，请检查多语言配置表!");
-				return string.Empty;
-			}
-
-			// 拆分产物每文件只含当前语种，直接取 Value（与 AOT 侧 LaunchLocalization 同构）
-			var text = localization.Value;
-
-			// 二段查询英语兜底：目标语种缺失（拆分产物该语种键缺失→null / 或翻译为空）时查英语表
-			if (text.IsNullOrEmpty())
-			{
-				text = TryGetEnglish(key);
-			}
-
-			// 如果有参数，则返回格式化参数后的文本，否则直接返回文本
-			return args is { Length: > 0 } ? string.Format(text, args) : text;
-		}
-
-		/// <summary>
 		/// 查英语兜底表；未加载时同步短路返回空串并触发异步加载（下次查询生效，不阻塞当前查询）
 		/// </summary>
 		/// <param name="key">多语言key</param>

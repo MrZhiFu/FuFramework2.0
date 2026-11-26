@@ -2,8 +2,9 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Hotfix.Framework.Core;
+using Hotfix.Framework.Config;
 using AOT.Framework.Core.Log;
-using Hotfix.Framework.Asset;
+using Hotfix.Game.Config;
 using ELanguage = Hotfix.Game.Config.ELanguage;
 
 namespace Hotfix.Framework.Localization
@@ -52,15 +53,39 @@ namespace Hotfix.Framework.Localization
 
 		/// <summary>
 		/// 获取当前语言下的多语言文本（查询型消费门面）。
-		/// 取不到（key 缺失且英语兜底也缺失）时返回 [key] 占位符，便于发现漏翻。
+		/// 取词链：当前语种表直读 → 空则二段查询英语兜底表（懒加载）→ 参数格式化。
+		/// 取不到（行缺失或译文为空且英语兜底也为空）时返回 [key] 占位符，便于发现漏翻。
 		/// </summary>
-		/// <param name="key">多语言key（建议用 L10nKey 常量）</param>
+		/// <param name="key">多语言key（建议用 L10nKey 常量；空 key 直接返回空串）</param>
 		/// <param name="args">格式化参数</param>
 		/// <returns>译文；取不到时返回 [key]</returns>
 		public string GetL10nText(string key, params object[] args)
 		{
-			var result = GetL10n(key, args);
-			return result.IsNullOrEmpty() ? $"[{key}]" : result;
+			if (string.IsNullOrEmpty(key)) return string.Empty;
+
+			// 获取多语言配置表并缓存
+			m_tbLocalization ??= ConfigModule.Instance.GetConfig<TbLocalization>();
+
+			var localization = m_tbLocalization?.Get(key);
+			if (localization == null)
+			{
+				FuLogger.LogError($"多语言key '{key}' 没找到，请检查多语言配置表!");
+				return $"[{key}]";
+			}
+
+			// 拆分产物每文件只含当前语种，直接取 Value（与 AOT 侧 LaunchLocalization 同构）
+			var text = localization.Value;
+
+			// 二段查询英语兜底：目标语种缺失（该键在拆分产物中缺失 / 翻译为空）时查英语表
+			if (text.IsNullOrEmpty())
+			{
+				text = TryGetEnglish(key);
+			}
+
+			// 当前语种与英语兜底皆空 → 占位符
+			if (text.IsNullOrEmpty()) return $"[{key}]";
+
+			return args is { Length: > 0 } ? string.Format(text, args) : text;
 		}
 
 		/// <summary>
