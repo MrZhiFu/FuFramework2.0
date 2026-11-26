@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using Luban;
 using AOT.Framework.Core.Log;
 
 // ReSharper disable once CheckNamespace
@@ -9,14 +10,14 @@ namespace AOT.Launch.Localization
 {
 	/// <summary>
 	/// AOT 阶段本地化多语言门面。
-	///     数据按语种拆分：每语种一个 key+value 文件（Resources/LaunchLocalizationText/tblocalizationaot_<语言名>），
+	///     数据按语种拆分：每语种一个 key+value 文件（Resources/LaunchLocalizationText/tblocalizationaot_<语言名>.bytes），
 	///     启动时按语言注册表定位当前语种文件加载；当前语种译文缺失时二段查询英语兜底文件。
 	///     语种清单/系统语言映射/兜底全部来自配置生成的 LaunchLanguageRegistry（删语种零代码改动）。
 	///     脱离 UIModule/EventModule 自包含运行（与 LaunchView 同一设计原则）；
 	///     热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
-	///     数据解析自包含（bin 用 Luban.ByteBuf 按记录数 + 2 字段顺序读取，见 LaunchLocalization.Parse 分部）。
+	///     数据解析自包含（bin 用 Luban.ByteBuf 按记录数 + 2 字段顺序读取）。
 	/// </summary>
-	public static partial class LaunchLocalization
+	public static class LaunchLocalization
 	{
 		/// <summary>
 		/// 语言偏好在 PlayerPrefs 中的存储键（值为语言枚举成员名字符串）。
@@ -40,7 +41,7 @@ namespace AOT.Launch.Localization
 		private static readonly Dictionary<string, string> sr_rows = new();
 
 		/// <summary>
-		/// 英语兜底行数据（当前语言即英语时与 s_Rows 同源，不再重复加载）：key → 译文
+		/// 英语兜底行数据（当前语言为英语时不加载——回退分支按语言短路，无需该字典）：key → 译文
 		/// </summary>
 		private static readonly Dictionary<string, string> sr_englishRows = new();
 
@@ -53,8 +54,9 @@ namespace AOT.Launch.Localization
 		/// 初始化：确定当前语言 → 加载当前语种文件（+英语兜底文件）。
 		/// 须在启动流程首次展示文本前 await 完成；数据缺失仅记录错误，不阻断启动。
 		/// </summary>
-		/// <returns>初始化异步流程</returns>
-		public static async UniTask InitializeAsync()
+		/// <remarks>数据走同步 Resources.Load（AOT 阶段 YooAsset 未就绪的既有通道），故本体同步完成</remarks>
+		/// <returns>已完成的任务（保持 UniTask 签名，调用方统一 await）</returns>
+		public static UniTask InitializeAsync()
 		{
 			Language = LoadLanguagePreference();
 
@@ -82,7 +84,7 @@ namespace AOT.Launch.Localization
 				sr_englishRows.Clear();
 			}
 
-			await UniTask.CompletedTask;
+			return UniTask.CompletedTask;
 		}
 
 		/// <summary>
@@ -101,6 +103,24 @@ namespace AOT.Launch.Localization
 			}
 
 			ParseBin(textAsset.bytes, rows);
+		}
+
+		/// <summary>
+		/// 解析 bin 数据：记录数前置，之后按 2 字段顺序逐条读取（key=ReadString，value=ReadString）。
+		/// </summary>
+		/// <param name="bytes">表数据二进制</param>
+		/// <param name="rows">接收行数据的字典（key → 译文）</param>
+		private static void ParseBin(byte[] bytes, Dictionary<string, string> rows)
+		{
+			var buf = new ByteBuf(bytes);
+
+			for (var n = buf.ReadSize(); n > 0; --n)
+			{
+				var key = buf.ReadString();
+				if (string.IsNullOrEmpty(key)) continue;
+
+				rows.TryAdd(key, buf.ReadString());
+			}
 		}
 
 		/// <summary>
@@ -131,27 +151,16 @@ namespace AOT.Launch.Localization
 		}
 
 		/// <summary>
-		/// 读取语言偏好：字符串名 → 注册表校验；旧 int 值（历史版本）按枚举值一次性迁移；
-		/// 均无效时回落系统语言（再无效由注册表兜底到 English）。
+		/// 读取语言偏好：PlayerPrefs 存的语种名字符串 → 注册表校验；
+		/// 无效/缺失时回落系统语言（再无效由注册表兜底到 English）。
 		/// </summary>
 		/// <returns>当前语言（恒为注册表内有效语种）</returns>
 		private static ELanguage LoadLanguagePreference()
 		{
-			// 新版：字符串名存储
 			var name = PlayerPrefs.GetString(LANGUAGE_PREF_KEY, string.Empty);
 			if (!string.IsNullOrEmpty(name) && LaunchLanguageRegistry.TryGetByName(name, out var byName))
 			{
 				return byName;
-			}
-
-			// 旧版迁移：int 值（历史版本按枚举值存储；仅本次改造前存档存在，此后统一写字符串）
-			var legacy = PlayerPrefs.GetInt(LANGUAGE_PREF_KEY, 0);
-			if (legacy > (int)ELanguage.Unspecified && Enum.IsDefined(typeof(ELanguage), legacy))
-			{
-				var migrated = (ELanguage)legacy;
-				PlayerPrefs.SetString(LANGUAGE_PREF_KEY, migrated.ToString());
-				PlayerPrefs.Save();
-				return migrated;
 			}
 
 			return LaunchLanguageRegistry.FromSystemLanguage(Application.systemLanguage);

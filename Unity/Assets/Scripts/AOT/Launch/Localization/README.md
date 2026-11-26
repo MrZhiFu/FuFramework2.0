@@ -15,9 +15,7 @@ AOT 段**只生成数据、key 常量、枚举与注册表，不生成表/管理
 
 ## 手写文件
 
-- `LaunchLocalization.cs`：AOT 本地化门面主体——初始化（注册表定语言 → 加载当前语种文件 + 英语兜底文件）、`GetL10nText`（当前语种 miss 二段查询英语兜底）、语言偏好（字符串名存储，旧 int 值一次性迁移，校验走注册表）。热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
-- `LaunchLocalization.Parse.cs`：数据解析分部（partial），产物每行仅 `key + value` 两字段：
-  - 数据为 bin（Luban ByteBuf）：`ReadSize` 计数 + 逐行 `ReadString`×2。
+- `LaunchLocalization.cs`：AOT 本地化门面（单文件）——初始化（注册表定语言 → 加载当前语种文件 + 英语兜底文件，同步 `Resources.Load`）、`ParseBin`（bin 数据：`ReadSize` 计数 + 逐行 `ReadString`×2）、`GetL10nText`（当前语种 miss 二段查询英语兜底）、语言偏好（字符串名存储，校验走注册表）。热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
 - **FGUI 声明式多语言的 AOT 阶段委托**：`InitializeAsync` 时注入 `FairyGUI.GObject.GetL10nText = key => LaunchLocalization.GetL10nText(key)`——`WinLauncher` 等启动期界面绑定的 L10n key 由 AOT 表解析；热更后由 `HotfixLauncher` 覆盖为热更表版本（详见 `Hotfix/Framework/Localization/README.md` 第 11 节）。
 
 数据源：`Config/Excels/Local/L-LocalizationAOT-aot-热更前.xlsx`（分组 `aot`）。
