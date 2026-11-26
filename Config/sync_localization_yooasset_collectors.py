@@ -2,6 +2,19 @@
 """
 sync_localization_yooasset_collectors.py — 按语言清单同步 YooAsset 收集器配置
 
+定位（一句话）：
+    「增删语种零代码改动」闭环的最后一环——把语种清单自动对齐到 YooAsset 收集条目，
+    覆盖两个环节：①登记（新生成的语种文件不登记就不会被打包成 bundle）；
+    ②贴标签（条目 AssetTags=语种名，把语种箱子从"公共池"划入"按需"分组——
+    未贴标签的 bundle 视为公共依赖，首启会被全量下载，且可能被任意依赖链捎带）。
+    两者必须同时做：只登记不贴标签→新语种进首装包；只贴标签不登记→配置挂空条目。
+    兼职：英语兜底覆盖率门禁（质量检查，与语种清单同源于 gen 后执行）。
+
+背景（YooAsset 语义）：
+    每个语种拆分产物 = 一个独立 bundle（PackSeparately），切语言/首启按 tag 圈定
+    下载范围（CreateResourceDownloader：未打标签 bundle 恒包含 + 指定 tag bundle），
+    即首启只下「公共 bundle + 当前语种」，其余语种按需下载（切换语言时补齐）。
+
 功能：
     重写 Unity/Assets/AssetBundleCollectorSetting.asset 中 Config_Localization 组的
     Collectors 段：语言清单由生成产物（Bundles/Config/Localization/tblocalization_*.bytes）
