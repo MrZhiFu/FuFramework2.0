@@ -1,5 +1,6 @@
 ﻿using FairyGUI;
 using System;
+using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using AOT.Launch;
@@ -215,17 +216,18 @@ namespace Hotfix
 		/// 返回新构造的 TbLocalization 实例（不注册 ConfigModule，模块私有兜底）；
 		/// 失败抛异常（调用方捕获清空在途任务允许重试）。
 		/// </summary>
-		private static async UniTask<TbLocalization> LoadEnglishTableAsync()
+		/// <param name="token">取消令牌（由 LocalizationModule 传入模块生命周期令牌，本方法不自持）</param>
+		private static async UniTask<TbLocalization> LoadEnglishTableAsync(CancellationToken token)
 		{
 			// 英语 bundle 幂等补齐（本地已有零开销直过；EditorSimulate/Offline 由 AssetModule 内部短路）。
 			// 兜底语种是业务不变量（英语兜底），tag 名取注册表 FallbackName（与文件后缀/资源标签同一事实源）
-			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(LaunchLanguageRegistry.FallbackName, GlobalModule.AssetModule.Token))
+			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(LaunchLanguageRegistry.FallbackName, token))
 			{
 				throw new InvalidOperationException("[HotfixLauncher] 英语兜底表 bundle 下载失败");
 			}
 
 			var englishPath = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{LaunchLanguageRegistry.FallbackName}", ".bytes");
-			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(englishPath, GlobalModule.AssetModule.Token);
+			var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(englishPath, token);
 			try
 			{
 				var textAsset = assetHandle.GetAssetObject<TextAsset>();

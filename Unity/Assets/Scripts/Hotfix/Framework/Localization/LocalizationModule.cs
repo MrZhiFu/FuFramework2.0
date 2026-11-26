@@ -57,8 +57,9 @@ namespace Hotfix.Framework.Localization
 		/// <summary>
 		/// 英语兜底表加载器（由 HotfixLauncher 在表加载完成后注入）。
 		/// 不走语言路由（兜底场景语言≠English），直取英语文件。
+		/// 取消令牌由本模块传入（m_barrier.Token）——helper 不自持令牌，随模块生命周期取消。
 		/// </summary>
-		internal Func<UniTask<TbLocalization>> EnglishTableLoader { get; set; }
+		internal Func<CancellationToken, UniTask<TbLocalization>> EnglishTableLoader { get; set; }
 
 		/// <summary>
 		/// 缓存多语言配置表，避免每次调用都从配置表中获取
@@ -173,23 +174,29 @@ namespace Hotfix.Framework.Localization
 
 			var tcs = new UniTaskCompletionSource<TbLocalization>();
 			m_englishLoadTcs = tcs;
-			try
+
+			// 登记到模块栅栏：热重启排水（ICancelAsync）会等待本次兜底加载收尾；
+			// 令牌由本模块传入选透加载器（helper 不自持令牌）
+			using (m_barrier.Register())
 			{
-				var table = await EnglishTableLoader();
-				m_tbEnglishFallback = table;
-				tcs.TrySetResult(table);
-				FuLogger.LogInfo("英语兜底表加载完成（懒加载触发）");
-			}
-			catch (OperationCanceledException)
-			{
-				tcs.TrySetCanceled();
-				m_englishLoadTcs = null; // 模块生命周期取消：允许新生命周期重试
-			}
-			catch (Exception e)
-			{
-				tcs.TrySetException(e);
-				m_englishLoadTcs = null; // 失败清空允许重试
-				FuLogger.LogError($"英语兜底表加载失败：{e.Message}");
+				try
+				{
+					var table = await EnglishTableLoader(m_barrier.Token);
+					m_tbEnglishFallback = table;
+					tcs.TrySetResult(table);
+					FuLogger.LogInfo("英语兜底表加载完成（懒加载触发）");
+				}
+				catch (OperationCanceledException)
+				{
+					tcs.TrySetCanceled();
+					m_englishLoadTcs = null; // 模块生命周期取消：允许新生命周期重试
+				}
+				catch (Exception e)
+				{
+					tcs.TrySetException(e);
+					m_englishLoadTcs = null; // 失败清空允许重试
+					FuLogger.LogError($"英语兜底表加载失败：{e.Message}");
+				}
 			}
 		}
 
