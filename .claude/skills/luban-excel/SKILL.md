@@ -142,7 +142,7 @@ python -c "import openpyxl" 2>/dev/null || pip install openpyxl
 
 1. 定义文件加段（`__enums__.xlsx` 或 `__beans__.xlsx`，照实测布局）
 2. 数据表列的 `##type` 引用该类型（`Property`、`(list,PropItem)`、`EUILayer`…）
-3. 到 `Config/` 下跑 `gen-client-json.bat` → 回 Unity 编译
+3. 到 `Config/` 下跑 `gen-client-bin.bat` → 回 Unity 编译
 
 ## 操作流程
 
@@ -151,7 +151,7 @@ python -c "import openpyxl" 2>/dev/null || pip install openpyxl
 1. 按命名规则建 `Config/Excels/Tables/<字母>-<英文表名>-<中文注释>.xlsx`
 2. openpyxl 写入 4 行表头（照上面「普通表」布局；`##group` 行填 `c`，服务端表填 `s`）
 3. 填数据行（首列留空）
-4. 到 `Config/` 目录下运行 `gen-client-json.bat`（bin 变体为 `gen-client-bin.bat`）
+4. 到 `Config/` 目录下运行 `gen-client-bin.bat`
 5. 回 Unity 触发重新编译；生成的代码与数据**纳入本次改动即可，不自行 git commit**（改动攒到验证完毕后按用户习惯统一提交）
 
 ### 修改现有表
@@ -174,7 +174,7 @@ python -c "import openpyxl" 2>/dev/null || pip install openpyxl
 
 ```powershell
 cd <项目根>\Config
-.\gen-client-json.bat
+.\gen-client-bin.bat
 ```
 
 - 产物：数据 → `Unity/Assets/Bundles/Config`；代码 → `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/`

@@ -22,12 +22,10 @@
 
 | 脚本 | 目标 | 数据产出 | 代码产出 |
 |---|---|---|---|
-| `gen-client-bin.bat` / `.sh` | 客户端（bin 变体） | `Unity/Assets/Bundles/Config/Data`（业务表）+ `.../Config/Localization`（按语种拆分，统一 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
-| `gen-client-json.bat` / `.sh` | 客户端（json 变体） | 同上（业务表为 `.json`；本地化产物仍为 `.bytes`） | 同上 |
-| `gen-server-bin.bat` / `.sh` | 服务端（bin 变体） | `Server/FuFramework.Config/Data`（`.bytes`） | `Server/FuFramework.Config/Config` |
-| `gen-server-json.bat` / `.sh` | 服务端（json 变体） | 同上目录（`.json`） | 同上 |
+| `gen-client-bin.bat` / `.sh` | 客户端 | `Unity/Assets/Bundles/Config/Data`（业务表 `.bytes`）+ `.../Config/Localization`（按语种拆分 `.bytes`） | `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/Generate` + `.../Tables/Extension`（L10nKey） |
+| `gen-server-bin.bat` / `.sh` | 服务端 | `Server/FuFramework.Config/Data`（`.bytes`） | `Server/FuFramework.Config/Config` |
 
-> **服务端双变体（对齐客户端"开发 json / 发布 bin"模式）**：两套脚本共用数据目录 `Server/FuFramework.Config/Data`，但**同时只存在一种格式**——每个脚本跑时 Luban 默认清理会把另一变体的数据清掉，与代码变体（`cs-dotnet-bin`/`cs-dotnet-json` 生成的 `TableManager.LoadAsync` 委托签名）成对翻转，`ConfigComponent` 的两个 Loader 按签名自动绑定对应格式（bin 读 `Data/{file}.bytes`、json 读 `Data/{file}.json`）。csproj 将 `Data\*.json` 与 `Data\*.bytes` 都挂了 `CopyToOutputDirectory`，部署目录始终有当前变体的数据。
+> **数据格式**：双端配置产物统一为 `.bytes`（Luban ByteBuf）；生成代码与加载侧（`HotfixLauncher.ConfigLoader` / 服务端 `ConfigComponent.Loader` / AOT `LaunchLocalization.ParseBin`）均为 bin 形态。**产物 diff 为二进制**：对比配置数据差异请对比 `Excels/*.xlsx`（真相源），或按 ByteBuf 格式反解（varint 记录数 + 逐条 length-prefixed UTF-8 字符串）。
 
 > **分组过滤（重要）**：表与枚举的导出由分组决定——表用文件名第 3 段（`-c-` / `-s-` / `-aot-`），枚举/Bean 用 `Excels/__enums__.xlsx` / `__beans__.xlsx` 的 `group` 列。**生成脚本必须传 `-x tableImporter.target=<target>`**，否则所有带分组段的表都会被跳过。当前客户端专属表（`-c-`）不进入服务端，服务端只生成 `Achievement` / `Item` / `GlobalDefine` 三张表。
 
@@ -158,8 +156,8 @@
 
 | 表 / 枚举 | 位置 | 说明 |
 |---|---|---|
-| `TbLocalization` | `Excels/Local/L-Localization-c-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列，表名带 `-c-`（客户端专属，服务端不生成）。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；`is_code` 列标 `##group none`（导出代码用、不进导出产物）；缺失 `is_code` 列时生成报错终止。产物**按语种拆分**：`Bundles/Config/Localization/tblocalization_<语言>.bytes`（每文件只含 key + 目标语种列，两数据变体统一 `.bytes`）；目标语种为空时运行时懒加载英语兜底表二段查询（见 `Localization/README.md` 4.3） |
-| `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物按语种拆分为 `Resources/LaunchLocalizationText/tblocalizationaot_<语言>.<json\|bytes>`（key+value 两字段，`split-aot-localization` 后处理）；代码生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
+| `TbLocalization` | `Excels/Local/L-Localization-c-*.xlsx` | 多语言文本表：`key` + `is_code`(bool) + 语言列，表名带 `-c-`（客户端专属，服务端不生成）。**`is_code=true` 的 key 才会导出到 L10nKey 常量类**（代码引用用），false 仅进数据供策划表引用；`is_code` 列标 `##group none`（导出代码用、不进导出产物）；缺失 `is_code` 列时生成报错终止。产物**按语种拆分**：`Bundles/Config/Localization/tblocalization_<语言>.bytes`（每文件只含 key + 目标语种列，统一 `.bytes`）；目标语种为空时运行时懒加载英语兜底表二段查询（见 `Localization/README.md` 4.3） |
+| `TbLocalizationAOT` | `Excels/Local/L-LocalizationAOT-aot-热更前.xlsx` | AOT 前置文本表（热更进度条等启动期文案），分组 `aot`——数据产物按语种拆分为 `Resources/LaunchLocalizationText/tblocalizationaot_<语言>.bytes`（key+value 两字段，`split-aot-localization` 后处理）；代码生成 `LaunchL10nKey` 常量与枚举（`cs-l10n-key` + `cs-enums` 目标） |
 | `TbLanguageDef` | `Excels/Tables/L-LanguageDef-c-语言定义.xlsx` | 语言定义表（客户端专属 `-c-`）：`language`(ELanguage 主键，**必需**) / `name` 显示名（**必需**） / `system_language`(Unity SystemLanguage 成员名，多值分号分隔，**必需**) / `icon` 旗帜图标 / `sort` 排序 / `separator` 逗号分隔符 / `is_visible` 是否在语言选择列表显示。是 `LaunchLanguageRegistry` 的数据源——删/增语种改本表行 + 本地化表列 + 枚举成员三处数据即可，运行时零代码改动。**加列零改动**（Entry 为字段包，新列自动进入 `Fields`）；删/改必需列生成期报错（其余列缺失无害退化） |
 | `ELanguage` 枚举 | `Excels/__enums__.xlsx` 语言 sheet | 语言枚举配置化（当前 7 成员：`Unspecified=0` + 6 语言，连续编号），`group=aot`。Hotfix 侧随语言表引用生成（`Hotfix.Game.Config`），AOT 侧经 `cs-enums` 目标生成（`AOT.Launch.Localization`） |
 
@@ -176,7 +174,7 @@
 
 **FGUI 声明式绑定**：UI 组件的多语言由编辑器插件 `L10nKeyBind`（`FairyGUIProject/plugins/`）把 key 写入组件 customData 的 `L10n:` 段，运行时 FairyGUI 构造时自动解析应用（链路与坑见 `Unity/Assets/Scripts/Hotfix/Framework/Localization/README.md` 第 11 节）。
 
-**分组机制**：`luban.conf` 定义了 `c`（客户端）/ `s`（服务端）/ `aot`（AOT 前置）三个分组与对应 target。文件名第 3 段为分组名时，**只有脚本传了 `-x tableImporter.target=<target>` 且目标分组匹配，该表才会导出**；否则整表跳过。当前 8 个 gen 脚本均已接线（client 段 `target=client`、server 段 `target=server`、AOT 段 `target=aot`）。`aot` target 详见 `gen-client-bin/json.bat` 的第二段命令；`cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
+**分组机制**：`luban.conf` 定义了 `c`（客户端）/ `s`（服务端）/ `aot`（AOT 前置）三个分组与对应 target。文件名第 3 段为分组名时，**只有脚本传了 `-x tableImporter.target=<target>` 且目标分组匹配，该表才会导出**；否则整表跳过。当前 gen 脚本均已接线（client 段 `target=client`、server 段 `target=server`、AOT 段 `target=aot`）。`aot` target 详见 `gen-client-bin.bat` 的第二段命令；`cs-enums` 代码目标（`Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpEnumsCodeTarget.cs`）仅生成枚举，供 AOT 侧独立获取。
 
 #### 扩展：新增多语言资源类型（如多语言图片 / 音频）
 
@@ -186,7 +184,7 @@
    **注意：不能放 `Excels/Local/`**——该目录是 `l10n.textFile` 文本校验专用通道，要求表带 `key` 字段（结构不符会在生成期崩溃）；资源表与 `TbLanguageDef` 一样放 `Excels/Tables/`。
 2. **生成 key 常量**：把表名 `TbLocalizationImage` 加入 `Tools/Luban/source/src/Luban.CSharp/CodeTarget/CsharpL10NKeyCodeTarget.cs` 的 `CollectKeys` 表名筛选列表，key 常量随 `L10nKey` 一起生成；重建 Luban（`build-luban.bat`）。
 3. **运行时提供器**：参照 `Unity/Assets/Scripts/Hotfix/Framework/Localization/LocalizationProvider.cs` 新建取值实现（查表 → 生成访问器按语言取列 → 空值二段查询英语兜底表 → `string.Format` 参数），返回的资源路径交给 `AssetModule` 加载。
-4. **产出**：重跑 `gen-client-bin/json`，数据与代码走常规链路（`TableManager` 自动纳入新表加载）。
+4. **产出**：重跑 `gen-client-bin`，数据与代码走常规链路（`TableManager` 自动纳入新表加载）。
 
 **联动提醒**：每新增一种多语言类型表，未来"扩语言"时该表也须同步加语言列（与 `TbLocalization` / `L-LanguageDef` / 枚举 sheet 四处联动，见上文「扩语言/删语种」）。
 

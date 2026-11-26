@@ -2,7 +2,7 @@
 
 本目录是**生成代码 + 少量手写扩展**的混居目录。`gen-client-*.bat` 的 `cs-l10n-key` code target 对本目录配置了 `outputSaver.<target>.cleanUpOutputDir=false`（**不清理输出目录**），因此目录里未被生成器写入的手写文件不会被删除——但这也意味着**任何时候都不能对生成目标开启清理**（cleanUpOutputDir 改 true 或去掉），否则会删光手写文件。
 
-> 对照：兄弟目录 `Tables/Generate/`（`cs-simple-json` / `cs-bin` 目标）是**纯生成目录**（无手写文件，清理默认开启、安全）——新增生成文件应放那里，本目录只收"生成常量/访问器 + 手写扩展"。
+> 对照：兄弟目录 `Tables/Generate/`（`cs-bin` 目标）是**纯生成目录**（无手写文件，清理默认开启、安全）——新增生成文件应放那里，本目录只收"生成常量/访问器 + 手写扩展"。
 
 ## 文件清单
 

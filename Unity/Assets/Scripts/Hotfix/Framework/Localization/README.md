@@ -343,7 +343,7 @@ Localization/
 
 **Unity 菜单**（`FuFramework/多语言检查/`）：`生成现存问题报告`(1002) → `打开现存问题报告`(1003) → `清理多语言配置表`(1004，确认对话框后删行)。
 
-**自引用排除**（检查正确性的关键）：生成的 `L10nKey.cs`/`LaunchL10nKey.cs`（含全部 is_code key 字面量）不作为引用源；配置数据扫描范围为 `Bundles/Config/Data/*.json`，本地化拆分产物在 `Bundles/Config/Localization/tblocalization_*.bytes`，天然不在扫描范围内（否则所有 key 永远"被引用"）。
+**自引用排除**（检查正确性的关键）：生成的 `L10nKey.cs`/`LaunchL10nKey.cs`（含全部 is_code key 字面量）不作为引用源；配置数据扫描范围为 `Bundles/Config/Data/*.bytes`，本地化拆分产物在 `Bundles/Config/Localization/tblocalization_*.bytes`，天然不在扫描范围内（否则所有 key 永远"被引用"）。
 
 **盲区**：动态拼接 key（`"common_" + x`）双向静态分析均不可检测，清理/缺失清单须人工核对。
 

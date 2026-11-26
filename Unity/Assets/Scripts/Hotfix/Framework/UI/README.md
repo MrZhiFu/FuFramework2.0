@@ -550,7 +550,7 @@ public enum EUITweenType
 
 - **配置表路径**: `Config/Excels/Tables/U-UIConfig-UI配置表.xlsx`
 - **查询配置**: 运行时通过 `win.UIConfig` 获取当前 UI 的配置行，各属性自动从配置表读取
-- **新增 UI**: 在 Excel 中添加一行（WinName 为 key），运行 `gen-client-json.bat` 重新生成代码
+- **新增 UI**: 在 Excel 中添加一行（WinName 为 key），运行 `gen-client-bin.bat` 重新生成代码
 - **配置列说明**:
 
 | 列名 | 类型 | 说明 |
