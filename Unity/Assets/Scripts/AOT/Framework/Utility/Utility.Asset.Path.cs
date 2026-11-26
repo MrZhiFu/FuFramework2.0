@@ -205,7 +205,7 @@ namespace AOT.Framework.Core.Utility
 			/// <param name="pathName">路径包含名称</param>
 			/// <param name="extension">文件扩展名</param>
 			/// <returns>返回拼接好的路径</returns>
-			public static string GetLocalizationPath(string pathName, string extension = ".xml")
+			public static string GetLocalizationPath(string pathName, string extension = ".json")
 			{
 				if (pathName.IndexOf('.') >= 0)
 					return GetCategoryFilePath(BUNDLES_DIRECTORY_LOCALIZATION_NAME_PLACEHOLDER, pathName);
