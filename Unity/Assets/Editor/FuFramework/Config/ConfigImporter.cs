@@ -10,62 +10,22 @@ namespace FuFramework.Config.Editor
 	/// <summary>
 	/// 配置表导入器。
 	/// 功能：
-	///     1. 在 Unity Editor 中直接执行导表脚本，导出 JSON 或二进制格式的配置表。
+	///     1. 在 Unity Editor 中直接执行导表脚本，导出 bin（`.bytes`）格式的配置表。
 	/// </summary>
 	public static class ConfigImporter
 	{
 		/// <summary>
-		/// 数据目标格式
+		/// 导出配置表（bin 唯一数据变体：.bytes + ByteBuf）
 		/// </summary>
-		private enum EDataTarget
-		{
-			/// <summary>
-			/// JSON格式
-			/// </summary>
-			Json,
-
-			/// <summary>
-			/// 二进制格式
-			/// </summary>
-			Bin
-		}
-
-		/// <summary>
-		/// 启用二进制配置表的环境变量符号
-		/// </summary>
-		private const string ENABLE_BINARY_CONFIG_SYMBOL = "ENABLE_BINARY_CONFIG";
-
-		/// <summary>
-		/// 导入 JSON 格式的配置表
-		/// </summary>
-		[MenuItem("FuFramework/配置表/导出配置表—Json", false, FuMenuPriority.CONFIG_EXPORT_JSON)]
-		public static void ExportConfigToJson()
-		{
-			ExportConfig(EDataTarget.Json);
-		}
-
-		/// <summary>
-		/// 导出 二进制格式的配置表
-		/// </summary>
-		[MenuItem("FuFramework/配置表/导出配置表—Bin", false, FuMenuPriority.CONFIG_EXPORT_BIN)]
-		public static void ExportConfigToBin()
-		{
-			ExportConfig(EDataTarget.Bin);
-		}
-
-		/// <summary>
-		/// 导出配置表
-		/// </summary>
-		/// <param name="target">数据目标格式</param>
-		private static void ExportConfig(EDataTarget target)
+		[MenuItem("FuFramework/配置表/导出配置表", false, FuMenuPriority.CONFIG_EXPORT)]
+		public static void ExportConfig()
 		{
 			var configDir = GetConfigPath();
 			var stopwatch = Stopwatch.StartNew();
 
-			var targetStr = target.ToString().ToLower();
 			var scriptName = Application.platform == RuntimePlatform.WindowsEditor
-				? $"gen-client-{targetStr}.bat"
-				: $"gen-client-{targetStr}.sh";
+				? "gen-client-bin.bat"
+				: "gen-client-bin.sh";
 			var scriptPath = Path.Combine(configDir, scriptName);
 
 			// 执行批处理命令
@@ -73,16 +33,6 @@ namespace FuFramework.Config.Editor
 
 			if (success)
 			{
-				// 如果导出 JSON 格式的配置表，则移除启用二进制配置表的环境变量符号，否则添加启用二进制配置表的环境变量符号
-				if (target == EDataTarget.Json)
-				{
-					ScriptingDefineSymbols.RemoveScriptingDefineSymbol(ENABLE_BINARY_CONFIG_SYMBOL);
-				}
-				else
-				{
-					ScriptingDefineSymbols.AddScriptingDefineSymbol(ENABLE_BINARY_CONFIG_SYMBOL);
-				}
-
 				// 刷新并保存Unity资源
 				AssetDatabase.Refresh();
 				AssetDatabase.SaveAssets();

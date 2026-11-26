@@ -14,7 +14,7 @@ namespace AOT.Launch.Localization
 	///     语种清单/系统语言映射/兜底全部来自配置生成的 LaunchLanguageRegistry（删语种零代码改动）。
 	///     脱离 UIModule/EventModule 自包含运行（与 LaunchView 同一设计原则）；
 	///     热更后仍可被 Hotfix 侧调用（Hotfix 程序集引用 AOT 程序集）。
-	///     数据解析自包含（json 用 SimpleJSON / bin 用 Luban.ByteBuf，见 LaunchLocalization.Parse 分部）。
+	///     数据解析自包含（bin 用 Luban.ByteBuf 按记录数 + 2 字段顺序读取，见 LaunchLocalization.Parse 分部）。
 	/// </summary>
 	public static partial class LaunchLocalization
 	{
@@ -100,11 +100,7 @@ namespace AOT.Launch.Localization
 				return;
 			}
 
-#if ENABLE_BINARY_CONFIG
 			ParseBin(textAsset.bytes, rows);
-#else
-			ParseJson(textAsset.text, rows);
-#endif
 		}
 
 		/// <summary>

@@ -1,7 +1,7 @@
 @echo off
 
 rem ============================================================
-rem  Server config generation script (binary variant: .bytes data, cs-dotnet-bin target)
+rem  Server config generation script (.bytes data, cs-dotnet-bin target)
 rem
 rem  What it does:
 rem    1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)

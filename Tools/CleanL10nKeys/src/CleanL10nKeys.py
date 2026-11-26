@@ -40,7 +40,7 @@ import openpyxl
 
 REPO_ROOT      = Path(__file__).resolve().parents[3]             # repo root (src/ -> tool dir -> Tools -> repo)
 CODE_DIR       = REPO_ROOT / 'Unity/Assets/Scripts'              # all runtime code (AOT + Hotfix)
-CONFIG_DIR     = REPO_ROOT / 'Unity/Assets/Bundles/Config/Data'  # exported business tables (json variant)
+CONFIG_DIR     = REPO_ROOT / 'Unity/Assets/Bundles/Config/Data'  # exported business tables (bin variant: Luban ByteBuf, strings are plain UTF-8)
 FGUI_DIR       = REPO_ROOT / 'FairyGUIProject/assets'            # FGUI source xml
 EXCEL_FILES    = [
     REPO_ROOT / 'Config/Excels/Local/L-Localization-c-通用.xlsx',
@@ -53,7 +53,7 @@ TOKEN_RE          = re.compile(r'[A-Za-z0-9_]+')
 KEY_RE            = re.compile(r'^[A-Za-z0-9_]+$')
 VALID_KEY_RE      = re.compile(r'^[a-z][a-z0-9_]*$')
 CJK_RE            = re.compile(r'[㐀-䶿一-鿿]')
-SELF_REF_JSON_RE  = re.compile(r'^tblocalization.*\.json$')
+SELF_REF_RE       = re.compile(r'^tblocalization.*\.bytes$')
 SELF_REF_CS       = {'L10nKey.cs', 'LaunchL10nKey.cs'}
 # code references resolvable to a concrete key
 CODE_REF_RES      = [
@@ -111,8 +111,8 @@ def collect_reference_tokens():
         if path.name in SELF_REF_CS:
             continue
         feed(path)
-    for path in CONFIG_DIR.glob('*.json'):
-        if SELF_REF_JSON_RE.match(path.name):
+    for path in CONFIG_DIR.glob('*.bytes'):
+        if SELF_REF_RE.match(path.name):
             continue
         feed(path)
     for path in FGUI_DIR.rglob('*.xml'):
@@ -199,7 +199,7 @@ def apply_delete(unreferenced):
         deleted += len(entries)
         lines.append(f'[已删除] {excel.name}：{len(entries)} 行')
     lines.append(f'[已删除] 合计 {deleted} 行')
-    lines.append('注意：本次仅修改了 Excel。请执行 gen-client-json.bat / gen-client-bin.bat')
+    lines.append('注意：本次仅修改了 Excel。请执行 gen-client-bin.bat')
     lines.append('      （或 Unity 菜单「FuFramework/配置表/导出配置表」）重新导表。')
     return lines
 

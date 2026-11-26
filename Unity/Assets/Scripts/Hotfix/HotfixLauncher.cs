@@ -31,12 +31,7 @@ using Hotfix.Framework.Download;
 using Hotfix.Framework.Entity;
 using Hotfix.Game.UI;
 using Hotfix.Game.Config;
-
-#if ENABLE_BINARY_CONFIG
 using Luban;
-#else
-using SimpleJSON;
-#endif
 
 namespace Hotfix
 {
@@ -208,13 +203,8 @@ namespace Hotfix
 			if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(langTag, GlobalModule.AssetModule.Token))
 				FuLogger.LogError($"[HotfixLauncher] 启动期下载语言资源失败：{langTag}，配置表加载可能失败");
 
-#if ENABLE_BINARY_CONFIG
-			// 使用二进制配置表
-			await tableManager.LoadAsync(BinaryJsonConfigLoader);
-#else
-			// 使用JSON配置表
-			await tableManager.LoadAsync(JsonConfigLoader);
-#endif
+			// 加载 bin 配置表（唯一数据变体：.bytes + ByteBuf）
+			await tableManager.LoadAsync(ConfigLoader);
 
 			// 订阅语言切换事件并登记实例（退订/覆盖次序固定，勿在别处重复登记）
 			tableManager.SubscribeLanguageChange();
@@ -249,8 +239,7 @@ namespace Hotfix
 				if (textAsset == null)
 					throw new InvalidOperationException($"[HotfixLauncher] 英语兜底表加载失败：{englishPath}");
 
-				// json 变体（ENABLE_BINARY_CONFIG 未定义）：内容是 json 文本，JSON.Parse；
-				// bin 变体：内容是 ByteBuf，ByteBuf.Wrap——产物扩展名统一 .bytes，内容格式随宏
+				// 拆分产物为 ByteBuf 二进制（唯一变体）
 				var loadFunc = CreateEnglishTableLoadFunc(textAsset);
 				var table    = new TbLocalization(loadFunc);
 				await table.LoadAsync();
@@ -264,25 +253,14 @@ namespace Hotfix
 			}
 		}
 
-#if ENABLE_BINARY_CONFIG
 		/// <summary>
-		/// 构造英语兜底表取数委托（bin 变体：ByteBuf 包装）
+		/// 构造英语兜底表取数委托（拆分产物为 ByteBuf 二进制）
 		/// </summary>
 		private static Func<UniTask<ByteBuf>> CreateEnglishTableLoadFunc(TextAsset textAsset)
 		{
 			var bytes = textAsset.bytes;
 			return () => UniTask.FromResult(ByteBuf.Wrap(bytes));
 		}
-#else
-		/// <summary>
-		/// 构造英语兜底表取数委托（json 变体：SimpleJSON 解析）
-		/// </summary>
-		private static Func<UniTask<JSONNode>> CreateEnglishTableLoadFunc(TextAsset textAsset)
-		{
-			var node = JSON.Parse(textAsset.text);
-			return () => UniTask.FromResult(node);
-		}
-#endif
 
 		/// <summary>
 		/// 加载初始必要的公共UI资源包
@@ -292,13 +270,12 @@ namespace Hotfix
 			return GlobalModule.UIModule.PkgManager.LoadPkgAsync("Common");
 		}
 
-#if ENABLE_BINARY_CONFIG
 		/// <summary>
-		/// 加载二进制配置表
+		/// 加载 bin 配置表
 		/// </summary>
 		/// <param name="file"></param>
 		/// <returns></returns>
-		private static async UniTask<ByteBuf> BinaryJsonConfigLoader(string file)
+		private static async UniTask<ByteBuf> ConfigLoader(string file)
 		{
 			// 本地化表路由：tblocalization 按当前语言加载拆分文件（表名拦截点全仓唯一: TableManager.cs:88）
 			// 语言来源: LocalizationModule.OnInit 先于本加载执行（RegisterBaseModules 先于 LoadConfigAsync），恒已确定
@@ -338,53 +315,6 @@ namespace Hotfix
 				GlobalModule.AssetModule.UnloadAsset(configPath);
 			}
 		}
-#else
-		/// <summary>
-		/// 加载json配置表
-		/// </summary>
-		/// <param name="file"></param>
-		/// <returns></returns>
-		private static async UniTask<JSONNode> JsonConfigLoader(string file)
-		{
-			// 本地化表路由：tblocalization 按当前语言加载拆分文件（表名拦截点全仓唯一: TableManager.cs:88）
-			// 语言来源: LocalizationModule.OnInit 先于本加载执行（RegisterBaseModules 先于 LoadConfigAsync），恒已确定
-			// 扩展名恒为 .bytes（产物统一扩展名裁决：json 变体内容是 json 文本、bin 变体是 ByteBuf，同为 TextAsset）
-			if (file == LOCALIZATION_TABLE_NAME)
-			{
-				var lang        = LocalizationModule.Instance.Language.ToString();
-				var localPath   = UtilityAOT.AssetPath.GetLocalizationPath($"{LOCALIZATION_TABLE_NAME}_{lang}", ".bytes");
-				var assetHandle = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(localPath, GlobalModule.AssetModule.Token);
-				try
-				{
-					var textAsset = assetHandle.GetAssetObject<TextAsset>();
-					if (textAsset == null)
-						throw new InvalidOperationException($"[HotfixLauncher] 本地化表加载失败：{localPath}");
-					return JSON.Parse(textAsset.text);
-				}
-				finally
-				{
-					assetHandle.Release();
-					GlobalModule.AssetModule.UnloadAsset(localPath);
-				}
-			}
 
-			var cfgPath = UtilityAOT.AssetPath.GetConfigPath(file, ".json");
-			var handle  = await GlobalModule.AssetModule.LoadAssetAsync<TextAsset>(cfgPath, GlobalModule.AssetModule.Token);
-			try
-			{
-				var textAsset = handle.GetAssetObject<TextAsset>();
-				if (textAsset == null)
-					throw new InvalidOperationException($"[HotfixLauncher] 配置文件加载失败：{cfgPath}");
-				return JSON.Parse(handle.GetAssetObject<TextAsset>().text);
-			}
-			finally
-			{
-				// 解析后释放句柄，避免 provider 引用残留
-				// AutoUnload=false 下显式卸载，否则配置 bundle 常驻内存
-				handle.Release();
-				GlobalModule.AssetModule.UnloadAsset(cfgPath);
-			}
-		}
-#endif
 	}
 }

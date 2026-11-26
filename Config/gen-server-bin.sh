@@ -1,6 +1,6 @@
 
 #============================================================
-# Server config generation script (binary variant: .bytes data, cs-dotnet-bin target)
+# Server config generation script (.bytes data, cs-dotnet-bin target)
 #
 # What it does:
 #   1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)

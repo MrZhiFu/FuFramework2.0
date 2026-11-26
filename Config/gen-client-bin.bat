@@ -1,7 +1,7 @@
 @echo off
 
 rem ============================================================
-rem  Client config generation script (binary variant: .bytes data, cs-bin target)
+rem  Client config generation script (.bytes data, cs-bin target)
 rem
 rem  What it does:
 rem    1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)

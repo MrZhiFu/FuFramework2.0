@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using FuFramework.Core.Config;
+﻿using FuFramework.Core.Config;
 using FuFramework.Foundation.Logger;
 
 namespace FuFramework.Config;
@@ -32,13 +31,6 @@ public class ConfigComponent
     {
         var configBytes = await File.ReadAllBytesAsync($"Data/{file}.bytes");
         return ByteBuf.Wrap(configBytes);
-    }
-
-    private static async Task<JsonElement> Loader(string file)
-    {
-        var configJson = await File.ReadAllTextAsync($"Data/{file}.json");
-        var jsonElement = JsonDocument.Parse(configJson).RootElement;
-        return jsonElement;
     }
 
     /// <summary>

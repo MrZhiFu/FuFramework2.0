@@ -1,6 +1,6 @@
 @echo off
 rem Delete unreferenced localization key rows from the Excel tables (adds --apply).
-rem Re-export is NOT done here: run gen-client-json.bat / gen-client-bin.bat
+rem Re-export is NOT done here: run gen-client-bin.bat
 rem (or Unity menu "FuFramework/Config/Export Config Table") when ready.
 rem Review the preview report first: clean-l10n-keys-preview.bat
 

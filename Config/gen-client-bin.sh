@@ -1,6 +1,6 @@
 
 #============================================================
-# Client config generation script (binary variant: .bytes data, cs-bin target)
+# Client config generation script (.bytes data, cs-bin target)
 #
 # What it does:
 #   1. Builds Luban automatically if Luban.dll is missing (fresh clone / new machine)

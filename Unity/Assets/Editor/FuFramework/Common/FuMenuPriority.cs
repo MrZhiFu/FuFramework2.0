@@ -296,14 +296,9 @@ namespace FuFramework.Core.Editor
 		private const int CONFIG_BASE = 1000;
 
 		/// <summary>
-		/// 导出配置表—Json。
+		/// 导出配置表。
 		/// </summary>
-		public const int CONFIG_EXPORT_JSON = CONFIG_BASE + 0;
-
-		/// <summary>
-		/// 导出配置表—Bin。
-		/// </summary>
-		public const int CONFIG_EXPORT_BIN = CONFIG_BASE + 1;
+		public const int CONFIG_EXPORT = CONFIG_BASE + 0;
 
 		/// <summary>
 		/// 多语言检查段基准值。
