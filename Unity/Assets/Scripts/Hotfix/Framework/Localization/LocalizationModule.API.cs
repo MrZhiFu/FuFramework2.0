@@ -12,7 +12,7 @@ namespace Hotfix.Framework.Localization
 	/// <summary>
 	/// 本地化管理模块公共 API：单例/取消令牌、当前语言读写、多语言取词、异步切换语言。
 	/// </summary>
-	public sealed partial class LocalizationModule : ModuleBase
+	public sealed partial class LocalizationModule : ModuleBase, ICancelAsync
 	{
 		/// <summary>
 		/// 模块单例
@@ -25,7 +25,8 @@ namespace Hotfix.Framework.Localization
 		public CancellationToken Token => m_barrier.Token;
 
 		/// <summary>
-		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+		/// 触发取消并等待在途操作完成清理后才返回。
+		/// 由 ModuleManager.CancelAllAsync（热重启链）经 ICancelAsync 排水调用。
 		/// </summary>
 		public UniTask CancelAsync() => m_barrier.CancelAsync();
 
