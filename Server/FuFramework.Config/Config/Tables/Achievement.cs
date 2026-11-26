@@ -6,14 +6,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config.Tables
 {
     public sealed partial class Achievement : BeanBase
     {
-        /*
         public Achievement(int Id, string Icon, string Name, string Desc, System.Collections.Generic.List<int> UnlockCondition) 
         {
             this.Id = Id;
@@ -22,19 +20,23 @@ namespace FuFramework.Config.Tables
             this.Desc = Desc;
             this.UnlockCondition = UnlockCondition;
             PostInit();
-        }        
-        */
-
-        public Achievement(JsonElement _buf) 
-        {
-            Id = _buf.GetProperty("id").GetInt32();
-            Icon = _buf.GetProperty("icon").GetString();
-            Name = _buf.GetProperty("name").GetString();
-            Desc = _buf.GetProperty("desc").GetString();
-            { var __json0 = _buf.GetProperty("unlock_condition"); UnlockCondition = new System.Collections.Generic.List<int>(__json0.GetArrayLength()); foreach(JsonElement __e0 in __json0.EnumerateArray()) { int __v0;  __v0 = __e0.GetInt32();  UnlockCondition.Add(__v0); }   }
         }
-    
-        public static Achievement DeserializeAchievement(JsonElement _buf)
+
+        public Achievement(ByteBuf _buf) 
+        {
+            Id = _buf.ReadInt();
+            Icon = _buf.ReadString();
+            Name = _buf.ReadString();
+            Desc = _buf.ReadString();
+            {int n0 = _buf.ReadSize(); UnlockCondition = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); UnlockCondition.Add(_e0);}}
+            // Localization Key Begin
+            Name_Localization_Key = Name;
+            Desc_Localization_Key = Desc;
+            // Localization Key End
+            PostInit();
+        }
+
+        public static Achievement DeserializeAchievement(ByteBuf _buf)
         {
             return new Tables.Achievement(_buf);
         }
@@ -52,17 +54,30 @@ namespace FuFramework.Config.Tables
         /// </summary>
         public string Name { private set; get; }
         /// <summary>
+        /// 成就名称 的多语言Key
+        /// </summary>
+        public readonly string Name_Localization_Key;
+        /// <summary>
         /// 描述信息
         /// </summary>
         public string Desc { private set; get; }
         /// <summary>
+        /// 描述信息 的多语言Key
+        /// </summary>
+        public readonly string Desc_Localization_Key;
+        /// <summary>
         /// 成就解锁条件
         /// </summary>
         public System.Collections.Generic.List<int> UnlockCondition { private set; get; }
-
-        private const int __ID__ = -1048610522;
+        public const int __ID__ = -1048610522;
         public override int GetTypeId() => __ID__;
 
+
+        public  void TranslateText(System.Func<string, string, string> translator)
+        {
+            Name = translator(Name_Localization_Key, Name);
+            Desc = translator(Desc_Localization_Key, Desc);
+        }
 
         public override string ToString()
         {
@@ -76,5 +91,6 @@ namespace FuFramework.Config.Tables
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

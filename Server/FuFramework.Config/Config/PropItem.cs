@@ -6,29 +6,29 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config
 {
     public sealed partial class PropItem : BeanBase
     {
-        /*
         public PropItem(int Id, int Count) 
         {
             this.Id = Id;
             this.Count = Count;
             PostInit();
-        }        
-        */
-
-        public PropItem(JsonElement _buf) 
-        {
-            Id = _buf.GetProperty("Id").GetInt32();
-            Count = _buf.GetProperty("Count").GetInt32();
         }
-    
-        public static PropItem DeserializePropItem(JsonElement _buf)
+
+        public PropItem(ByteBuf _buf) 
+        {
+            Id = _buf.ReadInt();
+            Count = _buf.ReadInt();
+            // Localization Key Begin
+            // Localization Key End
+            PostInit();
+        }
+
+        public static PropItem DeserializePropItem(ByteBuf _buf)
         {
             return new PropItem(_buf);
         }
@@ -41,9 +41,9 @@ namespace FuFramework.Config
         /// 道具数量
         /// </summary>
         public int Count { private set; get; }
-
-        private const int __ID__ = -929329866;
+        public const int __ID__ = -929329866;
         public override int GetTypeId() => __ID__;
+
 
 
         public override string ToString()
@@ -55,5 +55,6 @@ namespace FuFramework.Config
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

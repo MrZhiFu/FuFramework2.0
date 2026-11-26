@@ -6,31 +6,31 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config
 {
     public partial struct vec3
     {
-        /*
         public vec3(float X, float Y, float Z) 
         {
             this.X = X;
             this.Y = Y;
             this.Z = Z;
             PostInit();
-        }        
-        */
-
-        public vec3(JsonElement _buf) 
-        {
-            X = _buf.GetProperty("x").GetSingle();
-            Y = _buf.GetProperty("y").GetSingle();
-            Z = _buf.GetProperty("z").GetSingle();
         }
-    
-        public static vec3 Deserializevec3(JsonElement _buf)
+
+        public vec3(ByteBuf _buf) 
+        {
+            X = _buf.ReadFloat();
+            Y = _buf.ReadFloat();
+            Z = _buf.ReadFloat();
+            // Localization Key Begin
+            // Localization Key End
+            PostInit();
+        }
+
+        public static vec3 Deserializevec3(ByteBuf _buf)
         {
             return new vec3(_buf);
         }
@@ -51,5 +51,6 @@ namespace FuFramework.Config
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

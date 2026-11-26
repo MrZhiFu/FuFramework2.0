@@ -8,7 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using SimpleJSON;
+using Luban;
 using Hotfix.Framework.Config;
 using Cysharp.Threading.Tasks;
 
@@ -74,10 +74,10 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 异步加载全部配置表
         /// </summary>
-        /// <param name="loader">取配置表 JSON 的加载委托</param>
+        /// <param name="loader">取配置表 ByteBuf 的加载委托</param>
         /// <returns>全部表加载完成</returns>
         /// <remarks>逐表建立、并行 await，全部完成后刷新引用</remarks>
-        public async UniTask LoadAsync(Func<string, UniTask<JSONNode>> loader)
+        public async UniTask LoadAsync(Func<string, UniTask<ByteBuf>> loader)
         {
             if (IsLoaded) return;
 
@@ -146,6 +146,7 @@ namespace Hotfix.Game.Config
         /// </summary>
         private void ResolveRef()
         {
+            PostResolveRef();
         }
 
         /// <summary>
@@ -166,5 +167,9 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成一些所有配置表加载完成后的自定义预处理收尾工作
         /// </summary>
         partial void OnInit();
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

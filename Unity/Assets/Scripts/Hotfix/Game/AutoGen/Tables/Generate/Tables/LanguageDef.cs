@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -68,19 +67,18 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 LanguageDef 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 LanguageDef 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private LanguageDef(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private LanguageDef(ByteBuf buf) 
         {
-            { if(!node["language"].IsNumber) { throw new SerializationException(); }  Language = (ELanguage)node["language"].AsInt; }
-            { if(!node["name"].IsString) { throw new SerializationException(); }  Name = node["name"]; }
-            { if(!node["system_language"].IsString) { throw new SerializationException(); }  SystemLanguage = node["system_language"]; }
-            { if(!node["icon"].IsString) { throw new SerializationException(); }  Icon = node["icon"]; }
-            { if(!node["sort"].IsNumber) { throw new SerializationException(); }  Sort = node["sort"]; }
-            { if(!node["separator"].IsString) { throw new SerializationException(); }  Separator = node["separator"]; }
-            { if(!node["is_visible"].IsBoolean) { throw new SerializationException(); }  IsVisible = node["is_visible"]; }
-
+            Language = (ELanguage)buf.ReadInt();
+            Name = buf.ReadString();
+            SystemLanguage = buf.ReadString();
+            Icon = buf.ReadString();
+            Sort = buf.ReadInt();
+            Separator = buf.ReadString();
+            IsVisible = buf.ReadBool();
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -89,9 +87,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 LanguageDef 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 LanguageDef</returns>
-        public static LanguageDef DeserializeLanguageDef(JSONNode node) => new(node);
+        public static LanguageDef DeserializeLanguageDef(ByteBuf buf) => new(buf);
 
 
 
@@ -116,5 +114,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

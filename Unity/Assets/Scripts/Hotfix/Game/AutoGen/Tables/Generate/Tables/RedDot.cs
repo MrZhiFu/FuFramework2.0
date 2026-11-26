@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -63,18 +62,17 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 RedDot 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 RedDot 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private RedDot(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private RedDot(ByteBuf buf) 
         {
-            { if(!node["Id"].IsNumber) { throw new SerializationException(); }  Id = (ERedDotKey)node["Id"].AsInt; }
-            { var _j = node["ParentId"]; if (_j.Tag != JSONNodeType.None && _j.Tag != JSONNodeType.NullValue) { { if(!_j.IsNumber) { throw new SerializationException(); }  ParentId = (ERedDotKey?)_j.AsInt; } } else { ParentId = null; } }
-            { if(!node["DisplayMode"].IsNumber) { throw new SerializationException(); }  DisplayMode = (ERedDotDisplayMode)node["DisplayMode"].AsInt; }
-            { if(!node["CleanStrategy"].IsNumber) { throw new SerializationException(); }  CleanStrategy = (ERedDotCleanStrategy)node["CleanStrategy"].AsInt; }
-            { if(!node["LogicType"].IsNumber) { throw new SerializationException(); }  LogicType = (ERedDotLogicType)node["LogicType"].AsInt; }
-            { if(!node["IsActive"].IsBoolean) { throw new SerializationException(); }  IsActive = node["IsActive"]; }
-
+            Id = (ERedDotKey)buf.ReadInt();
+            if(buf.ReadBool()){ ParentId = (ERedDotKey)buf.ReadInt(); } else { ParentId = null; }
+            DisplayMode = (ERedDotDisplayMode)buf.ReadInt();
+            CleanStrategy = (ERedDotCleanStrategy)buf.ReadInt();
+            LogicType = (ERedDotLogicType)buf.ReadInt();
+            IsActive = buf.ReadBool();
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -83,9 +81,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 RedDot 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 RedDot</returns>
-        public static RedDot DeserializeRedDot(JSONNode node) => new(node);
+        public static RedDot DeserializeRedDot(ByteBuf buf) => new(buf);
 
 
 
@@ -109,5 +107,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

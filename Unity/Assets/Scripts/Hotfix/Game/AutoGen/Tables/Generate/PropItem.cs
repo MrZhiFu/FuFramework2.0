@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -43,14 +42,13 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 PropItem 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 PropItem 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private PropItem(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private PropItem(ByteBuf buf) 
         {
-            { if(!node["Id"].IsNumber) { throw new SerializationException(); }  Id = node["Id"]; }
-            { if(!node["Count"].IsNumber) { throw new SerializationException(); }  Count = node["Count"]; }
-
+            Id = buf.ReadInt();
+            Count = buf.ReadInt();
             // Localization Key Begin
             // Localization Key End
             OnInit();
@@ -59,9 +57,9 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 反序列化创建 PropItem 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 PropItem</returns>
-        public static PropItem DeserializePropItem(JSONNode node) => new(node);
+        public static PropItem DeserializePropItem(ByteBuf buf) => new(buf);
 
 
 
@@ -81,5 +79,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }

@@ -6,14 +6,12 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Text.Json;
 using FuFramework.Core.Config;
 
 namespace FuFramework.Config
 {
     public partial struct vec4
     {
-        /*
         public vec4(float X, float Y, float Z, float W) 
         {
             this.X = X;
@@ -21,18 +19,20 @@ namespace FuFramework.Config
             this.Z = Z;
             this.W = W;
             PostInit();
-        }        
-        */
-
-        public vec4(JsonElement _buf) 
-        {
-            X = _buf.GetProperty("x").GetSingle();
-            Y = _buf.GetProperty("y").GetSingle();
-            Z = _buf.GetProperty("z").GetSingle();
-            W = _buf.GetProperty("w").GetSingle();
         }
-    
-        public static vec4 Deserializevec4(JsonElement _buf)
+
+        public vec4(ByteBuf _buf) 
+        {
+            X = _buf.ReadFloat();
+            Y = _buf.ReadFloat();
+            Z = _buf.ReadFloat();
+            W = _buf.ReadFloat();
+            // Localization Key Begin
+            // Localization Key End
+            PostInit();
+        }
+
+        public static vec4 Deserializevec4(ByteBuf _buf)
         {
             return new vec4(_buf);
         }
@@ -55,5 +55,6 @@ namespace FuFramework.Config
         }
 
         partial void PostInit();
+        partial void PostResolveRef();
     }
 }

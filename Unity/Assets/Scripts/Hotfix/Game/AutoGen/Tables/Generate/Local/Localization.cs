@@ -8,7 +8,6 @@
 
 using System;
 using Luban;
-using SimpleJSON;
 
 // ReSharper disable once CheckNamespace
 namespace Hotfix.Game.Config
@@ -40,22 +39,22 @@ namespace Hotfix.Game.Config
         }
 
         /// <summary>
-        /// 从 JSONNode 反序列化创建 Localization 实例(内部序列化使用)
+        /// 从 ByteBuf 反序列化创建 Localization 实例(内部序列化使用)
         /// </summary>
-        /// <param name="node">配置数据节点</param>
-        private Localization(JSONNode node)
+        /// <param name="buf">配置数据流</param>
+        private Localization(ByteBuf buf) 
         {
-            Key   = node["key"];
-            Value = node["value"];
+            Key   = buf.ReadString();
+            Value = buf.ReadString();
             OnInit();
         }
 
         /// <summary>
         /// 反序列化创建 Localization 实例
         /// </summary>
-        /// <param name="node">配置数据节点</param>
+        /// <param name="buf">配置数据流</param>
         /// <returns>反序列化后的 Localization</returns>
-        public static Localization DeserializeLocalization(JSONNode node) => new(node);
+        public static Localization DeserializeLocalization(ByteBuf buf) => new(buf);
 
 
 
@@ -72,5 +71,10 @@ namespace Hotfix.Game.Config
         /// 典型场景：完成构造完成后的自定义预处理收尾工作，
         /// </summary>
         partial void OnInit();
+
+        /// <summary>
+        /// 分部钩子，所有跨表引用解析完成后调用
+        /// </summary>
+        partial void PostResolveRef();
     }
 }
