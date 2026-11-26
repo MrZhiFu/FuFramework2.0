@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -7,21 +7,20 @@ using AOT.Framework.Core.Log;
 using AOT.Launch.Localization;
 using Hotfix.Framework.Event;
 using Hotfix.Framework.Storage;
+using Hotfix.Game.Config;
+using Hotfix.Framework.Config;
 using ELanguage = Hotfix.Game.Config.ELanguage;
 
 namespace Hotfix.Framework.Localization
 {
 	/// <summary>
-	/// 本地化管理模块：当前语言的获取/设置与持久化（经 StorageModule）、语言变更事件广播（经 EventModule）、
-	/// 经具体 Provider 获取多语言字符串。
+	/// 本地化管理模块（生命周期与内部实现分部）。
+	///     当前语言的读取/设置/持久化（经 StorageModule）、语言变更事件广播（经 EventModule）、
+	///     取词实现（当前语种表 → 英语兜底表二段查询，英语表懒加载）。
+	///     公共 API 见 LocalizationModule.API.cs。
 	/// </summary>
-	public sealed class LocalizationModule : ModuleBase
+	public sealed partial class LocalizationModule : ModuleBase
 	{
-		/// <summary>
-		/// 模块单例
-		/// </summary>
-		public static LocalizationModule Instance { get; private set; }
-
 		/// <summary>
 		/// 事件管理模块
 		/// </summary>
@@ -38,15 +37,16 @@ namespace Hotfix.Framework.Localization
 		private ELanguage m_language;
 
 		/// <summary>
-		/// 本地化多语言提供者
-		/// </summary>
-		public ILocalizationProvider LocalizationProvider { get; set; }
-
-		/// <summary>
 		/// 取消栅栏：内部 CTS + 在途计数 + 全部完成信号。每次 OnInit 重建（新生命周期 = 新 Token）。
 		/// OnDispose 时 Cancel，语言切换等在途异步操作随之取消；经 CancelAsync 等待取消清理完成。
 		/// </summary>
 		private CancellationBarrier m_barrier = new();
+
+		/// <summary>
+		/// 当前在途切换链路的取消源（防抖：新切换先取消旧链路，以最新目标为准；null = 无在途切换）。
+		/// 访问须在主线程（切换链路的发起/收尾都在主线程同步段），无并发写风险。
+		/// </summary>
+		private CancellationTokenSource m_switchCts;
 
 		/// <summary>
 		/// 本地化表重填回调（由 HotfixLauncher 在表加载完成后注入，指向 TableManager.ReloadLocalizationAsync）。
@@ -55,36 +55,28 @@ namespace Hotfix.Framework.Localization
 		internal Func<UniTask<bool>> LocalizationReloader { get; set; }
 
 		/// <summary>
-		/// 取消令牌：模块销毁（OnDispose）后触发，语言切换等在途异步操作观察它并中止。
+		/// 英语兜底表加载器（由 HotfixLauncher 在表加载完成后注入）。
+		/// 不走语言路由（兜底场景语言≠English），直取英语文件。
 		/// </summary>
-		public CancellationToken Token => m_barrier.Token;
+		internal Func<UniTask<TbLocalization>> EnglishTableLoader { get; set; }
 
 		/// <summary>
-		/// 触发取消并等待在途操作完成清理后才返回。供框架重启取消清理。
+		/// 缓存多语言配置表，避免每次调用都从配置表中获取
 		/// </summary>
-		public UniTask CancelAsync() => m_barrier.CancelAsync();
+		private TbLocalization m_tbLocalization;
 
 		/// <summary>
-		/// 获取或设置当前使用的语言（同步切换：仅改标记/存档/广播，不加载资源——按语种拆分后资源加载走 SetLanguageAsync）。
+		/// 英语兜底表（懒加载持有）：目标语种查不到时二段查询；null = 尚未加载
 		/// </summary>
-		public ELanguage Language
-		{
-			get => m_language;
-			set
-			{
-				if (value == ELanguage.Unspecified)
-				{
-					FuLogger.LogError("设置本地化语言失败，语言为 Unspecified（未指定），已忽略本次设置");
-					return;
-				}
+		private TbLocalization m_tbEnglishFallback;
 
-				if (value == m_language) return;
-				var oldLanguage = m_language;
-				m_language = value;
-
-				ApplyLanguageChange(oldLanguage, value);
-			}
-		}
+		/// <summary>
+		/// 英语表在途加载的完成源（并发防抖共享等待点）。
+		/// 用 UniTaskCompletionSource 而非 UniTask 字段：UniTask 是单次消费的（重复 await 抛
+		/// "Already continuation registered"），切语言时全表批量翻译会产生大量并发 miss，
+		/// 必须允许多个等待者共享同一次加载。
+		/// </summary>
+		private UniTaskCompletionSource<TbLocalization> m_englishLoadTcs;
 
 		/// <summary>
 		/// 初始化
@@ -133,113 +125,104 @@ namespace Hotfix.Framework.Localization
 		}
 
 		/// <summary>
-		/// 获取当前语言下的多语言文本
+		/// 按 key 取当前语言译文（取词实现）：当前语种表直读 → 空则二段查询英语兜底。
 		/// </summary>
-		/// <param name="key">多语言key</param>
+		/// <param name="key">多语言key(使用静态类L10nKey的多语言字段即可)</param>
 		/// <param name="args">参数</param>
-		public string GetL10nText(string key, params object[] args)
+		/// <returns>译文；当前语种缺失时回退英语兜底表；两者皆缺返回空串</returns>
+		private string GetL10n(string key, params object[] args)
 		{
-			if (LocalizationProvider is null)
+			if (string.IsNullOrEmpty(key)) return string.Empty;
+
+			// 获取多语言配置表并缓存
+			m_tbLocalization ??= ConfigModule.Instance.GetConfig<TbLocalization>();
+
+			var localization = m_tbLocalization?.Get(key);
+			if (localization == null)
 			{
-				FuLogger.LogWarning("本地化多语言提供者未设置，请先设置");
-				return $"[{key}]";
+				FuLogger.LogError($"多语言key '{key}' 没找到，请检查多语言配置表!");
+				return string.Empty;
 			}
 
-			var result = LocalizationProvider.GetL10n(key, args);
-			return result.IsNullOrEmpty() ? $"[{key}]" : result;
+			// 拆分产物每文件只含当前语种，直接取 Value（与 AOT 侧 LaunchLocalization 同构）
+			var text = localization.Value;
+
+			// 二段查询英语兜底：目标语种缺失（拆分产物该语种键缺失→null / 或翻译为空）时查英语表
+			if (text.IsNullOrEmpty())
+			{
+				text = TryGetEnglish(key);
+			}
+
+			// 如果有参数，则返回格式化参数后的文本，否则直接返回文本
+			return args is { Length: > 0 } ? string.Format(text, args) : text;
 		}
 
 		/// <summary>
-		/// 当前在途切换链路的取消源（防抖：新切换先取消旧链路，以最新目标为准；null = 无在途切换）。
-		/// 访问须在主线程（切换链路的发起/收尾都在主线程同步段），无并发写风险。
+		/// 查英语兜底表；未加载时同步短路返回空串并触发异步加载（下次查询生效，不阻塞当前查询）
 		/// </summary>
-		private CancellationTokenSource m_switchCts;
+		/// <param name="key">多语言key</param>
+		/// <returns>英语译文；英语表未就绪或 key 也缺失时返回空串</returns>
+		private string TryGetEnglish(string key)
+		{
+			if (m_tbEnglishFallback == null)
+			{
+				TriggerEnglishLoadAsync().Forget();
+				return string.Empty;
+			}
+
+			var englishRow = m_tbEnglishFallback.Get(key);
+			// 拆分产物统一 key+value：英语文件的 value 即英语译文
+			var english = englishRow?.Value;
+			return string.IsNullOrEmpty(english) ? string.Empty : english;
+		}
 
 		/// <summary>
-		/// 异步切换语言：确保目标语种资源就绪（必要时下载）→ 重填本地化表 → 才持久化并广播语言切换事件。
-		/// 加载/下载中再次切换会取消旧链路（旧调用抛 OperationCanceledException），以最新目标为准；
-		/// 失败回滚内存语言并返回 false（不广播不存档）。
+		/// 触发英语兜底表异步加载（并发防抖：在途加载共享同一完成源，多个等待者安全复用；
+		/// 失败/取消清空完成源允许下次重试）。
+		/// 取消令牌挂本模块取消栅栏（随 OnDispose 取消）。
 		/// </summary>
-		/// <param name="language">目标语言（Unspecified 视为非法调用）</param>
-		/// <param name="token">取消令牌（必传，调用方生命周期所有者）</param>
-		/// <returns>true = 切换完成（表已重填、事件已广播）；false = 切换失败（语言已回滚，原因见日志）；取消抛 OperationCanceledException</returns>
-		public async UniTask<bool> SetLanguageAsync(ELanguage language, CancellationToken token)
+		private async UniTaskVoid TriggerEnglishLoadAsync()
 		{
-			if (language == ELanguage.Unspecified)
+			if (EnglishTableLoader == null)
 			{
-				FuLogger.LogError("切换本地化语言失败，语言为 Unspecified（未指定），已忽略本次切换");
-				return false;
+				FuLogger.LogError("英语兜底表加载器未注入，英语兜底不可用（HotfixLauncher 表加载完成后须注入 EnglishTableLoader）");
+				return;
 			}
 
-			if (language == m_language) return true; // 同语言幂等直过
-
-			m_barrier.Token.ThrowIfCancellationRequested(); // 模块已销毁则拒绝
-			token.ThrowIfCancellationRequested();           // 调用方已取消则拒绝
-
-			// 防抖：取消在途旧链路（其 catch OCE 回滚内存语言后抛出，不影响本链路）
-			if (m_switchCts != null)
+			// 已有在途加载：共享等待（UniTaskCompletionSource.Task 支持多消费者）
+			if (m_englishLoadTcs != null)
 			{
-				m_switchCts.Cancel();
-				m_switchCts.Dispose();
-				m_switchCts = null;
-			}
-
-			var oldLanguage = m_language;
-			m_language  = language; // 先改内存语言：loader 路由与 AssetModule 按 tag 下载都读它（失败/取消路径须回滚）
-			m_switchCts = new CancellationTokenSource();
-			var switchCts = m_switchCts; // 本链路凭据：finally 清理时识别自己是否仍是最新链路
-			using (m_barrier.Register())
-			{
-				using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_barrier.Token, token, switchCts.Token))
+				try
 				{
-					try
-					{
-						// 1. 下载目标语种 bundle（本地已有则直过；失败回滚返回）
-						if (!await GlobalModule.AssetModule.EnsureDownloadByTagAsync(language.ToString(), linkedCts.Token))
-						{
-							m_language = oldLanguage;
-							return false;
-						}
-
-						// 2. 重填本地化表（loader 此时路由到新语言文件）；重填失败（含空表/损坏数据）同样回滚
-						if (LocalizationReloader == null)
-						{
-							FuLogger.LogError("本地化表重填回调未注入，切换语言失败（HotfixLauncher 表加载完成后须注入 LocalizationReloader）");
-							m_language = oldLanguage;
-							return false;
-						}
-
-						if (!await LocalizationReloader())
-						{
-							m_language = oldLanguage;
-							return false;
-						}
-
-						// 3. 表就绪后才持久化 + 广播（TableManager 订阅者此时重译拿到的已是新表）
-						ApplyLanguageChange(oldLanguage, language);
-						return true;
-					}
-					catch (OperationCanceledException)
-					{
-						m_language = oldLanguage; // 取消链路回滚内存语言（数据未换，必须还原）
-						throw;
-					}
-					catch (Exception e)
-					{
-						FuLogger.LogError($"切换本地化语言 {language} 失败：{e.Message}");
-						m_language = oldLanguage;
-						return false;
-					}
-					finally
-					{
-						// 链路收尾：仅当自己仍是最新链路时清空凭据（被防抖取消的旧链路不动新链路的 CTS）
-						if (m_switchCts == switchCts)
-						{
-							m_switchCts.Dispose();
-							m_switchCts = null;
-						}
-					}
+					await m_englishLoadTcs.Task;
 				}
+				catch (Exception)
+				{
+					// 共享等待者忽略结果：主加载链负责记录错误与清空完成源
+				}
+
+				return;
+			}
+
+			var tcs = new UniTaskCompletionSource<TbLocalization>();
+			m_englishLoadTcs = tcs;
+			try
+			{
+				var table = await EnglishTableLoader();
+				m_tbEnglishFallback = table;
+				tcs.TrySetResult(table);
+				FuLogger.LogInfo("英语兜底表加载完成（懒加载触发）");
+			}
+			catch (OperationCanceledException)
+			{
+				tcs.TrySetCanceled();
+				m_englishLoadTcs = null; // 模块生命周期取消：允许新生命周期重试
+			}
+			catch (Exception e)
+			{
+				tcs.TrySetException(e);
+				m_englishLoadTcs = null; // 失败清空允许重试
+				FuLogger.LogError($"英语兜底表加载失败：{e.Message}");
 			}
 		}
 

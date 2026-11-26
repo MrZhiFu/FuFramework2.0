@@ -69,7 +69,7 @@ namespace Hotfix.Game.Config
         /// <summary>
         /// 重载本地化表数据（语言切换时由 LocalizationModule 在广播事件前调用）。
         /// 依赖 loader 层按 LocalizationModule 当前语言路由，原地重建 DataList/StrKeyDataDict；
-        /// LocalizationProvider 缓存的表实例引用不变，无需任何同步操作。
+        /// LocalizationModule 缓存的表实例引用不变，无需任何同步操作。
         /// 重载后校验行数非空：损坏数据（解析宽松不抛异常）会导致空表，空表广播事件将让全 UI 译文变占位符——
         /// 视为重载失败返回 false，由 SetLanguageAsync 回滚语言（不广播不存档）。
         /// </summary>

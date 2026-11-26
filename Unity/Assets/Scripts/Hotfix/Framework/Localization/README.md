@@ -12,7 +12,6 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 - **英语兜底懒加载**：目标语种译文为空时二段查询英语表（首次 miss 触发异步加载，加载完成后后续查询生效，不阻塞当前调用）
 - **运行时切换**：通过 `Language` 属性动态切换语言，自动广播 `LanguageChangeEventArgs` 事件
 - **持久化存储**：语言设置通过 `StorageModule` 持久化保存，下次启动自动恢复
-- **Provider 模式**：通过 `ILocalizationProvider` 接口解耦，方便扩展自定义本地化数据源
 - **系统语言检测**：`SystemLanguage` 静态属性可获取当前系统语言
 
 ## 3. 核心概念
@@ -27,8 +26,8 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 │  │  - 当前语言设置（读/写属性）                          │   │
 │  └─────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  LocalizationProvider (ILocalizationProvider)       │   │
-│  │  - 负责从配置表获取本地化文本                         │   │
+│  │  GetL10nText / GetL10n（模块内取词实现）              │   │
+│  │  - 当前语种表直读 → 空则二段查询英语兜底表             │   │
 │  └─────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -62,7 +61,6 @@ FuFramework Localization 模块是游戏框架的本地化/多语言管理系统
 |------|------|------|
 | `Instance` | `LocalizationModule` | 模块静态单例 |
 | `Language` | `ELanguage` | 获取或设置当前语言（设置时会持久化并广播事件） |
-| `LocalizationProvider` | `ILocalizationProvider` | 获取或设置本地化多语言提供者 |
 
 系统语言映射私有方法 `FromSystemLanguage()`（初始化时无持久化记录时使用）内部委托配置生成的 `LaunchLanguageRegistry.FromSystemLanguage`（AOT 程序集），与 AOT 侧同一事实源；跨程序集返回值按枚举名转换（两份 `ELanguage` 数值一致但类型不同）。
 
@@ -80,39 +78,22 @@ string GetL10nText(string key, params object[] args)
 
 `OnInit` 读取存档确定语言后，会把最终语言**回写 PlayerPrefs**（启动收敛，修正旧版本仅存档无偏好的漂移）。
 
-### 4.2 ILocalizationProvider
+### 4.2 取词实现（模块内私有）
 
-本地化提供器接口，定义从数据源获取本地化文本的方法。
+取词逻辑内联在 `LocalizationModule` 中（`GetL10n` 私有实现 + `GetL10nText` 公共门面），不再有独立 Provider 类与接口。
 
-命名空间：`Hotfix.Framework.Localization`
-
-```csharp
-public interface ILocalizationProvider
-{
-    /// <summary>
-    /// 获取本地化多语言文本
-    /// </summary>
-    /// <param name="key">多语言 key</param>
-    /// <param name="args">格式化参数</param>
-    /// <returns>对应语言下的文本</returns>
-    string GetL10n(string key, params object[] args);
-}
-```
-
-### 4.3 LocalizationProvider
-
-`ILocalizationProvider` 的默认实现。按语种拆分后，`TbLocalization` 由 `TableManager` 随语言切换加载**目标语种文件**（文件内只含 `key` + 该语种列），Provider 通过 `ConfigModule.Instance.GetConfig<TbLocalization>()` 获取并缓存当前语言表。
+按语种拆分后，`TbLocalization` 由 `TableManager` 随语言切换加载**目标语种文件**（文件内只含 `key` + 该语种），模块通过 `ConfigModule.Instance.GetConfig<TbLocalization>()` 获取并缓存当前语言表。
 
 文本查找逻辑：
-1. 根据 `LocalizationModule.Instance.Language` 确定当前语言，从当前语种表按 key 查找配置行
-2. 取该语种列的值；为空（未翻译或拆分产物中该键缺失）时进入**二段查询**：查英语兜底表
+1. 从当前语种表按 key 查找配置行（行缺失记错误日志并返回空）
+2. 取该行 `Value`（拆分产物每文件只含当前语种，语言维度已消失）；为空（未翻译）时进入**二段查询**：查英语兜底表
 3. 英语兜底表为**懒加载**：首次 miss 触发异步加载（`HotfixLauncher` 注入的 `EnglishTableLoader` 直取英语文件，不走语言路由）；加载未就绪时本次同步返回空串，加载完成后后续查询生效。并发 miss 通过 `UniTaskCompletionSource` 共享同一次加载，失败/取消后允许重试
 4. 若有 `args` 参数，使用 `string.Format` 格式化
-5. 当前语种与英语兜底都缺失时返回空串，`LocalizationModule.GetL10nText` 外层再包装为 `[key]` 占位符
+5. 当前语种与英语兜底都缺失时返回空串，`GetL10nText` 门面再包装为 `[key]` 占位符
 
-> Provider 无独立生命周期，英语兜底加载的取消令牌挂在 `AssetModule` 模块生命周期上。
+> 英语兜底加载的取消令牌挂在**本模块取消栅栏**（`m_barrier.Token`，随 `OnDispose` 取消）。
 
-### 4.4 LanguageChangeEventArgs
+### 4.3 LanguageChangeEventArgs
 
 语言变更事件参数，语言切换时通过 `EventModule.Broadcast` 广播。
 
@@ -220,24 +201,14 @@ public class UITextUpdater
 }
 ```
 
-### 5.4 设置自定义数据源
-
-```csharp
-using Hotfix.Framework.Localization;
-
-// 注入自定义的本地化数据源
-LocalizationModule.Instance.LocalizationProvider = new MyCustomLocalizationProvider();
-```
-
 ## 6. 目录结构
 
 ```text
 Localization/
-├── ILocalizationProvider.cs      # 本地化提供器接口
-├── LanguageChangeEventArgs.cs    # 语言变更事件
-├── LocalizationModule.cs         # 本地化管理模块
-├── LocalizationProvider.cs       # 本地化提供器实现
-└── README.md                     # 本文档
+├── LanguageChangeEventArgs.cs        # 语言变更事件
+├── LocalizationModule.cs             # 模块生命周期与内部实现（取词/英语兜底懒加载/存档/广播）
+├── LocalizationModule.API.cs         # 模块公共 API（单例/语言读写/GetL10nText/SetLanguageAsync）
+└── README.md                         # 本文档
 ```
 
 > 语言枚举 `ELanguage` 为配置生成（`Generate/ELanguage.cs`），多语言 key 常量类 `L10nKey` 在 `Game/AutoGen/Tables/Extension/` 下（`is_code=true` 的 key）。
@@ -263,16 +234,16 @@ Localization/
 
 1. 语言切换后的文本刷新：FGUI 声明式绑定（第 11 节）与业务数据绑定（`WinBase._OnLanguageChanged` 的 `OnOpen`）自动执行；仅自管文本的界面需要自行订阅 `Subscribe<LanguageChangeEventArgs>(...)` 手动刷新
 2. 本地化文本 Key 在配置表中必须唯一
-3. 若 `LocalizationProvider` 未设置，`GetL10nText` 会返回 `[key]` 格式的占位符文本并输出警告日志
+3. 取不到译文（key 在表中不存在，或目标语种与英语兜底皆为空）时，`GetL10nText` 返回 `[key]` 占位符并输出错误日志
 4. 语言设置存储在本地，卸载游戏后不会丢失
 5. 设置语言为 `ELanguage.Unspecified` 会抛出 `InvalidOperationException`
 
 ## 10. 扩展：新增多语言资源类型
 
-体系当前仅覆盖**文本**。未来要按语言区分其他资源（图片 / 音频 / 字体等）时，复用本模块的 Provider 模式：
+体系当前仅覆盖**文本**。未来要按语言区分其他资源（图片 / 音频 / 字体等）时，参照本模块的取词实现：
 
 1. **数据侧**：在 `Config/Excels/Tables/` 新建资源表（如 `TbLocalizationImage`：`key` + `is_code` + 各语言列存资源路径）。**不能放 `Excels/Local/`**（该目录是文本校验专用通道）；表名加入 `CsharpL10NKeyCodeTarget.CollectKeys` 筛选后 key 常量随 `L10nKey` 生成。完整数据侧步骤见 `Config/README.md` 的「扩展：新增多语言资源类型」。
-2. **运行时侧**：新建提供器实现 `ILocalizationProvider`（或独立接口），取值模式与 `LocalizationProvider` 一致：查表 → switch 当前语言选列 → 空值回退 English 列 → 参数格式化；返回的资源路径交由 `AssetModule` 加载。
+2. **运行时侧**：新增取词扩展（独立的资源取词类或本模块内扩展方法），取值模式与本模块一致：查表 → 取当前语种值 → 空值回退英语兜底 → 参数格式化；返回的资源路径交由 `AssetModule` 加载。
 3. **联动**：新增类型表后，未来"扩语言"时须同步加语言列（与 `TbLocalization` / `TbLanguageDef` / 枚举 sheet 联动）。
 
 ## 11. FGUI 声明式多语言（L10n 插件）

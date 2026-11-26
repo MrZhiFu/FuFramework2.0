@@ -133,7 +133,7 @@ namespace Hotfix
 		}
 
 		/// <summary>
-		/// 初始化框架依赖：加载配置表与公共 UI 资源包、设置多语言 Provider。
+		/// 初始化框架依赖：加载配置表与公共 UI 资源包、注入多语言取词依赖。
 		/// 须在依赖配置数据的功能模块（Sound/Entity 等）注册或重新初始化之前调用。
 		/// </summary>
 		private static async UniTask InitDependenciesAsync(ILaunchView launchView)
@@ -146,20 +146,13 @@ namespace Hotfix
 			launchView.SetTip(LaunchLocalization.GetL10nText(LaunchL10nKey.aot_res_loading_init_res));
 			await LoadCommonUIAsync();
 
-			// 设置本地化多语言提供者
-			LocalizationModule.Instance.LocalizationProvider = new LocalizationProvider();
-
-			// 注入英语兜底表加载器：Provider 目标语种缺失时二段查英语表（懒加载）——
-			// 须在 Provider 创建之后注入（LoadConfigAsync 阶段的 Provider 尚未创建，注入会被本处 new 覆盖）
-			if (LocalizationModule.Instance.LocalizationProvider is LocalizationProvider provider)
-			{
-				provider.EnglishTableLoader = LoadEnglishTableAsync;
-			}
+			// 注入英语兜底表加载器：目标语种取词缺失时二段查英语表（懒加载，表加载完成后才能注入）
+			LocalizationModule.Instance.EnglishTableLoader = LoadEnglishTableAsync;
 
 			// 注入 FGUI 声明式多语言的文本解析委托（覆盖 AOT 阶段的 AOT 表版本）
 			GObject.GetL10nText = key => LocalizationModule.Instance.GetL10nText(key);
 
-			// 多语言提供者就绪后翻译配置表
+			// 多语言取词链路就绪后翻译配置表
 			tableManager.RefreshTranslateText();
 		}
 
@@ -217,9 +210,9 @@ namespace Hotfix
 		}
 
 		/// <summary>
-		/// 英语兜底表显式加载器（注入 LocalizationProvider.EnglishTableLoader）。
+		/// 英语兜底表显式加载器（注入 LocalizationModule.EnglishTableLoader）。
 		/// 不走 LanguageModule.Language 路由（兜底场景语言≠English），直取英语文件路径。
-		/// 返回新构造的 TbLocalization 实例（不注册 ConfigModule，Provider 私有兜底）；
+		/// 返回新构造的 TbLocalization 实例（不注册 ConfigModule，模块私有兜底）；
 		/// 失败抛异常（调用方捕获清空在途任务允许重试）。
 		/// </summary>
 		private static async UniTask<TbLocalization> LoadEnglishTableAsync()
