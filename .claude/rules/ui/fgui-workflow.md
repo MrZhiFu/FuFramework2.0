@@ -86,6 +86,22 @@ fairygui-cli editor start-test <包> <组件> --device <设备>
 
 诊断：用脚本扫 `Xxx_fui.bytes` 确认组件名字符串出现次数。修复：重开工程 → 确认资源库出现 → 重新发布。
 
+## 被引用的组件必须标 exported="true"
+
+**`GList` 的 `defaultItem`、`GearIcon` 的引用组件，必须在包 `package.xml` 里声明 `exported="true"`**：
+
+```xml
+<component id="l50q5" name="CompBagItem.xml" path="/Comp/" exported="true"/>
+```
+
+违反：组件不进发布产物 → 运行时 `AddItemFromPool` 取不到项（空白项或 NRE），而且**发布不会报任何错**。
+
+为什么必须手动标：client-ai 那套用 `MyGenCode` 插件在发布前自动置位（`EnsureItemReferencedExported`），**本项目没有该插件**，MCPBridge 发布时会打警告 `MyGenCode 置位函数不可用` 然后跳过。所以只能靠 `package.xml` 里的静态声明。
+
+检查方法：`grep -o 'defaultItem="ui://[^"]*"' <组件>.xml` 拿到引用，再到 `package.xml` 确认对应 `id` 带 `exported="true"`，最后 `grep -ac <组件名> Xxx_fui.bytes` 确认进了产物。
+
+## 菜单优先级
+
 ## 菜单优先级
 
 新增 Editor 菜单**必须先在 `Unity/Assets/Editor/FuFramework/Common/FuMenuPriority.cs` 登记常量**，禁止写数字字面量。按组分段（组基准间隔 ≥ 11，Unity 自动加分隔线）。跨命名空间引用该目录类型时沿用 using 别名惯例。
