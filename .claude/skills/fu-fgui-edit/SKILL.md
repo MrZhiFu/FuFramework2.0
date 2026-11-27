@@ -23,25 +23,34 @@ description: FairyGUI 界面与插件的编辑操作流：改组件 → 发布 �
 | 需要事件接线 | 落在**手写层**（Gen 层只生成首次骨架）；事件白名单在 `GenCommon.lua` 的 `COMP_EVENT_CONFIG` |
 | 纯展示组件（如图片） | 不在白名单内，不生成事件 |
 
-## 3. 发布
+## 3. 发布（命令行，全自动）
 
-在 FairyGUI 编辑器内发布。确认：
+```bash
+bash .claude/publish-ui.sh              # 全部包
+bash .claude/publish-ui.sh Login Login  # 指定包（可多个）
+```
 
-- 包勾选了「为本包生成代码」（否则跳过生成）
-- 手写文件不会被覆盖（只在首次生成时创建）
-- 孤儿文件由生成器自动清理
+脚本会自动拉起 FairyGUI 编辑器、等工程就绪、发布、校验产物（FGUI 魔数 + mtime），跑完关闭它自己拉起的实例。**不需要你手动开编辑器点发布。**
+
+只读查询（连编辑器都不用开）：
+
+```bash
+FairyGUIProject/fairygui-cli.exe components read Login WinLogin     # 读组件 XML
+FairyGUIProject/fairygui-cli.exe packages list
+FairyGUIProject/fairygui-cli.exe resources list Login
+```
 
 ## 4. 验证
 
 1. **产物 diff**：发布后 `git diff` 看生成的 `*.Gen.cs` 是否符合预期。
 2. **编译**：`bash .claude/fu-unity-compile.sh`。
-3. **运行时**：由用户在 Unity 里实测（FGUI 编辑器插件本身 unity-cli 管不到，只能靠用户在编辑器内验证）。
+3. **运行时验收**：`play_game` → `eval_csharp` 查 FGUI 层级、点按钮、拖拽（见 `rules/tooling/unity-cli.md` 的 FairyGUI 自动化段）。
 
 ## 5. 插件开发
 
-- 插件源码：`FairyGUIProject/plugins/`
-- 改完让用户**重开 FairyGUI 编辑器**重载插件后再实测。
-- 面板源在 `Tools/FairyGUI-Editor-master/plugin/CustomInspector/UIProject/assets/` 时，注意同步。
+- 插件源码：`FairyGUIProject/plugins/`（含 `MCPBridge`）
+- 改完插件后**重开 FairyGUI 编辑器**重载（`publish-ui.sh` 自动拉起时即加载最新）
+- 面板源在 `Tools/FairyGUI-Editor-master/plugin/CustomInspector/UIProject/assets/` 时，注意同步
 
 ## 边界
 

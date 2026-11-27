@@ -1,0 +1,11 @@
+{
+  "name": "MCPBridge",
+  "displayName": "MCP 桥接插件",
+  "description": "为 MCP 服务提供编辑器交互能力，支持打开组件、预览、截图等操作",
+  "version": "1.0.0",
+  "author": {
+    "name": "AI Assistant"
+  },
+  "icon": "",
+  "main": "main.lua"
+}

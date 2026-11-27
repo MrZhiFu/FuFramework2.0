@@ -50,3 +50,11 @@ Protobuf/Proto/.idea
 
 # unity-cli 截图/录像输出
 Unity/.unity
+
+# MCPBridge 运行时通信目录（命令/结果/截图/心跳，由插件生成）
+FairyGUIProject/plugins/MCPBridge/bridge/commands/
+FairyGUIProject/plugins/MCPBridge/bridge/results/
+FairyGUIProject/plugins/MCPBridge/bridge/screenshots/
+FairyGUIProject/plugins/MCPBridge/bridge/.alive
+FairyGUIProject/plugins/MCPBridge/bridge/bridge_owner
+FairyGUIProject/plugins/MCPBridge/bridge/cmd_audit.log

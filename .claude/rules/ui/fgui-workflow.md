@@ -17,6 +17,43 @@ paths:
 - 插件跑在 FairyGUI 编辑器内，**unity-cli 管不到**——运行时验证只能由用户在编辑器实测（重开编辑器重载插件）。
 - 产物验证用「发布后 `git diff` 对照」。
 
+## 发布与查询：fairygui-cli（已接入）
+
+CLI 与插件已随项目提供：`FairyGUIProject/fairygui-cli.exe` + `FairyGUIProject/plugins/MCPBridge/`（编辑器插件，通信目录在 `bridge/`，已 gitignore）。
+
+**发布（全自动，推荐）**：
+
+```bash
+bash .claude/publish-ui.sh              # 发布全部包
+bash .claude/publish-ui.sh Login Main   # 只发布指定包
+bash .claude/publish-ui.sh --check      # 只自检编辑器链路
+```
+
+脚本会：拉起编辑器（未开时）→ 等工程就绪 → 发布 → 落盘稳定门禁 → 产物自检（FGUI 魔数 + mtime）→ 关闭自己拉起的编辑器（复用的不关）。
+
+**只读查询（不需要编辑器）**：
+
+```bash
+FairyGUIProject/fairygui-cli.exe packages list                    # 包列表
+FairyGUIProject/fairygui-cli.exe resources list Login             # 包内资源
+FairyGUIProject/fairygui-cli.exe components read Login WinLogin   # 读组件原始 XML
+FairyGUIProject/fairygui-cli.exe components validate Login WinLogin
+```
+
+**编辑器内操作（需编辑器在线，脚本会自动拉起）**：
+
+```bash
+fairygui-cli editor open <包> <组件>      # 打开组件预览
+fairygui-cli editor screenshot            # 编辑器/预览截图
+fairygui-cli editor start-test <包> <组件> --device <设备>
+```
+
+**已知坑**：
+
+- `fairygui-cli status` 的 `editor_process` 对 `Game.fairy` 恒报 down（它按特定窗口特征匹配），**但插件实际正常**——判断在线要用实际命令探测，不要依赖 `status.overall`。
+- 同一工程开多个编辑器实例会互相抢 bridge 命令，发布结果不可信；脚本会检测并拒绝。
+- 发布后插件内部状态若卡在 `previous publish still in progress`，重启编辑器即可清除。
+
 ## CSharpCodeGen 架构决策（已定案，勿反向）
 
 - **`InitUIEvent` 归手写层**：首次生成自动填注册代码，之后开发自管。Gen 层 `ConstructFromXML` 保留调用（与 `OnInit` 同模式）。
