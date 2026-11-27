@@ -53,7 +53,7 @@ bridge 版本声明在 `Unity/Packages/manifest.json`：
 [Environment]::SetEnvironmentVariable('UNITY_CLI_HOST','127.0.0.1','User')
 ```
 
-新终端生效。`.claude/fu-compile.sh` 内部已自带这两项设置，但**手动执行 `unity-cli` 命令时仍依赖用户级变量**。
+新终端生效。`.claude/fu-unity-compile.sh` 内部已自带这两项设置，但**手动执行 `unity-cli` 命令时仍依赖用户级变量**。
 
 ## 完整能力
 

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 落地 AI 工程体系一期的四个交付物——rules 渐进披露规则层（14 篇：coding 3 + architecture 2 + framework 6 + ui 1 + tooling 2）、memory 经验层（索引 + 写作规范 + 6 域 traps + feature-map 7 文件）、fu-compile.sh 编译验证一条命令、CLAUDE.md 宗旨型重写（含删除两篇旧规范）。
+**Goal:** 落地 AI 工程体系一期的四个交付物——rules 渐进披露规则层（14 篇：coding 3 + architecture 2 + framework 6 + ui 1 + tooling 2）、memory 经验层（索引 + 写作规范 + 6 域 traps + feature-map 7 文件）、fu-unity-compile.sh 编译验证一条命令、CLAUDE.md 宗旨型重写（含删除两篇旧规范）。
 
 **Architecture:** 规则正文直写 `.claude/rules/**/*.md`、frontmatter `paths:` 按路径渐进披露（不拆壳/正文两层）；经验层按准入三问从个人记忆筛入 git；CLAUDE.md 只留行为准则与一行式铁律，项目细节全部下沉 rules。
 
@@ -19,12 +19,12 @@
 - `Docs/网络模块学习笔记/` 不动、不引用（个人学习记录）。
 - Windows 环境：`.sh` 脚本走 Git Bash；脚本内的输出字面量**只用纯 ASCII**（PS/bash 编码坑，个人记忆 powershell-ps1-no-bom-hazard）。
 - traps 内容必须过「准入三问」（可迁移性 / 名称硬否决 / 正确性），体例固定句式「违反：后果；必须：做法」，禁止图形符号。
-- Unity Editor 需处于运行状态才能测 fu-compile.sh（Task 1 前置检查）。
+- Unity Editor 需处于运行状态才能测 fu-unity-compile.sh（Task 1 前置检查）。
 
 ## Review Focus
 
 - **paths: 语义假设不成立**（无 paths 不常驻、或 paths 通配不匹配本项目相对路径）→ 整个 rules 层路由设计失效。Task 0 首日实测拦截，实测结论写进任务产物。
-- **fu-compile.sh 在 Unity 未连接时**：必须 exit 2 并输出明确提示，而不是挂死或静默 exit 0。Task 1 步骤 5 实测。
+- **fu-unity-compile.sh 在 Unity 未连接时**：必须 exit 2 并输出明确提示，而不是挂死或静默 exit 0。Task 1 步骤 5 实测。
 - **规则 frontmatter YAML 写错**（多余缩进、中文冒号）导致规则静默不加载——静默失败是渐进披露最危险的形态。Task 0 实测同时验证格式被正确解析。
 - **两篇旧规范删除后的死指针**：已知引用点共三处——CLAUDE.md（重写自然消除）、check-style.ps1（三期删除，本期仅备注）、.editorconfig:18 注释（Task 10 修正）。实施时不得遗漏 .editorconfig。
 - **traps 写成一次性现场或业务名流水账**：筛入条目须剥离「某某面板/某某配置行」级别的业务专名，保留框架 API 名与机制规律。Task 7 自查步骤按条目核对。
@@ -66,14 +66,14 @@ paths:
 
 ---
 
-### Task 1: fu-compile.sh 编译验证一条命令
+### Task 1: fu-unity-compile.sh 编译验证一条命令
 
 **Files:**
-- Create: `.claude/fu-compile.sh`
+- Create: `.claude/fu-unity-compile.sh`
 
 **Interfaces:**
 - Consumes: unity-cli 子命令 `system ping`、`clear_console`、`refresh_assets`、`tool call get_compilation_state --output json`（JSON 字段 `isCompiling`/`errorCount`）、`tool call read_console --params-file`（schema 先 `unity-cli tool schema read_console` 查，个人记忆：参数为 `logTypes` 数组 + `count`）。
-- Produces: 命令 `bash .claude/fu-compile.sh`——exit 0 编译通过 / exit 1 有编译错误（输出错误列表）/ exit 2 编辑器未连接。后续所有规则与技能正文引用此命令。
+- Produces: 命令 `bash .claude/fu-unity-compile.sh`——exit 0 编译通过 / exit 1 有编译错误（输出错误列表）/ exit 2 编辑器未连接。后续所有规则与技能正文引用此命令。
 
 - [ ] **Step 1: 前置检查**——`unity-cli system ping` 返回 pong（Unity Editor 已运行）。未运行则本任务挂起，请用户打开 Unity。
 
@@ -91,8 +91,8 @@ POLL_MAX=60   # 60 * 2s = 120s upper bound
 
 unity-cli system ping --timeout-ms "$UNITY_CLI_TIMEOUT_MS" >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo "[fu-compile] ERROR: Unity Editor not connected (unity-cli ping failed)."
-  echo "[fu-compile] Open the Unity project first, then retry."
+  echo "[fu-unity-compile] ERROR: Unity Editor not connected (unity-cli ping failed)."
+  echo "[fu-unity-compile] Open the Unity project first, then retry."
   exit 2
 fi
 
@@ -112,11 +112,11 @@ done
 
 errors=$(echo "$state" | grep -o '"errorCount"[^,}]*' | grep -o '[0-9]\+')
 if [ "$errors" = "0" ] || [ -z "$errors" ]; then
-  echo "[fu-compile] PASS: no compile errors."
+  echo "[fu-unity-compile] PASS: no compile errors."
   exit 0
 fi
 
-echo "[fu-compile] FAIL: $errors compile error(s):"
+echo "[fu-unity-compile] FAIL: $errors compile error(s):"
 unity-cli tool call read_console --params-file /dev/stdin <<'EOF'
 {"logTypes": ["Error", "Exception"], "count": 20}
 EOF
@@ -125,13 +125,13 @@ exit 1
 
 说明：JSON 字段提取用 grep 不用 jq（Git Bash 无 jq 保证）；read_console 的确切参数名以 `unity-cli tool schema read_console` 实测为准，不符则修正 Heredoc JSON。
 
-- [ ] **Step 3: 跑通基线（绿）**——`bash .claude/fu-compile.sh`，预期：PASS 且 exit 0（当前项目无编译错误）。
+- [ ] **Step 3: 跑通基线（绿）**——`bash .claude/fu-unity-compile.sh`，预期：PASS 且 exit 0（当前项目无编译错误）。
 
 - [ ] **Step 4: 故障注入（红）**——在任一非生成 .cs 文件（如 `Unity/Assets/Scripts/Hotfix/Framework/Timer/` 下某文件）临时加入一行 `// VERIFY_COMPILE_PROBE public class __NoSuchType__ {}` 引发的语法错误（实际写 `this is not valid csharp;;;` 于类外），再跑脚本。预期：FAIL + 错误列表 + exit 1。**测完立即还原文件**（`git checkout -- <file>` 不行——无提交基线，须手工删除注入行）。
 
 - [ ] **Step 5: 未连接路径（exit 2）**——临时把脚本内 ping 改为不存在的 `--host 127.0.0.2` 跑一次验证 exit 2 分支，改回。
 
-- [ ] **Step 6: 三次连续运行稳定性**——连跑 `bash .claude/fu-compile.sh` 三次，三次都 PASS。防止轮询竞态（上次编译未结束就断言）。
+- [ ] **Step 6: 三次连续运行稳定性**——连跑 `bash .claude/fu-unity-compile.sh` 三次，三次都 PASS。防止轮询竞态（上次编译未结束就断言）。
 
 ---
 
@@ -218,8 +218,8 @@ exit 1
 - Create: `.claude/rules/tooling/unity-cli.md`（无 paths，全局）
 
 **Interfaces:**
-- Consumes: 个人记忆 `fgui-plugin-workflow.md`、`fui-pkg-empirical.md`、`fu-menu-priority.md`、`powershell-ps1-no-bom-hazard.md`、`powershell-batch-rename-hazard.md`、`edit-tool-whitespace-hazard.md`、`unity-cli-slow-connection.md`、`unity-probe-workflow.md`、`editor-windows-reflection-coupling.md`；Task 1 产出的 fu-compile.sh 用法。
-- Produces: tooling/unity-cli.md 中包含 fu-compile.sh 引用（改完 .cs 必跑）与两个环境变量（UNITY_CLI_NO_AUTO_UPDATE=1、UNITY_CLI_HOST=127.0.0.1）。
+- Consumes: 个人记忆 `fgui-plugin-workflow.md`、`fui-pkg-empirical.md`、`fu-menu-priority.md`、`powershell-ps1-no-bom-hazard.md`、`powershell-batch-rename-hazard.md`、`edit-tool-whitespace-hazard.md`、`unity-cli-slow-connection.md`、`unity-probe-workflow.md`、`editor-windows-reflection-coupling.md`；Task 1 产出的 fu-unity-compile.sh 用法。
+- Produces: tooling/unity-cli.md 中包含 fu-unity-compile.sh 引用（改完 .cs 必跑）与两个环境变量（UNITY_CLI_NO_AUTO_UPDATE=1、UNITY_CLI_HOST=127.0.0.1）。
 
 - [ ] **Step 1: 读全部来源记忆。**
 
@@ -227,9 +227,9 @@ exit 1
 
 - [ ] **Step 3: 写 powershell-and-encoding.md**——Write 工具产 .ps1 无 BOM 破串（脚本字面量纯 ASCII）、-replace 大小写不敏感吞类型名（用 -creplace）、Edit 工具空白转换危险（Tab/空格转换用脚本+验证）。目标 ≤60 行。
 
-- [ ] **Step 4: 写 unity-cli.md**——连接验证 ping、两个环境变量、tool call --params-file 语法与 tool schema 查询、编译验证套路指向 `bash .claude/fu-compile.sh`、Play 模式插桩/还原流程与心跳对照、Editor 面板坑三条（GUIStyle 序列化/Play 中编译/OnEnable 早于 Hotfix）。目标 ≤90 行。
+- [ ] **Step 4: 写 unity-cli.md**——连接验证 ping、两个环境变量、tool call --params-file 语法与 tool schema 查询、编译验证套路指向 `bash .claude/fu-unity-compile.sh`、Play 模式插桩/还原流程与心跳对照、Editor 面板坑三条（GUIStyle 序列化/Play 中编译/OnEnable 早于 Hotfix）。目标 ≤90 行。
 
-- [ ] **Step 5: 验证**——三篇 frontmatter 合法；fu-compile.sh 引用与 Task 1 产物一致。
+- [ ] **Step 5: 验证**——三篇 frontmatter 合法；fu-unity-compile.sh 引用与 Task 1 产物一致。
 
 ---
 
@@ -308,7 +308,7 @@ exit 1
 
 - [ ] **Step 1: 读 client-ai CLAUDE.md 模板**与设计文档 §12。
 
-- [ ] **Step 2: 重写 CLAUDE.md**——按设计文档 §12 骨架九节：交流语言 / Think Before You Code / Explain With Concrete Cases / Goal-Driven Execution / Review Before You Build / Explore Beyond the Scope（五节从 client-ai 对应节**中文改写**，不是翻译腔）→ 硬性禁令（五条铁律每条一行零解释）→ Coding Standards 通用原则（性能/日志/设计/可读性/数据与状态/异步/文件组织各 2-4 条）→ 验收工具一行（fu-compile.sh + unity-cli 指向 rules/tooling/unity-cli.md）→ 过渡指引一行。目标 6-8 KB。
+- [ ] **Step 2: 重写 CLAUDE.md**——按设计文档 §12 骨架九节：交流语言 / Think Before You Code / Explain With Concrete Cases / Goal-Driven Execution / Review Before You Build / Explore Beyond the Scope（五节从 client-ai 对应节**中文改写**，不是翻译腔）→ 硬性禁令（五条铁律每条一行零解释）→ Coding Standards 通用原则（性能/日志/设计/可读性/数据与状态/异步/文件组织各 2-4 条）→ 验收工具一行（fu-unity-compile.sh + unity-cli 指向 rules/tooling/unity-cli.md）→ 过渡指引一行。目标 6-8 KB。
 
 - [ ] **Step 3: 验证**——全文无业务细节（无表名/无 API 名/无目录清单）；五条铁律逐条在且每条一行；引用的两个 rules 路径真实存在。
 
@@ -336,7 +336,7 @@ exit 1
 
 ## 一期收尾
 
-- [ ] 全仓 `git status` 过目：新增文件全部在 `.claude/`（rules/memory/plans）+ 根 CLAUDE.md + fu-compile.sh + fu-compile 探针的还原确认；删除仅两篇 Docs 规范。**不提交**（统一提交在三期末）。
+- [ ] 全仓 `git status` 过目：新增文件全部在 `.claude/`（rules/memory/plans）+ 根 CLAUDE.md + fu-unity-compile.sh + fu-unity-compile 探针的还原确认；删除仅两篇 Docs 规范。**不提交**（统一提交在三期末）。
 - [ ] 工作区留存状态向用户汇报：Task 0 实测结论要点 + 任何偏离计划的决定。
 
 ## 后续（二三期，另行写计划）

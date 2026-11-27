@@ -93,7 +93,7 @@ disable-model-invocation: true
 ### 2.4 编译验证
 
 ```bash
-bash .claude/fu-compile.sh
+bash .claude/fu-unity-compile.sh
 ```
 
 0 错误才继续。有错走修复循环，不要边修边加新功能。

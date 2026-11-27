@@ -34,7 +34,7 @@ description: FairyGUI 界面与插件的编辑操作流：改组件 → 发布 �
 ## 4. 验证
 
 1. **产物 diff**：发布后 `git diff` 看生成的 `*.Gen.cs` 是否符合预期。
-2. **编译**：`bash .claude/fu-compile.sh`。
+2. **编译**：`bash .claude/fu-unity-compile.sh`。
 3. **运行时**：由用户在 Unity 里实测（FGUI 编辑器插件本身 unity-cli 管不到，只能靠用户在编辑器内验证）。
 
 ## 5. 插件开发

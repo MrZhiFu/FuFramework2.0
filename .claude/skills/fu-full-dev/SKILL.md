@@ -110,7 +110,7 @@ disable-model-invocation: true
 ## Phase 10: 编译验证与修复循环
 
 ```bash
-bash .claude/fu-compile.sh
+bash .claude/fu-unity-compile.sh
 ```
 
 0 错误才进入下一阶段。有错派修复子代理，主 Agent 不自己修。

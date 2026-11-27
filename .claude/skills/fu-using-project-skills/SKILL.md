@@ -63,6 +63,6 @@ CLAUDE.md 或 rules 说"不要做 X"而技能说"总是做 X"时，听用户的�
 
 ## 落地后检查清单
 
-- 改完 `.cs` → `bash .claude/fu-compile.sh`
+- 改完 `.cs` → `bash .claude/fu-unity-compile.sh`
 - 提交前 → 列清单问用户确认（见 `rules/coding/git-conventions.md`）
 - 踩到新坑 → 按 `.claude/memory/traps-authoring.md` 的准入三问决定是否入库

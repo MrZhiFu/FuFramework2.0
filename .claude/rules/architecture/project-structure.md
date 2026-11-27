@@ -40,7 +40,7 @@ Asset · Config · Core · Download · Entity · Event · FSM · Guide · Locali
 - 配置表源：`Config/Excels/`；生成代码到 `Unity/Assets/Scripts/Hotfix/Game/AutoGen/Tables/`。
 - 协议源：`Protobuf/Proto/`；导出 `Proto2CsExport-All.bat`（必须带 `ci` 参数）。
 - Unity 版本 2022.3.33f1c1；关键依赖 YooAsset 3.0.5、HybridCLR、UniTask、FairyGUI、protobuf-net、PrimeTween、Newtonsoft.Json。
-- 项目**无自动化测试套件**，验证走 Unity Editor 实机 + `bash .claude/fu-compile.sh`。
+- 项目**无自动化测试套件**，验证走 Unity Editor 实机 + `bash .claude/fu-unity-compile.sh`。
 
 ## 平台与宏
 

@@ -101,7 +101,7 @@ FuFramework2.0/
 │   ├── hooks/
 │   │   └── session-start            ← 新增：注入 using-project-skills 元技能
 │   │       （check-style.ps1 及其 PostToolUse 注册删除，检查项归口 fu-code-review）
-│   ├── fu-compile.sh            ← 机制⑥ 工具链：编译验证一条命令
+│   ├── fu-unity-compile.sh            ← 机制⑥ 工具链：编译验证一条命令
 │   ├── settings.local.json          ← 已有，本地追加 SessionStart/Stop 钩子注册
 │   └── commands/                    ← 已有，保留
 ```
@@ -175,11 +175,11 @@ paths:
 
 | 技能 | 档 | frontmatter | 流程 |
 |---|---|---|---|
-| fu-quick-help | 轻 | 可自动触发 | 理解确认 → 定位 → 方案确认 → 实现 → fu-compile → 自查 → 报告（7 步） |
+| fu-quick-help | 轻 | 可自动触发 | 理解确认 → 定位 → 方案确认 → 实现 → fu-unity-compile → 自查 → 报告（7 步） |
 | fu-brainstorming-quick | 中 | `disable-model-invocation: true` | 需求澄清 → 方案确认（BLUF 格式）→ 复杂度四维评估 → 实现 → 验证 → 评审 → 验收 → 提交 → 文档同步（5 Phase） |
 | fu-new-feature-dev | 重 | `disable-model-invocation: true` | 13 Phase：并行探索 → 范围检查 → 需求澄清 → 流确认 → 文档准备 → 设计批准 → 计划 → 预检 → 执行 → 编译验证 → 三阶段评审 → 用户验收 → 文档同步+单 commit |
 
-**口径（已裁决）**：fu-\* 是项目首选流程，独立运作，正文不调 superpowers 技能；superpowers 保留但日常开发走 fu-\*。fu-\* 正文写死项目域路由（读 feature-map、读 traps、跑 fu-compile、用 AskUserQuestion）。
+**口径（已裁决）**：fu-\* 是项目首选流程，独立运作，正文不调 superpowers 技能；superpowers 保留但日常开发走 fu-\*。fu-\* 正文写死项目域路由（读 feature-map、读 traps、跑 fu-unity-compile、用 AskUserQuestion）。
 
 **中/重档核心机制**（从 client-ai 移植并按本项目裁剪）：
 - 主 Agent 不写代码不探索代码（重档）：探索派 Explore 子代理，实现派 agent-fu-dev。
@@ -226,7 +226,7 @@ paths:
 
 注意：settings.local.json 不进 git（.gitignore 已忽略），**钩子注册的持久化问题**：正式方案是将 SessionStart 注册写入一个新建的 `.claude/settings.json`（进 git，可提交）；Stop Toast 属个人偏好，注册留在 settings.local.json（不进 git）。删除 check-style.ps1 时须同步从 settings.local.json 移除其 PostToolUse 注册。
 
-## 11. 机制⑥ 工具链：fu-compile.sh
+## 11. 机制⑥ 工具链：fu-unity-compile.sh
 
 一条命令完成编译验证（封装 unity-cli）：
 
@@ -237,7 +237,7 @@ paths:
 5. 轮询等待编译完成（超时上限约 120s）
 6. 读取错误数：0 → exit 0；非 0 → 输出错误列表 → exit 1
 
-AI 侧约定：改完 `.cs` 必须跑 `bash .claude/fu-compile.sh`，规则文件与技能正文都引用此命令。
+AI 侧约定：改完 `.cs` 必须跑 `bash .claude/fu-unity-compile.sh`，规则文件与技能正文都引用此命令。
 
 ## 12. CLAUDE.md 重写方案（宗旨型，对齐 client-ai）
 
@@ -255,7 +255,7 @@ AI 侧约定：改完 `.cs` 必须跑 `bash .claude/fu-compile.sh`，规则文�
 | Explore Beyond the Scope | 不只改工单范围，每次改动顺手让结构变好 | client-ai §5 改写 |
 | 硬性禁令（五条铁律） | 每条一行、零解释零指针：禁原生 Task（用 UniTask）/ 禁协程 / 禁 LINQ / 运行时禁反射 / 异步链必须有生命周期所有者 | 现有 CLAUDE.md 铁律压缩 |
 | Coding Standards（通用原则） | 性能 / 日志 / 设计 / 可读性 / 数据与状态 / 异步 / 文件组织，各 2-4 条原则句（如「热路径不得用高成本抽象」「禁止 fire-and-forget」「组合优于继承」「三次法则」） | client-ai §6 改写 |
-| 验收工具（一两行） | 编译验证 `bash .claude/fu-compile.sh`；unity-cli 见规则 tooling/unity-cli.md | 压缩为一行 |
+| 验收工具（一两行） | 编译验证 `bash .claude/fu-unity-compile.sh`；unity-cli 见规则 tooling/unity-cli.md | 压缩为一行 |
 
 移出/删除：
 
@@ -271,7 +271,7 @@ AI 侧约定：改完 `.cs` 必须跑 `bash .claude/fu-compile.sh`，规则文�
 
 | 期 | 内容 | 交付物 |
 |---|---|---|
-| 一期·打底 | rules 14 篇（含两篇 Docs 规范并入）+ memory（MEMORY.md/traps-authoring/6 个 traps/feature-map 初始域）+ fu-compile.sh + CLAUDE.md 重写（宗旨型）+ 删除两篇旧规范 | 渐进披露生效，坑进 git，常驻层换血 |
+| 一期·打底 | rules 14 篇（含两篇 Docs 规范并入）+ memory（MEMORY.md/traps-authoring/6 个 traps/feature-map 初始域）+ fu-unity-compile.sh + CLAUDE.md 重写（宗旨型）+ 删除两篇旧规范 | 渐进披露生效，坑进 git，常驻层换血 |
 | 二期·流程 | using-project-skills 元技能 + 三档开发流（fu-quick-help / fu-brainstorming-quick / fu-new-feature-dev）+ 业务技能（fgui-edit / unity-cli-usage） | 开发流可用 |
 | 三期·治理收尾 | 治理技能（fu-code-review / fu-doc-sync / fu-rules-from-review）+ 5 个 agents + session-start 钩子 + settings.json（SessionStart 注册进 git）+ 删除 Docs/superpowers/（本设计文档先迁入 .claude/plans/）+ 删除 check-style.ps1 | 完整六类机制，superpowers 产物清空 |
 
@@ -286,7 +286,7 @@ AI 侧约定：改完 `.cs` 必须跑 `bash .claude/fu-compile.sh`，规则文�
 - 各 rules 文件的具体行数与详略（原则：AI 当场要用才写，Docs 引用兜底）
 - feature-map 初始域文件数量（按模块真实分布定，不必与本文档列举一致）
 - fu-\* 三档正文的具体阶段编排可参考 client-ai 实仓技能文件裁剪，Phase 数量不必死守 7/5/13
-- fu-compile.sh 的 unity-cli 具体子命令序列（以 `unity-cli tool list` 实测为准）
+- fu-unity-compile.sh 的 unity-cli 具体子命令序列（以 `unity-cli tool list` 实测为准）
 - Stop Toast 是否最终落地（三期可选项）
 
 ## 15. 与现有资产的兼容清单

@@ -12,7 +12,7 @@ tools: ["Read", "Grep", "Glob", "Edit", "Write", "Bash"]
 2. **遵守五条**：无原生 `Task`（用 `UniTask`）/ 无协程 / 无 LINQ / 运行时无反射 / 异步链有生命周期所有者。
 3. **禁止修改生成文件**：`*.Gen.cs`、`Hotfix/Game/AutoGen/**`、`Config/Excels` 以外的生成产物。
 4. **禁止提交**：不做任何 `git add` / `commit`。
-5. **禁止跑编译**：不要执行 `fu-compile.sh` 或 unity-cli 命令——完成后向主会话报告，由主会话验证。
+5. **禁止跑编译**：不要执行 `fu-unity-compile.sh` 或 unity-cli 命令——完成后向主会话报告，由主会话验证。
 
 ## 工作方式
 
