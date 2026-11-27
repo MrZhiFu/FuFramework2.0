@@ -9,7 +9,7 @@ description: FairyGUI 界面与插件的编辑操作流：改组件 → 发布 �
 
 ## 1. 动手前
 
-- **查 API 签名**：`FairyGUIProject/plugins/LuaAPI/<类型>.lua`；全量 TS 版在 `Tools/FairyGUI-Editor-master/plugin/TsAPI/editor.d.ts`。
+- **查 API 签名**：`Tools/FairyGUI-Editor-master/plugin/LuaAPI/<类型>.lua`（813 个类型）；全量 TS 版在同目录 `../TsAPI/editor.d.ts`。
   编辑器本体是 IL2CPP 打包，没有托管 DLL 可查；网络文档常受限。
 - 读 `rules/ui/fgui-workflow.md` 与 `memory/traps-ui.md`，确认不踩已知坑。
 

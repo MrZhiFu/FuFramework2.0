@@ -17,7 +17,7 @@ tools: ["Read", "Grep", "Glob", "Edit", "Write", "Bash"]
 1. **新增组件 XML 编辑器不会自动导入**——必须提醒用户重开工程。
 2. **`InitUIEvent` 在手写层**，不进 Gen 层。
 3. **`GetChild(name)` 不做索引化**；巨型界面拆 Comp 组件。
-4. **API 签名查 `FairyGUIProject/plugins/LuaAPI/`**，不要凭记忆。
+4. **API 签名查 `Tools/FairyGUI-Editor-master/plugin/LuaAPI/`**，不要凭记忆。
 5. FGUI 插件行为只能由用户在编辑器内实测，你无法自动验证。
 
 ## 工作方式

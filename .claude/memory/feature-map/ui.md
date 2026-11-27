@@ -14,7 +14,7 @@
 | 生成的界面代码 | `Hotfix/Game/AutoGen/UI/`（`*.Gen.cs`，勿手改） |
 | FairyGUI 工程 | `FairyGUIProject/` |
 | FGUI 编辑器插件 | `FairyGUIProject/plugins/`（含 `CSharpCodeGen`、`L10nKeyBind`） |
-| FGUI Lua/TS API 签名参考 | `FairyGUIProject/plugins/LuaAPI/`、`Tools/FairyGUI-Editor-master/plugin/TsAPI/editor.d.ts` |
+| FGUI Lua/TS API 签名参考 | `Tools/FairyGUI-Editor-master/plugin/LuaAPI/`（Lua 签名）、`Tools/FairyGUI-Editor-master/plugin/TsAPI/editor.d.ts`（TS 全量） |
 | FGUI 运行时代码（内嵌） | `Unity/Assets/3rdPlugins/FairyGUI/Scripts/` |
 | FGUI L10n 运行时钩子 | `3rdPlugins/FairyGUI/Scripts/UI/CustomExt/*.L10n.cs` |
 | 菜单优先级常量 | `Unity/Assets/Editor/FuFramework/Common/FuMenuPriority.cs` |

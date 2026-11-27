@@ -9,7 +9,7 @@ paths:
 
 编辑器本体是 IL2CPP 打包（无托管 DLL 可查），网络文档常受限。本地两处是权威：
 
-- `FairyGUIProject/plugins/LuaAPI/`——每类型一个文件（首选）
+- `Tools/FairyGUI-Editor-master/plugin/LuaAPI/`——每类型一个文件（813 个类型）
 - `Tools/FairyGUI-Editor-master/plugin/TsAPI/editor.d.ts`——全量 TS 版
 
 ## 验证方式
@@ -53,6 +53,20 @@ fairygui-cli editor start-test <包> <组件> --device <设备>
 - `fairygui-cli status` 的 `editor_process` 对 `Game.fairy` 恒报 down（它按特定窗口特征匹配），**但插件实际正常**——判断在线要用实际命令探测，不要依赖 `status.overall`。
 - 同一工程开多个编辑器实例会互相抢 bridge 命令，发布结果不可信；脚本会检测并拒绝。
 - 发布后插件内部状态若卡在 `previous publish still in progress`，重启编辑器即可清除。
+
+## 编辑器插件开发
+
+改 / 扩展 `FairyGUIProject/plugins/` 下的插件（含 `MCPBridge`）时：
+
+| 资源 | 位置 |
+|---|---|
+| **编辑器完整 API 签名**（813 个类型，每类一文件）| `Tools/FairyGUI-Editor-master/plugin/LuaAPI/` |
+| 最小插件示例 | `Tools/FairyGUI-Editor-master/plugin/HelloWorld/`（`main.lua` + `package.json`）|
+| 完整插件示例（自定义属性面板）| `Tools/FairyGUI-Editor-master/plugin/CustomInspector/` |
+| TS 声明（全量）| `Tools/FairyGUI-Editor-master/plugin/TsAPI/editor.d.ts` |
+| 编辑器自身界面工程 | `Tools/FairyGUI-Editor-master/ui/FairyGUI-Editor.fairy`（只有改编辑器 UI 才动）|
+
+改完插件必须**重开 FairyGUI 编辑器**才加载新版；`publish-ui.sh` 拉起编辑器时自然用的是最新版。
 
 ## CSharpCodeGen 架构决策（已定案，勿反向）
 
