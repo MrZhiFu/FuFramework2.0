@@ -8,6 +8,10 @@
 #   4 = could not read compilation state from unity-cli
 set -u
 
+# 禁止自更新：CLI 是版本库文件，自更新会覆盖它并污染工作区（还会阻塞退出上百秒）
+export UNITY_CLI_NO_AUTO_UPDATE=1
+export UNITY_CLI_HOST=127.0.0.1
+
 # CLI 随项目分发（不在 PATH 中）
 UNITY_CLI="$(git rev-parse --show-toplevel)/Tools/UnityCli/unity-cli.exe"
 

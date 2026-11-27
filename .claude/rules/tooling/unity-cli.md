@@ -12,12 +12,12 @@
 Tools/UnityCli/unity-cli.exe system ping      # 返回 "pong" 即连通
 ```
 
-慢连接修复（本机已配 User 级环境变量，新终端生效）：
+**必需的两个环境变量**（User 级，新终端生效；`.claude/verify-compile.sh` 已内置，手动调用仍需用户级设置）：
 
-- `UNITY_CLI_NO_AUTO_UPDATE=1`——跳过 GitHub 自更新检查（曾阻塞 138s）
+- `UNITY_CLI_NO_AUTO_UPDATE=1`——**禁止自更新**。`unity-cli.exe` 是版本库文件，自更新会覆盖它并污染工作区，还会阻塞退出约 135s
 - `UNITY_CLI_HOST=127.0.0.1`——跳过 localhost 解析（省 2s）
 
-若又变慢，先查这两个环境变量是否还在。
+新机器克隆后必须设置，详见 `Tools/UnityCli/README.md`。若命令变慢或工作区莫名多出 exe 改动，先查这两个变量。
 
 ## 调用语法
 

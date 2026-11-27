@@ -39,6 +39,22 @@ bridge 版本声明在 `Unity/Packages/manifest.json`：
 
 > 本机 GitHub release 下载常因网络中断失败，用 `curl -L -C -` 断点续传补救。
 
+## 新机器必做：关闭 CLI 自更新
+
+**`unity-cli.exe` 是版本库文件**，而 CLI 默认会定时检查 GitHub 更新并在下次启动时替换自身。这会导致两个后果：
+
+- 工作区出现一个 35 MB 的二进制改动（版本失控）
+- 首次运行阻塞约 135 秒（GitHub 访问慢时）
+
+克隆仓库后**先设置**（用户级环境变量，配一次永久生效）：
+
+```powershell
+[Environment]::SetEnvironmentVariable('UNITY_CLI_NO_AUTO_UPDATE','1','User')
+[Environment]::SetEnvironmentVariable('UNITY_CLI_HOST','127.0.0.1','User')
+```
+
+新终端生效。`.claude/verify-compile.sh` 内部已自带这两项设置，但**手动执行 `unity-cli` 命令时仍依赖用户级变量**。
+
 ## 完整能力
 
 见 `.claude/rules/tooling/unity-cli.md`（AI 常驻加载）。
