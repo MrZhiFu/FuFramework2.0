@@ -19,7 +19,7 @@ Tools/UnityCli/unity-cli.exe system ping        # 期望 "pong"
 ## 1. 编译验证（改完 .cs 必跑）
 
 ```bash
-bash .claude/verify-compile.sh
+bash .claude/fu-compile.sh
 ```
 
 退出码：`0` 通过 / `1` 有编译错误 / `2` 编辑器未连接 / `3` 编译未在时限内完成 / `4` 状态读不到。

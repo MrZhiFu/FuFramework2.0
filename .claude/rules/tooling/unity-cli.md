@@ -12,7 +12,7 @@
 Tools/UnityCli/unity-cli.exe system ping      # 返回 "pong" 即连通
 ```
 
-**必需的两个环境变量**（User 级，新终端生效；`.claude/verify-compile.sh` 已内置，手动调用仍需用户级设置）：
+**必需的两个环境变量**（User 级，新终端生效；`.claude/fu-compile.sh` 已内置，手动调用仍需用户级设置）：
 
 - `UNITY_CLI_NO_AUTO_UPDATE=1`——**禁止自更新**。`unity-cli.exe` 是版本库文件，自更新会覆盖它并污染工作区，还会阻塞退出约 135s
 - `UNITY_CLI_HOST=127.0.0.1`——跳过 localhost 解析（省 2s）
@@ -32,7 +32,7 @@ Tools/UnityCli/unity-cli.exe tool schema <tool>                             # �
 ## 编译验证（改完 .cs 必跑）
 
 ```bash
-bash .claude/verify-compile.sh
+bash .claude/fu-compile.sh
 ```
 
 内部：ping → `clear_console` → `refresh_assets` → 轮询 `get_compilation_state`（看 `isCompiling`/`errorCount`）→ 有错则 `read_console` 列出。exit 0 通过 / 1 有错 / 2 未连接。

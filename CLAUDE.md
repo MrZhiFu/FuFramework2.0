@@ -130,7 +130,7 @@
 
 ## 验收
 
-- 改完 `.cs` → `bash .claude/verify-compile.sh`（0 错误才算通过）。
+- 改完 `.cs` → `bash .claude/fu-compile.sh`（0 错误才算通过）。
 - Unity 编辑器自动化见 `.claude/rules/tooling/unity-cli.md`。
 
 ## 动手前先查技能

@@ -20,22 +20,22 @@ POLL_INTERVAL=2
 WAIT_SECONDS=120
 
 if ! "$UNITY_CLI" system ping --timeout-ms "$UNITY_CLI_TIMEOUT_MS" >/dev/null 2>&1; then
-  echo "[verify-compile] ERROR: Unity Editor not connected (unity-cli ping failed)."
-  echo "[verify-compile] Open the Unity project first, then retry."
+  echo "[fu-compile] ERROR: Unity Editor not connected (unity-cli ping failed)."
+  echo "[fu-compile] Open the Unity project first, then retry."
   exit 2
 fi
 
 # A stopped Play mode is required: asset database operations are blocked during Play.
 if "$UNITY_CLI" tool call get_editor_state --output json >/dev/null 2>&1; then
   if "$UNITY_CLI" tool call get_editor_state --output json 2>/dev/null | grep -q '"isPlaying"[[:space:]]*:[[:space:]]*true'; then
-    echo "[verify-compile] NOTE: stopping Play mode first."
+    echo "[fu-compile] NOTE: stopping Play mode first."
     "$UNITY_CLI" tool call stop_game >/dev/null 2>&1
   fi
 fi
 
 "$UNITY_CLI" tool call clear_console >/dev/null 2>&1
 if ! "$UNITY_CLI" tool call refresh_assets >/dev/null 2>&1; then
-  echo "[verify-compile] WARN: refresh_assets failed; compilation state may be stale."
+  echo "[fu-compile] WARN: refresh_assets failed; compilation state may be stale."
 fi
 
 state=""
@@ -53,8 +53,8 @@ done
 
 # Do not report PASS unless compilation actually finished.
 if [ "$compiling" != "false" ]; then
-  echo "[verify-compile] ERROR: compilation did not finish within ${WAIT_SECONDS}s."
-  echo "[verify-compile] Last state:"
+  echo "[fu-compile] ERROR: compilation did not finish within ${WAIT_SECONDS}s."
+  echo "[fu-compile] Last state:"
   printf '%s\n' "$state"
   exit 3
 fi
@@ -62,17 +62,17 @@ fi
 errors=$(printf '%s' "$state" | grep -o '"errorCount"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]\+' | head -1)
 
 if [ -z "${errors:-}" ]; then
-  echo "[verify-compile] ERROR: could not read compilation state from unity-cli."
+  echo "[fu-compile] ERROR: could not read compilation state from unity-cli."
   printf '%s\n' "$state"
   exit 4
 fi
 
 if [ "$errors" = "0" ]; then
-  echo "[verify-compile] PASS: no compile errors."
+  echo "[fu-compile] PASS: no compile errors."
   exit 0
 fi
 
-echo "[verify-compile] FAIL: $errors compile error(s):"
+echo "[fu-compile] FAIL: $errors compile error(s):"
 params_file="${TMPDIR:-/tmp}/fu-console-params.$$.json"
 printf '{"logTypes": ["Error", "Exception"], "count": 20}\n' > "$params_file"
 "$UNITY_CLI" tool call read_console --params-file "$params_file" 2>&1

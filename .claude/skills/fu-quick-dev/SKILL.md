@@ -80,7 +80,7 @@ Bug 现象里通常藏着一根**最强线索**——某个触发动作（选中
 ### 5. 编译验证
 
 ```bash
-bash .claude/verify-compile.sh
+bash .claude/fu-compile.sh
 ```
 
 0 错误才算通过。有错先修，不进入下一步。
