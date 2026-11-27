@@ -47,3 +47,6 @@ Config/Excels/Tables/~$*.xlsx
 Tools/CleanL10nKeys/多语言配置报告.txt
 Protobuf/Proto/.idea
 .superpowers/
+
+# unity-cli 截图/录像输出
+Unity/.unity

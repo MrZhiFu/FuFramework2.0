@@ -49,21 +49,54 @@ bash .claude/fu-unity-compile.sh
 
 ## 运行时能力
 
-### eval_csharp：直接注入 C# 表达式（首选）
+### eval_csharp：直接注入 C# 代码（首选）
 
-**不停止游戏、不修改代码、不重编译**，Roslyn 编译后立即求值：
+**不停止游戏、不修改代码、不重编译**，Roslyn 编译后立即执行：
 
 ```bash
 Tools/UnityCli/unity-cli.exe tool call eval_csharp --json '{"code":"UnityEngine.Application.unityVersion"}'
-# → {"value":"2022.3.33f1c1","state":"completed","diagnostics":[],"exception":null}
+# → {"value":"2022.3.33f1c1","state":"completed","diagnostics":[],"exception":null,"logs":[]}
 ```
 
-- 参数是 **C# 表达式**（不是完整类定义）——可含 LINQ、链式调用、项目类型、运行时对象。
-- 实测可用：`System.Linq.Enumerable.Sum(...)`、`typeof(Hotfix.Framework.Core.ModuleBase).Name`、`UnityEngine.SceneManagement.SceneManager.GetActiveScene().name`。
-- 返回 `value` / `diagnostics`（编译错误）/ `exception`（运行时异常）/ `state`。
-- 编译错误时看 `diagnostics` 的 `id`（如 `CS1525`）与行列位置。
+**两种模式（`mode` 参数）**：
 
-**这是查运行时状态的最快路径**——比写 `[MenuItem]` 探针 + 编译快一个数量级。
+| mode | 包装方式 | 用途 |
+|---|---|---|
+| `expression`（默认） | `return (object)(<code>);` | 求一个值。**不能调用 void 方法**（报 CS0030）|
+| `statements` | `<code>` 原样作为语句块 | 执行多行语句、调 void 方法、局部变量、`Debug.Log` |
+
+```json
+{"mode":"statements","code":"var btn = ...;\nbtn.FireClick(false, true);\nDebug.Log(\"clicked\");"}
+```
+
+**其他要点**：
+- 引用范围 = `AppDomain` 里所有已加载程序集，项目类型（`Hotfix.*`/`Assembly-CSharp`/`FairyGUI`）直接可用，无需 using（`System`/`UnityEngine`/`UnityEditor` 已自动注入）。
+- 返回 `value` / `diagnostics`（编译错误，含行列与 `CSxxxx`）/ `exception` / `state` / **`logs`（捕获执行期间的 `Debug.Log`）**。
+- **代码含双引号/换行时用 `--params-file` 传 JSON**，直接 `--json` 会被 shell 转义搞坏。
+
+### FairyGUI 自动化（实测套路）
+
+Play 模式下可直接操作 FGUI 界面——官方 `click_ui_element` 走 Input System 虚拟设备，**打不到 FGUI**（FGUI 在 Windows 上读 `Mouse.current`），必须用 `eval_csharp`。
+
+```json
+// 1. 列层级：7 个 UIGroup（SceneUI/MainUI/Normal/Window/Tips/Guide/Loading）
+{"code":"string.Join(\" | \", System.Linq.Enumerable.Select(System.Linq.Enumerable.Range(0, FairyGUI.GRoot.inst.numChildren), i => FairyGUI.GRoot.inst.GetChildAt(i).name + \"=\" + ((FairyGUI.GComponent)FairyGUI.GRoot.inst.GetChildAt(i)).numChildren.ToString()))"}
+
+// 2. 列某界面下的控件（含类型，便于找 GButton）
+{"code":"string.Join(\" | \", ...GetChild(\"Normal\")).GetChildAt(0)... 的每个子节点 .name + \"(\" + .GetType().Name + \")\")"}
+
+// 3. 点按钮：FireClick(bool downEffect, bool clickCallbacks)
+{"mode":"statements","code":"var btn = (FairyGUI.GButton)<界面>.GetChild(\"_btnLogin\"); btn.FireClick(false, true);"}
+
+// 4. 读控件文本
+{"code":"<界面>.GetChild(\"_txtError\").text"}
+```
+
+**踩过的坑**：
+- `GObject` **没有** `numChildren` / `GetChildAt` 的子组件遍历语义——要 `(FairyGUI.GComponent)` 强转。
+- `FireClick()` 无参调用编译失败，必须给两个 bool。
+- 非 Play 模式下访问 `GRoot.inst` 抛 `DontDestroyOnLoad` 异常（Stage 只能在 Play 创建）。
+- `capture_screenshot` 报 `GAME_VIEW_NOT_FOCUSED` 时，需先让 Game View 获得焦点。
 
 ### 其余现成工具
 
