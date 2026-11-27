@@ -15,7 +15,7 @@ end_of_line = crlf
 insert_final_newline = false
 
 [*.cs]
-# 缩进字符：Tab，宽度 4（与 Docs/代码风格规范.md 3.1 一致）
+# 缩进字符：Tab，宽度 4（与 .claude/rules/coding/coding-standards.md 一致）
 indent_style = tab
 tab_width = 4
 

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# SessionStart hook: inject the fu-using-project-skills meta-skill.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SKILL_FILE="${SCRIPT_DIR}/../skills/fu-using-project-skills/SKILL.md"
+
+skill_content=$(cat "$SKILL_FILE" 2>&1 || echo "Error reading skill file")
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+skill_escaped=$(escape_for_json "$skill_content")
+session_context="<EXTREMELY_IMPORTANT>\nYou have project skills.\n\n**Below is the full content of your 'fu-using-project-skills' skill - your introduction to using project skills. For all other skills, use the 'Skill' tool:**\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
+
+printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
+
+exit 0
