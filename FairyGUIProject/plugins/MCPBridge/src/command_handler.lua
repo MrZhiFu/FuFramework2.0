@@ -2784,11 +2784,8 @@ end
 -- branch 取 App.project.activeBranch（无分支时为空字符串）；Run 异步触发，产物秒级写入，
 -- isSuccess 字段返回时尚未更新（不可靠），判完成需看 exportPath 下 {pkg}_fui.bytes 的 mtime
 --
--- 置位时序契约（2026-10-12 实验定案）：Run() 对图片的依赖收集发生在其后的异步帧；同步块内
--- Run() 后立即恢复 exported 会使置位窗口对图片收集无效——组件清单在 Run 同步开场快照故幸存，
--- 而组件引用的图片全部丢失（Chat 包实测丢 34/35 张）。因此恢复必须延迟到产物真正落盘：
--- Timers 轮询 {pkg}_fui.bytes mtime 相对发布前快照变化，再留 3s 图集尾写窗口后按包恢复。
--- 在途状态挂 _G：同一时间仅允许一个裸 Run 发布，防止下一包 dofile/置位踩掉未兑现的恢复。
+-- 产物落盘判定：看 exportPath 下 {pkg}_fui.bytes 的 mtime 相对发布前快照是否变化，
+-- 变化后再留 3s 图集尾写窗口。在途状态挂 _G，同一时间仅允许一个裸 Run 发布。
 local function tryPublishViaHandler(pkgName)
     if _G.__mcpPendingPublish then
         return false, "previous publish still in progress: " .. tostring(_G.__mcpPendingPublish.pkg)
@@ -2798,17 +2795,6 @@ local function tryPublishViaHandler(pkgName)
     local getPkgOk = pcall(function() pkg = App.project:GetPackageByName(pkgName) end)
     if not getPkgOk or not pkg then
         return false, "package not found: " .. tostring(pkgName)
-    end
-
-    -- 条件加载 MyGenCode：仅当置位/恢复函数缺席时才 dofile，避免每次发布重载整个
-    -- code_gen.lua 触发其文件级副作用
-    if type(EnsureItemReferencedExported) ~= "function" or type(RestoreItemReferencedExported) ~= "function" then
-        local okGen = pcall(function()
-            dofile(App.project.basePath .. "/plugins/MyGenCode/code_gen.lua")
-        end)
-        if not okGen then
-            fprint("[MCPBridge] 警告: MyGenCode code_gen.lua 加载失败，item/gearIcon 引用组件可能漏导出")
-        end
     end
 
     local handler
@@ -2831,20 +2817,8 @@ local function tryPublishViaHandler(pkgName)
         oldTicks = CS.System.IO.File.GetLastWriteTime(bytesPath).Ticks
     end)
 
-    -- 裸 Run() 不触发 PluginManager.OnPublishStart，且 Run() 开场即收集发布资源清单（items），
-    -- onPublish 钩子（MyGenCode 的置位）在 items 定型之后才执行、对本轮无效，须 Run 前手动置位
-    if type(EnsureItemReferencedExported) == "function" then
-        pcall(function() EnsureItemReferencedExported(pkg) end)
-    else
-        fprint("[MCPBridge] 警告: MyGenCode 置位函数不可用，item/gearIcon 引用组件可能漏导出")
-    end
-
     local runOk = pcall(function() handler:Run() end)
     if not runOk then
-        -- Run 触发失败无异步流程在途，置位立即回滚
-        if type(RestoreItemReferencedExported) == "function" then
-            pcall(function() RestoreItemReferencedExported(pkgName) end)
-        end
         return false, "PublishHandler.Run failed"
     end
 
@@ -2863,15 +2837,12 @@ local function tryPublishViaHandler(pkgName)
                 end
             else
                 state.updatedSeen = true
-                fprint("[publish] 产物已落盘，尾写窗口后恢复置位: " .. pkgName)
+                fprint("[publish] 产物已落盘，等待尾写窗口: " .. pkgName)
             end
         end
         state.checks = (state.checks or 0) + 1
         if settled or state.checks > 200 then
             CS.FairyGUI.Timers.inst:Remove(timerCb)
-            if type(RestoreItemReferencedExported) == "function" then
-                pcall(function() RestoreItemReferencedExported(pkgName) end)
-            end
             _G.__mcpPendingPublish = nil
             if not settled then
                 fprint("[MCPBridge] 警告: " .. pkgName .. " 100s 未见产物更新，已超时强制恢复，请人工核对产物")
@@ -2972,8 +2943,7 @@ function CommandHandler.handleProbePublishDialog(params, bridgePath)
 end
 
 -- 对话框发布公共流程：轮换候选组合打开发布设置对话框 →（单包场景先点击 pkgs 列表中的
--- 目标包节点选中）→ 目标按钮 FireClick → 编辑器原生发布管线（onPublishStart/End 钩子，
--- MyGenCode 置位自管）→ 产物目录安静后释放 pending。调用前置条件：_G.__mcpPendingPublish
+-- 目标包节点选中）→ 目标按钮 FireClick → 编辑器原生发布管线 → 产物目录安静后释放 pending。调用前置条件：_G.__mcpPendingPublish
 -- 已设置。对话框打开方式不稳定（同一按钮同一参数随编辑器状态时开时不开），故组合轮换重试
 local function beginDialogPublish(buttonName, pendingPkg, logLabel, selectPkgId)
     CS.UnityEngine.Application.runInBackground = true
@@ -3304,8 +3274,7 @@ function CommandHandler.handlePublishPackage(params, bridgePath)
 
     -- 裸 PublishHandler 路径：直接以 pkg 对象发布（天然指定包）。发布设置对话框的"发布"按钮
     -- 发布对象跟随对话框打开时锁定的包，pkgs 列表节点的模拟点击无法改变它（实测发错包），
-    -- 故对话框路径仅用于全包（publishAll 无选包问题）。裸 Run 的置位由 MCPBridge 手动前置、
-    -- 产物落盘后延迟恢复，产物与人工发布逐字节一致（2026-10-12 实测）
+    -- 故对话框路径仅用于全包（publishAll 无选包问题）。裸 Run 产物与人工发布逐字节一致
     local handlerOk, handlerMethod, exportPath = tryPublishViaHandler(pkgName)
     if handlerOk then
         return { published = true, package = pkgName, path = exportPath, method = handlerMethod }
