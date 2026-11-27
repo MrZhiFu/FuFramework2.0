@@ -98,6 +98,57 @@ Play 模式下可直接操作 FGUI 界面——官方 `click_ui_element` 走 Inp
 - 非 Play 模式下访问 `GRoot.inst` 抛 `DontDestroyOnLoad` 异常（Stage 只能在 Play 创建）。
 - `capture_screenshot` 报 `GAME_VIEW_NOT_FOCUSED` 时，需先让 Game View 获得焦点。
 
+### 拖拽/滑动：反射驱动 TouchInfo（实测可用）
+
+**真实指针注入在本项目全部不可行**（均实测过）：
+
+| 方案 | 结果 |
+|---|---|
+| `Stage.SetCustomInput` | 注入被消费（`_customInput` 变 false），但 `HitTest` 全落空——连全屏背景都不命中 |
+| `input_mouse` / `click_ui_element`（Input System 虚拟设备）| 打不到：FGUI 未启用 `FAIRYGUI_INPUT_SYSTEM`，读的是旧 `Input.mousePosition` |
+| 系统 `mouse_event` / `SendInput` | 鼠标**移动**生效（`Input.mousePosition` 随之变化），但**按键事件被过滤**，Unity 检测不到 |
+
+**可行方案**：反射操控 `Stage._touches[0]`，手动走 FGUI 的触摸状态机。`target` 需自己指定（不走 HitTest）。
+
+```csharp
+// statements 模式；先取 target（例如 _btnLogin）
+var B = System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public;
+var touches = (Array)typeof(FairyGUI.Stage).GetField("_touches", B).GetValue(FairyGUI.Stage.inst);
+var touch = touches.GetValue(0);
+var tt = touch.GetType();
+var c = btn.LocalToGlobal(new Vector2(btn.width*0.5f, btn.height*0.5f));
+
+tt.GetField("x").SetValue(touch, c.x);
+tt.GetField("y").SetValue(touch, c.y);
+tt.GetField("target").SetValue(touch, btn.displayObject);
+tt.GetField("button").SetValue(touch, 0);
+tt.GetField("touchId").SetValue(touch, 0);
+
+// 按下
+tt.GetMethod("Begin").Invoke(touch, null);
+tt.GetMethod("UpdateEvent").Invoke(touch, null);
+btn.displayObject.BubbleEvent("onTouchBegin", tt.GetField("evt").GetValue(touch));
+
+// 拖拽：改 x/y + Move + onTouchMove（可多帧多次）
+tt.GetField("x").SetValue(touch, c.x + 60f);
+tt.GetMethod("UpdateEvent").Invoke(touch, null);
+btn.displayObject.BubbleEvent("onTouchMove", tt.GetField("evt").GetValue(touch));
+
+// 抬起 + 点击判定
+tt.GetMethod("End").Invoke(touch, null);
+var ct = tt.GetMethod("ClickTest").Invoke(touch, null);   // 移动超过阈值会返回 null
+if (ct != null) {
+    tt.GetMethod("UpdateEvent").Invoke(touch, null);
+    ((FairyGUI.DisplayObject)ct).BubbleEvent("onClick", tt.GetField("evt").GetValue(touch));  // 是 "onClick" 不是 "onTouchEnd"
+}
+tt.GetField("button").SetValue(touch, -1);
+```
+
+**实测结论**：
+- 不移动 → `clickCancelled=false` → 派发 `onClick` → 业务链路触发 ✓
+- 移动 60px → `clickCancelled=true` → `ClickTest()` 返回 null → **不触发点击** ✓（拖拽语义正确）
+- 点击派发的事件名是 **`"onClick"`**，不是 `onTouchEnd`；目标要经 `ClickTest()` 取，不是直接用 `target`。
+
 ### 其余现成工具
 
 | 能力 | 工具 | 说明 |
