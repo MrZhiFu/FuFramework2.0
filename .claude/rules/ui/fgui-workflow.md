@@ -96,11 +96,9 @@ fairygui-cli editor start-test <包> <组件> --device <设备>
 
 违反：组件不进发布产物 → 运行时 `AddItemFromPool` 取不到项（空白项或 NRE），而且**发布不会报任何错**。
 
-为什么必须手动标：client-ai 那套用 `MyGenCode` 插件在发布前自动置位（`EnsureItemReferencedExported`），**本项目没有该插件**，MCPBridge 发布时会打警告 `MyGenCode 置位函数不可用` 然后跳过。所以只能靠 `package.xml` 里的静态声明。
+为什么必须标：FairyGUI 发布时**只导出 `exported="true"` 的组件**；`defaultItem`/`GearIcon` 引用的组件不会被自动带入产物，也没有任何提示。
 
 检查方法：`grep -o 'defaultItem="ui://[^"]*"' <组件>.xml` 拿到引用，再到 `package.xml` 确认对应 `id` 带 `exported="true"`，最后 `grep -ac <组件名> Xxx_fui.bytes` 确认进了产物。
-
-## 菜单优先级
 
 ## 菜单优先级
 
